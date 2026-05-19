@@ -3,6 +3,7 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from "@sentry/nextjs";
+import { notifyServerError } from "@/lib/telegram/events";
 
 Sentry.init({
   dsn: "https://46531a4b2aae006ef47e6f90c4b7a088@o4511371770658816.ingest.de.sentry.io/4511371853299792",
@@ -18,4 +19,26 @@ Sentry.init({
   // Enable sending user PII (Personally Identifiable Information)
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/#sendDefaultPii
   sendDefaultPii: true,
+
+  // Espejo a Telegram solo en producción y solo para errores reales —
+  // Sentry aplica su propio sampling antes, así que esto sigue su
+  // fingerprinting (no spam de la misma excepción). El `beforeSend`
+  // se ejecuta justo antes del envío al ingest de Sentry; usamos
+  // `void` para no bloquear y devolvemos el event tal cual.
+  beforeSend(event, hint) {
+    if (process.env.NODE_ENV === "production" && event.level !== "warning" && event.level !== "info") {
+      const err = hint?.originalException as Error | undefined;
+      const message =
+        err?.message ??
+        event.exception?.values?.[0]?.value ??
+        event.message ??
+        "Unknown server error";
+      void notifyServerError({
+        message,
+        route: event.request?.url ?? null,
+        userId: event.user?.id ? String(event.user.id) : null,
+      });
+    }
+    return event;
+  },
 });

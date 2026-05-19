@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { leagueMemberships, leagues, profiles } from "@/lib/db/schema";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { PENDING_INVITE_COOKIE, getPublicLeague } from "@/lib/leagues";
+import { notifyNewUser } from "@/lib/telegram/events";
 import { isAdminEmail } from "./admins";
 
 export type CurrentUser = {
@@ -94,6 +95,15 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     }
 
     await consumeInviteCookie();
+
+    // Alerta Telegram fire-and-forget. Si TELEGRAM_BOT_TOKEN no está
+    // configurado, no-op silencioso (ver lib/telegram/notify.ts).
+    void notifyNewUser({
+      email: created.email,
+      countryCode: created.countryCode,
+      role: created.role,
+    });
+
     return mapProfile(created);
   }
 

@@ -11,6 +11,7 @@ import { leagueMemberships, leagues, profiles } from "@/lib/db/schema";
 import { requireAdmin, requireUser } from "@/lib/auth/guards";
 import { createSupabaseServerClient, createSupabaseServiceClient } from "@/lib/supabase/server";
 import { logAdminAction } from "@/lib/admin/audit";
+import { notifyNewPrivateLeague } from "@/lib/telegram/events";
 import {
   PENDING_INVITE_COOKIE,
   PRIVATE_LEAGUES_PER_USER_LIMIT,
@@ -122,6 +123,14 @@ export async function createLeague(
       payload: { id: created.id, slug },
     });
   }
+
+  // Alerta Telegram fire-and-forget.
+  void notifyNewPrivateLeague({
+    id: created.id,
+    name: created.name,
+    joinCode: created.joinCode,
+    creatorEmail: me.email,
+  });
 
   revalidatePath("/admin/ligas");
   revalidatePath("/", "layout");

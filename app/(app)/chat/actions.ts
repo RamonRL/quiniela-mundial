@@ -4,9 +4,10 @@ import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { chatMessages, profiles } from "@/lib/db/schema";
+import { chatMessages, leagues, profiles } from "@/lib/db/schema";
 import { requireAdmin, requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, isMemberOf } from "@/lib/leagues";
+import { notifyNewChatMessage } from "@/lib/telegram/events";
 
 export type FormState = { ok: boolean; error?: string };
 
@@ -33,6 +34,25 @@ export async function sendMessage(
     userId: me.id,
     body: parsed.data.body,
   });
+
+  // Alerta Telegram fire-and-forget — usa la liga (nombre + isPublic) y
+  // el autor para construir el mensaje. Cae como notificación silent
+  // para no saturar (ver lib/telegram/events.ts).
+  void (async () => {
+    const [league] = await db
+      .select({ name: leagues.name, isPublic: leagues.isPublic })
+      .from(leagues)
+      .where(eq(leagues.id, leagueId))
+      .limit(1);
+    if (!league) return;
+    await notifyNewChatMessage({
+      leagueName: league.name,
+      isPublic: league.isPublic,
+      authorEmail: me.email,
+      authorNickname: me.nickname,
+      body: parsed.data.body,
+    });
+  })();
 
   revalidatePath("/chat");
   return { ok: true };

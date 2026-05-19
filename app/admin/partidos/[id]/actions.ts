@@ -4,12 +4,14 @@ import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { matchScorers, matches } from "@/lib/db/schema";
+import { matchScorers, matches, teams } from "@/lib/db/schema";
 import { requireAdmin } from "@/lib/auth/guards";
 import { logAdminAction } from "@/lib/admin/audit";
 import { recomputeMatchScoringForAllUsers } from "@/lib/scoring/persistence";
 import { recomputeAllGroupStandings } from "@/lib/scoring/group-standings";
 import { onMatchFinalized, onMatchReverted } from "@/lib/automation/orchestrator";
+import { notifyMatchResult } from "@/lib/telegram/events";
+import { alias } from "drizzle-orm/pg-core";
 
 export type FormState = { ok: boolean; error?: string };
 
@@ -154,6 +156,39 @@ export async function saveMatchResult(
     await onMatchFinalized(parsed.data.matchId);
   } else if (wasFinished && !willBeFinished) {
     await onMatchReverted(parsed.data.matchId);
+  }
+
+  // Alerta Telegram fire-and-forget — solo cuando el partido se cierra
+  // por primera vez (evita ruido al re-editar marcadores ya finalizados).
+  if (willBeFinished && !wasFinished) {
+    const homeTeams = alias(teams, "home_teams");
+    const awayTeams = alias(teams, "away_teams");
+    const [matchInfo] = await db
+      .select({
+        code: matches.code,
+        stage: matches.stage,
+        home: homeTeams.name,
+        away: awayTeams.name,
+      })
+      .from(matches)
+      .leftJoin(homeTeams, eq(homeTeams.id, matches.homeTeamId))
+      .leftJoin(awayTeams, eq(awayTeams.id, matches.awayTeamId))
+      .where(eq(matches.id, parsed.data.matchId))
+      .limit(1);
+    if (matchInfo) {
+      void notifyMatchResult({
+        matchId: parsed.data.matchId,
+        code: matchInfo.code,
+        stage: matchInfo.stage,
+        home: matchInfo.home ?? "TBD",
+        away: matchInfo.away ?? "TBD",
+        homeScore: parsed.data.homeScore,
+        awayScore: parsed.data.awayScore,
+        wentToPens: parsed.data.wentToPens ?? false,
+        homeScorePen: parsed.data.homeScorePen ?? null,
+        awayScorePen: parsed.data.awayScorePen ?? null,
+      });
+    }
   }
 
   revalidatePath(`/admin/partidos/${parsed.data.matchId}`);
