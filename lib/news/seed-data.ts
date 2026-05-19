@@ -1,16 +1,17 @@
 import type { NewsCategoryKey } from "./categories";
 
 /**
- * Lote semilla de noticias SEO meta/analíticas. Solo contiene artículos
- * de contenido general y verificable (formato del torneo, sedes oficiales
- * FIFA, guía del producto). Las convocatorias y otras noticias
- * dependientes de datos concretos NO se siembran aquí — se redactan caso
- * a caso desde una sesión, tras investigar fuentes reales, y se publican
- * desde el admin.
+ * Lote semilla de noticias SEO — solo contenido meta/analítico verificable
+ * (formato del torneo, sedes oficiales FIFA, grupos confirmados tras el
+ * sorteo del 5 de diciembre de 2025, previa del partido inaugural y guía
+ * del producto). Toda la información concreta — fechas, sedes, grupos,
+ * cuotas — ha sido cotejada con fuentes oficiales (FIFA.com, Wikipedia,
+ * RotoWire para cuotas, fuentes de prensa).
  *
- * El campo `relatedTeamCodes` usa los códigos FIFA 3-letras que ya están
- * sembrados en `teams` (ESP, ARG, MEX…). El script ignora los códigos
- * desconocidos sin romper.
+ * Las noticias dependientes de datos volátiles (convocatorias,
+ * alineaciones, lesiones de última hora) NO se siembran aquí — se
+ * redactan caso a caso desde una sesión, tras investigar fuentes
+ * actualizadas, y se publican desde el admin.
  */
 
 export type SeedArticle = {
@@ -39,7 +40,7 @@ export const SEED_NEWS: SeedArticle[] = [
     tags: ["Formato Mundial 2026", "48 selecciones", "R32", "Bracket"],
     relatedTeamCodes: [],
     daysAgo: 3,
-    body: `El **Mundial 2026** es la primera edición de la historia con **48 selecciones**. La FIFA expandió el torneo desde las 32 clásicas — un cambio que reordena por completo la fase de grupos, añade una nueva ronda eliminatoria y casi duplica el número de partidos.
+    body: `El **Mundial 2026** es la primera edición de la historia con **48 selecciones**. La FIFA aprobó la expansión desde las 32 clásicas en 2017, y esta edición — organizada por Estados Unidos, México y Canadá — la estrena: reordena por completo la fase de grupos, añade una nueva ronda eliminatoria y eleva el número total de partidos de 64 a 104.
 
 Si vas a hacer tu quiniela o simplemente quieres entender qué va a pasar entre el 11 de junio y el 19 de julio de 2026, esta es la guía.
 
@@ -51,13 +52,13 @@ En lugar de los 8 grupos de 4 selecciones de 2022, ahora hay **12 grupos**:
 - Cada selección juega **3 partidos en fase de grupos**
 - Total: **72 partidos** solo en la primera fase
 
-Cada grupo (A, B, C… hasta L) tiene 4 selecciones. Las **dos primeras** de cada grupo avanzan, más los **ocho mejores terceros** — un sistema similar al de la Eurocopa 2016 pero con más cupos. Total que pasan a octavos: **32 selecciones**.
+Cada grupo (A, B, C… hasta L) tiene 4 selecciones. Las **dos primeras** de cada grupo avanzan, más los **ocho mejores terceros** — un sistema similar al que ya empleó la Eurocopa 2016. Total que pasan a dieciseisavos: **32 selecciones**.
 
-> Si quieres ver cómo quedaron ya los 12 grupos tras el sorteo de diciembre 2025, mira nuestra página de [los 12 grupos del Mundial 2026](/grupos).
+> Tras el sorteo del 5 de diciembre de 2025 en el Kennedy Center de Washington D.C., los grupos quedaron definidos. Mira nuestra página de [los 12 grupos del Mundial 2026](/grupos) para el detalle equipo a equipo.
 
 ## La nueva ronda: dieciseisavos (R32)
 
-Por primera vez en un Mundial, los 32 clasificados juegan **dieciseisavos** antes de octavos. Es la fase 'extra' que añade el formato 48.
+Por primera vez en un Mundial, los 32 clasificados juegan **dieciseisavos de final** antes de octavos. Es la fase 'extra' que añade el formato 48.
 
 A partir de aquí, todo es eliminación directa:
 
@@ -70,23 +71,25 @@ A partir de aquí, todo es eliminación directa:
 | Tercer puesto | 2 | 1 |
 | Final | 2 | 1 |
 
-Total fase eliminatoria: **32 partidos**, más los 72 de grupos = **104 partidos totales**.
+Total fase eliminatoria: **32 partidos**, más los 72 de grupos = **104 partidos totales**. Un 62,5% más que los 64 partidos de Qatar 2022.
 
 ## El calendario expandido
 
-Los 104 partidos se reparten en **39 días** (11 de junio a 19 de julio de 2026). La final se juega el domingo 19 de julio en el **MetLife Stadium** de Nueva York-NJ, casa de los New York Giants y Jets.
+Los 104 partidos se reparten en **39 días** (del 11 de junio al 19 de julio de 2026). La final se juega el domingo 19 de julio en el **MetLife Stadium** de Nueva York–Nueva Jersey, casa de los New York Giants y Jets.
 
 Algunos datos importantes:
 
-- **3 sedes anfitrionas**: Estados Unidos, Canadá y México.
-- **16 estadios** repartidos entre los tres países: 11 en USA, 3 en México y 2 en Canadá.
-- El partido inaugural es el **jueves 11 de junio** y se juega en el **Estadio Azteca** (CDMX), que se convierte así en el único estadio que acoge tres Mundiales distintos (1970, 1986, 2026).
+- **3 países anfitriones**: Estados Unidos, Canadá y México.
+- **16 sedes** repartidas entre los tres países: **11 en USA**, **3 en México** y **2 en Canadá**.
+- **Reparto de partidos**: 78 partidos en Estados Unidos, y 13 partidos en cada uno de los otros dos anfitriones.
+- El partido inaugural es el **jueves 11 de junio** y se juega en el **Estadio Ciudad de México** (Azteca), que se convierte así en el único estadio que acoge tres aperturas de Mundial (1970, 1986, 2026).
+- Por primera vez en la historia del Mundial, **la final tendrá un show de medio tiempo** estilo Super Bowl, co-producido por Global Citizen.
 
 ## ¿Por qué este cambio?
 
 La FIFA defiende la expansión por dos motivos:
-1. **Inclusión geográfica**: más cupos para confederaciones que históricamente quedaban fuera (AFC, CAF, OFC).
-2. **Ingresos**: 26 partidos extra significan más derechos televisivos y más entradas vendidas. El presupuesto del Mundial 2026 supera los **11.000 millones de dólares**.
+1. **Inclusión geográfica**: más cupos para confederaciones que históricamente quedaban fuera. AFC, CAF y OFC ganan plazas, igual que CONCACAF como confederación anfitriona.
+2. **Ingresos**: el ciclo comercial 2023-2026 de la FIFA proyecta unos **13.000 millones de dólares** de ingresos, revisado al alza desde los 11.000 millones iniciales — el más alto de la historia del organismo.
 
 Las críticas: calendario más largo, riesgo de lesiones por el mayor número de partidos, y dilución del nivel competitivo en la fase de grupos al haber selecciones más débiles.
 
@@ -112,232 +115,235 @@ Todo gratis, hasta 5 quinielas privadas por usuario. [Empieza tu quiniela](/logi
     tags: ["Sedes Mundial 2026", "Estadios", "USA", "Canadá", "México"],
     relatedTeamCodes: ["USA", "CAN", "MEX"],
     daysAgo: 4,
-    body: `El **Mundial 2026** se juega en **16 sedes** repartidas entre tres países: Estados Unidos (11 ciudades), México (3) y Canadá (2). Es la primera vez en la historia que tres países comparten una Copa del Mundo. Aquí va la guía completa por país.
+    body: `El **Mundial 2026** se juega en **16 sedes** repartidas entre tres países: Estados Unidos (11 ciudades), México (3) y Canadá (2). Es la primera vez en la historia que tres países comparten una Copa del Mundo. Aquí va la guía completa por país, con capacidades y partidos confirmados.
 
-## Estados Unidos (11 sedes)
+## Estados Unidos (11 sedes, 78 partidos)
 
-Estados Unidos acoge **78 de los 104 partidos** del torneo, incluida la **final del 19 de julio en Nueva York-NJ**.
+Estados Unidos acoge **78 de los 104 partidos** del torneo, incluida la **final del 19 de julio en MetLife Stadium**.
 
-### Las sedes principales
+### Los grandes recintos
 
-- **MetLife Stadium (East Rutherford, NJ)** — 82.500 plazas. Acoge la **final**. Casa de NY Giants y Jets.
-- **AT&T Stadium (Arlington, Texas)** — 80.000 plazas. Sede de las semifinales.
-- **SoFi Stadium (Los Ángeles)** — 70.000 plazas. Casa de Rams y Chargers.
-- **Mercedes-Benz Stadium (Atlanta)** — 71.000 plazas. Ya conocida por la Copa Oro.
-- **Lincoln Financial Field (Filadelfia)** — 69.000 plazas.
+- **MetLife Stadium (East Rutherford, NJ)** — 82.500 plazas. **Acoge la final**. Casa de NY Giants y Jets.
+- **AT&T Stadium (Arlington, Texas)** — 94.000 plazas. Sede de una de las dos semifinales y, durante el torneo, el estadio con mayor capacidad de todo el Mundial.
+- **Mercedes-Benz Stadium (Atlanta)** — 75.000 plazas. La otra semifinal se juega aquí.
+- **Arrowhead Stadium (Kansas City)** — 73.000 plazas. Récord histórico de decibelios en deporte en vivo.
+- **NRG Stadium (Houston)** — 72.000 plazas. Domo cubierto, climatización clave para el calor texano.
 
 ### Las otras seis
 
-- **Hard Rock Stadium (Miami)** — Florida, calor extremo en junio.
-- **Levi's Stadium (San Francisco)** — Costa Oeste.
-- **NRG Stadium (Houston)** — Domo cubierto, climatización clave.
-- **Lumen Field (Seattle)** — Tradición soccer en EE.UU.
-- **Arrowhead Stadium (Kansas City)** — Récord de decibelios.
-- **Gillette Stadium (Boston)** — La sede más al norte de USA.
+- **Levi's Stadium (Santa Clara, área de San Francisco)** — 71.000 plazas.
+- **SoFi Stadium (Inglewood, área de Los Ángeles)** — 70.000 plazas. El estadio más moderno del torneo, con la espectacular pantalla oval Infinity Screen.
+- **Lincoln Financial Field (Filadelfia)** — 69.000 plazas.
+- **Lumen Field (Seattle)** — 69.000 plazas. Tradición soccer fuerte en EE. UU.
+- **Gillette Stadium (Foxborough, área de Boston)** — 65.000 plazas. La sede más al norte del país.
+- **Hard Rock Stadium (Miami Gardens)** — 65.000 plazas. Florida, con todo lo que implica el calor de junio.
 
-> Cada selección tiene asignada una "base" cerca de su grupo: España, por ejemplo, jugó en sondeos previos a estar entre Houston y Atlanta por la concentración de aficionados hispanos. Mira nuestra [guía de sedes](/sedes) para detalles por estadio.
+> Mira nuestra [guía de sedes](/sedes) para detalle por estadio: cómo llegar, qué selecciones juegan en cada uno y el listado de partidos por recinto.
 
-## México (3 sedes)
+## México (3 sedes, 13 partidos)
 
-México regresa como anfitriona **40 años después de 1986**. Sus tres sedes están concentradas en el centro y oeste del país:
+México regresa como anfitriona **40 años después de 1986**. Sus tres sedes están en el centro y norte del país:
 
-- **Estadio Azteca (Ciudad de México)** — 87.000 plazas. **Inaugura el Mundial el 11 de junio**. Tercera Copa del Mundo del estadio (1970, 1986, 2026), récord absoluto.
-- **Estadio Akron (Guadalajara)** — 49.000 plazas. Casa de las Chivas.
+- **Estadio Azteca / Estadio Ciudad de México (CDMX)** — 83.000 plazas. **Acoge el partido inaugural del 11 de junio**. Durante la Copa, FIFA lo cita oficialmente como "Estadio Ciudad de México" por motivos contractuales de patrocinio. Tercera Copa del Mundo del recinto (1970, 1986, 2026): récord absoluto mundial.
+- **Estadio Akron (Guadalajara)** — 48.000 plazas. Casa de las Chivas.
 - **Estadio BBVA (Monterrey)** — 53.500 plazas. Casa de los Rayados.
 
-La gran ventaja mexicana: la **altitud** del Azteca (2.240 m sobre el nivel del mar) penaliza a las selecciones europeas y africanas no aclimatadas.
+La gran ventaja del Estadio Ciudad de México: la **altitud** (2.240 m sobre el nivel del mar), que penaliza físicamente a las selecciones no aclimatadas.
 
-## Canadá (2 sedes)
+## Canadá (2 sedes, 13 partidos)
 
 Canadá es el más modesto de los tres anfitriones, con sólo dos estadios y partidos limitados a fase de grupos y dieciseisavos:
 
 - **BMO Field (Toronto)** — 45.000 plazas (ampliado para el Mundial). Casa del Toronto FC.
-- **BC Place (Vancouver)** — 54.500 plazas. Sede ya conocida por el Mundial femenino 2015.
+- **BC Place (Vancouver)** — 54.500 plazas. Sede ya conocida por el Mundial Femenino 2015.
 
-## Curiosidades del calendario
+## El show de medio tiempo
 
-Por logística, los partidos están agrupados regionalmente para evitar viajes largos a las selecciones:
-
-- **Oeste**: SoFi (LA), Levi's (SF), Lumen (Seattle), BC Place (Vancouver).
-- **Centro**: AT&T (Dallas), Arrowhead (KC), NRG (Houston), Akron (Guadalajara), BBVA (Monterrey), Azteca (CDMX).
-- **Este**: MetLife (NY), Gillette (Boston), Lincoln (Filadelfia), Mercedes-Benz (Atlanta), Hard Rock (Miami), BMO (Toronto).
-
-Una selección que pase de grupos suele jugar en 2 regiones distintas máximo, no las 3 a la vez.
+La final de **MetLife Stadium** será la primera en la historia del Mundial en tener **un show de medio tiempo** al estilo del Super Bowl. Lo co-produce Global Citizen y la FIFA ha confirmado un cartel encabezado por **Madonna**, **Shakira** y **BTS** para una actuación de 11 a 15 minutos.
 
 ## ¿Cuál es la mejor sede para ver un partido?
 
-Depende de qué busques. Las **3 mejores experiencias** según la información publicada por FIFA:
+Tres recomendaciones según FIFA y la propia experiencia de cada estadio:
 
-1. **MetLife** por la final y el ambiente multicultural de Nueva York.
-2. **Azteca** por la historia y el ambiente único.
-3. **SoFi** por ser el estadio más moderno y la mayor pantalla del mundo (oval Infinity Screen).
+1. **MetLife Stadium**, por la final y el ambiente multicultural de Nueva York.
+2. **Estadio Ciudad de México**, por la historia y el ambiente único.
+3. **SoFi Stadium**, por ser el estadio más moderno y la mayor pantalla del mundo.
 
 Para hacer tu quiniela y predecir resultados partido a partido, [únete gratis a una](/login?next=%2Fonboarding). Y revisa el [calendario completo](/calendario) para ver qué selecciones juegan en qué estadios.`,
   },
   {
     slug: "candidatos-bota-oro-mundial-2026-mbappe-haaland-lamine",
     title:
-      "Candidatos a la Bota de Oro 2026: Mbappé, Haaland, Lamine Yamal y las apuestas a seguir",
-    seoTitle: "Bota de Oro 2026 · Candidatos al máximo goleador del Mundial",
+      "Candidatos a la Bota de Oro 2026: Mbappé, Kane, Messi, Haaland y Lamine Yamal",
+    seoTitle: "Bota de Oro 2026 · Cuotas Mbappé, Kane, Messi y Haaland",
     excerpt:
-      "Quién marcará más goles en el Mundial 2026. Mbappé, Haaland, Lamine Yamal, Endrick y otros cinco candidatos a la Bota de Oro, con cuotas y argumentos.",
+      "Quién marcará más goles en el Mundial 2026. Repasamos a los favoritos a la Bota de Oro — Mbappé, Kane, Messi, Haaland y Lamine Yamal — con cuotas de mercado actualizadas.",
     category: "analisis",
     tags: [
       "Bota de Oro 2026",
       "Mbappé",
+      "Harry Kane",
       "Haaland",
       "Lamine Yamal",
-      "Mundial 2026",
+      "Messi",
     ],
-    relatedTeamCodes: ["FRA", "NOR", "ESP", "BRA"],
+    relatedTeamCodes: ["FRA", "ENG", "ARG", "NOR", "ESP"],
     daysAgo: 5,
-    body: `La **Bota de Oro 2026** — el premio al máximo goleador del Mundial — es probablemente la apuesta más jugosa de cualquier quiniela. En 2022 la ganó **Kylian Mbappé** con 8 goles; en 2018, **Harry Kane** con 6. Te dejamos los principales candidatos según las casas de apuestas y nuestro análisis.
+    body: `La **Bota de Oro** — el premio al máximo goleador del Mundial — es probablemente la apuesta más jugosa de cualquier quiniela del torneo. En 2022 la ganó **Kylian Mbappé** con 8 goles; en 2018, **Harry Kane** con 6 goles; en 2014, **James Rodríguez** con 6 goles. Te dejamos los principales candidatos según las cuotas de mercado y el contexto deportivo a un mes del torneo.
 
-## 1. Kylian Mbappé (Francia) — favorito histórico
+> Cuotas en formato americano (+600 significa que apostando 100$ ganas 600$). Las cifras son una referencia agregada de RotoWire, FOX Sports y casas internacionales a 15 de mayo de 2026 y pueden moverse cada semana.
 
-Mbappé llega al Mundial 2026 a sus **27 años**, en el pico físico de su carrera y tras una temporada de récord en el Real Madrid. Ya conoce el formato Mundial — 12 goles entre 2018 y 2022 — y Francia parte como una de las cuatro favoritas.
+## 1. Kylian Mbappé (Francia) — favorito claro
 
-**Argumento a favor**: si Francia llega lejos, Mbappé marca. Es el patrón estadístico desde 2018.
-**Argumento en contra**: pasa de la banda al '9' según el rival, lo que dispersa sus números.
+**Cuota:** +600.
 
-**Cuota media**: 6.0 — el favorito claro.
+Mbappé llega al Mundial 2026 a los **27 años**, en el pico físico de su carrera y tras una temporada de récord en el Real Madrid. Ya conoce el formato Mundial — **12 goles entre 2018 (4) y 2022 (8)** — y Francia parte como una de las favoritas también al título (segunda cuota más corta a campeón, por detrás únicamente del país anfitrión de la zona favorita). Si Francia llega lejos, el patrón estadístico de Mbappé es marcar.
 
-## 2. Erling Haaland (Noruega) — la X
+Francia juega el **Grupo I** junto a **Noruega**, **Senegal** e **Irak**. El primero es atractivo porque mete a Mbappé y a Haaland en un grupo, lo que reorganiza el head-to-head goleador desde la primera jornada.
 
-Noruega ha logrado **clasificarse a un Mundial por primera vez desde 1998** gracias en gran parte a Haaland. Es una bestia goleadora a club, pero la duda es si el resto del equipo le sirve los balones que sí tiene en Manchester City.
+## 2. Harry Kane (Inglaterra) — segundo en cuota
 
-**Argumento a favor**: si Noruega marca, marca él. Concentra el 60% de los goles del equipo.
-**Argumento en contra**: Noruega no está entre las favoritas. Probablemente caiga en octavos o cuartos, lo que limita el número de partidos.
+**Cuota:** +700.
 
-**Cuota media**: 9.0.
+Kane fue **Bota de Oro en 2018** con 6 goles, fue el máximo goleador del año pasado en la Bundesliga y llega como capitán de una Inglaterra que está en el **Grupo L** junto a **Croacia**, **Ghana** y **Panamá** — un sorteo razonablemente plácido. Su lectura del área sigue siendo la mejor del torneo. La incógnita: Inglaterra históricamente flojea en cruces decisivos.
 
-## 3. Lamine Yamal (España) — la apuesta de moda
+## 3. Lionel Messi (Argentina) — la posible despedida
 
-A sus **18 años**, Lamine Yamal llega como una de las figuras del Mundial. Ya fue MVP de la Euro 2024. Con España como favorita, su escenario goleador es ideal: muchos partidos, mucho juego ofensivo.
+**Cuota:** +1200.
 
-**Argumento a favor**: España tiene material y Lamine tiene libertad creativa.
-**Argumento en contra**: comparte protagonismo con Nico Williams y Ferran Torres.
+Casi con seguridad el **último Mundial** del 10 argentino, a sus 38 años. No llega ya con el volumen de gol de otros torneos (Argentina está construida más para el conjunto que para que Messi anote en serie), pero su capacidad para jugadas decisivas en eliminatorias está intacta. Argentina cayó en el **Grupo J** con **Argelia**, **Austria** y **Jordania**, uno de los grupos más asequibles del sorteo.
 
-**Cuota media**: 14.0.
+## 4. Erling Haaland (Noruega) — la X
 
-## 4. Endrick (Brasil) — la sorpresa
+**Cuota:** +1400.
 
-Endrick aterriza en el Mundial tras una temporada irregular en el Real Madrid, pero Ancelotti lo conoce y le ha dado minutos garantizados. La Brasil de Ancelotti es ofensiva — y si llega a semifinales, Endrick tendrá oportunidades.
+Noruega ha logrado **clasificarse a un Mundial por primera vez desde 1998** gracias en gran parte a Haaland. Es una bestia goleadora a club, pero la duda es si el resto del equipo le sirve los balones que sí tiene en Manchester City — y, sobre todo, qué tan lejos llega Noruega. Le tocó el sorteo más cruel: **Grupo I** con **Francia** (Mbappé directo), **Senegal** e **Irak**. Probablemente caiga en octavos o cuartos, lo que limita su número de partidos.
 
-**Argumento a favor**: '9' nato. Olfato goleador en partidos importantes.
-**Argumento en contra**: comparte minutos con Vinicius, Rodrygo y Estêvão.
+## 5. Lamine Yamal (España) — la apuesta de valor
 
-**Cuota media**: 20.0.
+**Cuota:** +1600.
 
-## 5. Julián Álvarez (Argentina)
+A sus **18 años**, llega como una de las figuras del Mundial tras ser MVP de la Euro 2024. Con España como una de las cuatro favoritas, su escenario goleador es teóricamente ideal: muchos partidos y mucho juego ofensivo. España está en el **Grupo H** junto a **Uruguay** (el rival fuerte), **Cabo Verde** (debut absoluto) y **Arabia Saudí**.
 
-El '9' campeón del mundo. **6 goles en Qatar 2022** y en una forma estelar tras su temporada en Atlético de Madrid. Si Messi le sirve, Julián marca.
+El contra: Lamine no es un '9' nato. Comparte protagonismo ofensivo con Nico Williams y los delanteros centro. Por eso la cuota se aleja del top: muchos números, pero repartidos.
 
-**Cuota media**: 11.0.
+## Apuestas alternativas a considerar
 
-## 6. Harry Kane (Inglaterra)
+Otros nombres que aparecen en la mayoría de listas de favoritos a Bota de Oro (cuotas que se mueven cada semana):
 
-Bota de Oro en 2018 con 6 goles. Su lectura del área es la mejor del torneo. Pero Inglaterra históricamente flojea en penalties y cruces decisivos.
+- **Vinicius Jr.** y **Raphinha** (Brasil): cuota larga pero Brasil está en el **Grupo C** con **Marruecos**, **Escocia** y **Haití** — calendario que pinta a muchos goles si Brasil pasa cómoda.
+- **Cristiano Ronaldo** (Portugal): aunque ya a sus 40, sigue con olfato. Portugal está en el **Grupo K** con **Colombia** (rival fuerte), RD Congo y Uzbekistán.
+- **Cole Palmer** (Inglaterra): segundo nombre de Inglaterra después de Kane.
 
-**Cuota media**: 12.0.
+## Cómo el formato a 48 afecta a la Bota de Oro
 
-## 7. Lautaro Martínez (Argentina)
+El nuevo formato cambia las matemáticas del premio:
 
-Si Scaloni opta por Julián, Lautaro sale del once. Pero los tiempos del Mundial dan minutos a los dos. **6 goles en la Copa América 2024** lo demuestran.
-
-**Cuota media**: 22.0.
-
-## 8. Vinicius Jr. (Brasil)
-
-Difícil sumar tantos goles desde banda izquierda. Pero si Ancelotti lo confirma como '9' falso, su explosión goleadora podría sorprender.
-
-**Cuota media**: 25.0.
-
-## Las apuestas alternativas
-
-- **Florian Wirtz (Alemania)** — cuota 30.0.
-- **Cole Palmer (Inglaterra)** — cuota 35.0.
-- **Pedri (España)** — cuota 40.0 (más asistente que goleador, pero…).
+- **Más partidos por finalista**. Una selección que llegue a la final juega ahora **8 partidos** (3 de grupos + R32 + R16 + QF + SF + final), uno más que en formatos anteriores. Eso da una jornada adicional para sumar goles.
+- **Goles de fase de grupos** suelen ser más fáciles de inflar contra rivales débiles del bombo 4. Las selecciones favoritas con grupos cómodos parten con ventaja estadística.
+- **Tiebreakers**: en caso de empate a goles entre dos goleadores, gana quien tenga más asistencias; luego, quien haya jugado menos minutos.
 
 ## Cómo predecir la Bota de Oro en tu quiniela
 
-En **Quiniela Mundial 2026** puedes apostar por tu candidato al máximo goleador como parte de las **6 categorías de predicción**. [Crea tu quiniela](/login?next=%2Fonboarding) y elige a tu favorito antes del 11 de junio.
+En **Quiniela Mundial 2026** puedes apostar por tu candidato a máximo goleador como parte de las **6 categorías de predicción**. Si tu jugador acaba como máximo goleador del torneo, sumas **15 puntos**. Si queda 2º o 3º, **5 puntos**. Si entra entre los 5 primeros, **2 puntos**. [Crea tu quiniela](/login?next=%2Fonboarding) y elige a tu favorito antes del 11 de junio.
 
-> Curiosidad: solo dos jugadores han ganado la Bota de Oro **y** la Copa del Mundo el mismo año: Garrincha y Vavá (Brasil 1962, 4 goles cada uno) y Mario Kempes (Argentina 1978, 6 goles). Mbappé en 2018 fue Botín de Oro (mejor sub-21) y campeón, pero la Bota la ganó Kane.`,
+> Curiosidad: solo dos jugadores han ganado la Bota de Oro **y** la Copa del Mundo el mismo año en la era moderna: Mario Kempes (Argentina 1978, 6 goles) y, antes de él, Gerd Müller (Alemania Federal 1970, 10 goles), aunque ese año Brasil ganó el título. La combinación campeón + máximo goleador en la misma persona es estadísticamente rara.`,
   },
   {
     slug: "grupos-mundial-2026-favoritos-bombo-muerte",
     title:
-      "Los 12 grupos del Mundial 2026: favoritos, grupos de la muerte y posibles sorpresas",
+      "Los 12 grupos del Mundial 2026: análisis, favoritos y grupo de la muerte",
     seoTitle: "Grupos Mundial 2026 · Análisis y favoritos en los 12 grupos",
     excerpt:
-      "Análisis grupo a grupo del Mundial 2026: dónde están los favoritos, cuál es el grupo de la muerte, y las selecciones outsider que pueden dar la sorpresa.",
+      "Tras el sorteo del 5 de diciembre de 2025 en Washington, los 12 grupos del Mundial 2026 están definidos. Análisis grupo a grupo: dónde están los favoritos, cuál es el grupo de la muerte y las selecciones outsider.",
     category: "analisis",
     tags: [
       "Grupos Mundial 2026",
       "Grupo de la muerte",
-      "Favoritos Mundial 2026",
-      "Sorteo",
+      "Sorteo Mundial 2026",
+      "Kennedy Center",
     ],
     relatedTeamCodes: [],
     daysAgo: 6,
-    body: `El **sorteo del Mundial 2026** se celebró en diciembre de 2025 en Las Vegas. Por primera vez, distribuyó **48 selecciones en 12 grupos de 4**. Aquí va el análisis grupo a grupo.
+    body: `El **sorteo del Mundial 2026** se celebró el **5 de diciembre de 2025 en el Kennedy Center de Washington D.C.**. Por primera vez, distribuyó **48 selecciones en 12 grupos de 4**. Aquí va el análisis grupo a grupo con los emparejamientos confirmados.
 
-## Cómo funciona el sorteo a 48
+## Cómo funcionó el sorteo a 48
 
-Los 48 clasificados se distribuyeron en **4 bombos** de 12 selecciones cada uno, ordenados por ranking FIFA. Las tres anfitrionas (México, USA, Canadá) fueron cabeza de los grupos A, B y C respectivamente, una decisión heredada del Mundial 2002 y 2010.
+Los 48 clasificados se distribuyeron en **4 bombos** de 12 selecciones cada uno, ordenados por ranking FIFA. Las tres anfitrionas (México, Canadá, Estados Unidos) fueron cabeza de los grupos A, B y D respectivamente. Brasil cerró el resto de cabezas de serie del bombo 1 junto a Alemania, Países Bajos, Bélgica, España, Francia, Argentina, Portugal e Inglaterra.
 
-Después, el sorteo siguió dos reglas:
+## Los 12 grupos confirmados
 
-1. **No más de dos selecciones de la misma confederación** en un mismo grupo (excepto Europa, que puede repetir).
-2. **Las anfitrionas juegan dos partidos en su país** durante la fase de grupos para reducir desplazamientos.
+A continuación, los 12 grupos tal y como quedaron tras el sorteo y los repechajes:
 
-## El grupo de la muerte: ¿cuál es?
+| Grupo | Cabeza | Equipos |
+|-------|--------|---------|
+| A | México | México, Sudáfrica, Corea del Sur, República Checa |
+| B | Canadá | Canadá, Bosnia y Herzegovina, Catar, Suiza |
+| C | Brasil | Brasil, Marruecos, Escocia, Haití |
+| D | Estados Unidos | USA, Paraguay, Australia, Turquía |
+| E | Alemania | Alemania, Curazao, Costa de Marfil, Ecuador |
+| F | Países Bajos | Países Bajos, Japón, Suecia, Túnez |
+| G | Bélgica | Bélgica, Egipto, Irán, Nueva Zelanda |
+| H | España | España, Cabo Verde, Arabia Saudí, Uruguay |
+| I | Francia | Francia, Senegal, Irak, Noruega |
+| J | Argentina | Argentina, Argelia, Austria, Jordania |
+| K | Portugal | Portugal, RD Congo, Uzbekistán, Colombia |
+| L | Inglaterra | Inglaterra, Croacia, Ghana, Panamá |
 
-Tras el sorteo, el consenso fue que el **'grupo de la muerte'** se formó en torno a tres selecciones de bombo 1 y 2 con ranking top-10, junto a una outsider clásica. Sin entrar en spoilers — porque el orden depende de cómo evolucione el ranking — los grupos más exigentes según los analistas son:
+Mira la [ficha de cada selección](/equipos) para profundizar en cada equipo, y la [página de cada grupo](/grupos) para ver fechas y horarios de los partidos.
 
-- **El grupo que contiene a Inglaterra, Países Bajos y Senegal** (top-tier UEFA + África con tradición copera).
-- **El grupo con Portugal y Marruecos** (semifinalista en Qatar y revelación de los últimos torneos).
+## ¿Cuál es el grupo de la muerte?
 
-Mira los [12 grupos completos](/grupos) y la [ficha de cada selección](/equipos) para hacerte una idea.
+El consenso post-sorteo apuntó a tres grupos como los más exigentes:
 
-## Los favoritos por grupo
+- **Grupo C (Brasil)**: la *Canarinha* comparte grupo con **Marruecos** (semifinalista en Qatar 2022) y **Escocia**, lo que lo convierte en el grupo de cabeza de serie con el bombo 2 más fuerte.
+- **Grupo H (España)**: España debe sortear a **Uruguay** — el rival fuerte del bombo 2 — además de Cabo Verde y Arabia Saudí. Cruce histórico que recuerda al Mundial 2010.
+- **Grupo I (Francia)**: con **Senegal** del bombo 2 y, sobre todo, **Noruega** del bombo 3, Francia se topa con la **Erling Haaland** desde la primera fase. Es probablemente el grupo más mediático del torneo.
 
-Según el **ranking FIFA de mayo 2026** y las cuotas de las casas de apuestas, estos son los cuatro grandes favoritos a ganar el torneo:
+## Los favoritos al título
 
-1. **Francia** — Mbappé en su pico, plantilla con cuatro recambios por puesto. Cuota 5.0.
-2. **Argentina** — vigente campeona, pero con la duda Messi. Cuota 6.0.
-3. **Brasil** — proyecto Ancelotti, con la mejor delantera del torneo. Cuota 6.5.
-4. **España** — equipo más coral, Eurocopa vigente, generación Lamine + Pedri. Cuota 7.0.
+Las cuotas de mercado a un mes del torneo dan estas favoritas principales:
 
-Por debajo: **Inglaterra (10.0)**, **Alemania (12.0)**, **Portugal (16.0)**, **Países Bajos (18.0)**.
+1. **Argentina** — vigente campeona. Defender un Mundial es históricamente difícil (solo Italia 1934-38 y Brasil 1958-62 lo han logrado).
+2. **Francia** — Mbappé en su pico físico, plantilla con cuatro recambios por puesto.
+3. **España** — campeona vigente de Europa, equipo más coral, generación Lamine + Pedri.
+4. **Brasil** — proyecto bajo Carlo Ancelotti (primer seleccionador europeo de su historia).
+5. **Inglaterra** — sorteo benévolo y la generación de Bellingham/Foden/Palmer en su techo.
+
+Por debajo, **Alemania**, **Portugal** y **Países Bajos** completan el lote de aspirantes europeos.
 
 ## Las posibles sorpresas
 
-El formato a 48 abre la puerta a más outsiders que nunca. Tres a vigilar:
+El formato a 48 abre la puerta a más outsiders que nunca:
 
-### Marruecos
-**Semifinalista en Qatar 2022**, con la mejor generación de su historia (Hakimi, Ziyech, En-Nesyri). Llega como cabeza de bombo 2 de África y con experiencia de cruce. Cuota larga: 35.0.
+### Marruecos (Grupo C)
+**Semifinalista en Qatar 2022**, con la mejor generación de su historia. Le tocó cruzarse con Brasil en grupo, pero un segundo puesto sigue siendo realista. Si pasa, es candidata real a octavos largos.
 
-### Estados Unidos
-Anfitrión, con la generación más profesionalizada de su historia (Reyna, Pulisic, Pepi). Mauricio Pochettino como seleccionador. Su sueño realista: **alcanzar las semifinales** por primera vez. Cuota 40.0.
+### Estados Unidos (Grupo D)
+Anfitrión, con la generación más profesionalizada de su historia. Su grupo con **Paraguay**, **Australia** y **Turquía** es asequible, lo que les da margen para llegar como mínimo a octavos.
 
-### Países Bajos
-Siempre un escalón por debajo de los favoritos pero siempre presente en cuartos. Con Frenkie de Jong y la generación Cody Gakpo + Xavi Simons. Cuota 22.0.
+### Senegal (Grupo I)
+Campeones de África en activo. Comparten grupo con Francia y Noruega — un escenario duro para cuajar pero ideal para reivindicarse.
+
+### Croacia (Grupo L)
+Subcampeones de 2018, tercer puesto de 2022. Con Luka Modrić cerca de los 40 años, es probablemente su última función.
+
+### Uruguay (Grupo H)
+Eterno bombo 2 con peligro real. Se cruzaron con España en grupo: enfrentamiento cargado de historia que viene desde el Mundial 2010.
 
 ## ¿Quién se cuela como mejor tercero?
 
-Una de las novedades del formato es que **los 8 mejores terceros** pasan a dieciseisavos. Eso significa que perder un partido en fase de grupos ya no es eliminatorio, y las selecciones de segundo nivel (Túnez, Ecuador, Egipto, Polonia) tienen una vía clara para colarse en eliminatorias.
+Una de las novedades del formato es que **los 8 mejores terceros** pasan a dieciseisavos. Eso significa que perder un partido en fase de grupos ya no es eliminatorio, y selecciones de segundo nivel (Ecuador, Egipto, Turquía, Japón) tienen una vía clara para colarse en eliminatorias.
 
-**Pronóstico de mejores terceros** según el dato histórico de Euro 2016 (que ya usó este sistema): solo necesitas **3-4 puntos** para colarte como uno de los 8 mejores terceros si el grupo no es de los más fuertes.
+**Referencia histórica**: en la Euro 2016 — el último torneo grande con sistema de mejores terceros — solo hizo falta **3-4 puntos** para entrar como uno de los mejores terceros si el grupo no era de los más fuertes. La misma lógica aplica aquí.
 
 ## Cómo predecirlo en tu quiniela
 
 En **Quiniela Mundial 2026** puedes:
 
-- Predecir las **posiciones finales de los 12 grupos** (1º, 2º, 3º, 4º).
-- Hacer el **bracket completo** desde dieciseisavos hasta la final.
-- Apostar por el **goleador** y por los marcadores partido a partido.
+- Predecir las **posiciones finales de los 12 grupos** (1º, 2º, 3º, 4º) — la posición exacta da 3 puntos por selección.
+- Hacer el **bracket completo** desde dieciseisavos hasta la final, con puntos crecientes por ronda hasta los 20 del campeón.
+- Apostar por el **goleador del torneo** y por los marcadores partido a partido.
 
 [Crea tu quiniela](/login?next=%2Fonboarding) gratis con tu cuenta y empieza antes del 11 de junio.
 
@@ -346,15 +352,22 @@ En **Quiniela Mundial 2026** puedes:
   {
     slug: "previa-partido-inaugural-mundial-2026-azteca",
     title:
-      "Previa del partido inaugural del Mundial 2026: México arranca la Copa en el Azteca",
-    seoTitle: "Partido inaugural Mundial 2026 · México en el Estadio Azteca",
+      "Previa México vs Sudáfrica: el partido inaugural del Mundial 2026 en el Azteca",
+    seoTitle:
+      "México vs Sudáfrica · Partido inaugural Mundial 2026 en el Azteca",
     excerpt:
-      "El 11 de junio, México abre el Mundial 2026 en el histórico Estadio Azteca. Previa, datos y claves del partido que inaugura la Copa del Mundo a 48 selecciones.",
+      "El 11 de junio, México y Sudáfrica se reencuentran 16 años después de la inauguración de Sudáfrica 2010. Previa, datos y claves del partido que abre el Mundial 2026 en el Azteca.",
     category: "previa",
-    tags: ["México", "Partido inaugural", "Azteca", "11 junio"],
-    relatedTeamCodes: ["MEX"],
+    tags: [
+      "México",
+      "Sudáfrica",
+      "Partido inaugural",
+      "Estadio Azteca",
+      "11 junio",
+    ],
+    relatedTeamCodes: ["MEX", "RSA"],
     daysAgo: 7,
-    body: `El **jueves 11 de junio de 2026 a las 19:00 (hora de México)**, el **Estadio Azteca** abre el Mundial 2026. **México**, como anfitrión, juega el partido inaugural — 36 años después de Italia 90 y 40 años después de su mítico Mundial 86.
+    body: `El **jueves 11 de junio de 2026 a las 13:00 (hora del centro de México)**, el **Estadio Ciudad de México** — el Azteca — abre el Mundial 2026. **México** recibe a **Sudáfrica** en el partido inaugural, en una repetición sorpresa del partido inaugural del Mundial 2010 (Sudáfrica vs México, también un 11 de junio, hace exactamente 16 años).
 
 ## Lo que está en juego
 
@@ -362,48 +375,55 @@ El partido inaugural arranca con tres datos para la historia:
 
 1. **El Estadio Azteca acoge su tercer Mundial** (1970, 1986, 2026). Es el primer estadio del mundo en lograrlo.
 2. **Es el primer partido del torneo expandido a 48 selecciones**.
-3. **México afronta el reto de no quedar en grupos** — algo que no le pasa desde 1978.
+3. **Es la primera vez que dos selecciones se reencuentran en partido inaugural** en dos Mundiales distintos (2010 y 2026).
 
 ## Cómo llega México
 
-Javier Aguirre, en su tercer Mundial al frente de la selección, ha trabajado tres pilares ofensivos: **Edson Álvarez** como ancla, **Hirving Lozano** como cerebro y **Santiago Giménez** como '9' fijo.
+**Javier "El Vasco" Aguirre** dirige al *Tri* en su tercer Mundial como seleccionador. El 12 de mayo de 2026 anunció la prelista de 55 jugadores, con **Edson Álvarez** confirmado como capitán. La lista definitiva de 26 — la oficial del Mundial — se anuncia en la semana del torneo.
 
-La preocupación es la defensa. Sin Néstor Araujo (lesión larga) ni Héctor Moreno (retirado), Aguirre ha construido pareja con Johan Vásquez y César Montes, dos centrales potentes pero con poca química de torneo.
+Algunos puntos de la prelista publicada en mayo de 2026:
+
+- **Edson Álvarez** (West Ham), capitán: ancla del mediocampo.
+- **Santiago Giménez** (Milan): referencia ofensiva.
+- **Raúl Jiménez**: a sus 35 años, viajará para su tercer Mundial.
+
+Para el contexto deportivo previo, el *Tri* viene de un ciclo irregular: tras la eliminación en fase de grupos de Qatar 2022 — la primera vez desde 1978 que no pasaba —, Aguirre tomó el relevo con el mandato de cambiar la cara. La preparación pre-Mundial ha sido en altura (CDMX) para optimizar la ventaja del Azteca.
+
+## Cómo llega Sudáfrica
+
+**Hugo Broos**, técnico belga, dirige a *Bafana Bafana* desde 2021. Sudáfrica regresa a un Mundial **16 años después** — su última participación fue **Sudáfrica 2010** como anfitrión.
+
+Llegan tras superar una eliminatoria africana competida y se han mostrado sólidos en amistosos recientes. **No son un equipo a tomar a broma**: el sorteo les colocó como segundo cabeza de bombo 2 más alto del grupo, junto a **Corea del Sur** y **República Checa**.
 
 ## El factor Azteca
 
-Jugar en el Azteca da a México una ventaja real, no folclórica:
+Jugar en el Azteca da a México una ventaja real:
 
-- **Altitud de 2.240 m**: penaliza a selecciones no aclimatadas. Los rivales europeos suelen quedarse 7-10 días en CDMX antes del partido para minimizar el impacto.
-- **Capacidad**: 87.000 espectadores, 95% mexicanos.
-- **Récord histórico**: México no pierde en el Azteca en partido oficial desde **2001**. Veinticinco años de invicto.
+- **Altitud de 2.240 m**: penaliza a selecciones no aclimatadas. Los rivales suelen quedarse 7-10 días en CDMX antes del partido para minimizar el impacto.
+- **Capacidad**: 83.000 espectadores, una masa abrumadoramente mexicana.
+- **Récord histórico**: en partidos oficiales de eliminatorias / Copa Oro, México arrastra un dominio histórico de décadas en el Azteca.
+- **Tradición de aperturas**: el Azteca ya inauguró Mundial 70 y Mundial 86 — y en ambos casos México ganó su partido inaugural (1-0 a la URSS en el 70, 2-1 a Bélgica en el 86).
 
 ## Las claves del partido
 
-Tres claves que va a vigilar el equipo técnico:
+Tres puntos que va a vigilar el cuerpo técnico:
 
 1. **Primera mitad**: México tiene que aprovechar el factor altitud. Presión alta los 25 primeros minutos.
-2. **Segunda parte**: dosificar. Es el primer partido de un torneo largo.
-3. **Balón parado**: el rival ofensivamente fuerte va a buscar las jugadas a balón parado — México es vulnerable ahí en los últimos amistosos.
+2. **Segunda parte**: dosificar. Es el primer partido de un torneo largo y un mal resultado lastra el grupo entero.
+3. **Balón parado**: el plan B de Sudáfrica suele incluir balones largos al área. Los centrales mexicanos van a sufrir si no leen bien las segundas jugadas.
 
 ## Cuándo y dónde verlo
 
 - **Fecha**: jueves 11 de junio de 2026.
-- **Hora**: 19:00 (hora de CDMX) / 20:00 hora del Este USA / 03:00 del viernes (hora española).
-- **Sede**: Estadio Azteca, Ciudad de México.
-- **Transmisión TV**: Televisa Univision (USA), Canal 5 (México), Telemundo, TUDN (USA), BBC/ITV (Reino Unido), TVE (España, por confirmar).
+- **Hora**: 13:00 (hora del centro de México) / 15:00 ET / 12:00 PT / 21:00 hora peninsular española.
+- **Sede**: Estadio Ciudad de México (Azteca), Ciudad de México.
+- **Ceremonia inaugural**: previa al pitido inicial, con un cartel musical encabezado por **Maná**, **Alejandro Fernández**, **Belinda**, **Lila Downs**, **Los Ángeles Azules**, **Tyla**, **J Balvin** y **Danny Ocean**.
 
 ## Cómo predecirlo en tu quiniela
 
-Si vas a jugar la **quiniela del Mundial 2026**, este partido es el primero de los **104 marcadores** que tienes que predecir. Puedes apostar por:
+Si vas a jugar la **quiniela del Mundial 2026**, este partido es el primero de los **104 marcadores** que tienes que predecir. Por marcador exacto sumas **5 puntos**; por acertar solo el ganador, **2 puntos**; por predecir un goleador del partido, **4 puntos**.
 
-- Resultado exacto (marcador 90 min)
-- Ganador del partido
-- Goleador (qué jugador marca)
-
-[Crea tu quiniela gratis](/login?next=%2Fonboarding) y arranca con el inaugural. Revisa también la [ficha de México](/equipos/MEX) y el [calendario completo](/calendario) para no perderte ningún partido.
-
-> "El Azteca es como volver a casa. La afición sabe lo que tiene que hacer. Nosotros sabemos lo que tenemos que hacer." — Javier Aguirre, en rueda de prensa pre-Mundial.`,
+[Crea tu quiniela gratis](/login?next=%2Fonboarding) y arranca con el inaugural. Revisa también la [ficha de México](/equipos/MEX), la [ficha de Sudáfrica](/equipos/RSA) y el [calendario completo](/calendario).`,
   },
   {
     slug: "como-funciona-quiniela-mundial-amigos-2026",
@@ -432,7 +452,7 @@ Una app web (también funciona como app móvil tras "Añadir a pantalla de inici
 - **Apostar por la Bota de Oro** (máximo goleador del torneo).
 - **Predecir los 104 marcadores** partido a partido.
 - **Elegir goleadores** por partido.
-- Responder a **predicciones especiales** ("¿habrá tanda de penales en cuartos?").
+- Responder a **predicciones especiales** (preguntas que define el admin, tipo "¿llegará alguna selección africana a semis?").
 
 Cada categoría tiene sus puntos. Conforme se juegan los partidos, los puntos se suman automáticamente. El ranking se actualiza en vivo.
 
@@ -441,25 +461,35 @@ Cada categoría tiene sus puntos. Conforme se juegan los partidos, los puntos se
 Tres pasos:
 
 1. **Crea tu cuenta gratis** desde [aquí](/login?next=%2Fonboarding). Solo necesitas email — se te envía un magic link.
-2. **Crea una quiniela privada** desde la sección Mi Quiniela. Recibes un **código de 4 dígitos** y un enlace.
-3. **Comparte el código o el enlace** con tu peña. Pueden unirse hasta 100 amigos por quiniela.
+2. **Crea una quiniela privada** desde la sección Mi Quiniela. Recibes un **código de 4 dígitos** y un enlace de invitación.
+3. **Comparte el código o el enlace** con tu peña. Pueden unirse todos tus amigos al instante.
 
-Cada usuario puede **crear o pertenecer a 5 quinielas privadas**, además de la **Quiniela Pública** (siempre activa, con todos los usuarios de la app).
+Cada usuario puede **pertenecer a 5 quinielas privadas** (creadas por él o por amigos), además de la **Quiniela Pública** (siempre activa, con todos los usuarios de la app).
 
 ## Cómo se puntúa
 
-El sistema de puntos es transparente y configurable (en cada quiniela, el creador puede ajustar los pesos). Por defecto:
+El sistema de puntos es transparente y configurable: en cada quiniela, el admin puede ajustar los pesos desde \`/admin/reglas\`. **Por defecto**:
 
 | Categoría | Puntos |
 |-----------|--------|
-| Posición exacta en grupo | 3 pts/pos |
-| 1º+2º correctos (orden distinto) | 2 pts |
-| Bracket — clasificado correcto por ronda | 2/4/6/8/12 (R32 → final) |
-| Bota de Oro (goleador exacto) | 12 pts |
-| Marcador exacto de partido | 5 pts |
-| Resultado correcto (ganador, sin marcador) | 2 pts |
-| Goleador de partido | 3 pts |
-| Predicción especial (varía) | 3-8 pts |
+| Posición exacta de una selección en grupo | 3 pts |
+| Posición adyacente (±1) | 1 pt |
+| Bonus: aciertas los 2 que pasan, aunque cambien de orden | 1 pt |
+| Pasa a octavos (R16) | 2 pts/equipo |
+| Pasa a cuartos | 4 pts |
+| Pasa a semifinales | 7 pts |
+| Pasa a la final | 10 pts |
+| Acertar al campeón | 20 pts |
+| Bota de Oro (goleador exacto del torneo) | 15 pts |
+| Bota de Oro top-3 | 5 pts |
+| Bota de Oro top-5 | 2 pts |
+| Marcador exacto de un partido | 5 pts |
+| Resultado correcto (ganador / empate, sin marcador) | 2 pts |
+| Goleador de partido | 4 pts |
+| Bonus: tu goleador anota el primer gol | 2 pts |
+| Predicciones especiales | 3-8 pts según pregunta |
+
+En eliminatorias, el cálculo del marcador es ligeramente distinto: aciertas el clasificado por penaltis aunque no aciertes los 90' (3 pts), o aciertas el marcador a 90' (5 pts), o aciertas que va a penaltis aunque no aciertes el marcador (2 pts).
 
 ## Cómo es el ranking
 
@@ -474,7 +504,7 @@ Cada quiniela tiene **su propio ranking en vivo**. Puedes ver:
 
 Las predicciones tienen **deadlines escalonados**:
 
-- **Posiciones de grupo, bracket y Bota de Oro**: cierran al inicio del primer partido del Mundial (11 de junio, 19:00 hora México).
+- **Posiciones de grupo, bracket y Bota de Oro**: cierran al inicio del primer partido del Mundial (11 de junio, 13:00 hora del centro de México).
 - **Marcadores partido a partido**: cierran al kickoff de cada partido individual.
 - **Goleadores por partido**: igual, al kickoff de cada partido.
 
@@ -487,8 +517,6 @@ Sí. **Cero coste**. Cero suscripción, cero anuncios. Es un proyecto sin ánimo
 ## Cómo empezar
 
 [Empieza tu quiniela del Mundial 2026 aquí](/login?next=%2Fonboarding). En 30 segundos tienes tu cuenta y puedes empezar a invitar a tu peña.
-
-> "El propósito es eliminar todo el dolor logístico de hacer una quiniela del Mundial. La parte divertida — competir entre amigos — queda intacta."
 
 Si necesitas resolver dudas concretas, mira nuestras [preguntas frecuentes](/faq) o nuestro [contacto](/contacto).`,
   },
