@@ -28,6 +28,582 @@ export type SeedArticle = {
 };
 
 export const SEED_NEWS: SeedArticle[] = [
+  // ─────────────────────────── CONVOCATORIAS (verificadas mayo 2026) ───────────────────────────
+  {
+    slug: "convocatoria-bosnia-herzegovina-mundial-2026-dzeko",
+    title:
+      "Convocatoria de Bosnia y Herzegovina: Edin Džeko, capitán a los 40, lidera la primera lista del Mundial 2026",
+    seoTitle: "Convocatoria Bosnia Mundial 2026 · Lista de Sergej Barbarez",
+    excerpt:
+      "Bosnia y Herzegovina fue la primera selección europea en publicar su lista de 26 para el Mundial 2026. Edin Džeko, a sus 40 años, vuelve como capitán bajo la dirección de Sergej Barbarez.",
+    category: "convocatoria",
+    tags: ["Bosnia", "Edin Džeko", "Sergej Barbarez", "Mundial 2026"],
+    relatedTeamCodes: ["BIH"],
+    daysAgo: 8,
+    body: `**Bosnia y Herzegovina** se adelantó a todas las federaciones europeas y, el **11 de mayo de 2026**, se convirtió en la **primera selección de la UEFA en confirmar su lista de 26 jugadores** para el Mundial 2026. El seleccionador **Sergej Barbarez** apostó por un grupo que combina experiencia y juventud, con un veterano absoluto al frente: **Edin Džeko**, capitán a sus **40 años**.
+
+## Džeko, capitán y bandera
+
+El delantero del **Schalke 04** disputará su primer Mundial. Bosnia clasificó por primera vez en su historia a Brasil 2014, donde quedó eliminada en fase de grupos; ahora, doce años después, regresa al máximo escenario con Džeko aún liderando el ataque. Es el máximo goleador histórico de la selección y, con 40 años, llega como referente generacional.
+
+## El núcleo del equipo
+
+Más allá de Džeko, la lista de Barbarez se sostiene sobre tres pilares:
+
+- **Defensa**: **Sead Kolašinac** (con experiencia europea), **Amar Dedić** (Benfica) y **Nikola Katić** marcan la línea atrás. El portero titular será **Nikola Vasilj** (Hamburgo).
+- **Centro del campo**: doble pivote con **Benjamin Tahirović** (Ajax) y **Armin Gigović** (Spartak Moscú). **Amir Hadžiahmetović** (Beşiktaş) aporta visión.
+- **Ataque**: con Džeko acompañado por **Ermedin Demirović** (VfB Stuttgart) y **Haris Tabaković** (Borussia Mönchengladbach). El joven **Samed Baždar** (Jagiellonia) entra como refresco.
+
+Puedes ver la plantilla completa con dorsales y posiciones en la [ficha de Bosnia y Herzegovina](/equipos/BIH).
+
+## El Grupo B y el calendario
+
+Bosnia comparte el **Grupo B** con tres rivales que no permiten dormirse: **Canadá** (anfitriona), **Catar** (con la mano de Julen Lopetegui en el banquillo) y **Suiza** (un clásico de las eliminatorias europeas). El **debut está fijado para el 12 de junio en Toronto**, frente al anfitrión canadiense.
+
+Mira la [composición completa del Grupo B](/grupos) y el [calendario del torneo](/calendario) para no perderte ningún partido.
+
+## Lo que está en juego
+
+Bosnia llega como cuarto cabeza de bombo 2 más alto, lo que la convierte en una candidata real al segundo puesto del grupo y a colarse entre los **8 mejores terceros** que pasan a dieciseisavos en este nuevo formato a 48 selecciones. Para una federación que volvió a clasificar a un Mundial **12 años después de su único antecedente**, el listón no es ganar — es competir hasta el último partido de grupos.
+
+Si quieres predecir cuánto le da Bosnia para llegar a octavos en tu quiniela, [crea tu cuenta gratis](/login?next=%2Fonboarding) y arma tu bracket antes del 11 de junio.`,
+  },
+  {
+    slug: "convocatoria-suecia-mundial-2026-potter-isak-gyokeres",
+    title:
+      "Convocatoria de Suecia para el Mundial 2026: Isak y Gyökeres lideran la lista de Graham Potter",
+    seoTitle: "Convocatoria Suecia Mundial 2026 · Lista de Graham Potter",
+    excerpt:
+      "Bajo la dirección del inglés Graham Potter, Suecia presentó su lista de 26 para el Mundial 2026 con Alexander Isak y Viktor Gyökeres como punta de lanza. Ausencias polémicas: Hugo Larsson y Roony Bardghji.",
+    category: "convocatoria",
+    tags: ["Suecia", "Alexander Isak", "Viktor Gyökeres", "Graham Potter"],
+    relatedTeamCodes: ["SWE"],
+    daysAgo: 7,
+    body: `**Suecia** entregó el **12 de mayo de 2026** su lista de 26 jugadores para el Mundial 2026. Su seleccionador, el inglés **Graham Potter** — fichado por la Federación Sueca tras su experiencia en Brighton, Chelsea y West Ham —, optó por un grupo encabezado por **Alexander Isak** (Liverpool) y **Viktor Gyökeres** (Arsenal), dos de los delanteros más en forma de Europa.
+
+## La pareja goleadora del momento
+
+Pocos equipos del Mundial llevan dos '9' del nivel actual de Suecia:
+
+- **Alexander Isak**, recién traspasado al Liverpool, viene de una temporada explosiva en la Premier League. A los 26 años, llega al Mundial en su techo físico y de confianza.
+- **Viktor Gyökeres**, fichaje del Arsenal el verano pasado, fue máximo goleador del Sporting CP antes de dar el salto a Inglaterra. Letal de espaldas, perfil más físico que Isak.
+
+La duda de Potter: jugarán juntos o se alternarán. En las clasificatorias el inglés probó el dos-puntas con buenos resultados. Es probable que repita en el Mundial.
+
+## El núcleo del equipo
+
+Suecia apuesta por un esquema con piezas conocidas:
+
+- **Portería**: **Viktor Johansson** (Birmingham) como titular.
+- **Defensa**: **Victor Lindelöf** (Manchester United) y **Isak Hien** (Atalanta) son los referentes. **Gabriel Gudmundsson** (Leeds) en banda izquierda.
+- **Mediocampo**: **Lucas Bergvall** (Tottenham, 20 años) es el joven a seguir. **Mattias Svanberg** (Wolfsburg) y **Hjalmar Ekdal** completan el centro.
+- **Banda**: **Anthony Elanga** (Newcastle) por la derecha. **Yasin Ayari** (Brighton) como recambio.
+
+La plantilla completa con dorsales está en la [ficha de Suecia](/equipos/SWE).
+
+## Las ausencias polémicas
+
+Potter dejó fuera a dos nombres que parte de la prensa daba por seguros:
+
+- **Hugo Larsson** (Eintracht Frankfurt): el joven mediocentro era favorito a titular, pero quedó descartado en la última semana.
+- **Roony Bardghji** (Barcelona): el extremo de 19 años no entró pese a sus primeros minutos con el primer equipo culé.
+
+Algunas crónicas en Suecia calificaron las decisiones como conservadoras — *cobarde*, llegó a leerse en un editorial — y echaron en falta apuestas más jóvenes.
+
+## El Grupo F y el debut
+
+Suecia integra el **Grupo F** junto a **Países Bajos** (cabeza de serie), **Japón** y **Túnez**. El **debut será el 14 de junio frente a Túnez** en el **Estadio BBVA de Monterrey**.
+
+Mira la [composición del Grupo F](/grupos) y el [calendario del torneo](/calendario) para los horarios completos.
+
+## Lo que está en juego
+
+Suecia **no jugaba un Mundial desde 2018**, donde llegó a cuartos. La era post-Ibrahimović se cerró sin remplazo durante años; ahora, con Isak y Gyökeres en su mejor versión y con Potter como técnico, los suecos llegan con la lectura colectiva de "ahora o nunca". Su gran reto: superar a **Países Bajos** por el primer puesto del grupo, o exprimir al máximo el cruce con **Japón** para asegurar mínimo el tercer puesto y el pase como mejor tercero.
+
+Si quieres predecir hasta dónde llega Suecia, [crea tu quiniela gratis](/login?next=%2Fonboarding) y arma tu bracket antes del 11 de junio.`,
+  },
+  {
+    slug: "convocatoria-austria-mundial-2026-rangnick-alaba",
+    title:
+      "Convocatoria de Austria: Rangnick devuelve a Alaba y Arnautović al Mundial 28 años después",
+    seoTitle: "Convocatoria Austria Mundial 2026 · Lista de Ralf Rangnick",
+    excerpt:
+      "Austria vuelve a un Mundial 28 años después con David Alaba como capitán, Marko Arnautović como referencia ofensiva y Ralf Rangnick al mando. Comparte grupo con Argentina.",
+    category: "convocatoria",
+    tags: ["Austria", "Ralf Rangnick", "David Alaba", "Marko Arnautović"],
+    relatedTeamCodes: ["AUT"],
+    daysAgo: 6,
+    body: `**Austria** vuelve a un Mundial **28 años después** de Francia 1998 y lo hace de la mejor forma posible: con **Ralf Rangnick** dirigiendo, **David Alaba** como capitán y un grupo de jugadores en activo en cinco de las grandes ligas europeas. La lista oficial de 26 se hizo pública entre el 17 y el 18 de mayo de 2026.
+
+## Rangnick, la pieza clave
+
+El nombre del seleccionador es probablemente la mejor noticia para los aficionados austríacos. **Ralf Rangnick** — padre intelectual del *gegenpressing* moderno y ex técnico de RB Leipzig, Manchester United y otros — firmó por Austria en 2022 y desde entonces ha transformado por completo a *Das Team*. Su sello: presión alta, salida limpia desde atrás y verticalidad inmediata. El resultado: una **Eurocopa 2024 con paso a octavos como líder de grupo** por delante de Francia y Países Bajos.
+
+## El espinazo del equipo
+
+La lista de Rangnick combina experiencia veterana con jugadores en activo en clubes top:
+
+- **Portería**: **Alexander Schlager** (LASK) como titular.
+- **Defensa**: el capitán **David Alaba** (Real Madrid, 33 años) y **Kevin Danso** (Tottenham). Stefan Posch y Phillipp Mwene completan la línea.
+- **Mediocampo**: el corazón del equipo. **Marcel Sabitzer** (Borussia Dortmund), **Konrad Laimer** (Bayern Múnich), **Nicolas Seiwald** (RB Leipzig) y el regreso del experimentado **Xaver Schlager** dan presión y volumen. **Christoph Baumgartner** (RB Leipzig) y el joven **Paul Wanner** (Cesión a Heidenheim/Real Madrid) son las cartas creativas.
+- **Ataque**: **Marko Arnautović** (Estrella Roja Belgrado, 37 años) sigue siendo el referente del área. **Michael Gregoritsch** (Friburgo) y **Saša Kalajdžić** (Hoffenheim) completan el tridente de '9'.
+
+Mira la lista completa con dorsales en la [ficha de Austria](/equipos/AUT).
+
+## El Grupo J y el cruce con Argentina
+
+Austria está en el **Grupo J** junto a **Argentina** (vigente campeona), **Argelia** y **Jordania**. El sorteo no fue benévolo: pelear el segundo puesto del grupo es realista, pero requiere puntuar ante una potencia que defiende título.
+
+El **debut es el miércoles 17 de junio frente a Jordania**. Después llega Argentina y, para cerrar la fase, Argelia. Mira la [composición del Grupo J](/grupos) y el [calendario del torneo](/calendario).
+
+## Lo que está en juego
+
+Para una federación que **lleva 28 años fuera de un Mundial**, el mero hecho de clasificar ya fue éxito. Pero con Rangnick al mando, la generación 1990-1995 (Alaba, Arnautović, Sabitzer) en su última oportunidad y los jóvenes como Laimer y Wanner asomando, **Austria llega para competir**. El objetivo realista: pasar como segunda y, en dieciseisavos, jugar libre de presión contra un rival potente.
+
+Si quieres predecir hasta dónde llega Austria en tu quiniela, [crea tu cuenta gratis](/login?next=%2Fonboarding) y compite con tus amigos.`,
+  },
+  {
+    slug: "convocatoria-francia-mundial-2026-deschamps-mbappe",
+    title:
+      "Convocatoria de Francia: Mbappé al frente, Dembélé como Balón de Oro y la ausencia de Camavinga",
+    seoTitle: "Convocatoria Francia Mundial 2026 · Lista de Didier Deschamps",
+    excerpt:
+      "Didier Deschamps presentó la lista oficial de 26 para el Mundial 2026 sin prelista de 55. Mbappé sigue como capitán, Dembélé como Balón de Oro vigente y Eduardo Camavinga es la gran ausencia.",
+    category: "convocatoria",
+    tags: ["Francia", "Mbappé", "Dembélé", "Deschamps", "Camavinga"],
+    relatedTeamCodes: ["FRA"],
+    daysAgo: 5,
+    body: `**Francia** anunció el **14 de mayo de 2026** la lista oficial de 26 jugadores para el Mundial 2026. **Didier Deschamps** rompió con la tradición — no hubo prelista de 55 — y publicó directamente a los 26 elegidos. **Kylian Mbappé** sigue como capitán y **Ousmane Dembélé** llega como **Balón de Oro vigente**. La gran ausencia: **Eduardo Camavinga**.
+
+## Mbappé sigue siendo el eje
+
+A sus **27 años**, Mbappé vive su mejor momento futbolístico tras una primera temporada completa en el Real Madrid coronada con título de Liga. Llega al Mundial como capitán, referencia ofensiva absoluta y favorito a la **Bota de Oro 2026** según las casas de apuestas.
+
+## Dembélé, el Balón de Oro
+
+**Ousmane Dembélé** llega al Mundial **como Balón de Oro en activo**, premio que conquistó tras una temporada brillante con el PSG. Para Francia, tener a un Balón de Oro en activo es un argumento más para entrar al torneo entre las cuatro favoritas — junto con Argentina, España y Brasil.
+
+## El núcleo del equipo
+
+La lista mezcla campeones de Qatar 2022 con apuestas jóvenes:
+
+- **Portería**: **Mike Maignan** (Milan), **Brice Samba** (Rennes/Lens) y **Robin Risser** (Estrasburgo). Maignan parte como #1 a pesar de llevar el dorsal 16 — Samba es la sorpresa.
+- **Defensa**: **William Saliba** (Arsenal), **Dayot Upamecano** (Bayern), **Ibrahima Konaté** (Liverpool) y **Jules Koundé** (Barcelona) forman el cuerpo central más sólido del torneo. Lucas Hernández y Théo Hernandez en banda izquierda; Malo Gusto en la derecha.
+- **Mediocampo**: **Aurélien Tchouaméni** (Real Madrid) como mediocentro defensivo, **Adrien Rabiot** (AC Milan), **Warren Zaïre-Emery** (PSG) y un veteranísimo **N'Golo Kanté** (Fenerbahçe). **Manu Koné** (Roma) es la apuesta de equilibrio.
+- **Ataque**: además de Mbappé y Dembélé, Deschamps lleva a **Michael Olise** (Bayern), **Désiré Doué** (PSG), **Bradley Barcola** (PSG), **Rayan Cherki** (Manchester City) y **Marcus Thuram** (Inter). Jean-Philippe Mateta cierra el lote como '9' de área.
+
+Mira la lista completa con dorsales en la [ficha de Francia](/equipos/FRA).
+
+## La gran ausencia: Camavinga
+
+**Eduardo Camavinga** se queda fuera del Mundial pese a ser titular asiduo del Real Madrid en otras temporadas. Deschamps explicó la decisión en rueda de prensa: *"sale de una temporada difícil en la que ha jugado menos y ha tenido lesiones"*. Es la sorpresa negativa de la lista. Su sitio lo ocupa **Manu Koné**, perfil más posicional que técnico.
+
+## El Grupo I y el cruce con Haaland
+
+Francia cayó en uno de los grupos más mediáticos del torneo: el **Grupo I** junto a **Senegal**, **Irak** y, sobre todo, **Noruega** — es decir, **Erling Haaland**. El cruce Mbappé vs Haaland en fase de grupos es el plato fuerte del primer fin de semana del Mundial.
+
+Mira la [composición del Grupo I](/grupos) y el [calendario del torneo](/calendario).
+
+## Lo que está en juego
+
+Francia tiene **dos cuentas pendientes**: la **final perdida de Qatar 2022** y los **cuartos de Euro 2024**. Con la plantilla más profunda del torneo en ataque y la línea defensiva más cualificada, parten como una de las cuatro favoritas al título. El reto histórico: lograr lo que solo Italia (1934-38) y Brasil (1958-62) han conseguido — *no*, defender un título no, eso lo intenta Argentina —, sino **levantar el segundo Mundial en tres ediciones** tras 2018.
+
+Para predecir si Francia llega a la final del MetLife, [crea tu quiniela gratis](/login?next=%2Fonboarding).`,
+  },
+  {
+    slug: "convocatoria-nueva-zelanda-mundial-2026-chris-wood-bazeley",
+    title:
+      "Convocatoria de Nueva Zelanda: Chris Wood y Tommy Smith repiten Mundial 16 años después",
+    seoTitle: "Convocatoria Nueva Zelanda Mundial 2026 · Lista de Darren Bazeley",
+    excerpt:
+      "Darren Bazeley presenta la lista de 26 de los All Whites para el Mundial 2026. Chris Wood y Tommy Smith se convierten en los primeros neozelandeses en disputar dos Mundiales.",
+    category: "convocatoria",
+    tags: ["Nueva Zelanda", "Chris Wood", "Darren Bazeley", "All Whites"],
+    relatedTeamCodes: ["NZL"],
+    daysAgo: 5,
+    body: `**Nueva Zelanda** anunció el **14 de mayo de 2026** la convocatoria oficial de 26 jugadores para el Mundial 2026 desde Auckland. El seleccionador **Darren Bazeley** se saltó la prelista ampliada y fue directamente a la lista definitiva. La gran historia: **Chris Wood y Tommy Smith** se convierten en los **primeros neozelandeses de la historia en disputar dos Mundiales** — fueron parte de la generación de Sudáfrica 2010.
+
+## Chris Wood, capitán y referencia
+
+El delantero del **Nottingham Forest** llega como **capitán** y goleador absoluto de los *All Whites*. Pese a una temporada en la Premier League marcada por **lesiones recurrentes**, Wood sigue siendo la principal amenaza ofensiva del equipo. A sus 34 años, es muy probable que sea su último Mundial.
+
+## Tommy Smith, el récord más curioso
+
+El defensa **Tommy Smith** (36 años) llega al Mundial militando en un club de la **quinta división inglesa**. Es uno de los datos más llamativos del torneo: un seleccionado mundialista que juega en la National League South. Su valor en la selección es por experiencia y por liderazgo de vestuario — fue capitán de Nueva Zelanda durante años antes de pasar el brazalete a Wood.
+
+## El núcleo del equipo
+
+La plantilla mezcla jugadores en ligas competitivas:
+
+- **Portería**: **Max Crocombe** (Burton Albion) parte como titular. Le acompañan **Alex Paulsen** (Bournemouth, joven a seguir) y **Michael Woud**.
+- **Defensa**: **Michael Boxall** (Minnesota United, MLS), **Finn Surman** y **Tyler Bindon** (Reading). **Liberato Cacace** (Empoli) en banda izquierda.
+- **Mediocampo**: **Joe Bell** (Auckland FC), **Marko Stamenić** (FCSB) y **Matthew Garbett** (NAC Breda). El veterano **Alex Rufer** (Wellington Phoenix) aporta jerarquía.
+- **Ataque**: además de Wood, **Elijah Just** (Aarhus), **Ben Old** (Saint-Étienne), **Ben Waine** y **Kosta Barbarouses** (Auckland FC).
+
+Mira la lista completa con dorsales en la [ficha de Nueva Zelanda](/equipos/NZL).
+
+## El Grupo G: el sorteo más duro de la OFC
+
+A Nueva Zelanda le tocó uno de los grupos más exigentes del bombo 4: el **Grupo G** junto a **Bélgica** (con De Bruyne, Lukaku y Courtois), **Egipto** (con Salah) e **Irán**. Tres rivales con plantillas europeas muy superiores al promedio de bombo 1-2.
+
+Mira la [composición del Grupo G](/grupos) y el [calendario del torneo](/calendario).
+
+## Lo que está en juego
+
+Nueva Zelanda **no gana un partido en un Mundial desde 1982** (cuando ni siquiera era el formato actual de Copa). En **Sudáfrica 2010** firmaron uno de los hitos más curiosos de la historia: **fueron el único equipo invicto del torneo** (tres empates) pero quedaron eliminados en fase de grupos. La hazaña de los *All Whites* es ahora intentar **ganar su primer partido oficial** en un Mundial moderno.
+
+Realismo: el grupo es muy exigente. Pero el formato a 48 abre la puerta a que un tercero con 3-4 puntos pase a dieciseisavos. Ese es el objetivo realista de Bazeley.
+
+Para predecir si los *All Whites* dan la sorpresa, [crea tu quiniela gratis](/login?next=%2Fonboarding) y arma tu bracket antes del 11 de junio.`,
+  },
+  {
+    slug: "convocatoria-belgica-mundial-2026-rudi-garcia-de-bruyne",
+    title:
+      "Convocatoria de Bélgica: Rudi García deja a Tielemans la capitanía y arma una lista con De Bruyne, Lukaku y Courtois",
+    seoTitle: "Convocatoria Bélgica Mundial 2026 · Lista de Rudi García",
+    excerpt:
+      "Rudi García anunció la lista oficial de 26 de Bélgica para el Mundial 2026. Tielemans sustituye a De Bruyne como capitán y los *Diables Rouges* llegan con la última oportunidad de su generación dorada.",
+    category: "convocatoria",
+    tags: ["Bélgica", "Rudi García", "De Bruyne", "Lukaku", "Courtois", "Tielemans"],
+    relatedTeamCodes: ["BEL"],
+    daysAgo: 4,
+    body: `**Bélgica** publicó el **15 de mayo de 2026** la lista de 26 jugadores para el Mundial 2026. El seleccionador francés **Rudi García** — que tomó las riendas de los *Diables Rouges* en enero de 2025 tras la salida de Domenico Tedesco — presentó una convocatoria con dos noticias: la **continuidad de la generación dorada** (Courtois, De Bruyne, Lukaku, Doku) y el **cambio de capitán**: **Youri Tielemans** toma el brazalete.
+
+## El cambio de capitán
+
+La gran noticia política de la convocatoria es que **Kevin De Bruyne deja de ser capitán** de Bélgica. El centrocampista del Nápoles, brazalete histórico tras la retirada de Eden Hazard, cede el liderazgo a **Youri Tielemans** (Aston Villa). Rudi García explicó la decisión como un movimiento técnico — Tielemans tiene más presencia vocal en vestuario — y De Bruyne lo asumió sin polémica.
+
+## El núcleo dorado, una vez más
+
+Bélgica llega a su **tercer Mundial consecutivo** con el núcleo de la generación que llegó a semifinales en Rusia 2018 todavía en activo:
+
+- **Portería**: **Thibaut Courtois** (Real Madrid). El portero de los últimos diez años de la *Roja*. **Senne Lammens** (Manchester United) y **Mike Penders** (Estrasburgo) cierran el trío.
+- **Defensa**: **Timothy Castagne** (Fulham), **Thomas Meunier**, **Koni De Winter** (Genoa) y **Joaquin Seys** (Brujas). La zona más débil del equipo según la prensa belga.
+- **Mediocampo**: **Kevin De Bruyne** (Nápoles) sigue siendo el organizador. **Youri Tielemans** como capitán, **Amadou Onana** (Aston Villa) como motor, **Nicolas Raskin** (Rangers), **Hans Vanaken** (Brujas) y **Charles De Ketelaere** (Atalanta) completan la rotación.
+- **Ataque**: **Romelu Lukaku** (Nápoles) como '9', **Jérémy Doku** (Manchester City), **Leandro Trossard** (Arsenal), **Dodi Lukébakio** (Benfica) y **Alexis Saelemaekers** (Milan). Cierran **Matias Fernández-Pardo** (Lille) y **Diego Moreira** (Estrasburgo) como las apuestas jóvenes.
+
+Mira la lista completa con dorsales en la [ficha de Bélgica](/equipos/BEL).
+
+## El Grupo G y el cruce con Salah
+
+A Bélgica le tocó el **Grupo G** junto a **Egipto** (Mohamed Salah es el gran reclamo del cruce), **Irán** y **Nueva Zelanda**. El sorteo es razonablemente benévolo — Bélgica parte como favorita clara al primer puesto, pero el cruce con Egipto puede ser una piedra en el zapato si los *Faraones* mantienen el nivel mostrado en las eliminatorias.
+
+Mira la [composición del Grupo G](/grupos) y el [calendario del torneo](/calendario).
+
+## La última oportunidad de una generación
+
+Bélgica llega al Mundial **probablemente la última con su generación dorada al completo**. Courtois (33), De Bruyne (35), Lukaku (33), Witsel (ausente esta vez por edad)… los nombres que llevaron a los *Diables* a semifinales en 2018 y cuartos en 2022 están en el final del ciclo. **2026 es su última bala**.
+
+El reto: superar los **cuartos** de Qatar (perdieron en fase de grupos en 2022 pero la generación dorada llegó a cuartos en Brasil 2014 y semifinales en Rusia 2018). Si Bélgica vuelve a quedarse en cuartos, el ciclo se cerrará sin el premio mayor.
+
+Para predecir si los *Diables Rouges* llegan por fin a una final, [crea tu quiniela gratis](/login?next=%2Fonboarding).`,
+  },
+  {
+    slug: "convocatoria-japon-mundial-2026-moriyasu-kubo-mitoma-lesion",
+    title:
+      "Convocatoria de Japón para el Mundial 2026: Moriyasu pierde a Mitoma y Minamino por lesión",
+    seoTitle: "Convocatoria Japón Mundial 2026 · Lista de Moriyasu sin Mitoma",
+    excerpt:
+      "Hajime Moriyasu publicó la lista de 26 de Japón para el Mundial 2026 con dos bajas dolorosas por lesión: Kaoru Mitoma y Takumi Minamino. Takefusa Kubo asume el liderazgo creativo.",
+    category: "convocatoria",
+    tags: ["Japón", "Kaoru Mitoma", "Takefusa Kubo", "Moriyasu", "Lesión"],
+    relatedTeamCodes: ["JPN"],
+    daysAgo: 4,
+    body: `**Japón** publicó el **15 de mayo de 2026** su lista oficial de 26 jugadores para el Mundial 2026. El seleccionador **Hajime Moriyasu** — que repite Mundial tras Qatar 2022 — recibió el anuncio entre lágrimas: dos de sus estrellas, **Kaoru Mitoma** (Brighton) y **Takumi Minamino** (Mónaco), se quedan fuera por lesión. **Takefusa Kubo** (Real Sociedad) hereda el liderazgo creativo.
+
+## Las dos bajas que duelen
+
+La semana anterior al anuncio, **Mitoma sufrió una lesión muscular en el isquiotibial** durante el partido del Brighton contra el Wolves. El parte médico cerró cualquier posibilidad de llegar a tiempo al Mundial. **Minamino**, por su parte, arrastraba una lesión previa y no logró recuperarse.
+
+Moriyasu, en su rueda de prensa, no pudo contener la emoción: *"Es un golpe enorme para nosotros, y la lesión de Kaoru es simplemente triste"*. La decisión también limita el plan táctico del seleccionador: Mitoma era la principal salida por banda izquierda y Minamino su comodín entre líneas.
+
+## Kubo, el nuevo eje
+
+Sin Mitoma, **Takefusa Kubo** (Real Sociedad) asume todo el peso creativo. El extremo de 24 años llega a su segundo Mundial — fue parte de la generación de Qatar — pero esta vez como referencia indiscutible. Su forma con la Real Sociedad ha sido sobresaliente y muchas crónicas asiáticas hablan de "una selección de Kubo".
+
+## El núcleo del equipo
+
+- **Portería**: **Zion Suzuki** (Parma) sigue como titular tras un buen año en la Serie A. **Keisuke Ōsako** (Hiroshima) y **Tomoki Hayakawa** completan.
+- **Defensa**: **Takehiro Tomiyasu** (Arsenal) y **Ko Itakura** (Borussia Mönchengladbach) lideran la zaga. El veterano absoluto: **Yuto Nagatomo**, **39 años**, capitán de su quinta participación mundialista, lateral del FC Tokyo.
+- **Mediocampo**: **Wataru Endo** (Liverpool) ancla el centro del campo. **Daichi Kamada** (Crystal Palace), **Ritsu Dōan** (Friburgo) y **Ao Tanaka** (Leeds) aportan creación y llegada.
+- **Ataque**: además de Kubo, **Junya Itō** (Stade de Reims), **Ayase Ueda** (Feyenoord) y **Daizen Maeda** (Celtic). Kōki Ogawa y el joven Keisuke Gotō completan.
+
+Mira la lista completa con dorsales en la [ficha de Japón](/equipos/JPN).
+
+## El Grupo F y el calendario
+
+Japón está en el **Grupo F** junto a **Países Bajos**, **Suecia** y **Túnez**. Quizá el grupo más equilibrado del Mundial: los neerlandeses parten como favoritos, pero los suecos (Isak + Gyökeres), los japoneses (Kubo) y los tunecinos (defensa férrea) son rivales con argumentos.
+
+Mira la [composición del Grupo F](/grupos) y el [calendario del torneo](/calendario).
+
+## Lo que está en juego
+
+Japón **superó por primera vez en Qatar 2022** la fase de grupos como **líder** (ganó a Alemania y España), pero cayó en octavos contra Croacia en penaltis. Esta vez, el reto declarado por la federación japonesa es **llegar a cuartos** — algo que nunca ha hecho ninguna selección asiática (Corea del Sur 2002 fue semifinalista como anfitriona).
+
+Para predecir si Japón rompe la barrera de octavos, [crea tu quiniela gratis](/login?next=%2Fonboarding) y compite con tus amigos.`,
+  },
+  {
+    slug: "convocatoria-haiti-mundial-2026-migne-52-anos-despues",
+    title:
+      "Convocatoria de Haití para el Mundial 2026: Sébastien Migné convoca a una selección de la diáspora 52 años después",
+    seoTitle: "Convocatoria Haití Mundial 2026 · Lista de Sébastien Migné",
+    excerpt:
+      "Haití vuelve a un Mundial 52 años después con una plantilla de 26 jugadores casi íntegramente formada fuera del país. Sébastien Migné apuesta por Wilson Isidor, Bellegarde y la veteranía de Johny Placide.",
+    category: "convocatoria",
+    tags: ["Haití", "Sébastien Migné", "Wilson Isidor", "Diáspora"],
+    relatedTeamCodes: ["HAI"],
+    daysAgo: 4,
+    body: `**Haití** publicó el **15 de mayo de 2026** su lista de 26 jugadores para el Mundial 2026, su primera participación en una Copa del Mundo **desde Alemania 1974** — 52 años de ausencia. El seleccionador francés **Sébastien Migné** apostó por la continuidad: 22 de los 26 convocados son los que llevaron a *Les Grenadiers* a clasificar tras una eliminatoria épica en CONCACAF.
+
+## Una selección de la diáspora
+
+El dato más llamativo de la convocatoria de Migné: **solo un jugador milita en Haití**. Es **Woodensky Pierre** (Violette Athletic Club). Los otros 25 se formaron y juegan en clubes de Francia, Bélgica, Inglaterra, Portugal, Estados Unidos y Canadá. Es la lista más "diáspora" del Mundial — un retrato del fútbol haitiano contemporáneo, marcado por la inestabilidad política, la emigración y el papel decisivo de los entrenadores franceses como nexo con Europa.
+
+## El capitán: Johny Placide
+
+El portero **Johny Placide** (39 años) lleva el brazalete. Es el jugador con más partidos con la selección y un símbolo de continuidad — debutó en 2010, en plena reconstrucción del país tras el terremoto.
+
+## El núcleo del equipo
+
+- **Portería**: además de Placide, **Alexandre Pierre** y **Josué Duverger**. Trío experimentado.
+- **Defensa**: **Ricardo Adé** (Avs Futebol SAD), **Hannes Delcroix** (Anderlecht), **Carlens Arcus** (Auxerre, con una destacada temporada en Ligue 1) y **Jean-Kévin Duverne** (Brest). La zaga combina ligas francesas con belga y portuguesa.
+- **Mediocampo**: el corazón del equipo es **Jean-Ricner Bellegarde** (Wolverhampton, Premier League). Le acompañan **Danley Jean Jacques** y **Carl Sainté**.
+- **Ataque**: **Wilson Isidor** (Sunderland) es la principal noticia ofensiva. **Derrick Etienne Jr.** (Columbus Crew), **Frantzdy Pierrot**, **Duckens Nazon** y **Ruben Providence** (Spezia) completan la zona.
+
+Mira la lista completa con dorsales en la [ficha de Haití](/equipos/HAI).
+
+## Wilson Isidor, la historia del Mundial
+
+**Wilson Isidor** es la historia personal más interesante de la convocatoria. **Cambió su lealtad de Francia a Haití** en marzo de 2026, apenas dos meses antes del anuncio de la lista. Llegó tras una temporada en el **Sunderland** con **6 goles en la Premier League** y debutó con los *Grenadiers* marcando contra Islandia en su segundo partido. A sus 25 años, es la principal apuesta goleadora de Migné.
+
+## El Grupo C: el sorteo más duro
+
+A Haití le tocó probablemente el grupo más exigente del Mundial: el **Grupo C** junto a **Brasil**, **Marruecos** (semifinalista en Qatar 2022) y **Escocia**. Tres rivales con ranking superior y experiencia europea. El **debut será el 13 de junio en Boston frente a Escocia** — el partido más realista para puntuar.
+
+Mira la [composición del Grupo C](/grupos) y el [calendario del torneo](/calendario).
+
+## Lo que está en juego
+
+Migné fue claro al presentar la lista: **el objetivo es meterse como mínimo en eliminatorias**. Para Haití, una victoria o un empate ya sería gesta. **En 1974, en su único Mundial, perdió los tres partidos** (frente a Italia, Polonia y Argentina). Esta vez, con jugadores formados en Europa y una generación más fuerte, la apuesta es competir.
+
+El reto realista: ganar a Escocia el 13 de junio. Si lo logran, los ocho mejores terceros del formato a 48 son una vía concreta.
+
+Para predecir si Haití da la sorpresa, [crea tu quiniela gratis](/login?next=%2Fonboarding) y arma tu bracket antes del 11 de junio.`,
+  },
+  {
+    slug: "convocatoria-costa-marfil-mundial-2026-emerse-fae-kessie",
+    title:
+      "Convocatoria de Costa de Marfil: Emerse Faé lleva al campeón de África al Mundial 12 años después",
+    seoTitle: "Convocatoria Costa de Marfil Mundial 2026 · Lista de Emerse Faé",
+    excerpt:
+      "Los Elefantes de Costa de Marfil vuelven al Mundial 12 años después como campeones de África. Emerse Faé convoca a Franck Kessié como capitán y a Nicolas Pépé, Amad Diallo y la sorpresa Ange-Yoan Bonny.",
+    category: "convocatoria",
+    tags: [
+      "Costa de Marfil",
+      "Emerse Faé",
+      "Franck Kessié",
+      "Nicolas Pépé",
+      "AFCON 2023",
+    ],
+    relatedTeamCodes: ["CIV"],
+    daysAgo: 4,
+    body: `**Costa de Marfil** anunció el **15 de mayo de 2026** la lista de 26 jugadores para el Mundial 2026 — su **regreso al máximo escenario 12 años después** de Brasil 2014. El seleccionador **Emerse Faé**, héroe de la **Copa Africana de Naciones 2023** (que ganaron como anfitriones tras una eliminatoria de infarto), apostó por su núcleo de campeones del continente.
+
+## Faé, el técnico de la AFCON
+
+La historia de **Emerse Faé** es ya leyenda en Costa de Marfil. **Asumió la selección durante el AFCON 2023** tras la destitución de Jean-Louis Gasset en plena fase de grupos. Los *Elefantes*, eliminados sobre el papel, se rehicieron a su mando, ganaron el cruce de octavos por penaltis a Senegal y se proclamaron campeones del continente en la final ante Nigeria. Faé pasó de asistente a técnico campeón en menos de tres semanas y firmó su renovación como seleccionador para el Mundial.
+
+## Kessié, capitán y referencia
+
+El centrocampista **Franck Kessié** (Al-Ahli, antes Barça y Milan) sigue como **capitán**. A sus 29 años, es el jugador más influyente del equipo y el principal organizador. Su nivel en Arabia Saudí no ha hecho perder protagonismo a su rol con la selección.
+
+## El núcleo del equipo
+
+La plantilla mezcla campeones de África con apuestas europeas:
+
+- **Portería**: **Yahia Fofana** (Angers), **Alban Lafont** (Nantes) y **Mohamed Koné**. Trío sólido con bagaje en Ligue 1.
+- **Defensa**: **Wilfried Singo** (Mónaco), **Evan Ndicka** (Roma) y **Odilon Kossounou** (Atalanta) componen una de las zagas más físicas del Mundial. **Ghislain Konan** y **Emmanuel Agbadou** completan.
+- **Mediocampo**: además de Kessié, **Seko Fofana** (Al-Nassr), **Jean Michaël Seri** (Galatasaray) y **Ibrahim Sangaré** (Nottingham Forest). El joven **Christ Inao Oulaï** llega como apuesta de futuro.
+- **Ataque**: **Nicolas Pépé** (Villarreal) sigue siendo la principal referencia ofensiva por la derecha. **Amad Diallo** (Manchester United) por la izquierda — su gran salto del último año en la Premier. **Simon Adingra** (Brighton), **Elye Wahi** (Frankfurt) y **Evann Guessand** (Niza) completan el ataque.
+
+Mira la lista completa con dorsales en la [ficha de Costa de Marfil](/equipos/CIV).
+
+## La sorpresa: Ange-Yoan Bonny
+
+El delantero del **Inter de Milán** decidió defender a Costa de Marfil **horas antes del cierre del plazo FIFA**. Bonny había representado a Francia en categorías inferiores y la federación francesa lo seguía con atención, pero el jugador eligió al país de origen de sus padres. Es la mayor noticia del último cierre de listas: un '9' joven con minutos en Champions que va al Mundial con los *Elefantes*.
+
+## El Grupo E y el calendario
+
+A Costa de Marfil le tocó el **Grupo E** junto a **Alemania**, **Curazao** (debut absoluto en un Mundial) y **Ecuador**. Un sorteo razonablemente bueno: Curazao es el rival más débil del bombo 3 y Ecuador, aunque competitivo, no está al nivel de los grandes sudamericanos.
+
+Mira la [composición del Grupo E](/grupos) y el [calendario del torneo](/calendario).
+
+## Lo que está en juego
+
+Costa de Marfil **nunca ha pasado de la fase de grupos** en sus tres participaciones previas (2006, 2010, 2014) — y eso a pesar de tener generaciones brillantes con Drogba, Yaya Touré o Kalou. La generación actual, **campeona africana en activo**, tiene la oportunidad histórica de **romper la maldición de fase de grupos**. El objetivo no es ya estar — es pasar.
+
+Para predecir hasta dónde llegan los *Elefantes*, [crea tu quiniela gratis](/login?next=%2Fonboarding).`,
+  },
+  {
+    slug: "convocatoria-tunez-mundial-2026-lamouchi-khedira",
+    title:
+      "Convocatoria de Túnez: Sabri Lamouchi estrena ciclo en el Mundial 2026 con Rani Khedira como novedad",
+    seoTitle: "Convocatoria Túnez Mundial 2026 · Lista de Sabri Lamouchi",
+    excerpt:
+      "Túnez disputa su séptimo Mundial — tercero consecutivo — con un nuevo seleccionador (Sabri Lamouchi) y una novedad llamativa: Rani Khedira, hermano del campeón mundial 2014, debutó hace meses con los *Águilas de Cartago*.",
+    category: "convocatoria",
+    tags: ["Túnez", "Sabri Lamouchi", "Rani Khedira", "Ellyes Skhiri"],
+    relatedTeamCodes: ["TUN"],
+    daysAgo: 4,
+    body: `**Túnez** confirmó el **15 de mayo de 2026** su lista de 26 jugadores para el Mundial 2026 — su **séptima participación, tercera consecutiva**. El **nuevo seleccionador Sabri Lamouchi** (que asumió en enero, tras la destitución de Sami Trabelsi después de la eliminación en octavos del AFCON 2025) firmó una lista con peso de ligas europeas y una novedad llamativa: **Rani Khedira**.
+
+## Lamouchi, ciclo nuevo
+
+El nombramiento de **Sabri Lamouchi** en enero de 2026 fue casi una emergencia: Trabelsi salió tras la eliminación frente a Costa de Marfil en octavos de la Copa de África. Lamouchi, ex internacional francés con pasado en banquillos de Costa de Marfil y Stade Rennais, llegó con apenas cinco meses para preparar el Mundial. Su lista refleja el contexto: continuidad con el núcleo de Qatar 2022 más alguna incorporación.
+
+## La novedad: Rani Khedira
+
+El centrocampista del **Union Berlin** llegó a Túnez por una ruta curiosa. **Rani Khedira** es hermano de **Sami Khedira**, campeón del mundo con **Alemania en Brasil 2014**. Madre tunecina, padre alemán; Rani había rechazado durante años las llamadas tunecinas y prefirió jugar en categorías inferiores con Alemania. En **marzo de 2026 cambió de federación** ante FIFA y debutó con los *Águilas de Cartago* en un amistoso. Llega al Mundial con apenas tres meses de experiencia internacional con su nuevo equipo, pero su jerarquía en la Bundesliga lo coloca como pieza clave del centro del campo.
+
+## El núcleo del equipo
+
+- **Portería**: **Aymen Dahmen** (Sivasspor), **Sabri Ben Hessen** y **Mouhib Chamakh** componen el trío.
+- **Defensa**: la zona más sólida de Túnez históricamente. **Montassar Talbi** (Lorient), **Dylan Bronn** (Saint-Étienne) y **Yan Valery** (Angers). **Ali Abdi** (Caen) en banda izquierda.
+- **Mediocampo**: **Ellyes Skhiri** (Eintracht Frankfurt) es el cerebro, acompañado por **Rani Khedira** (Union Berlin) y el joven **Hannibal Mejbri** (Burnley, con pasado en el Manchester United). **Anis Ben Slimane** (Sheffield United) y **Elias Achouri** completan.
+- **Ataque**: **Ismaël Gharbi** (Braga, ex PSG), **Hazem Mastouri** (cantera local) y **Elias Saad** (Lecce). **Sebastian Tounekti** (Hammarby) es la apuesta joven.
+
+Mira la lista completa con dorsales en la [ficha de Túnez](/equipos/TUN).
+
+## Las ausencias importantes
+
+Lamouchi tomó dos decisiones polémicas:
+
+- **Ferjani Sassi**, capitán histórico durante una década, queda fuera de la lista.
+- **Yassine Meriah**, defensor titular en Qatar 2022, tampoco entra.
+
+Ambas decisiones se interpretan como un mensaje de Lamouchi de cierre de ciclo con la generación de 2018-2022.
+
+## El Grupo F y el debut
+
+Túnez está en el **Grupo F** junto a **Países Bajos** (cabeza de serie), **Japón** y **Suecia**. Un sorteo exigente — los tres rivales son técnica y físicamente superiores en plantilla — pero también un grupo donde la **defensa férrea tunecina** puede dar problemas. Las clasificatorias africanas las cerraron **sin recibir gol en sus últimos cinco partidos**.
+
+Mira la [composición del Grupo F](/grupos) y el [calendario del torneo](/calendario).
+
+## Lo que está en juego
+
+Túnez **nunca ha pasado la fase de grupos** en seis Mundiales previos (1978, 1998, 2002, 2006, 2018, 2022). Su mejor recuerdo: **vencer a Francia 1-0 en Qatar 2022** pese a quedar eliminados. Esta vez, con Lamouchi recién aterrizado, el objetivo realista es **competir hasta el último partido de grupos** y aprovechar el formato a 48 para entrar como mejor tercero.
+
+Para predecir si Túnez rompe por fin la barrera de octavos, [crea tu quiniela gratis](/login?next=%2Fonboarding).`,
+  },
+  {
+    slug: "convocatoria-brasil-mundial-2026-ancelotti-neymar",
+    title:
+      "Convocatoria de Brasil: Ancelotti incluye a Neymar y deja fuera a João Pedro del Chelsea",
+    seoTitle: "Convocatoria Brasil Mundial 2026 · Lista de Carlo Ancelotti",
+    excerpt:
+      "Carlo Ancelotti, primer seleccionador europeo en la historia de Brasil, presentó la lista de 26 para el Mundial 2026. La gran sorpresa: vuelve Neymar y queda fuera João Pedro.",
+    category: "convocatoria",
+    tags: ["Brasil", "Ancelotti", "Neymar", "Vinicius", "Endrick"],
+    relatedTeamCodes: ["BRA"],
+    daysAgo: 1,
+    body: `**Brasil** publicó el **18 de mayo de 2026** la lista de 26 jugadores para el Mundial 2026. El seleccionador **Carlo Ancelotti** — primer técnico europeo en dirigir a la *Canarinha* en un Mundial — confirmó la noticia más esperada: **Neymar Jr.** vuelve a una Copa del Mundo, su **cuarta** (2014, 2018, 2022, 2026). La sorpresa negativa: **João Pedro**, delantero del Chelsea, queda fuera.
+
+## Ancelotti, el primer europeo
+
+El italiano tomó las riendas de Brasil en mayo de 2025 tras dejar el Real Madrid. La CBF buscaba un nombre que combinara prestigio internacional, dominio de varios idiomas (seis de sus titulares juegan en Europa) y una idea de juego no ideologizada. Su sello: equipos que ganan títulos. En sus partidos al frente de Brasil, ha apostado por un 4-3-3 con Casemiro como ancla, Bruno Guimarães + Paquetá como interiores, y el tridente Vinicius–Endrick–Raphinha.
+
+## Neymar vuelve
+
+La inclusión de **Neymar Jr.** (Santos) era el suspense del último mes. Después de una grave lesión en octubre de 2023 y un calendario errático, Neymar había sido convocado solo dos veces por Ancelotti hasta abril, y su minutos eran de gestión más que de rendimiento. Pero los últimos partidos con Santos cambiaron la decisión del técnico: el '10' viajará al Mundial, probablemente como recurso desde el banquillo más que como titular fijo.
+
+## El núcleo del equipo
+
+La lista combina campeones de Qatar con apuestas jóvenes:
+
+- **Portería**: **Alisson** (Liverpool) como titular, **Ederson** (Manchester City) y **Weverton** (Palmeiras).
+- **Defensa**: **Marquinhos** (PSG) y **Gabriel Magalhães** (Arsenal) son la pareja central de referencia. **Bremer** (Juventus), **Léo Pereira** (Flamengo) y **Roger Ibañez** (Al-Ahli) completan. **Alex Sandro** y **Douglas Santos** en banda izquierda; **Danilo Luiz** y **Wesley** (Roma) en la derecha.
+- **Mediocampo**: **Casemiro** (Manchester United) como '6', **Bruno Guimarães** (Newcastle) y **Lucas Paquetá** (West Ham) como interiores. **Fabinho** (Al-Ittihad) y **Danilo Santos** (Botafogo) completan la rotación.
+- **Ataque**: **Vinicius Júnior** (Real Madrid), **Raphinha** (Barcelona), **Matheus Cunha** (Manchester United), **Gabriel Martinelli** (Arsenal), **Endrick** (Lyon, cedido del Real Madrid), **Igor Thiago** (Brentford), **Luiz Henrique** (Zenit) y **Rayan** (Bournemouth). Más, claro, **Neymar**.
+
+Mira la lista completa con dorsales en la [ficha de Brasil](/equipos/BRA).
+
+## La gran ausencia: João Pedro
+
+**João Pedro** (Chelsea), delantero brasileño que Ancelotti había convocado en cinco listas previas, queda fuera por la inclusión de Neymar. Es la decisión más polémica de la convocatoria. Las casas inglesas tasan a João Pedro en **120 millones de euros** y suma 16 goles esta temporada en la Premier — pero Ancelotti ha priorizado experiencia mundialista.
+
+## El Grupo C y el calendario
+
+Brasil cayó en uno de los grupos más complicados del bombo 1: el **Grupo C** junto a **Marruecos** (semifinalista en Qatar 2022), **Escocia** y **Haití**. El **debut será el sábado 13 de junio frente a Marruecos** — un partido que arranca con la carga simbólica de no repetir el sufrimiento de Qatar contra rivales africanos.
+
+Mira la [composición del Grupo C](/grupos) y el [calendario del torneo](/calendario).
+
+## Lo que está en juego
+
+Brasil **lleva 24 años sin levantar la Copa** (su último título es Corea-Japón 2002). Cinco eliminaciones consecutivas en cuartos o antes pesan en el ánimo de la afición. Con Ancelotti, **Vinicius en su techo** y una generación talentosa de cantera (Endrick, Estêvão, Rayan), llegan con la obligación de competir hasta semifinales como mínimo.
+
+Para predecir si Brasil regresa a una final 24 años después, [crea tu quiniela gratis](/login?next=%2Fonboarding).`,
+  },
+  {
+    slug: "convocatoria-croacia-mundial-2026-modric-quinto-mundial",
+    title:
+      "Convocatoria de Croacia: Luka Modrić cierra su quinto Mundial a los 40 años",
+    seoTitle: "Convocatoria Croacia Mundial 2026 · Lista de Zlatko Dalić",
+    excerpt:
+      "Zlatko Dalić presenta la lista de 26 de Croacia para el Mundial 2026 con Luka Modrić, a sus 40 años y tras una fractura facial reciente, encabezando su quinta Copa del Mundo.",
+    category: "convocatoria",
+    tags: ["Croacia", "Luka Modrić", "Dalić", "Gvardiol", "Mundial 2026"],
+    relatedTeamCodes: ["CRO"],
+    daysAgo: 1,
+    body: `**Croacia** anunció el **18 de mayo de 2026** la lista de 26 jugadores para el Mundial 2026. El seleccionador **Zlatko Dalić** mantuvo el corazón de la generación dorada — con **Luka Modrić** a la cabeza — y abre paso a una nueva camada de jóvenes con galones europeos.
+
+## Modrić, quinto Mundial
+
+A sus **40 años**, **Luka Modrić** disputará su **quinta Copa del Mundo** — un récord solo comparable a las **seis** que pueden alcanzar Lionel Messi y Cristiano Ronaldo. Su trayectoria mundialista:
+
+| Año | Edad | Resultado |
+|-----|------|-----------|
+| 2006 | 20 | Fase de grupos |
+| 2014 | 28 | Fase de grupos |
+| 2018 | 32 | **Subcampeón** (Balón de Oro del torneo) |
+| 2022 | 36 | Tercer puesto |
+| 2026 | 40 | ¿Su despedida? |
+
+Modrić afronta el Mundial **tras una fractura facial reciente** sufrida en abril de 2026 en un partido con el Milan contra la Juventus. Tuvo que ser operado, pero se ha recuperado a tiempo y será titular indiscutible.
+
+Para una selección de **3,8 millones de habitantes**, Modrić ha sido el arquitecto de un ciclo histórico: subcampeón en 2018, tercero en 2022, finalista de la Nations League 2023. Es el jugador croata más decorado de la historia.
+
+## Gvardiol y la nueva generación
+
+**Joško Gvardiol** (Manchester City) lidera el relevo generacional. A sus 24 años, es uno de los mejores defensas del mundo y consolida la zaga junto a **Marin Pongračić** (Fiorentina) y **Josip Šutalo** (Ajax).
+
+Los nuevos nombres a vigilar:
+
+- **Luka Vušković** (cesión desde el Tottenham al Hamburgo): defensa central de 19 años, una de las mayores promesas europeas.
+- **Petar Sučić** (Inter de Milán): mediocentro de 22 años, hermano de **Luka Sučić** (Real Sociedad).
+- **Martin Baturina** (Como): mediapunta de 23 años, herencia técnica de Modrić.
+
+## El núcleo del equipo
+
+- **Portería**: **Dominik Livaković** (Fenerbahçe), héroe de Qatar 2022 por la tanda de penales contra Japón, sigue como titular.
+- **Defensa**: además de Gvardiol y Šutalo, **Josip Stanišić** (Bayern) y **Duje Ćaleta-Car** (Lyon).
+- **Mediocampo**: Modrić con **Mateo Kovacic** (Manchester City) y los Sučić. **Nikola Vlašić** (Torino) y **Mario Pašalić** (Atalanta) aportan llegada al área.
+- **Ataque**: **Ivan Perišić** (PSV, 37 años) sigue presente como extremo y referencia veterana. **Andrej Kramarić** (Hoffenheim) y **Petar Musa** (Dallas FC) como '9'. **Igor Matanović** (Eintracht Frankfurt) y **Marco Pašalić** (Orlando City) completan.
+
+Mira la lista completa con dorsales en la [ficha de Croacia](/equipos/CRO).
+
+## El Grupo L y el cruce con Inglaterra
+
+Croacia está en el **Grupo L** junto a **Inglaterra** (cabeza de serie), **Ghana** y **Panamá**. El cruce **Croacia vs Inglaterra** repite el de **semifinales de Rusia 2018** (que Croacia ganó 2-1 con gol de Mario Mandžukić en la prórroga) y el de **octavos de Euro 2024** (que ganaron los ingleses).
+
+Mira la [composición del Grupo L](/grupos) y el [calendario del torneo](/calendario).
+
+## Lo que está en juego
+
+Modrić y Perišić, los dos jugadores con más recorrido de la generación, están en su **última función mundialista**. Croacia llega como subcampeona de 2018 y tercera de 2022 — el escalón final, la final ganada, sigue pendiente. Si la generación dorada se va sin el premio, lo intentará el relevo (Gvardiol, Vušković, Sučić) en 2030.
+
+Para predecir si Croacia da otro paso histórico, [crea tu quiniela gratis](/login?next=%2Fonboarding) y arma tu bracket antes del 11 de junio.`,
+  },
+
   // ─────────────────────────── ANÁLISIS / DESTACADAS ───────────────────────────
   {
     slug: "formato-mundial-2026-48-selecciones-12-grupos",
