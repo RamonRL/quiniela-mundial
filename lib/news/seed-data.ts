@@ -544,6 +544,74 @@ Brasil **lleva 24 años sin levantar la Copa** (su último título es Corea-Jap�
 Para predecir si Brasil regresa a una final 24 años después, [crea tu quiniela gratis](/login?next=%2Fonboarding).`,
   },
   {
+    slug: "convocatoria-portugal-mundial-2026-martinez-cristiano-ronaldo",
+    title:
+      "Convocatoria de Portugal: la sexta Copa de Cristiano Ronaldo y el homenaje a Diogo Jota",
+    seoTitle: "Convocatoria Portugal Mundial 2026 · Lista de Roberto Martínez",
+    excerpt:
+      "Roberto Martínez confirma la lista de Portugal para el Mundial 2026. Cristiano Ronaldo iguala a Messi en seis Mundiales y la selección rinde tributo a Diogo Jota.",
+    category: "convocatoria",
+    tags: [
+      "Portugal",
+      "Cristiano Ronaldo",
+      "Roberto Martínez",
+      "Diogo Jota",
+      "Bruno Fernandes",
+    ],
+    relatedTeamCodes: ["POR"],
+    daysAgo: 1,
+    body: `**Portugal** publicó el **19 de mayo de 2026** la lista oficial de 26 jugadores para el Mundial 2026, con dos titulares de la convocatoria: **Cristiano Ronaldo** disputará su **sexta Copa del Mundo** — récord absoluto que comparte con Lionel Messi — y la selección hace **homenaje formal a Diogo Jota**, fallecido en julio de 2025 en un accidente de tráfico en España. El seleccionador es el español **Roberto Martínez**, que dirige a *A Seleção* desde 2023.
+
+## Cristiano Ronaldo, el sexto Mundial
+
+A sus **41 años**, Cristiano Ronaldo (Al-Nassr) se incorpora a la lista como **capitán** y referente absoluto. Llega para empatar el récord de **participaciones en seis Mundiales** que ostentaba en solitario hasta este ciclo y que comparte ahora con **Messi**. Su trayectoria mundialista:
+
+| Año | Edad | Resultado |
+|-----|------|-----------|
+| 2006 | 21 | Cuartos de final |
+| 2010 | 25 | Octavos |
+| 2014 | 29 | Fase de grupos |
+| 2018 | 33 | Octavos |
+| 2022 | 37 | Cuartos de final |
+| 2026 | 41 | ¿Su despedida? |
+
+Es casi seguro su último Mundial. Roberto Martínez ya lo gestiona con minutos medidos: en clasificación lo fue alternando con Gonçalo Ramos como '9', y en el Mundial probablemente repetirá ese patrón.
+
+## El núcleo del equipo
+
+La lista combina experiencia europea de élite con jugadores en activo en clubes top:
+
+- **Portería**: **Diogo Costa** (Porto) sigue como titular. **José Sá** (Wolverhampton) y **Rui Silva** (Real Sociedad) completan.
+- **Defensa**: **Rúben Dias** (Manchester City) lidera la zaga junto a **Gonçalo Inácio** (Sporting). **Diogo Dalot** (Manchester United) y **Nélson Semedo** (Wolves) en banda derecha; **Nuno Mendes** (PSG) y **João Cancelo** en la izquierda. **Tomás Araújo** y **Renato Veiga** completan la rotación central.
+- **Mediocampo**: el corazón del equipo. **Bruno Fernandes** (Manchester United) como organizador, **Vitinha** (PSG) como faro técnico — vuelve a su mejor versión tras la Champions ganada con el PSG —, y **Bernardo Silva** (Manchester City) por dentro. **João Neves** (PSG), **Rúben Neves** (Al-Hilal), **Matheus Nunes** (Manchester City) y **Samú Costa** (Mallorca) dan profundidad de rotación. **Francisco Trincão** (Sporting) llega tras una temporada espectacular como ala-mediapunta.
+- **Ataque**: además de Ronaldo, **Rafael Leão** (AC Milan), **Pedro Neto** (Chelsea), **João Félix** (Al-Nassr), **Gonçalo Ramos** (PSG), **Francisco Conceição** (Juventus) y **Gonçalo Guedes** (Real Sociedad).
+
+Mira la lista completa con dorsales en la [ficha de Portugal](/equipos/POR).
+
+## El homenaje a Diogo Jota
+
+El 3 de julio de 2025, **Diogo Jota** falleció a los 28 años en un accidente de tráfico en Zamora (España), junto a su hermano **André Silva** — la Guardia Civil concluyó que el accidente se produjo por el reventón de un neumático mientras adelantaba. Jota había ganado con Portugal la **UEFA Nations League 2025** apenas un mes antes y sumaba 49 partidos como internacional.
+
+Roberto Martínez presentó la convocatoria con el lema **"27 jugadores y uno más"** — Jota es incluido simbólicamente en la lista como ausencia perpetua. Es la primera vez en la historia reciente de Portugal que una convocatoria mundialista lleva un tributo de este tipo grabado en su estructura formal.
+
+## El Grupo K y el calendario
+
+A Portugal le tocó el **Grupo K** junto a **Colombia** (el rival fuerte), **RD Congo** y **Uzbekistán**. Sorteo razonablemente benévolo en bombo 2-3, pero **Colombia** es selección con candidatos a sorprender — vigente subcampeona de la Copa América 2024 y con James Rodríguez en activo.
+
+Calendario de fase de grupos confirmado:
+- **17 de junio**: Portugal vs RD Congo
+- **23 de junio**: Portugal vs Uzbekistán
+- **27 de junio**: Portugal vs Colombia
+
+Mira la [composición del Grupo K](/grupos) y el [calendario del torneo](/calendario).
+
+## Lo que está en juego
+
+Portugal nunca ha **levantado la Copa del Mundo**. Su mejor resultado sigue siendo el **cuarto puesto de Inglaterra 1966** con Eusébio. Con Ronaldo en su último baile, una generación dorada todavía en activo (Bruno, Bernardo, Vitinha, Leão) y un sorteo no especialmente cruel, **2026 es probablemente su mejor oportunidad histórica para pasar de cuartos** — barrera que no han superado ni en 2006, 2014 ni 2022. La presión la lleva Martínez, técnico que ya estuvo cerca con Bélgica en 2018 y al que se le mide por el rendimiento en cruces decisivos.
+
+Para predecir hasta dónde llega Portugal, [crea tu quiniela gratis](/login?next=%2Fonboarding) y arma tu bracket antes del 11 de junio.`,
+  },
+  {
     slug: "convocatoria-croacia-mundial-2026-modric-quinto-mundial",
     title:
       "Convocatoria de Croacia: Luka Modrić cierra su quinto Mundial a los 40 años",
