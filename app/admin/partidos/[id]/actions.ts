@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
@@ -176,18 +177,24 @@ export async function saveMatchResult(
       .where(eq(matches.id, parsed.data.matchId))
       .limit(1);
     if (matchInfo) {
-      void notifyMatchResult({
-        matchId: parsed.data.matchId,
-        code: matchInfo.code,
-        stage: matchInfo.stage,
-        home: matchInfo.home ?? "TBD",
-        away: matchInfo.away ?? "TBD",
-        homeScore: parsed.data.homeScore,
-        awayScore: parsed.data.awayScore,
-        wentToPens: parsed.data.wentToPens ?? false,
-        homeScorePen: parsed.data.homeScorePen ?? null,
-        awayScorePen: parsed.data.awayScorePen ?? null,
-      });
+      console.log(
+        `[telegram] match finalized → notifying ${matchInfo.code} ${parsed.data.homeScore}-${parsed.data.awayScore}`,
+      );
+      const matchInfoSnapshot = matchInfo;
+      after(() =>
+        notifyMatchResult({
+          matchId: parsed.data.matchId,
+          code: matchInfoSnapshot.code,
+          stage: matchInfoSnapshot.stage,
+          home: matchInfoSnapshot.home ?? "TBD",
+          away: matchInfoSnapshot.away ?? "TBD",
+          homeScore: parsed.data.homeScore,
+          awayScore: parsed.data.awayScore,
+          wentToPens: parsed.data.wentToPens ?? false,
+          homeScorePen: parsed.data.homeScorePen ?? null,
+          awayScorePen: parsed.data.awayScorePen ?? null,
+        }),
+      );
     }
   }
 

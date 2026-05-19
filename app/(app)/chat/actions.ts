@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
@@ -35,10 +36,9 @@ export async function sendMessage(
     body: parsed.data.body,
   });
 
-  // Alerta Telegram fire-and-forget — usa la liga (nombre + isPublic) y
-  // el autor para construir el mensaje. Cae como notificación silent
-  // para no saturar (ver lib/telegram/events.ts).
-  void (async () => {
+  // Alerta Telegram diferida (sobrevive al teardown serverless). Lee la
+  // liga (nombre + isPublic) post-respuesta y manda silent para no spam.
+  after(async () => {
     const [league] = await db
       .select({ name: leagues.name, isPublic: leagues.isPublic })
       .from(leagues)
@@ -52,7 +52,7 @@ export async function sendMessage(
       authorNickname: me.nickname,
       body: parsed.data.body,
     });
-  })();
+  });
 
   revalidatePath("/chat");
   return { ok: true };

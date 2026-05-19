@@ -1,4 +1,5 @@
 import { cookies, headers } from "next/headers";
+import { after } from "next/server";
 import { redirect } from "next/navigation";
 import { and, eq, ne } from "drizzle-orm";
 import { db } from "@/lib/db";
@@ -96,13 +97,20 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
 
     await consumeInviteCookie();
 
-    // Alerta Telegram fire-and-forget. Si TELEGRAM_BOT_TOKEN no está
-    // configurado, no-op silencioso (ver lib/telegram/notify.ts).
-    void notifyNewUser({
-      email: created.email,
-      countryCode: created.countryCode,
-      role: created.role,
-    });
+    // Alerta Telegram diferida con `after()` — se ejecuta DESPUÉS de
+    // enviar la respuesta al cliente pero antes de que la función
+    // serverless termine, así sobrevive al teardown de Vercel que
+    // mataba el `void` fire-and-forget en producción. Si
+    // TELEGRAM_BOT_TOKEN no está configurado, no-op silencioso
+    // (ver lib/telegram/notify.ts).
+    console.log(`[telegram] new user created → notifying for ${created.email}`);
+    after(() =>
+      notifyNewUser({
+        email: created.email,
+        countryCode: created.countryCode,
+        role: created.role,
+      }),
+    );
 
     return mapProfile(created);
   }

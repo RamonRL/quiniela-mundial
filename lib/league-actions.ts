@@ -2,6 +2,7 @@
 
 import { randomUUID } from "node:crypto";
 import { cookies } from "next/headers";
+import { after } from "next/server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { and, eq, sql } from "drizzle-orm";
@@ -124,13 +125,16 @@ export async function createLeague(
     });
   }
 
-  // Alerta Telegram fire-and-forget.
-  void notifyNewPrivateLeague({
-    id: created.id,
-    name: created.name,
-    joinCode: created.joinCode,
-    creatorEmail: me.email,
-  });
+  // Alerta Telegram diferida (sobrevive al teardown serverless).
+  console.log(`[telegram] new league created → notifying for ${created.name}`);
+  after(() =>
+    notifyNewPrivateLeague({
+      id: created.id,
+      name: created.name,
+      joinCode: created.joinCode,
+      creatorEmail: me.email,
+    }),
+  );
 
   revalidatePath("/admin/ligas");
   revalidatePath("/", "layout");
