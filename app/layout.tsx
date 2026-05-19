@@ -27,13 +27,12 @@ const bigShoulders = Big_Shoulders({
 
 // Mona Sans: la grotesque variable de GitHub. Ejes wght + wdth y un
 // dibujo geométrico con terminaciones bien resueltas dan un cuerpo
-// moderno con personalidad técnica. Sustituye al Fraunces como
-// `font-editorial`: el cuerpo de las noticias gana legibilidad
-// upright, y las descripciones con `italic` heredan la oblicua sans
-// — moderna y sin ruido visual.
+// moderno con personalidad técnica. Cargamos el peso 800 además del
+// 700 para tener un ExtraBold que dé contraste real en los `<strong>`
+// del cuerpo de las noticias frente al regular 400.
 const monaSans = Mona_Sans({
   subsets: ["latin", "latin-ext"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
   style: ["normal", "italic"],
   variable: "--font-editorial-loaded",
   display: "swap",

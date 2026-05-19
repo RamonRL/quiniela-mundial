@@ -117,7 +117,7 @@ export function NewsBody({ body }: { body: string }) {
             </td>
           ),
           strong: ({ children }) => (
-            <strong className="font-semibold text-[var(--color-ink)]">{children}</strong>
+            <strong className="font-extrabold text-[var(--color-ink)]">{children}</strong>
           ),
           em: ({ children }) => (
             <em className="font-editorial italic">{children}</em>

@@ -198,14 +198,12 @@
   }
   .font-editorial {
     font-family: var(--font-editorial);
-    font-weight: 450;
-    /* Mona Sans es una grotesque variable (wght + wdth). Tiene un
-       dibujo más amplio que DM Sans, por lo que un letter-spacing
-       ligeramente negativo (-0.011em) densifica los párrafos largos
-       sin perder legibilidad. La oblicua (italic) tiene buen
-       contraste y mantiene la voz editorial allí donde se aplica con
-       la clase `italic` de Tailwind. El cuerpo de las noticias va
-       upright para lectura larga cómoda. */
+    /* Mona Sans (GitHub) — grotesque variable wght + wdth. Cuerpo en
+       peso 400 (regular puro) deja respirar el texto; los `<strong>`
+       saltan a peso 800 (ExtraBold) para un contraste de +400 puntos.
+       Itálica nativa disponible para los sitios que la piden con la
+       clase `italic` de Tailwind. */
+    font-weight: 400;
     letter-spacing: -0.011em;
     line-height: 1.55;
   }
