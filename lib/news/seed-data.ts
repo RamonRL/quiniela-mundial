@@ -544,6 +544,67 @@ Brasil **lleva 24 años sin levantar la Copa** (su último título es Corea-Jap�
 Para predecir si Brasil regresa a una final 24 años después, [crea tu quiniela gratis](/login?next=%2Fonboarding).`,
   },
   {
+    slug: "convocatoria-corea-sur-mundial-2026-hong-myung-bo-son",
+    title:
+      "Convocatoria de Corea del Sur: Hong Myung-bo apuesta por Son y un récord histórico con Jens Castrop",
+    seoTitle: "Convocatoria Corea del Sur Mundial 2026 · Lista de Hong Myung-bo",
+    excerpt:
+      "Corea del Sur anuncia su lista para el Mundial 2026. Son Heung-min capitanea, Hong Myung-bo dirige desde el banquillo y Jens Castrop hace historia como primer jugador mixto-naturalizado convocado a un Mundial.",
+    category: "convocatoria",
+    tags: [
+      "Corea del Sur",
+      "Son Heung-min",
+      "Hong Myung-bo",
+      "Jens Castrop",
+      "Kim Min-jae",
+      "Lee Kang-in",
+    ],
+    relatedTeamCodes: ["KOR"],
+    daysAgo: 4,
+    body: `**Corea del Sur** publicó el **16 de mayo de 2026** la lista oficial de 26 jugadores para el Mundial 2026. El seleccionador es **Hong Myung-bo**, leyenda nacional reciclado en técnico que dirige a los *Taegeuk Warriors* desde julio de 2024 — y la convocatoria tiene **dos titulares**: **Son Heung-min** como capitán y referente absoluto, y **Jens Castrop** como el primer jugador de herencia mixta nacido fuera de Corea en una lista mundialista del país.
+
+## Hong Myung-bo, del capitán de 2002 al técnico de 2026
+
+La historia personal del seleccionador es ya parte del relato del equipo. **Hong Myung-bo fue capitán** de aquella Corea del Sur que llegó a **semifinales en 2002** como anfitriona — el mejor resultado mundialista en la historia del fútbol asiático. Tras un primer paso por el banquillo en 2013-14 (Brasil 2014), volvió a la selección en **julio de 2024** tras la destitución de Jürgen Klinsmann por la decepción de la Copa de Asia 2024. En menos de dos años ha encajado un equipo competitivo y llega al Mundial con la legitimidad que solo da haber estado en el césped en el partido más importante de tu país.
+
+## Son Heung-min, capitán desde Los Ángeles
+
+El delantero **Son Heung-min** (33 años) llega al Mundial 2026 como capitán y máxima estrella. La gran novedad respecto a Qatar 2022: ya **no juega en Tottenham**. En agosto de 2025 firmó por **Los Angeles FC (MLS)**, en uno de los traspasos asiáticos más relevantes del año, y desde allí ha mantenido un nivel sólido como '9' del equipo californiano.
+
+Es muy probable que sea su **último Mundial** — a los 33, Son llega en gran momento físico pero con una transición de calendario MLS que el cuerpo técnico está vigilando: el campeonato estadounidense es más físico de lo que parece y el calendario de partidos no encaja bien con las ventanas FIFA.
+
+## La historia de Jens Castrop: primer mixto-naturalizado coreano
+
+La sorpresa de la lista — y probablemente la mejor noticia del análisis — es la inclusión de **Jens Castrop** (Borussia Mönchengladbach, Bundesliga). Nacido en **Düsseldorf en 2003** de padre alemán y madre coreana, Castrop **jugó en las categorías inferiores de Alemania** hasta sub-21. En **agosto de 2025**, FIFA aprobó su cambio de federación y debutó con Corea en los amistosos de septiembre.
+
+La convocatoria mundialista lo convierte en el **primer jugador de herencia mixta nacido fuera de Corea** en aparecer en una lista coreana de Copa del Mundo. La KFA (Korea Football Association) lleva años abriendo la puerta a la diáspora como vía para ampliar el pool talento, y Castrop es el primer caso real con peso deportivo. Aporta versatilidad en el centro del campo (mediocentro defensivo o lateral derecho) que le faltaba al equipo.
+
+## El núcleo del equipo
+
+- **Portería**: **Kim Seung-gyu** (FC Tokyo), **Jo Hyeon-woo** (Ulsan) y **Song Bum-keun** (Jeonbuk).
+- **Defensa**: **Kim Min-jae** (Bayern Múnich) es el líder absoluto. **Kim Tae-hyeon** (Kashima), **Cho Yu-min** (Al-Sharjah), **Seol Young-woo** (Estrella Roja) y los laterales **Lee Tae-seok** (Austria Viena) y **Kim Moon-hwan** (Daejeon). **Castrop** entra como recambio polivalente.
+- **Mediocampo**: **Lee Kang-in** (PSG, vigente campeón de Champions) es la principal apuesta creativa. **Hwang In-beom** (Feyenoord), **Lee Jae-sung** (Mainz), **Paik Seung-ho** (Birmingham), **Bae Jun-ho** (Stoke City) y **Eom Ji-sung** (Swansea) dan rotación y energía. El joven **Lee Dong-gyeong** (Ulsan) sube de la generación local.
+- **Ataque**: además de Son, **Hwang Hee-chan** (Wolverhampton), **Cho Gue-sung** (Midtjylland) y **Oh Hyeon-gyu** (Beşiktaş). **Yang Hyun-jun** (Celtic) por banda.
+
+Mira la lista completa con dorsales en la [ficha de Corea del Sur](/equipos/KOR).
+
+## El Grupo A y el calendario
+
+A Corea del Sur le tocó el **Grupo A** junto a **México** (la anfitriona), **Sudáfrica** y **República Checa**. Los tres partidos coreanos se juegan en **suelo mexicano** — un dato logístico curioso que reduce viajes pero les obliga a competir todo el grupo en altitud o calor:
+
+- **Jueves 11 de junio** · Corea vs **República Checa** · Estadio Akron, **Guadalajara**
+- **Jueves 18 de junio** · Corea vs **México** · Estadio Akron, **Guadalajara**
+- **Miércoles 24 de junio** · Corea vs **Sudáfrica** · Estadio BBVA, **Monterrey**
+
+Mira la [composición del Grupo A](/grupos) y el [calendario del torneo](/calendario).
+
+## Lo que está en juego
+
+Corea del Sur tiene una vara de medir alta: las **semifinales de 2002** siguen siendo el techo. Desde entonces ha llegado a octavos en 2010 y 2022 (eliminada por Brasil en Catar). Para Hong Myung-bo, el objetivo realista es **pasar como segunda del grupo** y volver a octavos — la duda histórica está en si esta generación puede dar un paso más allá. Con Son en su despedida, Kim Min-jae en un nivel top y Lee Kang-in en plenitud, los argumentos están sobre la mesa.
+
+Si quieres predecir hasta dónde llegan los *Taegeuk Warriors*, [crea tu quiniela gratis](/login?next=%2Fonboarding) y arma tu bracket antes del 11 de junio.`,
+  },
+  {
     slug: "convocatoria-portugal-mundial-2026-martinez-cristiano-ronaldo",
     title:
       "Convocatoria de Portugal: la sexta Copa de Cristiano Ronaldo y el homenaje a Diogo Jota",
