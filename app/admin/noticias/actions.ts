@@ -43,13 +43,13 @@ const upsertSchema = z.object({
   relatedTeamCodes: z.string().max(500).optional().or(z.literal("")),
   // El <select> envía "" cuando el admin elige "— ninguno —". z.coerce.number()
   // convertiría "" a 0 → violación de FK contra matches.id. Preprocesamos
-  // a undefined antes de coercer y exigimos positivo cuando sí hay valor.
-  relatedMatchId: z
-    .preprocess(
-      (v) => (v === "" || v == null ? undefined : v),
-      z.coerce.number().int().positive(),
-    )
-    .optional(),
+  // a undefined antes de coercer; .optional() DENTRO del preprocess porque
+  // si va fuera, el inner sigue intentando coercer `undefined` -> NaN y
+  // falla con "Expected number, received nan".
+  relatedMatchId: z.preprocess(
+    (v) => (v === "" || v == null ? undefined : v),
+    z.coerce.number().int().positive().optional(),
+  ),
   status: z.enum(NEWS_STATUSES),
   publishedAt: z.string().optional().or(z.literal("")),
 });
