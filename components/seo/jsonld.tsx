@@ -299,6 +299,86 @@ export function BreadcrumbLD({ items }: { items: BreadcrumbItem[] }) {
   );
 }
 
+type NewsArticleArgs = {
+  /** Slug del artículo, sin barra inicial. Se concatena al SITE_URL. */
+  slug: string;
+  headline: string;
+  description: string;
+  image: string | null;
+  datePublished: Date | string;
+  dateModified: Date | string;
+  /** "Convocatorias", "Previas"…  Va al campo articleSection de Google News. */
+  section: string;
+  keywords: string[];
+  /** Nombre del autor (nickname o "Redacción Quiniela Mundial"). */
+  authorName: string;
+};
+
+/**
+ * NewsArticle structured data. Google News y Search Console usan este
+ * schema para colocar el artículo en la barra de "Top Stories" si el
+ * sitio tiene buen track record editorial. publisher debe coincidir
+ * exactamente con OrganizationLD (mismo nombre + logo) — si no, Search
+ * Console marca "publisher mismatch" y degrada la visibilidad.
+ */
+export function NewsArticleLD({
+  slug,
+  headline,
+  description,
+  image,
+  datePublished,
+  dateModified,
+  section,
+  keywords,
+  authorName,
+}: NewsArticleArgs) {
+  const url = `${SITE_URL}/noticias/${slug}`;
+  const dp =
+    typeof datePublished === "string"
+      ? datePublished
+      : datePublished.toISOString();
+  const dm =
+    typeof dateModified === "string"
+      ? dateModified
+      : dateModified.toISOString();
+  return (
+    <Script
+      data={{
+        "@context": "https://schema.org",
+        "@type": "NewsArticle",
+        mainEntityOfPage: {
+          "@type": "WebPage",
+          "@id": url,
+        },
+        headline,
+        description,
+        image: image
+          ? [image.startsWith("http") ? image : `${SITE_URL}${image}`]
+          : [DEFAULT_LD_IMAGE],
+        datePublished: dp,
+        dateModified: dm,
+        author: {
+          "@type": "Person",
+          name: authorName,
+        },
+        publisher: {
+          "@type": "Organization",
+          name: "Quiniela Mundial",
+          url: SITE_URL,
+          logo: {
+            "@type": "ImageObject",
+            url: `${SITE_URL}/qm-mark.png`,
+          },
+        },
+        articleSection: section,
+        keywords: keywords.join(", "),
+        inLanguage: "es-ES",
+        url,
+      }}
+    />
+  );
+}
+
 type Faq = { q: string; a: string };
 
 export function FAQPageLD({ faqs }: { faqs: Faq[] }) {

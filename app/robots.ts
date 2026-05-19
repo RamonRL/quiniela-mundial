@@ -31,7 +31,12 @@ export default function robots(): MetadataRoute.Robots {
         ],
       },
     ],
-    sitemap: `${siteUrl}/sitemap.xml`,
+    sitemap: [
+      `${siteUrl}/sitemap.xml`,
+      // Sitemap separado para Google News — solo lo lee Googlebot-News y
+      // contiene únicamente los artículos de las últimas 48 horas.
+      `${siteUrl}/news-sitemap.xml`,
+    ],
     host: siteUrl,
   };
 }

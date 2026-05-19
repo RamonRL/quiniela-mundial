@@ -11,6 +11,7 @@ import {
   Mail,
   MapPin,
   MessagesSquare,
+  Newspaper,
   Settings2,
   Swords,
   Target,
@@ -77,6 +78,7 @@ export function buildNavItems(myId: string, opts: BuildOptions = {}): NavItem[] 
     },
     { href: "/bracket", label: "Bracket", icon: Swords, group: "main" },
     { href: "/goleadores", label: "Goleadores", icon: Target, group: "main" },
+    { href: "/noticias", label: "Noticias", icon: Newspaper, group: "main" },
     {
       href: "/estadisticas",
       label: "Estadísticas",

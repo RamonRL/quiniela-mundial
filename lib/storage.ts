@@ -4,6 +4,7 @@ const BUCKET_BY_KIND = {
   flag: "flags",
   player: "players",
   avatar: "avatars",
+  news: "news",
 } as const;
 
 export type StorageKind = keyof typeof BUCKET_BY_KIND;

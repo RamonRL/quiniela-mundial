@@ -25,9 +25,11 @@ import { getCurrentUser } from "@/lib/auth/guards";
 import { currentLeagueId } from "@/lib/leagues";
 import { formatDateTime, initials } from "@/lib/utils";
 import { formatRemaining } from "@/lib/deadlines";
-import { Edit3, MapPin, Settings2, Target } from "lucide-react";
+import { Edit3, MapPin, Newspaper, Settings2, Target } from "lucide-react";
 import { BreadcrumbLD, MatchLD } from "@/components/seo/jsonld";
 import { findVenueByMatchVenue } from "@/lib/seo/venues";
+import { getNewsForMatch, listPublishedNews } from "@/lib/news/queries";
+import { NewsCard } from "@/components/news/news-card";
 
 const STAGE_LABEL: Record<string, string> = {
   group: "Fase de grupos",
@@ -151,7 +153,7 @@ export default async function MatchDetailPage({
   const predsPublic = new Date(match.scheduledAt) <= new Date();
 
   const playerIds = scorerRows.map((s) => s.playerId);
-  const [playerRows, resultPreds, scorerPreds] = await Promise.all([
+  const [playerRows, resultPreds, scorerPreds, matchNews] = await Promise.all([
     playerIds.length > 0
       ? db.select().from(players).where(inArray(players.id, playerIds))
       : Promise.resolve([]),
@@ -191,6 +193,28 @@ export default async function MatchDetailPage({
             ),
           )
       : Promise.resolve([]),
+    // Noticias vinculadas al partido (relatedMatchId). Si no hay, caemos
+    // a noticias de cualquiera de las dos selecciones — sigue siendo
+    // relevante y nos da internal-linking adicional.
+    (async () => {
+      const direct = await getNewsForMatch(matchId, 3);
+      if (direct.length > 0) return direct;
+      const teamCodes = allTeams.map((t) => t.code);
+      if (teamCodes.length === 0) return [];
+      const items = await Promise.all(
+        teamCodes.map((c) => listPublishedNews({ teamCode: c, limit: 2 })),
+      );
+      const flat = items.flat();
+      const seen = new Set<number>();
+      const dedup: typeof flat = [];
+      for (const it of flat) {
+        if (seen.has(it.id)) continue;
+        seen.add(it.id);
+        dedup.push(it);
+        if (dedup.length === 3) break;
+      }
+      return dedup;
+    })(),
   ]);
 
   // Player rows for the goalscorer predictions (mine + everyone's once revealed)
@@ -622,6 +646,30 @@ export default async function MatchDetailPage({
             )}
           </CardContent>
         </Card>
+      ) : null}
+
+      {/* Noticias del partido (o de cualquiera de las dos selecciones). */}
+      {matchNews.length > 0 ? (
+        <section className="space-y-5 border-t border-[var(--color-border)] pt-10">
+          <header className="flex items-end justify-between gap-3">
+            <div className="space-y-1">
+              <p className="inline-flex items-center gap-2 font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
+                <Newspaper className="size-3.5 text-[var(--color-arena)]" />
+                Noticias del partido
+              </p>
+              <h2 className="font-display text-2xl tracking-tight sm:text-3xl">
+                Previas, análisis y crónicas
+              </h2>
+            </div>
+          </header>
+          <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {matchNews.map((n) => (
+              <li key={n.id}>
+                <NewsCard {...n} />
+              </li>
+            ))}
+          </ul>
+        </section>
       ) : null}
 
     </div>

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, CalendarDays, Clock, Crown, Goal, MapPin, Shirt, Target, Users } from "lucide-react";
+import { ArrowLeft, CalendarDays, Clock, Crown, Goal, MapPin, Newspaper, Shirt, Target, Users } from "lucide-react";
 import { and, asc, eq, inArray, or, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
@@ -21,6 +21,8 @@ import { formatDateTime } from "@/lib/utils";
 import { POSITIONS, POSITION_LABEL, type Position, normalizePosition } from "@/lib/position";
 import { BreadcrumbLD, SportsTeamLD } from "@/components/seo/jsonld";
 import { TEAM_ANALYSES } from "@/lib/seo/team-analysis";
+import { getNewsForTeam } from "@/lib/news/queries";
+import { NewsCard } from "@/components/news/news-card";
 import { getCurrentUser } from "@/lib/auth/guards";
 import { currentLeagueId } from "@/lib/leagues";
 
@@ -84,7 +86,7 @@ export default async function TeamDetailPage({
     ? await db.select().from(groups).where(eq(groups.id, team.groupId)).limit(1)
     : [];
 
-  const [teamMatches, squad, standingRows, scorerAggRows] = await Promise.all([
+  const [teamMatches, squad, standingRows, scorerAggRows, teamNews] = await Promise.all([
     db
       .select()
       .from(matches)
@@ -111,6 +113,7 @@ export default async function TeamDetailPage({
       .where(and(eq(matchScorers.teamId, team.id), sql`${matchScorers.isOwnGoal} = false`))
       .groupBy(matchScorers.playerId)
       .orderBy(sql`count(*) desc`),
+    getNewsForTeam(team.code, 3),
   ]);
 
   const standing = standingRows[0];
@@ -598,7 +601,40 @@ export default async function TeamDetailPage({
             </article>
           </section>
         ) : null
-      ) : (
+      ) : null}
+
+      {/* Noticias de la selección — vínculo bidireccional con /noticias.
+          Si no hay artículos vinculados a este team, no renderizamos. */}
+      {teamNews.length > 0 ? (
+        <section className="space-y-5 border-t border-[var(--color-border)] pt-10">
+          <header className="flex items-end justify-between gap-3">
+            <div className="space-y-1">
+              <p className="inline-flex items-center gap-2 font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
+                <Newspaper className="size-3.5 text-[var(--color-arena)]" />
+                Noticias de {team.name}
+              </p>
+              <h2 className="font-display text-3xl tracking-tight sm:text-4xl">
+                Lo último sobre {team.name} en el Mundial 2026
+              </h2>
+            </div>
+            <Link
+              href={`/noticias?team=${team.code}`}
+              className="hidden items-center gap-1.5 font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)] transition hover:text-[var(--color-arena)] sm:inline-flex"
+            >
+              Ver más →
+            </Link>
+          </header>
+          <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {teamNews.map((n) => (
+              <li key={n.id}>
+                <NewsCard {...n} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {!me ? (
         <section className="rounded-2xl border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface))] p-6 text-center">
           <p className="font-display text-2xl tracking-tight">¿Hasta dónde llega {team.name}?</p>
           <p className="pt-1 font-editorial text-sm italic text-[var(--color-muted-foreground)]">
@@ -611,7 +647,7 @@ export default async function TeamDetailPage({
             Crear mi quiniela
           </Link>
         </section>
-      )}
+      ) : null}
     </div>
   );
 }

@@ -78,6 +78,11 @@ export const metadata: Metadata = {
   formatDetection: { telephone: false, email: false, address: false },
   alternates: {
     canonical: "/",
+    types: {
+      "application/rss+xml": [
+        { url: "/feed.xml", title: "Quiniela Mundial · RSS" },
+      ],
+    },
   },
   openGraph: {
     type: "website",

@@ -9,6 +9,7 @@ import {
   Goal,
   ListChecks,
   MapPin,
+  Newspaper,
   ShieldCheck,
   Sparkles,
   Swords,
@@ -22,6 +23,8 @@ import { TeamFlag } from "@/components/brand/team-flag";
 import { getCurrentUser } from "@/lib/auth/guards";
 import { formatDateTime } from "@/lib/utils";
 import { FAQPageLD, SportsEventLD, WebSiteLD } from "@/components/seo/jsonld";
+import { NewsCard } from "@/components/news/news-card";
+import { listPublishedNews } from "@/lib/news/queries";
 
 const KICKOFF = new Date(
   process.env.NEXT_PUBLIC_TOURNAMENT_KICKOFF_AT ?? "2026-06-11T19:00:00Z",
@@ -99,6 +102,11 @@ export default async function HomePage() {
     .select({ id: teams.id, code: teams.code, name: teams.name })
     .from(teams)
     .orderBy(asc(teams.name));
+
+  // Últimas noticias para la sección editorial del home. 3 cards entre
+  // "El torneo" y "Explora el torneo". Si aún no hay noticias publicadas
+  // simplemente no renderizamos la sección.
+  const latestNews = await listPublishedNews({ limit: 3 });
 
   const daysToKickoff = Math.max(
     0,
@@ -411,6 +419,47 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* ───────── ÚLTIMAS NOTICIAS ─────────
+          Sección editorial frecuente — señal de "sitio vivo" a Google
+          y captura long-tail tipo "convocatoria España mundial" /
+          "previa partido inaugural". Va aquí (entre EL TORNEO y
+          EXPLORA) para no robarle el hueco al hero ni al onboarding.
+      */}
+      {latestNews.length > 0 ? (
+        <section className="space-y-6">
+          <header className="flex flex-wrap items-end justify-between gap-3">
+            <div className="space-y-2">
+              <p className="inline-flex items-center gap-2 font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
+                <Newspaper className="size-3.5 text-[var(--color-arena)]" />
+                Últimas noticias
+              </p>
+              <h2 className="font-display text-4xl tracking-tight sm:text-5xl">
+                Convocatorias, previas y todo el Mundial
+              </h2>
+              <p className="max-w-3xl font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base">
+                Lo último de las 48 selecciones, lesiones de última hora,
+                previas con alineaciones probables y crónicas partido a
+                partido. Actualizado a diario durante el torneo.
+              </p>
+            </div>
+            <Link
+              href="/noticias"
+              className="inline-flex items-center gap-2 rounded-md border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-4 py-2 font-mono text-[0.65rem] font-semibold uppercase tracking-[0.18em] transition hover:border-[var(--color-arena)]/40"
+            >
+              Ver todas
+              <ArrowRight className="size-3.5" />
+            </Link>
+          </header>
+          <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {latestNews.map((n) => (
+              <li key={n.id}>
+                <NewsCard {...n} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
       {/* ───────── EXPLORA EL TORNEO (hub interno + SEO) ───────── */}
       <section className="space-y-6">
         <header className="space-y-2">
@@ -600,6 +649,7 @@ export default async function HomePage() {
             <Link href="/grupos" className="hover:text-[var(--color-arena)]">Grupos</Link>
             <Link href="/bracket" className="hover:text-[var(--color-arena)]">Bracket</Link>
             <Link href="/goleadores" className="hover:text-[var(--color-arena)]">Goleadores</Link>
+            <Link href="/noticias" className="hover:text-[var(--color-arena)]">Noticias</Link>
             <Link href="/equipos" className="hover:text-[var(--color-arena)]">Selecciones</Link>
             <Link href="/sedes" className="hover:text-[var(--color-arena)]">Sedes</Link>
             <Link href="/login" className="hover:text-[var(--color-arena)]">Entrar</Link>

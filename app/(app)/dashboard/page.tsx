@@ -25,6 +25,7 @@ import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId } from "@/lib/leagues";
 import { formatDateTime } from "@/lib/utils";
 import { ActivityFeedCard } from "./activity-feed-card";
+import { DashboardNewsStrip } from "./news-strip";
 import { ImportPredictionsBanner } from "@/components/predictions/import-banner";
 import { loadOpenMatchdays, type OpenMatchdayEntry } from "@/lib/deadlines";
 import { getBracketStatus } from "@/lib/bracket-state";
@@ -920,6 +921,12 @@ export default async function DashboardPage() {
           ) : null}
         </div>
       </section>
+
+      {/* Mundial al día — últimas 2 noticias, streamed para no bloquear
+          el critical path del dashboard. */}
+      <Suspense fallback={null}>
+        <DashboardNewsStrip />
+      </Suspense>
     </div>
   );
 }
