@@ -29,7 +29,7 @@ export function PageHeader({ title, eyebrow, description, actions, className }: 
           {title}
         </h1>
         {description ? (
-          <p className="max-w-2xl font-editorial text-base italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-lg">
+          <p className="max-w-4xl font-editorial text-base italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-lg">
             {description}
           </p>
         ) : null}
