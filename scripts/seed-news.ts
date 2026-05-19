@@ -4,14 +4,20 @@ import { newsArticles, teams } from "@/lib/db/schema";
 import { SEED_NEWS } from "@/lib/news/seed-data";
 
 /**
- * Siembra el lote inicial de noticias en `news_articles`. Es idempotente:
- * si el slug ya existe, hace UPDATE; si no, INSERT. Eso permite re-correr
- * el script sin duplicar registros y, al mismo tiempo, refrescar el cuerpo
- * de un artículo si has cambiado el seed-data.
+ * Siembra el lote de noticias editoriales en `news_articles`.
  *
- * Los `relatedTeamCodes` se filtran contra la tabla `teams` real — los
- * códigos desconocidos se descartan sin romper para no acoplar el seed
- * al estado exacto de la DB.
+ * Comportamiento:
+ * - INSERT si el slug no existe. coverUrl/coverAlt quedan en null
+ *   para que el admin suba la imagen después.
+ * - UPDATE si ya existe. **NO toca coverUrl ni coverAlt** — esas son
+ *   editables vía admin y se respetan. Tampoco toca authorId ni el
+ *   publishedAt original. Solo refresca el contenido editorial:
+ *   título, excerpt, body, categoría, tags, equipos relacionados.
+ *   Esto significa que re-correr el seed es seguro tras editar
+ *   imagen, autor o fecha de publicación desde /admin/noticias.
+ *
+ * Los `relatedTeamCodes` se filtran contra la tabla `teams` real —
+ * los códigos desconocidos se descartan sin romper.
  *
  * Uso:
  *   pnpm db:seed-news
@@ -25,28 +31,9 @@ async function main() {
   const now = new Date();
 
   for (const seed of SEED_NEWS) {
-    const publishedAt = new Date(now.getTime() - seed.daysAgo * 24 * 60 * 60 * 1000);
     const filteredTeamCodes = seed.relatedTeamCodes.filter((c) =>
       knownCodes.has(c),
     );
-
-    const values = {
-      slug: seed.slug,
-      title: seed.title,
-      seoTitle: seed.seoTitle ?? null,
-      excerpt: seed.excerpt,
-      body: seed.body,
-      coverUrl: null,
-      coverAlt: null,
-      category: seed.category,
-      tags: seed.tags,
-      relatedTeamCodes: filteredTeamCodes,
-      relatedMatchId: null,
-      authorId: null,
-      status: "published" as const,
-      publishedAt,
-      updatedAt: now,
-    };
 
     const existing = await db
       .select({ id: newsArticles.id })
@@ -55,13 +42,43 @@ async function main() {
       .limit(1);
 
     if (existing[0]) {
+      // UPDATE editorial-only: respeta lo que el admin haya editado
+      // desde /admin/noticias (cover, autor, publishedAt).
       await db
         .update(newsArticles)
-        .set(values)
+        .set({
+          title: seed.title,
+          seoTitle: seed.seoTitle ?? null,
+          excerpt: seed.excerpt,
+          body: seed.body,
+          category: seed.category,
+          tags: seed.tags,
+          relatedTeamCodes: filteredTeamCodes,
+          updatedAt: now,
+        })
         .where(eq(newsArticles.id, existing[0].id));
       console.log(`  ↻ Actualizado: ${seed.slug}`);
     } else {
-      await db.insert(newsArticles).values(values);
+      const publishedAt = new Date(
+        now.getTime() - seed.daysAgo * 24 * 60 * 60 * 1000,
+      );
+      await db.insert(newsArticles).values({
+        slug: seed.slug,
+        title: seed.title,
+        seoTitle: seed.seoTitle ?? null,
+        excerpt: seed.excerpt,
+        body: seed.body,
+        coverUrl: null,
+        coverAlt: null,
+        category: seed.category,
+        tags: seed.tags,
+        relatedTeamCodes: filteredTeamCodes,
+        relatedMatchId: null,
+        authorId: null,
+        status: "published" as const,
+        publishedAt,
+        updatedAt: now,
+      });
       console.log(`  + Creado:     ${seed.slug}`);
     }
   }

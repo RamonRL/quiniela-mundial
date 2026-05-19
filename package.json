@@ -28,6 +28,7 @@
     "db:migrate-host-special": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/migrate-host-special-config.ts",
     "db:setup-rls": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/setup-rls.ts",
     "db:setup-news-bucket": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/setup-news-bucket.ts",
+    "db:recover-news-covers": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/recover-news-covers.ts",
     "db:telegram-chat-id": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/telegram-get-chat-id.ts",
     "test": "vitest run",
     "test:watch": "vitest"
