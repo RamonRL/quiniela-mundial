@@ -17,12 +17,15 @@ import { getNewsBySlug, getRelatedNews } from "@/lib/news/queries";
 import { NEWS_CATEGORIES } from "@/lib/news/categories";
 import { formatDateTime } from "@/lib/utils";
 
-// Detalle de un artículo — cacheable más tiempo que el listado porque
-// el cuerpo casi no cambia. updatedAt en dateModified de JSON-LD informa
-// a Google si lo actualizas.
+// Detalle de un artículo — ISR con revalidación cada 10 min. NO usamos
+// `dynamic = "force-static"` a propósito: forzar static cachearía el
+// layout (que es server-rendered y depende de `cookies()` para decidir
+// si pintar el shell público o el de usuario logueado), congelando
+// el HTML para todos en su versión "anónima". Con sólo `revalidate`
+// y el layout que llama `cookies()`, el route segment es dinámico —
+// el cuerpo del artículo se cachea a nivel de datos vía las queries,
+// pero el shell se renderiza fresco por petición y refleja la sesión.
 export const revalidate = 600;
-export const dynamic = "force-static";
-export const dynamicParams = true;
 
 type Params = Promise<{ slug: string }>;
 
