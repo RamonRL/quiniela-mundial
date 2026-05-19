@@ -1,5 +1,15 @@
 import "server-only";
-import { and, arrayOverlaps, desc, eq, lte, ne, or, sql } from "drizzle-orm";
+import {
+  and,
+  arrayOverlaps,
+  desc,
+  eq,
+  lte,
+  ne,
+  notInArray,
+  or,
+  sql,
+} from "drizzle-orm";
 import { db } from "@/lib/db";
 import { newsArticles, profiles } from "@/lib/db/schema";
 import type { NewsCategoryKey } from "./categories";
@@ -199,18 +209,16 @@ export async function getRelatedNews(
   const seen = new Set(primary.map((r) => r.id));
   const seenIds = primary.map((r) => r.id);
   const fillerNeeded = limit - primary.length;
+  // Drizzle's `notInArray` con `[]` genera `not in ()` que falla en
+  // postgres, así que cuando seenIds está vacío omitimos esa cláusula.
+  const fillerFilters = [isPublic(), ne(newsArticles.slug, current.slug)];
+  if (seenIds.length > 0) {
+    fillerFilters.push(notInArray(newsArticles.id, seenIds));
+  }
   const filler = await db
     .select(baseSelect)
     .from(newsArticles)
-    .where(
-      and(
-        isPublic(),
-        ne(newsArticles.slug, current.slug),
-        seenIds.length > 0
-          ? sql`${newsArticles.id} <> ALL(${seenIds})`
-          : sql`true`,
-      ),
-    )
+    .where(and(...fillerFilters))
     .orderBy(desc(newsArticles.publishedAt))
     .limit(fillerNeeded);
 
