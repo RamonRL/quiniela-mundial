@@ -39,6 +39,23 @@ export const specialPredictionType = pgEnum("special_prediction_type", [
   "player",
 ]);
 
+export const newsCategory = pgEnum("news_category", [
+  "convocatoria",
+  "previa",
+  "cronica",
+  "analisis",
+  "lesion",
+  "sorteo",
+  "destacada",
+]);
+
+export const newsStatus = pgEnum("news_status", [
+  "draft",
+  "scheduled",
+  "published",
+  "archived",
+]);
+
 export const pointsSource = pgEnum("points_source", [
   "group_position",
   "group_top2_swap",
@@ -504,6 +521,73 @@ export const auditLog = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("audit_log_created_idx").on(t.createdAt)],
+);
+
+// ───────────────────────── noticias (SEO) ─────────────────────────
+
+/**
+ * Artículos de noticias para captar tráfico orgánico: convocatorias,
+ * previas, crónicas, análisis, lesiones, sorteo, etc. Públicos por
+ * defecto e indexables. Los redacta el equipo editorial (en la práctica,
+ * yo desde sesiones de Claude Code) y un admin los publica/edita desde
+ * `/admin/noticias`.
+ *
+ * Vinculación al producto: `relatedTeamCodes` (códigos FIFA tipo "ESP",
+ * "MEX") + `relatedMatchId` permiten cruzar el artículo con sus páginas
+ * de equipo y partido — esto multiplica el internal-link graph y mejora
+ * el SEO de TODA la web, no solo de /noticias.
+ *
+ * `slug` es la URL final (`/noticias/<slug>`) y es inmutable una vez
+ * publicado para no romper backlinks de Google.
+ *
+ * Estados: draft (privado, solo admin), scheduled (publicado cuando
+ * `publishedAt <= now()`), published (visible), archived (oculto pero
+ * preservado para no perder links externos — devuelve 410 Gone).
+ */
+export const newsArticles = pgTable(
+  "news_articles",
+  {
+    id: serial("id").primaryKey(),
+    slug: text("slug").notNull().unique(),
+    title: text("title").notNull(),
+    seoTitle: text("seo_title"),
+    excerpt: text("excerpt").notNull(),
+    body: text("body").notNull(),
+    coverUrl: text("cover_url"),
+    coverAlt: text("cover_alt"),
+    category: newsCategory("category").notNull(),
+    tags: text("tags").array().notNull().default(sql`'{}'::text[]`),
+    relatedTeamCodes: text("related_team_codes")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    relatedMatchId: integer("related_match_id").references(() => matches.id, {
+      onDelete: "set null",
+    }),
+    authorId: uuid("author_id").references(() => profiles.id, {
+      onDelete: "set null",
+    }),
+    status: newsStatus("status").notNull().default("draft"),
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    viewCount: integer("view_count").notNull().default(0),
+  },
+  (t) => [
+    index("news_articles_status_published_idx").on(t.status, t.publishedAt),
+    index("news_articles_category_idx").on(t.category),
+    index("news_articles_related_match_idx").on(t.relatedMatchId),
+    // GIN para búsquedas tipo `relatedTeamCodes && '{ESP,MEX}'`.
+    index("news_articles_tags_gin").using("gin", t.tags),
+    index("news_articles_related_teams_gin").using(
+      "gin",
+      t.relatedTeamCodes,
+    ),
+  ],
 );
 
 // ───────────────────────── minijuegos ─────────────────────────
