@@ -15,7 +15,9 @@ import { NEWS_CATEGORIES, NEWS_CATEGORY_KEYS } from "@/lib/news/categories";
 // salga rápido sin pegarle a Postgres en cada visita.
 export const revalidate = 300;
 
-const PAGE_SIZE = 12;
+// 13 = 1 hero arriba + 12 en grid de 3 columnas (4 filas completas).
+// Con 12 quedaba la última fila con 2 cards descuadrada.
+const PAGE_SIZE = 13;
 
 export const metadata: Metadata = {
   title: "Noticias del Mundial 2026",
