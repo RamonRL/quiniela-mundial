@@ -19,6 +19,7 @@
     "db:seed-tournament": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/seed-tournament.ts",
     "db:seed-squads": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/seed-squads.ts",
     "db:seed-news": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/seed-news.ts",
+    "db:wipe-news": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/wipe-news.ts",
     "db:backfill-join-codes": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/backfill-join-codes.ts",
     "db:fetch-player-photos": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/fetch-player-photos.ts",
     "db:wipe-player-photos": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/wipe-player-photos.ts",
