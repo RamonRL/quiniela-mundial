@@ -6,16 +6,18 @@ import Link from "next/link";
  * Render del cuerpo del artículo en Markdown. Estilo "editorial" con:
  * - Headings h2/h3 con jerarquía clara (no permitimos h1 → ya lo da la
  *   página, dos h1 confunden a Google y suben crawl warnings).
- * - Párrafos con interlineado generoso y font-editorial.
+ * - Párrafos en Fraunces upright (la .font-editorial dejó de ser italic
+ *   por defecto: la itálica cansa en lectura larga). leading 1.7 y
+ *   tamaño base 17-18px para confort tipográfico.
  * - Listas con bullets de arena.
  * - Links del propio dominio renderizados con <Link> de Next (sin full
  *   page reload). Externos abren en nueva pestaña con rel=nofollow.
- * - Imágenes con figcaption opcional (sintaxis ![alt](src "caption")).
+ * - Blockquotes en itálica (el único bloque donde se conserva el
+ *   "swing" editorial — para citar fuentes y resaltar pensamientos).
  *
  * Sin sintaxis adicional (no HTML embebido, no react components vía MDX):
  * el body es texto que yo redacto + linkamos a equipos/partidos en el
- * Markdown. La extensión natural sería MDX si queremos cards embebidas,
- * pero para v1 sobra.
+ * Markdown.
  */
 
 const SITE_HOST = (
@@ -53,7 +55,7 @@ export function NewsBody({ body }: { body: string }) {
             </h3>
           ),
           p: ({ children }) => (
-            <p className="font-editorial mt-5 text-base leading-relaxed text-[var(--color-ink)] sm:text-lg">
+            <p className="font-editorial mt-5 text-[1.0625rem] leading-[1.7] text-[var(--color-ink)] sm:text-[1.125rem]">
               {children}
             </p>
           ),
@@ -81,12 +83,12 @@ export function NewsBody({ body }: { body: string }) {
             );
           },
           ul: ({ children }) => (
-            <ul className="mt-5 space-y-2 pl-5 font-editorial text-base leading-relaxed marker:text-[var(--color-arena)] sm:text-lg">
+            <ul className="mt-5 space-y-2 pl-5 font-editorial text-[1.0625rem] leading-[1.7] marker:text-[var(--color-arena)] sm:text-[1.125rem]">
               {children}
             </ul>
           ),
           ol: ({ children }) => (
-            <ol className="mt-5 list-decimal space-y-2 pl-5 font-editorial text-base leading-relaxed marker:text-[var(--color-arena)] sm:text-lg">
+            <ol className="mt-5 list-decimal space-y-2 pl-5 font-editorial text-[1.0625rem] leading-[1.7] marker:text-[var(--color-arena)] sm:text-[1.125rem]">
               {children}
             </ol>
           ),

@@ -198,14 +198,17 @@
   }
   .font-editorial {
     font-family: var(--font-editorial);
-    font-weight: 500;
-    font-style: italic;
-    /* Newsreader tiene x-height generosa y letterspacing nativo bien
-       resuelto en itálica — no necesita escala (1em) y un letter-spacing
-       ligeramente positivo da el respiro que pedía el cuerpo. line-height
-       holgado compensa la inclinación itálica para lectura larga. */
-    letter-spacing: 0.005em;
-    line-height: 1.5;
+    font-weight: 450;
+    /* Fraunces es variable (opsz + SOFT + wght). Con font-optical-sizing:
+       auto del body el grosor de los trazos se adapta al tamaño de
+       texto (más fino en 16px, más contraste en 32px+). Mantenemos un
+       letter-spacing ligeramente negativo para compensar el ancho
+       natural de Fraunces (es un poco más ancha que Newsreader).
+       El italic se activa con la clase `italic` de Tailwind allí donde
+       se quiera la voz editorial — el cuerpo de las noticias va upright
+       para lectura larga cómoda. */
+    letter-spacing: -0.005em;
+    line-height: 1.55;
   }
   .font-mono {
     font-family: var(--font-mono);

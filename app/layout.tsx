@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from "next";
 import {
   Big_Shoulders,
   DM_Sans,
+  Fraunces,
   JetBrains_Mono,
-  Newsreader,
 } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -25,14 +25,15 @@ const bigShoulders = Big_Shoulders({
   display: "swap",
 });
 
-// Newsreader: serif italic editorial diseñada por Production Type para
-// pantalla. Optical-size variable + x-height generosa + letterspacing más
-// holgado en itálica que Instrument Serif → más cómoda de leer en
-// descripciones, citas y subtítulos editoriales. Mantiene la voz
-// "literaria, no Victoriana" que define la sección editorial de la app.
-const newsreader = Newsreader({
+// Fraunces: serif variable moderno diseñado por Undercase Type. Tres
+// ejes (opsz, SOFT, wght) que combinados dan un cuerpo más cálido y
+// legible que Newsreader, especialmente para lectura larga en
+// noticias. La itálica conserva el "swing" editorial pero con trazos
+// más abiertos. font-optical-sizing: auto del body hace que ajuste
+// automáticamente el contraste según el tamaño.
+const fraunces = Fraunces({
   subsets: ["latin", "latin-ext"],
-  weight: ["400", "500"],
+  weight: ["400", "500", "600", "700"],
   style: ["normal", "italic"],
   variable: "--font-editorial-loaded",
   display: "swap",
@@ -150,7 +151,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="es"
       translate="no"
       suppressHydrationWarning
-      className={`${dmSans.variable} ${bigShoulders.variable} ${newsreader.variable} ${jetbrains.variable}`}
+      className={`${dmSans.variable} ${bigShoulders.variable} ${fraunces.variable} ${jetbrains.variable}`}
     >
       <body>
         <ThemeProvider>
