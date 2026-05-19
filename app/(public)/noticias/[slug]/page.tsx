@@ -182,7 +182,7 @@ export default async function NewsDetailPage({
         <h1 className="font-display text-4xl leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
           {article.title}
         </h1>
-        <p className="max-w-3xl font-editorial text-lg italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-xl">
+        <p className="font-editorial text-lg italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-xl">
           {article.excerpt}
         </p>
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2 font-mono text-[0.65rem] uppercase tracking-[0.24em] text-[var(--color-muted-foreground)]">
