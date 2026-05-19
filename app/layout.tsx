@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from "next";
 import {
   Big_Shoulders,
   DM_Sans,
-  Fraunces,
   JetBrains_Mono,
+  Mona_Sans,
 } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -25,13 +25,13 @@ const bigShoulders = Big_Shoulders({
   display: "swap",
 });
 
-// Fraunces: serif variable moderno diseñado por Undercase Type. Tres
-// ejes (opsz, SOFT, wght) que combinados dan un cuerpo más cálido y
-// legible que Newsreader, especialmente para lectura larga en
-// noticias. La itálica conserva el "swing" editorial pero con trazos
-// más abiertos. font-optical-sizing: auto del body hace que ajuste
-// automáticamente el contraste según el tamaño.
-const fraunces = Fraunces({
+// Mona Sans: la grotesque variable de GitHub. Ejes wght + wdth y un
+// dibujo geométrico con terminaciones bien resueltas dan un cuerpo
+// moderno con personalidad técnica. Sustituye al Fraunces como
+// `font-editorial`: el cuerpo de las noticias gana legibilidad
+// upright, y las descripciones con `italic` heredan la oblicua sans
+// — moderna y sin ruido visual.
+const monaSans = Mona_Sans({
   subsets: ["latin", "latin-ext"],
   weight: ["400", "500", "600", "700"],
   style: ["normal", "italic"],
@@ -151,7 +151,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="es"
       translate="no"
       suppressHydrationWarning
-      className={`${dmSans.variable} ${bigShoulders.variable} ${fraunces.variable} ${jetbrains.variable}`}
+      className={`${dmSans.variable} ${bigShoulders.variable} ${monaSans.variable} ${jetbrains.variable}`}
     >
       <body>
         <ThemeProvider>

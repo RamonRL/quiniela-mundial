@@ -35,7 +35,7 @@
   --color-card-red: var(--color-card-red-token);
 
   --font-display: var(--font-display-loaded), Impact, "Helvetica Neue", ui-sans-serif, sans-serif;
-  --font-editorial: var(--font-editorial-loaded), Georgia, ui-serif, serif;
+  --font-editorial: var(--font-editorial-loaded), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--font-sans-loaded), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-mono-loaded), ui-monospace, monospace;
 
@@ -199,15 +199,14 @@
   .font-editorial {
     font-family: var(--font-editorial);
     font-weight: 450;
-    /* Fraunces es variable (opsz + SOFT + wght). Con font-optical-sizing:
-       auto del body el grosor de los trazos se adapta al tamaño de
-       texto (más fino en 16px, más contraste en 32px+). Mantenemos un
-       letter-spacing ligeramente negativo para compensar el ancho
-       natural de Fraunces (es un poco más ancha que Newsreader).
-       El italic se activa con la clase `italic` de Tailwind allí donde
-       se quiera la voz editorial — el cuerpo de las noticias va upright
-       para lectura larga cómoda. */
-    letter-spacing: -0.005em;
+    /* Mona Sans es una grotesque variable (wght + wdth). Tiene un
+       dibujo más amplio que DM Sans, por lo que un letter-spacing
+       ligeramente negativo (-0.011em) densifica los párrafos largos
+       sin perder legibilidad. La oblicua (italic) tiene buen
+       contraste y mantiene la voz editorial allí donde se aplica con
+       la clase `italic` de Tailwind. El cuerpo de las noticias va
+       upright para lectura larga cómoda. */
+    letter-spacing: -0.011em;
     line-height: 1.55;
   }
   .font-mono {
