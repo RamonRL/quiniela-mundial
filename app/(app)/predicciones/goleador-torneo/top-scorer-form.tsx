@@ -2,9 +2,11 @@
 
 import Image from "next/image";
 import { useActionState, useMemo, useState } from "react";
-import { Lock, Save, Search, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Lock, Search, X } from "lucide-react";
 import { TeamFlag } from "@/components/brand/team-flag";
+import { SavePredictionButton } from "@/components/predictions/save-prediction-button";
+import { SaveOverlay } from "@/components/predictions/save-overlay";
+import { usePredictionSaveToast } from "@/lib/predictions/use-save-toast";
 import { initials, cn } from "@/lib/utils";
 import { saveTopScorerPrediction, type FormState } from "./actions";
 
@@ -98,6 +100,11 @@ export function TopScorerForm({
   const [posFilter, setPosFilter] = useState<Position | null>(null);
   const [search, setSearch] = useState("");
   const [state, action, pending] = useActionState(saveTopScorerPrediction, initial);
+
+  usePredictionSaveToast(state, {
+    successTitle: "Bota de Oro guardada",
+    successDescription: "Tu candidato a máximo goleador quedó anotado.",
+  });
 
   const searchTokens = useMemo(
     () => fold(search).split(/\s+/).filter(Boolean),
@@ -353,8 +360,6 @@ export function TopScorerForm({
       </section>
 
       {/* ─── Save bar ─── */}
-      {state.error ? <p className="text-sm text-[var(--color-danger)]">{state.error}</p> : null}
-      {state.ok ? <p className="text-sm text-[var(--color-success)]">Guardado.</p> : null}
       {open ? (
         <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+5.5rem)] z-10 flex items-center justify-between gap-3 rounded-xl border border-[var(--color-border)] bg-[color-mix(in_oklch,var(--color-surface)_92%,transparent)] p-3 backdrop-blur-md sm:bottom-3">
           <div className="min-w-0 truncate text-sm">
@@ -376,12 +381,11 @@ export function TopScorerForm({
               </span>
             )}
           </div>
-          <Button type="submit" size="lg" disabled={pending || selected == null}>
-            <Save />
-            {pending ? "Guardando…" : "Guardar"}
-          </Button>
+          <SavePredictionButton pending={pending} disabled={selected == null} />
         </div>
       ) : null}
+
+      <SaveOverlay open={pending} />
     </form>
   );
 }

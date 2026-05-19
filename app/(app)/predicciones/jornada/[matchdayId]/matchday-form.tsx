@@ -3,9 +3,8 @@
 import { TeamFlag } from "@/components/brand/team-flag";
 import { ScoreStepper } from "@/components/forms/score-stepper";
 import { useActionState, useState } from "react";
-import { Lock, Save } from "lucide-react";
+import { Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -18,6 +17,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SavePredictionButton } from "@/components/predictions/save-prediction-button";
+import { SaveOverlay } from "@/components/predictions/save-overlay";
+import { usePredictionSaveToast } from "@/lib/predictions/use-save-toast";
 import { formatDateTime } from "@/lib/utils";
 import { saveMatchdayPredictions, type FormState } from "./actions";
 
@@ -80,6 +82,11 @@ export function MatchdayPredictionForm({
     })),
   );
   const [state, action, pending] = useActionState(saveMatchdayPredictions, initial);
+
+  usePredictionSaveToast(state, {
+    successTitle: "Jornada guardada",
+    successDescription: "Marcadores y goleadores anotados para esta jornada.",
+  });
 
   function update(matchId: number, patch: Partial<Prediction>) {
     setPredictions((prev) =>
@@ -243,28 +250,13 @@ export function MatchdayPredictionForm({
         })}
       </div>
 
-      {state.error ? (
-        <p className="text-sm text-[var(--color-danger)]">{state.error}</p>
-      ) : null}
-      {state.ok ? (
-        <p className="text-sm text-[var(--color-success)]">
-          Predicción guardada. Puedes editarla hasta el cierre.
-        </p>
-      ) : null}
-
       {open ? (
         <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+5.5rem)] z-10 flex justify-center rounded-xl border border-[var(--color-border)] bg-[color-mix(in_oklch,var(--color-surface)_92%,transparent)] p-2 backdrop-blur-md sm:bottom-3">
-          <Button
-            type="submit"
-            size="lg"
-            disabled={pending}
-            className="w-1/2 justify-center"
-          >
-            <Save />
-            {pending ? "Guardando…" : "Guardar"}
-          </Button>
+          <SavePredictionButton pending={pending} />
         </div>
       ) : null}
+
+      <SaveOverlay open={pending} />
     </form>
   );
 }

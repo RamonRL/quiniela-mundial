@@ -20,10 +20,12 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Lock, Save } from "lucide-react";
+import { GripVertical, Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SavePredictionButton } from "@/components/predictions/save-prediction-button";
+import { SaveOverlay } from "@/components/predictions/save-overlay";
+import { usePredictionSaveToast } from "@/lib/predictions/use-save-toast";
 import { saveGroupPredictions, type FormState } from "./actions";
 
 const initial: FormState = { ok: false };
@@ -48,6 +50,11 @@ export function GroupRankingForm({
     Object.fromEntries(groups.map((g) => [g.id, g.initialOrder])),
   );
   const [state, action, pending] = useActionState(saveGroupPredictions, initial);
+
+  usePredictionSaveToast(state, {
+    successTitle: "Posiciones guardadas",
+    successDescription: "Tus 12 grupos quedaron anotados. Puedes editar hasta el cierre.",
+  });
 
   const payload = {
     predictions: groups.map((g) => {
@@ -84,27 +91,13 @@ export function GroupRankingForm({
           />
         ))}
       </div>
-      {state.error ? (
-        <p className="text-sm text-[var(--color-danger)]">{state.error}</p>
-      ) : null}
-      {state.ok ? (
-        <p className="text-sm text-[var(--color-success)]">
-          Predicción guardada. Puedes editar hasta el cierre.
-        </p>
-      ) : null}
       {open ? (
         <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+5.5rem)] z-10 flex justify-center rounded-xl border border-[var(--color-border)] bg-[color-mix(in_oklch,var(--color-surface)_92%,transparent)] p-2 backdrop-blur-md sm:bottom-3">
-          <Button
-            type="submit"
-            size="lg"
-            disabled={pending}
-            className="w-1/2 justify-center"
-          >
-            <Save />
-            {pending ? "Guardando…" : "Guardar"}
-          </Button>
+          <SavePredictionButton pending={pending} />
         </div>
       ) : null}
+
+      <SaveOverlay open={pending} />
     </form>
   );
 }

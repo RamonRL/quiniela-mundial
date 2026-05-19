@@ -8,13 +8,14 @@ import {
   Hash,
   ListChecks,
   Lock,
-  Save,
   Search,
   User,
   X,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { TeamFlag } from "@/components/brand/team-flag";
+import { SavePredictionButton } from "@/components/predictions/save-prediction-button";
+import { SaveOverlay } from "@/components/predictions/save-overlay";
+import { usePredictionSaveToast } from "@/lib/predictions/use-save-toast";
 import { cn, formatDateTime } from "@/lib/utils";
 import { saveSpecialPredictions, type FormState } from "./actions";
 
@@ -101,6 +102,11 @@ export function SpecialsForm({ specials, existing, players, teams }: Props) {
 
   const [values, setValues] = useState(initialMap);
   const [state, action, pending] = useActionState(saveSpecialPredictions, initial);
+
+  usePredictionSaveToast(state, {
+    successTitle: "Predicciones especiales guardadas",
+    successDescription: "Tus respuestas se han registrado correctamente.",
+  });
 
   const payload = {
     predictions: specials.map((s) => ({
@@ -231,22 +237,11 @@ export function SpecialsForm({ specials, existing, players, teams }: Props) {
         })}
       </div>
 
-      {state.error ? <p className="text-sm text-[var(--color-danger)]">{state.error}</p> : null}
-      {state.ok ? (
-        <p className="text-sm text-[var(--color-success)]">Predicciones guardadas.</p>
-      ) : null}
-
       <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+5.5rem)] z-10 flex justify-center rounded-xl border border-[var(--color-border)] bg-[color-mix(in_oklch,var(--color-surface)_92%,transparent)] p-2 backdrop-blur-md sm:bottom-3">
-        <Button
-          type="submit"
-          size="lg"
-          disabled={pending}
-          className="w-1/2 justify-center"
-        >
-          <Save />
-          {pending ? "Guardando…" : "Guardar"}
-        </Button>
+        <SavePredictionButton pending={pending} />
       </div>
+
+      <SaveOverlay open={pending} />
     </form>
   );
 }
