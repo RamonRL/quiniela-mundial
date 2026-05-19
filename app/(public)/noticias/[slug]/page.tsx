@@ -122,16 +122,12 @@ export default async function NewsDetailPage({
     day: "2-digit",
     month: "long",
     year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
-  const updatedLabel =
-    article.updatedAt.getTime() - article.publishedAt.getTime() > 60_000
-      ? formatDateTime(article.updatedAt, {
-          day: "2-digit",
-          month: "long",
-          year: "numeric",
-        })
-      : null;
   const readMinutes = Math.max(1, Math.round(article.body.split(/\s+/).length / 230));
+  // El authorName se mantiene para JSON-LD (Google exige `author` en
+  // NewsArticle schema), aunque ya no se renderiza en la cabecera.
   const authorName = article.author?.nickname ?? "Redacción Quiniela Mundial";
 
   return (
@@ -190,15 +186,7 @@ export default async function NewsDetailPage({
           {article.excerpt}
         </p>
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2 font-mono text-[0.65rem] uppercase tracking-[0.24em] text-[var(--color-muted-foreground)]">
-          <span>{authorName}</span>
-          <span aria-hidden>·</span>
           <time dateTime={article.publishedAt.toISOString()}>{dateLabel}</time>
-          {updatedLabel ? (
-            <>
-              <span aria-hidden>·</span>
-              <span>Actualizado {updatedLabel}</span>
-            </>
-          ) : null}
           <span aria-hidden>·</span>
           <span className="inline-flex items-center gap-1.5">
             <Clock className="size-3" /> {readMinutes} min lectura
