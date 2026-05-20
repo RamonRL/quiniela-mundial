@@ -5,24 +5,28 @@ import { cookies } from "next/headers";
 import { after } from "next/server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { leagueMemberships, leagues, profiles } from "@/lib/db/schema";
+import { commercialLeads, leagueMemberships, leagues, profiles } from "@/lib/db/schema";
 import { requireAdmin, requireUser } from "@/lib/auth/guards";
 import { createSupabaseServerClient, createSupabaseServiceClient } from "@/lib/supabase/server";
 import { logAdminAction } from "@/lib/admin/audit";
 import { notifyNewPrivateLeague } from "@/lib/telegram/events";
 import { uploadImage } from "@/lib/storage";
 import {
+  MEMBER_LIMIT_FREE,
   PENDING_INVITE_COOKIE,
   PRIVATE_LEAGUES_PER_USER_LIMIT,
+  canJoinLeague,
   countPrivateMemberships,
   generateUniqueJoinCode,
   getPublicLeague,
   isMemberOf,
+  isPremiumTier,
   joinLeagueByInviteToken,
 } from "@/lib/leagues";
+import { presetUrlById, DEFAULT_PRESET_LOGO_URL } from "@/lib/league-logos";
 
 export type LeagueFormState = { ok: boolean; error?: string; message?: string };
 
@@ -39,6 +43,10 @@ function slugify(input: string): string {
 }
 
 const PRIVATE_LIMIT_ERROR = `Tienes ${PRIVATE_LEAGUES_PER_USER_LIMIT} quinielas privadas. Para unirte a una nueva, abandona alguna desde tu perfil.`;
+
+function leagueFullError(leagueName: string, limit: number): string {
+  return `"${leagueName}" está completa (${limit}/${limit} miembros). El creador puede ampliarla contratando un Pase Mundial 2026 — más info en /precios.`;
+}
 
 const NAME_MAX = 25;
 // Tope defensivo del logo en servidor — el cliente comprime con
@@ -100,6 +108,15 @@ export async function createLeague(
   const inviteToken = randomUUID().replace(/-/g, "");
   const joinCode = await generateUniqueJoinCode();
 
+  // Las ligas nuevas arrancan en tier Free con límite 20. El usuario elige
+  // un logo de la galería preset desde el onboarding (los Pases Mundial
+  // 2026 desbloquean logo corporativo custom — se sube desde /mi-quiniela
+  // después de que el admin marque el upgrade).
+  const presetId = formData.get("logoPresetId");
+  const presetUrl =
+    typeof presetId === "string" ? presetUrlById(presetId) : null;
+  const initialLogoUrl = presetUrl ?? DEFAULT_PRESET_LOGO_URL;
+
   const [created] = await db
     .insert(leagues)
     .values({
@@ -109,29 +126,11 @@ export async function createLeague(
       joinCode,
       isPublic: false,
       createdBy: me.id,
+      logoUrl: initialLogoUrl,
+      tier: "free",
+      memberLimit: MEMBER_LIMIT_FREE,
     })
     .returning();
-
-  // Logo opcional. Lo subimos DESPUÉS del insert para poder usar el
-  // `id` recién generado como path del fichero — así si el usuario
-  // sube un nuevo logo más adelante, sobreescribe el mismo path
-  // (upsert: true en uploadImage). Falla silenciosa: si el upload
-  // peta no abortamos la creación de liga, solo nos quedamos sin logo.
-  const logo = formData.get("logo");
-  if (logo instanceof File && logo.size > 0 && logo.size <= MAX_LOGO_BYTES) {
-    try {
-      const ext = logo.type === "image/png" ? "png" : "jpg";
-      const path = `${created.id}.${ext}`;
-      const logoUrl = await uploadImage({ kind: "league", path, file: logo });
-      await db
-        .update(leagues)
-        .set({ logoUrl })
-        .where(eq(leagues.id, created.id));
-      created.logoUrl = logoUrl;
-    } catch (err) {
-      console.warn("[leagues] logo upload failed at create:", err);
-    }
-  }
 
   // Auto-inscribir al creador y ponerla como activa.
   await db
@@ -223,6 +222,11 @@ export async function joinLeagueByCode(
     return { ok: false, error: PRIVATE_LIMIT_ERROR };
   }
 
+  const cap = await canJoinLeague(league.id);
+  if (!cap.ok) {
+    return { ok: false, error: leagueFullError(league.name, cap.limit) };
+  }
+
   await db
     .insert(leagueMemberships)
     .values({ userId: me.id, leagueId: league.id })
@@ -305,8 +309,10 @@ export async function acceptInvite(token: string): Promise<{
     | "redirected_to_login"
     | "redirected_home"
     | "joined"
-    | "private_limit_reached";
+    | "private_limit_reached"
+    | "league_full";
   leagueName?: string;
+  limit?: number;
 }> {
   const [league] = await db
     .select()
@@ -347,8 +353,17 @@ export async function acceptInvite(token: string): Promise<{
   }
 
   const result = await joinLeagueByInviteToken(me.id, token);
-  if (!result.ok && result.reason === "private_limit_reached") {
-    return { status: "private_limit_reached", leagueName: result.leagueName };
+  if (!result.ok) {
+    if (result.reason === "private_limit_reached") {
+      return { status: "private_limit_reached", leagueName: result.leagueName };
+    }
+    if (result.reason === "league_full") {
+      return {
+        status: "league_full",
+        leagueName: result.leagueName,
+        limit: result.limit,
+      };
+    }
   }
   revalidatePath("/", "layout");
   redirect("/dashboard");
@@ -399,8 +414,24 @@ export async function updateLeague(
 
   const update: Record<string, unknown> = { name: parsed.data.name };
 
+  // Logo: la galería preset siempre está disponible. El upload custom
+  // solo si la liga tiene un Pase Mundial 2026 (tier != free). Si llegan
+  // ambos campos, el custom gana (premium quería sobreescribir).
+  const presetId = formData.get("logoPresetId");
+  if (typeof presetId === "string" && presetId.length > 0) {
+    const presetUrl = presetUrlById(presetId);
+    if (presetUrl) update.logoUrl = presetUrl;
+  }
+
   const logo = formData.get("logo");
   if (logo instanceof File && logo.size > 0) {
+    if (!isPremiumTier(target.tier)) {
+      return {
+        ok: false,
+        error:
+          "Subir un logo corporativo está incluido en los Pases Mundial 2026. Mientras tanto, elige uno de la galería o contáctanos en /precios.",
+      };
+    }
     if (logo.size > MAX_LOGO_BYTES) {
       return { ok: false, error: "El logo es demasiado grande." };
     }
@@ -480,6 +511,57 @@ export async function kickFromOwnLeague(formData: FormData) {
 
   revalidatePath("/mi-quiniela");
   revalidatePath("/", "layout");
+}
+
+const announcementSchema = z.object({
+  id: z.coerce.number().int(),
+  announcement: z
+    .string()
+    .trim()
+    .max(280, "El anuncio no puede pasar de 280 caracteres."),
+});
+
+/**
+ * Edita el anuncio fijado de una quiniela privada premium. Aparece como
+ * banner en /mi-quiniela para todos los miembros. Solo el creador puede
+ * cambiarlo y solo si la liga tiene un Pase Mundial 2026 activo. Un
+ * string vacío limpia el anuncio.
+ */
+export async function updateLeagueAnnouncement(
+  _prev: LeagueFormState,
+  formData: FormData,
+): Promise<LeagueFormState> {
+  const me = await requireUser();
+  const parsed = announcementSchema.safeParse({
+    id: formData.get("id"),
+    announcement: formData.get("announcement") ?? "",
+  });
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+  }
+  const [target] = await db
+    .select()
+    .from(leagues)
+    .where(eq(leagues.id, parsed.data.id))
+    .limit(1);
+  if (!target) return { ok: false, error: "Liga no encontrada." };
+  if (target.createdBy !== me.id) {
+    return { ok: false, error: "Solo el creador puede editar el anuncio." };
+  }
+  if (!isPremiumTier(target.tier)) {
+    return {
+      ok: false,
+      error:
+        "El anuncio fijado forma parte de los Pases Mundial 2026. Mira /precios.",
+    };
+  }
+  const value = parsed.data.announcement.length > 0 ? parsed.data.announcement : null;
+  await db.update(leagues).set({ announcement: value }).where(eq(leagues.id, target.id));
+  revalidatePath("/mi-quiniela");
+  return {
+    ok: true,
+    message: value ? "Anuncio actualizado." : "Anuncio eliminado.",
+  };
 }
 
 // ─────────────────── ADMIN ───────────────────
@@ -615,4 +697,118 @@ export async function hardDeleteUser(formData: FormData) {
   if (before?.leagueId != null) revalidatePath(`/admin/ligas/${before.leagueId}`);
   revalidatePath("/admin/usuarios");
   revalidatePath("/", "layout");
+}
+
+const VALID_TIERS = ["free", "team-50", "team-100", "team-250", "enterprise"] as const;
+const upgradeSchema = z.object({
+  id: z.coerce.number().int(),
+  tier: z.enum(VALID_TIERS),
+  memberLimit: z.coerce.number().int().min(1).max(10000).optional(),
+  paidAmountEur: z.coerce.number().int().min(0).max(100000).optional(),
+  paidVia: z.string().trim().max(40).optional().nullable(),
+  markPaidNow: z.coerce.boolean().optional(),
+});
+
+/**
+ * Admin override: cambia el tier y el `memberLimit` de una liga. Si el
+ * admin marca "pagado ahora", también setea `paidAt`, `paidAmountEur` y
+ * `paidVia`. Deja audit trail. Esta es la acción que se ejecuta tras
+ * cobrar un Pase Mundial 2026 por PayPal.
+ */
+export async function upgradeLeague(
+  _prev: LeagueFormState,
+  formData: FormData,
+): Promise<LeagueFormState> {
+  const me = await requireAdmin();
+  const parsed = upgradeSchema.safeParse({
+    id: formData.get("id"),
+    tier: formData.get("tier"),
+    memberLimit: formData.get("memberLimit") || undefined,
+    paidAmountEur: formData.get("paidAmountEur") || undefined,
+    paidVia: formData.get("paidVia") || undefined,
+    markPaidNow: formData.get("markPaidNow") === "on" || formData.get("markPaidNow") === "true",
+  });
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+  }
+
+  const [before] = await db
+    .select()
+    .from(leagues)
+    .where(eq(leagues.id, parsed.data.id))
+    .limit(1);
+  if (!before) return { ok: false, error: "Liga no encontrada." };
+  if (before.isPublic) {
+    return { ok: false, error: "La quiniela pública no admite tier." };
+  }
+
+  const update: Record<string, unknown> = { tier: parsed.data.tier };
+  if (parsed.data.memberLimit != null) update.memberLimit = parsed.data.memberLimit;
+  if (parsed.data.paidAmountEur != null) update.paidAmountEur = parsed.data.paidAmountEur;
+  if (parsed.data.paidVia) update.paidVia = parsed.data.paidVia;
+  if (parsed.data.markPaidNow) update.paidAt = new Date();
+
+  await db.update(leagues).set(update).where(eq(leagues.id, before.id));
+
+  await logAdminAction({
+    adminId: me.id,
+    action: "league.upgrade",
+    payload: {
+      leagueId: before.id,
+      from: {
+        tier: before.tier,
+        memberLimit: before.memberLimit,
+        paidAmountEur: before.paidAmountEur,
+      },
+      to: {
+        tier: parsed.data.tier,
+        memberLimit: update.memberLimit ?? before.memberLimit,
+        paidAmountEur: update.paidAmountEur ?? before.paidAmountEur,
+        paidVia: update.paidVia ?? before.paidVia,
+      },
+    },
+  });
+
+  revalidatePath("/admin/ligas");
+  revalidatePath(`/admin/ligas/${before.id}`);
+  revalidatePath("/mi-quiniela");
+  return { ok: true, message: "Plan actualizado." };
+}
+
+const VALID_LEAD_STATUS = ["new", "contacted", "won", "lost"] as const;
+const leadUpdateSchema = z.object({
+  id: z.coerce.number().int(),
+  status: z.enum(VALID_LEAD_STATUS),
+  notes: z.string().trim().max(2000).optional().nullable(),
+});
+
+/** Admin: actualiza el estado/notas de un lead comercial. */
+export async function updateCommercialLead(
+  _prev: LeagueFormState,
+  formData: FormData,
+): Promise<LeagueFormState> {
+  const me = await requireAdmin();
+  const parsed = leadUpdateSchema.safeParse({
+    id: formData.get("id"),
+    status: formData.get("status"),
+    notes: formData.get("notes") || undefined,
+  });
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+  }
+  await db
+    .update(commercialLeads)
+    .set({
+      status: parsed.data.status,
+      notes: parsed.data.notes ?? null,
+      updatedAt: new Date(),
+    })
+    .where(eq(commercialLeads.id, parsed.data.id));
+  await logAdminAction({
+    adminId: me.id,
+    action: "lead.update",
+    payload: { id: parsed.data.id, status: parsed.data.status },
+  });
+  revalidatePath("/admin/leads");
+  return { ok: true, message: "Lead actualizado." };
 }

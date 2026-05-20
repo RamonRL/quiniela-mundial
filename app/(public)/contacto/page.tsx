@@ -1,10 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Bug, Lightbulb, Mail, MessageSquare } from "lucide-react";
+import { Briefcase, Bug, Lightbulb, Mail, MessageSquare } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
 import { PageHeader } from "@/components/shell/page-header";
 import { BreadcrumbLD } from "@/components/seo/jsonld";
 import { InstagramIcon, TikTokIcon, XIcon } from "@/components/icons/social";
+import { CommercialLeadForm } from "@/components/leagues/commercial-lead-form";
 
 // Contacto es estático: cacheamos generosamente (24 h).
 export const revalidate = 86400;
@@ -183,6 +184,42 @@ export default function ContactoPage() {
             text="Lo que sea: prensa, colaboraciones, dudas legales, peticiones de borrado."
             href={`mailto:${EMAIL}?subject=${encodeURIComponent("Quiniela Mundial · ")}`}
           />
+        </div>
+      </section>
+
+      {/* ─── Empresas / grupos grandes ─── */}
+      <section
+        id="empresas"
+        className="relative overflow-hidden rounded-2xl border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface))] p-8 sm:p-10"
+      >
+        <div
+          aria-hidden
+          className="halftone pointer-events-none absolute inset-0 opacity-[0.05]"
+        />
+        <div className="relative grid gap-6 lg:grid-cols-[auto_1fr] lg:items-start lg:gap-10">
+          <div className="space-y-2">
+            <span className="inline-flex size-10 items-center justify-center rounded-md bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]">
+              <Briefcase className="size-5" />
+            </span>
+            <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
+              Empresas y grupos grandes
+            </p>
+            <h2 className="font-display text-3xl tracking-tight">
+              ¿Tu empresa lo quiere usar?
+            </h2>
+            <p className="max-w-md font-editorial text-base italic leading-relaxed text-[var(--color-muted-foreground)]">
+              Las quinielas privadas aguantan 20 personas en plan Free. Para
+              equipos más grandes hay Pases Mundial 2026 desde 29 € — mira{" "}
+              <Link
+                href="/precios"
+                className="text-[var(--color-arena)] underline-offset-2 hover:underline"
+              >
+                /precios
+              </Link>{" "}
+              o rellena el formulario y te respondo en menos de 24 h.
+            </p>
+          </div>
+          <CommercialLeadForm />
         </div>
       </section>
 

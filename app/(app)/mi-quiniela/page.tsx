@@ -1,5 +1,6 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Crown, ShieldCheck, Users } from "lucide-react";
+import { ArrowRight, Crown, Download, Mail, Megaphone, Sparkles, ShieldCheck, Users } from "lucide-react";
 import { asc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { leagues, pointsLedger, profiles } from "@/lib/db/schema";
@@ -17,13 +18,14 @@ import { PageHeader } from "@/components/shell/page-header";
 import { EmptyState } from "@/components/shell/empty-state";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { requireUser } from "@/lib/auth/guards";
-import { currentLeagueId, inLeagueFilter } from "@/lib/leagues";
+import { currentLeagueId, inLeagueFilter, isPremiumTier } from "@/lib/leagues";
 import { deleteOwnLeague } from "@/lib/league-actions";
 import { formatDateTime, initials } from "@/lib/utils";
 import { InviteLinkCopy } from "@/app/admin/ligas/invite-link-copy";
 import { CodeDisplay } from "./code-display";
 import { EditLeagueForm } from "./edit-league-form";
 import { KickButton, LeaveButton } from "./member-actions";
+import { AnnouncementForm } from "./announcement-form";
 
 export const metadata = { title: "Mi Quiniela" };
 export const dynamic = "force-dynamic";
@@ -60,9 +62,58 @@ export default async function MyLeaguePage() {
   ]);
   const pointsByUser = new Map(pointsRows.map((r) => [r.userId, r.total]));
   const isOwner = league.createdBy === me.id;
+  const isPremium = isPremiumTier(league.tier);
+  const memberLimit = league.memberLimit;
+  const ratio = memberLimit != null ? members.length / memberLimit : 0;
+  const isFull = memberLimit != null && members.length >= memberLimit;
+  const nearLimit = memberLimit != null && ratio >= 0.8 && !isFull;
 
   return (
     <div className="space-y-8">
+      {league.announcement ? (
+        <aside className="flex items-start gap-3 rounded-xl border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_8%,var(--color-surface))] p-4">
+          <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]">
+            <Megaphone className="size-4" />
+          </span>
+          <p className="font-editorial text-sm italic leading-relaxed text-[var(--color-foreground)]">
+            {league.announcement}
+          </p>
+        </aside>
+      ) : null}
+
+      {isOwner && isFull ? (
+        <aside className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--color-danger)]/40 bg-[var(--color-danger)]/5 p-4">
+          <p className="font-editorial text-sm italic leading-relaxed">
+            <strong className="font-semibold not-italic">
+              Quiniela completa ({memberLimit}/{memberLimit} miembros).
+            </strong>{" "}
+            Para que entren más, contrata un Pase Mundial 2026 — sin migrar
+            datos, mismo grupo.
+          </p>
+          <Link
+            href="/precios"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-[var(--color-arena)] bg-[var(--color-arena)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-white shadow-[var(--shadow-arena)]"
+          >
+            Ver planes <ArrowRight className="size-3" />
+          </Link>
+        </aside>
+      ) : null}
+
+      {isOwner && nearLimit ? (
+        <aside className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_6%,var(--color-surface))] p-4">
+          <p className="font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)]">
+            Estás cerca del límite ({members.length}/{memberLimit}). ¿Tu grupo
+            va a crecer?
+          </p>
+          <Link
+            href="/precios"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-[var(--color-arena)]/40 bg-[var(--color-surface)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-arena)] hover:bg-[color-mix(in_oklch,var(--color-arena)_8%,transparent)]"
+          >
+            Ver planes <ArrowRight className="size-3" />
+          </Link>
+        </aside>
+      ) : null}
+
       <div className="flex items-start gap-5">
         {league.logoUrl ? (
           <Avatar className="size-20 shrink-0 border-2 border-[var(--color-border-strong)] shadow-[var(--shadow-elev-1)] sm:size-24">
@@ -106,14 +157,31 @@ export default async function MyLeaguePage() {
             id: league.id,
             name: league.name,
             logoUrl: league.logoUrl,
+            isPremium,
           }}
         />
       ) : null}
 
+      {isOwner && isPremium ? (
+        <AnnouncementForm leagueId={league.id} initialValue={league.announcement} />
+      ) : null}
+
       {league.joinCode ? <CodeDisplay code={league.joinCode} /> : null}
 
-      <section className="grid gap-3 sm:grid-cols-2">
-        <StatTile label="Miembros" value={members.length} accent />
+      <section className="grid gap-3 sm:grid-cols-3">
+        <StatTile
+          label="Miembros"
+          value={
+            memberLimit != null ? `${members.length} / ${memberLimit}` : String(members.length)
+          }
+          accent
+          textValue
+        />
+        <StatTile
+          label="Plan"
+          value={isPremium ? "Pase Mundial 2026" : "Free"}
+          textValue
+        />
         <StatTile
           label="Creada"
           value={formatDateTime(league.createdAt, {
@@ -124,6 +192,41 @@ export default async function MyLeaguePage() {
           textValue
         />
       </section>
+
+      {isOwner && isPremium ? (
+        <section className="grid gap-3 sm:grid-cols-2">
+          <a
+            href="/mi-quiniela/export"
+            className="flex items-center gap-3 rounded-xl border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_4%,var(--color-surface))] p-4 transition hover:border-[var(--color-arena)]/60"
+          >
+            <span className="grid size-9 place-items-center rounded-md bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]">
+              <Download className="size-4" />
+            </span>
+            <div className="min-w-0">
+              <p className="font-display text-sm tracking-tight">Exportar CSV</p>
+              <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
+                Ranking completo con email y puntos.
+              </p>
+            </div>
+          </a>
+          <a
+            href="mailto:admin@quinielamundial.es?subject=Soporte%20Pase%20Mundial%202026"
+            className="flex items-center gap-3 rounded-xl border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_4%,var(--color-surface))] p-4 transition hover:border-[var(--color-arena)]/60"
+          >
+            <span className="grid size-9 place-items-center rounded-md bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]">
+              <Mail className="size-4" />
+            </span>
+            <div className="min-w-0">
+              <p className="flex items-center gap-1.5 font-display text-sm tracking-tight">
+                Soporte prioritario <Sparkles className="size-3" />
+              </p>
+              <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
+                Respondo en menos de 24 h.
+              </p>
+            </div>
+          </a>
+        </section>
+      ) : null}
 
       <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
         <header className="flex items-center justify-between gap-3 pb-3 font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">

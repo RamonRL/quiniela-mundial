@@ -22,6 +22,8 @@ import { inLeagueFilter } from "@/lib/leagues";
 import { formatDateTime, initials } from "@/lib/utils";
 import { InviteLinkCopy } from "../invite-link-copy";
 import { MemberActions } from "./member-actions";
+import { LeaguePlanForm } from "./league-plan-form";
+import type { LeagueTier } from "@/lib/leagues";
 
 export const metadata = { title: "Gestión de liga · Admin" };
 export const dynamic = "force-dynamic";
@@ -79,11 +81,24 @@ export default async function AdminLeagueDetailPage({
       />
 
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <StatTile label="Miembros" value={members.length} accent />
+        <StatTile
+          label="Miembros"
+          value={
+            league.memberLimit != null
+              ? `${members.length} / ${league.memberLimit}`
+              : String(members.length)
+          }
+          accent
+          textValue
+        />
+        <StatTile
+          label="Plan"
+          value={(league.tier ?? "free").toString()}
+          textValue
+        />
         {league.joinCode ? (
           <StatTile label="Código" value={league.joinCode} textValue />
         ) : null}
-        <StatTile label="Slug" value={league.slug} textValue />
         <StatTile
           label="Creada"
           value={formatDateTime(league.createdAt, { day: "2-digit", month: "short", year: "numeric" })}
@@ -98,6 +113,19 @@ export default async function AdminLeagueDetailPage({
           </header>
           <InviteLinkCopy token={league.inviteToken} />
         </div>
+      ) : null}
+
+      {!league.isPublic ? (
+        <LeaguePlanForm
+          league={{
+            id: league.id,
+            tier: league.tier as LeagueTier,
+            memberLimit: league.memberLimit,
+            paidAt: league.paidAt,
+            paidAmountEur: league.paidAmountEur,
+            paidVia: league.paidVia,
+          }}
+        />
       ) : null}
 
       <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]">

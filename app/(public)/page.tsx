@@ -40,7 +40,11 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: "¿Es gratis hacer una quiniela?",
-    a: "Sí. La app es gratuita. Puedes crear hasta 5 quinielas privadas con tus amigos sin coste y participar siempre en la Quiniela Pública.",
+    a: "Sí, hasta 20 miembros por quiniela privada. Puedes crear hasta 5 privadas gratis con tus amigos y participar siempre en la Quiniela Pública. Para empresas o grupos más grandes (50, 100 o 250 miembros), tenemos Pases Mundial 2026 desde 29 € — mira /precios.",
+  },
+  {
+    q: "¿Hay planes para empresas y grupos grandes?",
+    a: "Sí. La versión Free aguanta hasta 20 miembros por quiniela. Para empresas, comunidades o eventos con más gente hay Pases Mundial 2026 que escalan la liga a 50, 100 o 250 miembros. Pago único por torneo, vía PayPal previo contacto. Detalles en /precios.",
   },
   {
     q: "¿Hay app para iPhone y Android?",
@@ -168,7 +172,8 @@ export default async function HomePage() {
           </h1>
 
           <p className="max-w-xl font-editorial text-base italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-lg">
-            Predice los 104 partidos del Mundial con tus amigos.
+            Predice los 104 partidos del Mundial con tu grupo de amigos, tu equipo o
+            toda tu empresa.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
@@ -565,6 +570,50 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* ───────── EMPRESAS ───────── */}
+      <section className="relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 sm:p-10">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full opacity-25 blur-3xl"
+          style={{
+            background:
+              "radial-gradient(circle, color-mix(in oklch, var(--color-arena) 28%, transparent), transparent 70%)",
+          }}
+        />
+        <div className="relative grid items-center gap-6 lg:grid-cols-[1.3fr_auto] lg:gap-10">
+          <div className="space-y-3">
+            <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
+              Empresas y grupos grandes
+            </p>
+            <h2 className="font-display text-3xl tracking-tight sm:text-4xl">
+              ¿Una quiniela para todo el equipo?
+            </h2>
+            <p className="max-w-2xl font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base">
+              Las quinielas privadas Free aguantan 20 miembros. Para empresas,
+              comunidades o eventos más grandes, los Pases Mundial 2026
+              escalan a 50, 100 o 250 miembros — con logo corporativo, anuncio
+              fijado del organizador, export CSV del ranking y soporte
+              prioritario. Pago único por torneo, desde 29 €.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center justify-start gap-3 lg:justify-end">
+            <Link
+              href="/precios"
+              className="inline-flex items-center gap-2 rounded-md border border-[var(--color-arena)] bg-[var(--color-arena)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white shadow-[var(--shadow-arena)]"
+            >
+              Ver planes
+              <ArrowRight className="size-4" />
+            </Link>
+            <Link
+              href="/contacto#empresas"
+              className="inline-flex items-center gap-2 rounded-md border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] transition hover:border-[var(--color-arena)]/40"
+            >
+              Hablar con Ramón
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* ───────── FAQ ───────── */}
       <section className="space-y-6">
         <header className="space-y-2">
@@ -617,10 +666,10 @@ export default async function HomePage() {
               <ArrowRight className="size-4" />
             </Link>
             <Link
-              href="/calendario"
+              href="/precios"
               className="inline-flex items-center gap-2 rounded-md border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] transition hover:border-[var(--color-arena)]/40"
             >
-              Explorar el calendario
+              Planes para empresas
             </Link>
           </div>
         </div>

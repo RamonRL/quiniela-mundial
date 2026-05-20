@@ -56,6 +56,25 @@ export const newsStatus = pgEnum("news_status", [
   "archived",
 ]);
 
+// Plan comercial de una liga privada. "free" es el default (límite 20
+// miembros, galería de logos predefinida). El resto son "Pases Mundial 2026"
+// que un admin marca tras cobrar por PayPal — desbloquean más miembros,
+// logo corporativo custom, anuncio fijado, export CSV y soporte prioritario.
+export const leagueTier = pgEnum("league_tier", [
+  "free",
+  "team-50",
+  "team-100",
+  "team-250",
+  "enterprise",
+]);
+
+export const commercialLeadStatus = pgEnum("commercial_lead_status", [
+  "new",
+  "contacted",
+  "won",
+  "lost",
+]);
+
 export const pointsSource = pgEnum("points_source", [
   "group_position",
   "group_top2_swap",
@@ -101,10 +120,49 @@ export const leagues = pgTable(
     isPublic: boolean("is_public").notNull().default(false),
     createdBy: uuid("created_by"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    // Tope de miembros. NULL = ilimitado (la pública). Las privadas
+    // arrancan con 20 (Free); un admin lo sube a 50/100/250 al cobrar el
+    // Pase. Se valida antes de cada join.
+    memberLimit: integer("member_limit"),
+    // Plan vigente — Free de fábrica, el admin lo cambia al cobrar.
+    tier: leagueTier("tier").notNull().default("free"),
+    // Trazas de la venta — el admin las rellena manualmente al confirmar
+    // el pago por PayPal. paidAt indica también "última renovación".
+    paidAt: timestamp("paid_at", { withTimezone: true }),
+    paidAmountEur: integer("paid_amount_eur"),
+    paidVia: text("paid_via"),
+    // Anuncio fijado del owner — banner en /mi-quiniela. Premium-only.
+    announcement: text("announcement"),
   },
   (t) => [
     index("leagues_invite_token_idx").on(t.inviteToken),
     index("leagues_is_public_idx").on(t.isPublic),
+    index("leagues_tier_idx").on(t.tier),
+  ],
+);
+
+/**
+ * Leads comerciales — empresas/grupos que escriben pidiendo precio o un
+ * plan a medida. Llegan por el formulario de /precios y /contacto y se
+ * notifican por Telegram. El admin los gestiona desde /admin/leads.
+ */
+export const commercialLeads = pgTable(
+  "commercial_leads",
+  {
+    id: serial("id").primaryKey(),
+    name: text("name").notNull(),
+    company: text("company"),
+    email: text("email").notNull(),
+    expectedMembers: integer("expected_members"),
+    message: text("message"),
+    status: commercialLeadStatus("status").notNull().default("new"),
+    notes: text("notes"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("commercial_leads_status_idx").on(t.status, t.createdAt),
+    index("commercial_leads_created_idx").on(t.createdAt),
   ],
 );
 

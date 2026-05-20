@@ -1,0 +1,287 @@
+import Link from "next/link";
+import { ArrowRight, Check, Mail } from "lucide-react";
+import { PageHeader } from "@/components/shell/page-header";
+import { BreadcrumbLD } from "@/components/seo/jsonld";
+import { CommercialLeadForm } from "@/components/leagues/commercial-lead-form";
+
+export const revalidate = 86400;
+
+export const metadata = {
+  title: "Planes para empresas y grupos grandes",
+  description:
+    "Quinielas privadas hasta 250 miembros para empresas, comunidades y eventos. Pase Mundial 2026 desde 29 € con logo corporativo, anuncios fijados y export CSV.",
+  alternates: { canonical: "/precios" },
+  openGraph: {
+    title: "Planes · Quiniela Mundial 2026",
+    description:
+      "Pase Mundial 2026 para empresas y grupos grandes: hasta 50, 100 o 250 miembros. Desde 29 €.",
+    url: "/precios",
+  },
+};
+
+type Plan = {
+  id: string;
+  name: string;
+  price: string;
+  priceNote: string;
+  members: string;
+  highlight?: boolean;
+  features: string[];
+  ctaLabel: string;
+  ctaHref?: string;
+};
+
+const PLANS: Plan[] = [
+  {
+    id: "free",
+    name: "Free",
+    price: "0 €",
+    priceNote: "Para siempre",
+    members: "Hasta 20 miembros",
+    features: [
+      "Quiniela privada con código de 4 dígitos",
+      "Ranking, predicciones, chat",
+      "Logo de la galería",
+    ],
+    ctaLabel: "Crear gratis",
+    ctaHref: "/onboarding?step=privada-crear",
+  },
+  {
+    id: "team-50",
+    name: "Pase Equipo",
+    price: "29 €",
+    priceNote: "Pase Mundial 2026 · pago único",
+    members: "Hasta 50 miembros",
+    features: [
+      "Todo lo de Free",
+      "Logo corporativo custom",
+      "Anuncio fijado del organizador",
+      "Export CSV del ranking",
+      "Soporte prioritario (<24h)",
+    ],
+    ctaLabel: "Quiero este plan",
+  },
+  {
+    id: "team-100",
+    name: "Pase Empresa",
+    price: "69 €",
+    priceNote: "Pase Mundial 2026 · pago único",
+    members: "Hasta 100 miembros",
+    highlight: true,
+    features: [
+      "Todo lo de Pase Equipo",
+      "Ideal para empresas de 50–100 personas",
+      "Acompañamiento en el lanzamiento",
+    ],
+    ctaLabel: "Quiero este plan",
+  },
+  {
+    id: "team-250",
+    name: "Pase Empresa Plus",
+    price: "149 €",
+    priceNote: "Pase Mundial 2026 · pago único",
+    members: "Hasta 250 miembros",
+    features: [
+      "Todo lo de Pase Empresa",
+      "Onboarding asistido por email",
+      "Soporte directo durante el torneo",
+    ],
+    ctaLabel: "Quiero este plan",
+  },
+];
+
+const FAQ: { q: string; a: string }[] = [
+  {
+    q: "¿Cómo funciona el pago?",
+    a: "Tras enviar el formulario te contacto por email en menos de 24h con presupuesto y enlace de pago por PayPal. Cuando confirmo el pago, levanto el límite de miembros de tu quiniela en minutos.",
+  },
+  {
+    q: "¿El precio es por torneo o suscripción?",
+    a: "Pago único: el Pase Mundial 2026 cubre toda la edición — del 11 de junio al 19 de julio de 2026. No hay suscripción ni renovaciones automáticas.",
+  },
+  {
+    q: "¿Necesitamos más de 250 miembros, ¿qué hacemos?",
+    a: "Escríbeme en el formulario indicando la cifra real y te paso presupuesto a medida. Soporte enterprise: onboarding, soporte directo y branding extendido.",
+  },
+  {
+    q: "¿Cómo factura?",
+    a: "Emito factura a tu empresa con todos los datos fiscales tras confirmar el pago. Indícamelo en el mensaje del formulario.",
+  },
+  {
+    q: "¿Y si quiero probarlo antes de pagar?",
+    a: "Crea una quiniela gratis hasta 20 miembros para enseñársela al equipo. Cuando confirméis, escríbeme y subo el límite sin migrar datos — la misma liga, los mismos miembros, más capacidad.",
+  },
+];
+
+export default function PreciosPage() {
+  return (
+    <div className="space-y-12">
+      <BreadcrumbLD
+        items={[
+          { name: "Inicio", href: "/" },
+          { name: "Planes", href: "/precios" },
+        ]}
+      />
+
+      <PageHeader
+        eyebrow="Planes"
+        title="Quinielas para empresas y grupos grandes"
+        description="La versión Free aguanta hasta 20 miembros. Para empresas, comunidades y eventos con más gente, los Pases Mundial 2026 escalan la liga a 50, 100 o 250 personas con extras pensados para uso profesional."
+      />
+
+      {/* ─── Tabla de planes ─── */}
+      <section className="grid gap-5 lg:grid-cols-4">
+        {PLANS.map((plan) => (
+          <article
+            key={plan.id}
+            className={`relative flex flex-col overflow-hidden rounded-2xl border p-6 transition ${
+              plan.highlight
+                ? "border-[var(--color-arena)] bg-[color-mix(in_oklch,var(--color-arena)_8%,var(--color-surface))] shadow-[var(--shadow-arena)]"
+                : "border-[var(--color-border)] bg-[var(--color-surface)]"
+            }`}
+          >
+            {plan.highlight ? (
+              <span className="absolute right-4 top-4 rounded-full bg-[var(--color-arena)] px-2.5 py-1 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-white">
+                Recomendado
+              </span>
+            ) : null}
+            <header className="space-y-1">
+              <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
+                {plan.name}
+              </p>
+              <p className="font-display text-4xl tracking-tight">{plan.price}</p>
+              <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
+                {plan.priceNote}
+              </p>
+            </header>
+            <div className="mt-5 border-y border-[var(--color-border)] py-3">
+              <p className="font-display text-base tracking-tight text-[var(--color-arena)]">
+                {plan.members}
+              </p>
+            </div>
+            <ul className="mt-4 flex-1 space-y-2 text-sm">
+              {plan.features.map((f) => (
+                <li key={f} className="flex items-start gap-2">
+                  <Check className="mt-0.5 size-4 shrink-0 text-[var(--color-arena)]" />
+                  <span className="leading-relaxed text-[var(--color-muted-foreground)]">
+                    {f}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-5">
+              {plan.ctaHref ? (
+                <Link
+                  href={plan.ctaHref}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-[var(--color-border)] bg-[var(--color-surface-2)] px-4 py-2 font-mono text-[0.65rem] uppercase tracking-[0.18em] text-[var(--color-foreground)] transition hover:border-[var(--color-arena)]/40"
+                >
+                  {plan.ctaLabel} <ArrowRight className="size-3.5" />
+                </Link>
+              ) : (
+                <a
+                  href="#contacto"
+                  className={`inline-flex w-full items-center justify-center gap-2 rounded-md px-4 py-2 font-mono text-[0.65rem] uppercase tracking-[0.18em] transition ${
+                    plan.highlight
+                      ? "bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]"
+                      : "border border-[var(--color-arena)]/50 text-[var(--color-arena)] hover:bg-[color-mix(in_oklch,var(--color-arena)_8%,transparent)]"
+                  }`}
+                >
+                  {plan.ctaLabel} <ArrowRight className="size-3.5" />
+                </a>
+              )}
+            </div>
+          </article>
+        ))}
+      </section>
+
+      {/* ─── Enterprise ─── */}
+      <section className="relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 sm:p-10">
+        <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
+          <div className="space-y-2">
+            <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
+              Enterprise · más de 250 miembros
+            </p>
+            <h2 className="font-display text-3xl tracking-tight">
+              Cuéntanos qué necesitáis.
+            </h2>
+            <p className="max-w-xl font-editorial text-base italic leading-relaxed text-[var(--color-muted-foreground)]">
+              Presupuesto a medida para grupos grandes, onboarding asistido,
+              branding extendido y soporte dedicado durante todo el torneo.
+            </p>
+          </div>
+          <a
+            href="#contacto"
+            className="inline-flex items-center justify-center gap-2 rounded-md border border-[var(--color-arena)] bg-[var(--color-arena)] px-5 py-3 font-mono text-[0.65rem] uppercase tracking-[0.18em] text-white shadow-[var(--shadow-arena)]"
+          >
+            Hablar con Ramón <ArrowRight className="size-3.5" />
+          </a>
+        </div>
+      </section>
+
+      {/* ─── FAQ ─── */}
+      <section className="space-y-4">
+        <header className="flex items-center gap-3 border-b border-[var(--color-border)] pb-2">
+          <span className="h-px w-6 bg-[var(--color-arena)]" />
+          <h2 className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
+            Preguntas frecuentes
+          </h2>
+        </header>
+        <div className="divide-y divide-[var(--color-border)] overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]">
+          {FAQ.map((f, i) => (
+            <details key={i} className="group px-5 py-4">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+                <span className="font-display text-base tracking-tight sm:text-lg">
+                  {f.q}
+                </span>
+                <span
+                  aria-hidden
+                  className="font-mono text-xs text-[var(--color-arena)] transition group-open:rotate-45"
+                >
+                  ＋
+                </span>
+              </summary>
+              <p className="pt-3 font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base">
+                {f.a}
+              </p>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      {/* ─── Formulario de contacto ─── */}
+      <section
+        id="contacto"
+        className="relative overflow-hidden rounded-2xl border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_6%,var(--color-surface))] p-8 sm:p-10"
+      >
+        <div
+          aria-hidden
+          className="halftone pointer-events-none absolute inset-0 opacity-[0.05]"
+        />
+        <div className="relative space-y-6">
+          <header className="space-y-2">
+            <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
+              Pídeme presupuesto
+            </p>
+            <h2 className="font-display text-3xl tracking-tight">
+              Cuéntame de tu grupo.
+            </h2>
+            <p className="font-editorial text-base italic text-[var(--color-muted-foreground)]">
+              Te contesto en menos de 24 h con presupuesto, factura si la
+              necesitas, y enlace de pago por PayPal. Sin compromiso.
+            </p>
+          </header>
+          <CommercialLeadForm />
+          <p className="border-t border-[var(--color-border)] pt-4 text-center font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
+            o escríbeme directamente a{" "}
+            <a
+              href="mailto:admin@quinielamundial.es?subject=Plan%20para%20mi%20empresa"
+              className="text-[var(--color-arena)]"
+            >
+              <Mail className="inline size-3" /> admin@quinielamundial.es
+            </a>
+          </p>
+        </div>
+      </section>
+    </div>
+  );
+}

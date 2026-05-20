@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, type SQL } from "drizzle-orm";
+import { and, asc, eq, inArray, sql, type SQL } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { leagueMemberships, leagues, profiles } from "@/lib/db/schema";
 import type { CurrentUser } from "@/lib/auth/guards";
@@ -6,6 +6,16 @@ import type { CurrentUser } from "@/lib/auth/guards";
 export const PENDING_INVITE_COOKIE = "pending_league_token";
 export const PUBLIC_LEAGUE_SLUG = "liga-principal";
 export const PRIVATE_LEAGUES_PER_USER_LIMIT = 5;
+
+// Helpers puros sobre tiers viven en su propio módulo para que los tests
+// no tiren de la conexión DB al importarlos. Re-export aquí para que los
+// consumidores existentes sigan haciendo `from "@/lib/leagues"`.
+export {
+  MEMBER_LIMIT_FREE,
+  TIER_MEMBER_LIMIT,
+  isPremiumTier,
+  type LeagueTier,
+} from "@/lib/league-tiers";
 
 /** Cached lookup of the public main league (Liga principal). */
 let publicLeagueCache: { id: number; slug: string } | null = null;
@@ -102,6 +112,42 @@ export async function countPrivateMemberships(userId: string): Promise<number> {
   return rows.length;
 }
 
+/**
+ * Cuenta los miembros actuales de una liga. Usado para mostrar el contador
+ * "X / Y miembros" y para validar el tope antes de un join.
+ */
+export async function countLeagueMembers(leagueId: number): Promise<number> {
+  const [row] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(leagueMemberships)
+    .where(eq(leagueMemberships.leagueId, leagueId));
+  return row?.count ?? 0;
+}
+
+/**
+ * Comprueba si una liga acepta a un miembro más. Devuelve ok=true si la
+ * liga no tiene tope (`memberLimit` NULL, p.ej. la pública) o si todavía
+ * hay hueco. Devuelve `full` con el contador actual y el tope cuando ya
+ * no caben más — el caller traduce el mensaje al usuario.
+ */
+export async function canJoinLeague(leagueId: number): Promise<
+  | { ok: true }
+  | { ok: false; reason: "full"; current: number; limit: number }
+> {
+  const [league] = await db
+    .select({ memberLimit: leagues.memberLimit })
+    .from(leagues)
+    .where(eq(leagues.id, leagueId))
+    .limit(1);
+  if (!league) return { ok: true };
+  if (league.memberLimit == null) return { ok: true };
+  const current = await countLeagueMembers(leagueId);
+  if (current >= league.memberLimit) {
+    return { ok: false, reason: "full", current, limit: league.memberLimit };
+  }
+  return { ok: true };
+}
+
 export async function isMemberOf(userId: string, leagueId: number): Promise<boolean> {
   const [row] = await db
     .select({ userId: leagueMemberships.userId })
@@ -130,7 +176,13 @@ export async function joinLeagueByInviteToken(
   inviteToken: string,
 ): Promise<
   | { ok: true; leagueId: number; alreadyMember: boolean }
-  | { ok: false; reason: "not_found" | "private_limit_reached"; leagueName?: string }
+  | {
+      ok: false;
+      reason: "not_found" | "private_limit_reached" | "league_full";
+      leagueName?: string;
+      current?: number;
+      limit?: number;
+    }
 > {
   const [league] = await db
     .select()
@@ -151,6 +203,17 @@ export async function joinLeagueByInviteToken(
       ok: false,
       reason: "private_limit_reached",
       leagueName: league.name,
+    };
+  }
+
+  const cap = await canJoinLeague(league.id);
+  if (!cap.ok) {
+    return {
+      ok: false,
+      reason: "league_full",
+      leagueName: league.name,
+      current: cap.current,
+      limit: cap.limit,
     };
   }
 

@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     template: "%s · Quiniela Mundial 2026",
   },
   description:
-    "Quiniela del Mundial 2026 entre amigos. Calendario completo, grupos, bracket FIFA, goleadores y predicciones colaborativas. España · gratis.",
+    "Quiniela del Mundial 2026 para amigos, equipos y empresas. Calendario completo, grupos, bracket FIFA, goleadores y predicciones colaborativas. Gratis hasta 20 miembros; planes para grupos grandes.",
   applicationName: appName,
   keywords: [
     "Mundial 2026",
@@ -67,6 +67,8 @@ export const metadata: Metadata = {
     "quiniela mundial",
     "quiniela mundial 2026",
     "quiniela amigos",
+    "quiniela empresa",
+    "quiniela empresarial",
     "predicciones mundial",
     "calendario mundial 2026",
     "grupos mundial 2026",
@@ -91,13 +93,13 @@ export const metadata: Metadata = {
     siteName: "Quiniela Mundial",
     title: "Quiniela Mundial 2026 · Predicciones, calendario y resultados",
     description:
-      "Quiniela del Mundial 2026 entre amigos. Calendario, grupos, bracket FIFA, goleadores y predicciones colaborativas.",
+      "Quiniela del Mundial 2026 para amigos, equipos y empresas. Calendario, grupos, bracket FIFA, goleadores y predicciones colaborativas.",
   },
   twitter: {
     card: "summary_large_image",
     title: "Quiniela Mundial 2026",
     description:
-      "Predicciones del Mundial 2026 entre amigos. Calendario, grupos, bracket y goleadores.",
+      "Predicciones del Mundial 2026 para amigos, equipos y empresas. Calendario, grupos, bracket y goleadores.",
   },
   robots: {
     index: true,

@@ -41,6 +41,11 @@ export default async function InviteLandingPage({
         `Ya tienes 5 quinielas privadas. Para unirte a "${res.leagueName}" abandona alguna desde tu perfil.`,
       );
     }
+    if (res.status === "league_full") {
+      throw new Error(
+        `"${res.leagueName}" ya está completa (${res.limit ?? "tope"} miembros). El creador puede ampliarla con un Pase Mundial 2026 — más info en /precios.`,
+      );
+    }
   }
 
   return (

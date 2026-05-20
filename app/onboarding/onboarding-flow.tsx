@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { initials } from "@/lib/utils";
 import { compressImage, formatBytes } from "@/lib/client-image";
-import { LeagueLogoDropzone } from "@/components/leagues/league-logo-dropzone";
+import { LeagueLogoGalleryPicker } from "@/components/leagues/league-logo-gallery-picker";
 import {
   createLeague,
   joinLeagueByCode,
@@ -245,7 +245,6 @@ function ChoiceCard({
 
 function CreateLeagueForm({ fresh }: { fresh: boolean }) {
   const [state, action, pending] = useActionState(createLeague, initialCreate);
-  const [logoBusy, setLogoBusy] = useState(false);
   const [nameValue, setNameValue] = useState("");
 
   if (state.ok && state.league) {
@@ -271,29 +270,24 @@ function CreateLeagueForm({ fresh }: { fresh: boolean }) {
       </header>
 
       <form action={action} className="space-y-8">
-        <div className="grid items-start gap-6 sm:grid-cols-[auto_1fr] sm:gap-8">
-          <LeagueLogoDropzone
-            initialLogoUrl={null}
-            fallbackName={nameValue}
-            onCompressingChange={setLogoBusy}
-          />
-          <div className="space-y-2">
-            <FloatingField
-              name="name"
-              label="Nombre de la quiniela · máx 25 caracteres"
-              placeholder="QUINIELA MUNDIAL 2026"
-              required
-              maxLength={25}
-              autoComplete="off"
-              autoFocus
-              big
-              value={nameValue}
-              onChange={(e) => setNameValue(e.target.value)}
-            />
-            <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
-              Pulsa el círculo para añadir un logo. Es opcional.
-            </p>
-          </div>
+        <FloatingField
+          name="name"
+          label="Nombre de la quiniela · máx 25 caracteres"
+          placeholder="QUINIELA MUNDIAL 2026"
+          required
+          maxLength={25}
+          autoComplete="off"
+          autoFocus
+          big
+          value={nameValue}
+          onChange={(e) => setNameValue(e.target.value)}
+        />
+
+        <div className="space-y-3">
+          <p className="font-mono text-[0.6rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
+            Logo · galería
+          </p>
+          <LeagueLogoGalleryPicker initialLogoUrl={null} />
         </div>
 
         {state.error ? (
@@ -305,7 +299,7 @@ function CreateLeagueForm({ fresh }: { fresh: boolean }) {
             type="submit"
             size="lg"
             className="h-14 px-8 text-base sm:flex-1"
-            disabled={pending || logoBusy}
+            disabled={pending}
           >
             {pending ? "Creando…" : "Crear quiniela"}
             <ArrowRight />

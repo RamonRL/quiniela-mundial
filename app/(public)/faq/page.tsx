@@ -34,7 +34,11 @@ const SECTIONS: { title: string; faqs: Faq[] }[] = [
       },
       {
         q: "¿Es gratis hacer una quiniela?",
-        a: "Sí. La app es gratuita. Puedes crear hasta 5 quinielas privadas con tus amigos sin coste y participar siempre en la Quiniela Pública.",
+        a: "Sí, hasta 20 miembros por quiniela privada. Puedes crear hasta 5 privadas gratis con tus amigos y participar siempre en la Quiniela Pública. Para empresas o grupos más grandes (50, 100 o 250 miembros), tenemos Pases Mundial 2026 desde 29 € — mira /precios.",
+      },
+      {
+        q: "¿Tenéis planes para empresas o grupos grandes?",
+        a: "Sí. La versión Free aguanta hasta 20 miembros por quiniela. Para empresas, comunidades o eventos con más gente hay tres Pases Mundial 2026 (29 € hasta 50 miembros · 69 € hasta 100 · 149 € hasta 250) que incluyen logo corporativo custom, anuncio fijado del organizador, export CSV del ranking y soporte prioritario. Pago único por torneo vía PayPal previo contacto. Más en /precios.",
       },
       {
         q: "¿Hay app para iPhone y Android?",
@@ -77,6 +81,10 @@ const SECTIONS: { title: string; faqs: Faq[] }[] = [
       {
         q: "¿Cuántas quinielas privadas puedo tener?",
         a: "Hasta 5 privadas por usuario, además de la Quiniela Pública (siempre activa). Puedes ser creador de unas y participante en otras; cada una con su propio ranking.",
+      },
+      {
+        q: "¿Cuántos miembros caben en mi quiniela privada?",
+        a: "Hasta 20 miembros en plan Free. Si tu grupo crece (empresa, comunidad, evento), puedes ampliarla a 50, 100 o 250 miembros con un Pase Mundial 2026 — no migras datos, suben el límite en la misma liga. Detalles y precios en /precios.",
       },
       {
         q: "¿Puedo expulsar a alguien de mi quiniela?",

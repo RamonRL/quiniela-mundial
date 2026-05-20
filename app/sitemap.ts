@@ -43,6 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteUrl}/sedes`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${siteUrl}/faq`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${siteUrl}/contacto`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${siteUrl}/precios`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
   ];
 
   const groupUrls: MetadataRoute.Sitemap = groupRows.map((g) => ({

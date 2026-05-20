@@ -101,6 +101,30 @@ export async function notifyNewChatMessage(args: {
   await sendTelegramMessage(text, { silent: true });
 }
 
+export async function notifyNewCommercialLead(args: {
+  id: number;
+  name: string;
+  email: string;
+  company: string | null;
+  expectedMembers: number | null;
+  message: string | null;
+}): Promise<void> {
+  const company = args.company ? ` · 🏢 ${escapeHTML(args.company)}` : "";
+  const members =
+    args.expectedMembers != null ? ` · 👥 ${args.expectedMembers}` : "";
+  const message = args.message
+    ? `\n\n<i>${escapeHTML(args.message.slice(0, 600))}</i>`
+    : "";
+  const text = [
+    "💼 <b>Lead comercial</b>",
+    `👤 <b>${escapeHTML(args.name)}</b>${company}${members}`,
+    `📧 <code>${escapeHTML(args.email)}</code>`,
+    message,
+    `<a href="${SITE_URL}/admin/leads">Ver en admin</a>`,
+  ].join("\n");
+  await sendTelegramMessage(text);
+}
+
 export async function notifyServerError(args: {
   message: string;
   route?: string | null;

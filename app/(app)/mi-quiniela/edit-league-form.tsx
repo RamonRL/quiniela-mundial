@@ -1,11 +1,13 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { Save } from "lucide-react";
+import { Save, Sparkles } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { LeagueLogoDropzone } from "@/components/leagues/league-logo-dropzone";
+import { LeagueLogoGalleryPicker } from "@/components/leagues/league-logo-gallery-picker";
 import { updateLeague, type LeagueFormState } from "@/lib/league-actions";
 
 const initial: LeagueFormState = { ok: false };
@@ -15,6 +17,7 @@ type Props = {
     id: number;
     name: string;
     logoUrl: string | null;
+    isPremium: boolean;
   };
 };
 
@@ -42,28 +45,50 @@ export function EditLeagueForm({ league }: Props) {
         <span>Editar quiniela</span>
       </header>
 
-      <div className="grid items-start gap-6 sm:grid-cols-[auto_1fr] sm:gap-8">
-        <LeagueLogoDropzone
-          initialLogoUrl={league.logoUrl}
-          fallbackName={name}
-          onCompressingChange={setLogoBusy}
+      <div className="space-y-3">
+        <Label htmlFor="league-name">Nombre · máx 25 caracteres</Label>
+        <Input
+          id="league-name"
+          name="name"
+          required
+          maxLength={25}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
         />
-        <div className="space-y-3">
-          <Label htmlFor="league-name">Nombre · máx 25 caracteres</Label>
-          <Input
-            id="league-name"
-            name="name"
-            required
-            maxLength={25}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-          <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
-            Pulsa el círculo para cambiar el logo. Si no subes una nueva
-            imagen, el logo actual se conserva.
-          </p>
-        </div>
       </div>
+
+      <div className="space-y-3 border-t border-dashed border-[var(--color-border)] pt-4">
+        <Label>Logo · galería</Label>
+        <LeagueLogoGalleryPicker initialLogoUrl={league.logoUrl} />
+      </div>
+
+      {league.isPremium ? (
+        <div className="space-y-3 border-t border-dashed border-[var(--color-arena)]/40 pt-4">
+          <div className="flex items-center gap-2 font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
+            <Sparkles className="size-3.5" />
+            <span>Logo corporativo · Pase Mundial 2026</span>
+          </div>
+          <div className="flex items-start gap-4">
+            <LeagueLogoDropzone
+              initialLogoUrl={league.logoUrl}
+              fallbackName={name}
+              onCompressingChange={setLogoBusy}
+            />
+            <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
+              Pulsa el círculo para subir tu logo (PNG/JPG). Sobrescribe la
+              elección de la galería al guardar.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <p className="rounded-md border border-dashed border-[var(--color-border)] p-3 font-editorial text-xs italic text-[var(--color-muted-foreground)]">
+          ¿Logo corporativo custom? Está incluido en los{" "}
+          <Link href="/precios" className="text-[var(--color-arena)] underline-offset-2 hover:underline">
+            Pases Mundial 2026
+          </Link>
+          .
+        </p>
+      )}
 
       <div className="flex flex-wrap items-center gap-3 border-t border-dashed border-[var(--color-border)] pt-4">
         <Button type="submit" disabled={pending || logoBusy}>
