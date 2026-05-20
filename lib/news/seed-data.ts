@@ -544,6 +544,67 @@ Brasil **lleva 24 años sin levantar la Copa** (su último título es Corea-Jap�
 Para predecir si Brasil regresa a una final 24 años después, [crea tu quiniela gratis](/login?next=%2Fonboarding).`,
   },
   {
+    slug: "convocatoria-escocia-mundial-2026-steve-clarke-craig-gordon",
+    title:
+      "Convocatoria de Escocia: vuelve a un Mundial 28 años después con Craig Gordon a los 43 y McTominay como bandera",
+    seoTitle: "Convocatoria Escocia Mundial 2026 · Lista de Steve Clarke",
+    excerpt:
+      "Escocia regresa a un Mundial 28 años después de Francia 1998. Steve Clarke convoca a Craig Gordon, portero de 43 años, y se apoya en Scott McTominay, John McGinn y Andy Robertson.",
+    category: "convocatoria",
+    tags: [
+      "Escocia",
+      "Steve Clarke",
+      "Scott McTominay",
+      "John McGinn",
+      "Craig Gordon",
+      "Andy Robertson",
+    ],
+    relatedTeamCodes: ["SCO"],
+    daysAgo: 1,
+    body: `**Escocia** anunció el **19 de mayo de 2026** la lista oficial de 26 jugadores para el Mundial 2026 — su **regreso al máximo escenario 28 años después** de Francia 1998, la racha de ausencias mundialistas más larga de su historia moderna. El seleccionador es **Steve Clarke**, que dirige a la *Tartan Army* desde 2019 y arrastra el mérito de haber clasificado al equipo a dos Eurocopas seguidas (2020 y 2024) antes de cerrar el círculo con el Mundial.
+
+## Craig Gordon, el portero histórico
+
+La novedad más comentada de la convocatoria es **Craig Gordon** (Hearts), que con **43 años** disputará su primer y casi seguramente único Mundial. Es uno de los **jugadores más veteranos en pisar un Mundial** en toda la historia — solo por detrás de Essam El-Hadary, el portero egipcio que jugó Rusia 2018 a los 45, y prácticamente empatado con Faryd Mondragón (Colombia, 43 años en 2014).
+
+Gordon llega como **tercer portero** detrás de **Angus Gunn** (Norwich City) y **Liam Kelly** (Motherwell). Clarke decidió premiar la trayectoria del histórico y, también, el síntoma de un equipo en el que los veteranos tiran del grupo.
+
+## McTominay, McGinn y el núcleo Premier-Serie A
+
+El equipo se sostiene sobre tres ejes principales:
+
+- **Scott McTominay** (Napoli): probablemente el jugador escocés en mejor momento del mundo. Tras su traspaso del Manchester United al Nápoles en verano 2024, ha crecido hasta convertirse en mediocentro determinante de la *Squadra* campeona del Scudetto. Sus llegadas al área dan a Escocia un perfil de gol que llevaba años sin tener.
+- **John McGinn** (Aston Villa): capitán emocional. Llega al Mundial en pleno tramo final de su Aston Villa, candidato a la **Europa League**. Su capacidad de romper líneas en transición es la base del 3-4-2-1 de Clarke.
+- **Andy Robertson** (Liverpool): el lateral izquierdo más conocido del fútbol mundial sigue siendo el referente defensivo. Capitán histórico, lleva las cuentas mundialistas de una generación que llegó tarde a la cita.
+
+## El núcleo del equipo
+
+- **Portería**: Gunn titular; Liam Kelly como suplente; Craig Gordon como tercero (récord).
+- **Defensa**: **Kieran Tierney** (Arsenal/Real Sociedad), **Andy Robertson** y **Anthony Ralston** (Celtic) en banda. Los centrales **Grant Hanley** (Norwich), **Jack Hendry** (Al-Ettifaq), **John Souttar** (Rangers), **Scott McKenna** (Las Palmas) y **Aaron Hickey** (Brentford). **Nathan Patterson** (Everton) como lateral derecho ofensivo.
+- **Mediocampo**: McTominay y McGinn como ejes. **Billy Gilmour** (Brighton, ex Chelsea) aporta paso de balón; **Ryan Christie** (Bournemouth), **Lewis Ferguson** (Bologna, capitán del equipo italiano), **Kenny McLean** (Norwich) y el joven **Ben Gannon-Doak** (Bournemouth) completan la rotación.
+- **Ataque**: **Lyndon Dykes** (QPR) como '9' físico, **Ché Adams** (Torino), **Lawrence Shankland** (Hearts, **20 goles** esta temporada en la Scottish Premiership), **George Hirst** (Ipswich) y **Ross Stewart** (Southampton, 11 goles este curso). El joven **Findlay Curtis** (Rangers, 19 años) viaja como sorpresa: hace seis meses jugaba en sub-21 y entra como apuesta de futuro.
+
+Mira la lista completa con dorsales en la [ficha de Escocia](/equipos/SCO).
+
+## El Grupo C y el calendario
+
+A Escocia le tocó el **Grupo C** junto a **Brasil** (cabeza de serie), **Marruecos** (semifinalista en Qatar 2022) y **Haití**. Sorteo exigente: Brasil parte como favorita clara al primer puesto y Marruecos como segundo bombo de máximo nivel. El partido contra **Haití** se convierte en el "match-de-la-vida" del grupo — el más asequible y donde Escocia tiene que sumar sí o sí si quiere soñar con dieciseisavos.
+
+- **Domingo 14 de junio** · Escocia vs **Haití** · debut en Boston (Gillette Stadium)
+- **Viernes 19 de junio** · Escocia vs **Marruecos**
+- **Miércoles 24 de junio** · Escocia vs **Brasil**
+
+Mira la [composición del Grupo C](/grupos) y el [calendario del torneo](/calendario).
+
+## Lo que está en juego
+
+Escocia **nunca ha superado la fase de grupos** en sus ocho participaciones mundialistas previas (1954, 1958, 1974, 1978, 1982, 1986, 1990, 1998). Es la selección con **más participaciones sin pasar de la primera ronda** en toda la historia del torneo. Para Steve Clarke y esta generación — McTominay 29, McGinn 31, Robertson 32 — superar la barrera sería un acto fundacional para el fútbol escocés moderno.
+
+El formato a 48 selecciones ayuda: los **ocho mejores terceros** pasan a dieciseisavos. Con cuatro puntos en tres partidos — ganar a Haití y sacar un empate ante Marruecos —, Escocia ya entraría como mejor tercero. Es la cuenta que Clarke lleva apuntada desde el sorteo.
+
+Si quieres predecir hasta dónde llega la *Tartan Army*, [crea tu quiniela gratis](/login?next=%2Fonboarding) y arma tu bracket antes del 11 de junio.`,
+  },
+  {
     slug: "convocatoria-corea-sur-mundial-2026-hong-myung-bo-son",
     title:
       "Convocatoria de Corea del Sur: Hong Myung-bo apuesta por Son y un récord histórico con Jens Castrop",
