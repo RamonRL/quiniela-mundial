@@ -1,11 +1,20 @@
 import Link from "next/link";
-import { ArrowRight, Check, Mail } from "lucide-react";
+import { eq } from "drizzle-orm";
+import { ArrowRight, Check, Mail, Sparkles } from "lucide-react";
+import { db } from "@/lib/db";
+import { leagues } from "@/lib/db/schema";
+import { getCurrentUser } from "@/lib/auth/guards";
+import { isPremiumTier } from "@/lib/leagues";
 import { PageHeader } from "@/components/shell/page-header";
 import { BreadcrumbLD } from "@/components/seo/jsonld";
 import { CommercialLeadForm } from "@/components/leagues/commercial-lead-form";
 import { getCheckoutUrls, type PaidTierId } from "@/lib/lemonsqueezy";
 
-export const revalidate = 86400;
+// Dinámico: si hay sesión, anexamos el código de la liga del owner al
+// checkout para que el webhook pueda auto-activar el Pase sin
+// intervención manual. Eso requiere leer cookies/sesion en cada
+// request, así que no cacheamos.
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Planes para empresas y grupos grandes",
@@ -112,8 +121,37 @@ const FAQ: { q: string; a: string }[] = [
   },
 ];
 
-export default function PreciosPage() {
-  const checkoutUrls = getCheckoutUrls();
+export default async function PreciosPage() {
+  // Si el visitante es owner de una liga privada Free (la única que
+  // tiene sentido upgradear), resolvemos su joinCode para anexarlo al
+  // checkout. Si tiene varias o ninguna, no auto-link y el webhook
+  // caerá al fallback (email match o lead manual).
+  const me = await getCurrentUser();
+  let buyerLeague: { name: string; joinCode: string | null } | null = null;
+  if (me) {
+    const owned = await db
+      .select({
+        id: leagues.id,
+        name: leagues.name,
+        joinCode: leagues.joinCode,
+        tier: leagues.tier,
+        isPublic: leagues.isPublic,
+      })
+      .from(leagues)
+      .where(eq(leagues.createdBy, me.id))
+      .limit(3);
+    const privateFree = owned.filter(
+      (l) => !l.isPublic && !isPremiumTier(l.tier),
+    );
+    if (privateFree.length === 1) {
+      buyerLeague = {
+        name: privateFree[0].name,
+        joinCode: privateFree[0].joinCode,
+      };
+    }
+  }
+
+  const checkoutUrls = getCheckoutUrls(buyerLeague?.joinCode ?? null);
 
   return (
     <div className="space-y-12">
@@ -129,6 +167,22 @@ export default function PreciosPage() {
         title="Quinielas para empresas y grupos grandes"
         description="La versión Free aguanta hasta 20 miembros. Para empresas, comunidades y eventos con más gente, los Pases Mundial 2026 escalan la liga a 50, 100 o 250 personas con extras pensados para uso profesional."
       />
+
+      {buyerLeague && buyerLeague.joinCode ? (
+        <div className="flex items-center gap-3 rounded-xl border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface))] px-4 py-3">
+          <Sparkles className="size-4 shrink-0 text-[var(--color-arena)]" />
+          <p className="font-editorial text-sm italic leading-snug">
+            Comprando para tu quiniela{" "}
+            <strong className="not-italic font-semibold">
+              {buyerLeague.name}
+            </strong>{" "}
+            <span className="font-mono text-[0.65rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+              (código {buyerLeague.joinCode})
+            </span>
+            . El Pase se activa solo en cuanto se confirme el pago.
+          </p>
+        </div>
+      ) : null}
 
       {/* ─── Tabla de planes ─── */}
       <section className="grid gap-5 lg:grid-cols-4">

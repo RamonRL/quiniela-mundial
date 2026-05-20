@@ -5,9 +5,11 @@ import { db } from "@/lib/db";
 import { commercialLeads } from "@/lib/db/schema";
 import {
   formatLemonAmount,
+  tierFromOrderItemPrice,
   verifyLemonSqueezySignature,
   type LemonSqueezyOrderEvent,
 } from "@/lib/lemonsqueezy";
+import { autoUpgradeLeagueFromLemonOrder } from "@/lib/lemonsqueezy-upgrade";
 import { notifyLemonSqueezyOrder } from "@/lib/telegram/events";
 
 export const dynamic = "force-dynamic";
@@ -79,6 +81,36 @@ export async function POST(request: Request) {
       ? `${productName} · ${variantName}`
       : productName;
 
+  // Auto-upgrade de la liga si podemos resolverla. El tier sale del
+  // precio de la primera línea (sin IVA). El league_code llega como
+  // custom_data si /precios consiguió anexarlo al checkout — typical
+  // cuando el owner está logueado al comprar.
+  const itemPriceCents = attrs.first_order_item?.price ?? 0;
+  const tier = tierFromOrderItemPrice(itemPriceCents);
+  const leagueCode = event.meta?.custom_data?.league_code ?? null;
+
+  let upgradeResult: Awaited<
+    ReturnType<typeof autoUpgradeLeagueFromLemonOrder>
+  > | null = null;
+  if (tier) {
+    upgradeResult = await autoUpgradeLeagueFromLemonOrder({
+      leagueCode,
+      customerEmail: attrs.user_email,
+      tier,
+      paidAmountEur: Math.round(itemPriceCents / 100),
+      orderRef: orderTag,
+    });
+  }
+
+  const autoOk = upgradeResult?.ok === true ? upgradeResult : null;
+
+  const upgradeNote = autoOk
+    ? `Auto upgrade a tier ${tier} (liga ${autoOk.leagueId} "${autoOk.leagueName}", via ${autoOk.resolvedBy})`
+    : upgradeResult && upgradeResult.ok === false
+      ? `Auto-upgrade no aplicado: ${upgradeResult.reason}. Revisar manualmente.`
+      : "Tier no reconocido por precio. Revisar manualmente.";
+  const leadNotes = `${upgradeNote} · Order: ${orderTag} · Total: ${amount}.`;
+
   await db.insert(commercialLeads).values({
     name: attrs.user_name,
     email: attrs.user_email,
@@ -86,7 +118,7 @@ export async function POST(request: Request) {
     expectedMembers: null,
     message: `${fullName} · ${amount} · Pedido #${attrs.order_number}`,
     status: "won",
-    notes: `Auto desde Lemon Squeezy. Order ID: ${orderTag}. Total: ${amount}.`,
+    notes: leadNotes,
   });
 
   after(() =>
@@ -97,8 +129,15 @@ export async function POST(request: Request) {
       amountFormatted: amount,
       customerName: attrs.user_name,
       customerEmail: attrs.user_email,
+      autoActivation: autoOk
+        ? {
+            leagueId: autoOk.leagueId,
+            leagueName: autoOk.leagueName,
+            resolvedBy: autoOk.resolvedBy,
+          }
+        : undefined,
     }),
   );
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, autoUpgraded: !!autoOk });
 }

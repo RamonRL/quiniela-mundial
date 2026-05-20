@@ -132,16 +132,43 @@ export async function notifyLemonSqueezyOrder(args: {
   amountFormatted: string;
   customerName: string;
   customerEmail: string;
+  /** Si el webhook resolvió la liga y la subió de tier solo, este
+   * resumen aparece en el aviso para que sepas que NO tienes que tocar
+   * nada. */
+  autoActivation?: {
+    leagueId: number;
+    leagueName: string;
+    resolvedBy: "league_code" | "email";
+  };
 }): Promise<void> {
-  const text = [
-    "💸 <b>Pago recibido · Lemon Squeezy</b>",
+  const headline = args.autoActivation
+    ? "✅ <b>Pase activado automáticamente · Lemon Squeezy</b>"
+    : "💸 <b>Pago recibido · Lemon Squeezy</b>";
+
+  const lines = [
+    headline,
     `🎟 <b>${escapeHTML(args.productName)}</b> · ${escapeHTML(args.amountFormatted)}`,
     `👤 ${escapeHTML(args.customerName)}`,
     `📧 <code>${escapeHTML(args.customerEmail)}</code>`,
-    `#${args.orderNumber}`,
-    `<a href="${SITE_URL}/admin/leads">Ver en admin</a>`,
-  ].join("\n");
-  await sendTelegramMessage(text);
+  ];
+
+  if (args.autoActivation) {
+    const via = args.autoActivation.resolvedBy === "league_code"
+      ? "código en checkout"
+      : "email del comprador";
+    lines.push(
+      `🏆 <b>${escapeHTML(args.autoActivation.leagueName)}</b> (${via})`,
+      `<a href="${SITE_URL}/admin/ligas/${args.autoActivation.leagueId}">Ver liga</a>`,
+    );
+  } else {
+    lines.push(
+      "⚠️ <i>No se pudo asociar a una liga automáticamente — activar a mano.</i>",
+      `<a href="${SITE_URL}/admin/leads">Ver en admin</a>`,
+    );
+  }
+
+  lines.push(`#${args.orderNumber}`);
+  await sendTelegramMessage(lines.join("\n"));
 }
 
 export async function notifyServerError(args: {
