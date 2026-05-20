@@ -10,8 +10,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { setActiveLeague } from "@/lib/league-actions";
 import type { Membership } from "@/lib/leagues";
+import { initials } from "@/lib/utils";
 
 export function LeagueSwitcher({
   memberships,
@@ -30,6 +32,16 @@ export function LeagueSwitcher({
           aria-label="Cambiar quiniela activa"
           className="group inline-flex max-w-[26rem] items-center gap-2 rounded-sm transition hover:opacity-80 focus:outline-none focus-visible:ring-1 focus-visible:ring-[var(--color-arena)]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)]"
         >
+          {active && !active.isPublic ? (
+            <Avatar className="size-7 shrink-0 border border-[var(--color-border)]">
+              {active.logoUrl ? (
+                <AvatarImage src={active.logoUrl} alt={active.name} />
+              ) : null}
+              <AvatarFallback className="text-[0.55rem] font-semibold">
+                {initials(active.name)}
+              </AvatarFallback>
+            </Avatar>
+          ) : null}
           <span className="truncate font-display text-xl uppercase tracking-[0.06em] text-[var(--color-foreground)] sm:text-2xl">
             {active?.name ?? "Selecciona quiniela"}
           </span>
@@ -52,6 +64,16 @@ export function LeagueSwitcher({
                 className={isActive ? "bg-[var(--color-surface-2)]" : ""}
               >
                 <button type="submit" className="flex w-full items-center gap-2">
+                  {!m.isPublic ? (
+                    <Avatar className="size-6 shrink-0 border border-[var(--color-border)]">
+                      {m.logoUrl ? (
+                        <AvatarImage src={m.logoUrl} alt={m.name} />
+                      ) : null}
+                      <AvatarFallback className="text-[0.5rem] font-semibold">
+                        {initials(m.name)}
+                      </AvatarFallback>
+                    </Avatar>
+                  ) : null}
                   <span className="min-w-0 flex-1 truncate text-left">
                     <span className="font-medium">{m.name}</span>
                     {!m.isPublic && m.joinCode ? (

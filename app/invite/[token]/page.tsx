@@ -3,9 +3,11 @@ import Link from "next/link";
 import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { leagueMemberships, leagues } from "@/lib/db/schema";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { acceptInvite } from "@/lib/league-actions";
 import { ArrowRight, Trophy, Users } from "lucide-react";
+import { initials } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -46,9 +48,18 @@ export default async function InviteLandingPage({
       <div className="halftone pointer-events-none absolute inset-0 opacity-[0.04]" aria-hidden />
       <div className="relative w-full max-w-md space-y-8 rounded-2xl border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_4%,var(--color-surface))] p-8 shadow-[var(--shadow-elev-2)] sm:p-10">
         <header className="space-y-3 text-center">
-          <span className="inline-flex size-12 place-items-center rounded-full bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]">
-            <Trophy className="size-5" />
-          </span>
+          {league.logoUrl ? (
+            <Avatar className="mx-auto size-20 border-2 border-[var(--color-arena)]/40 shadow-[var(--shadow-arena)]">
+              <AvatarImage src={league.logoUrl} alt={league.name} />
+              <AvatarFallback className="font-display text-2xl tracking-tight">
+                {initials(league.name)}
+              </AvatarFallback>
+            </Avatar>
+          ) : (
+            <span className="mx-auto inline-flex size-12 place-items-center rounded-full bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]">
+              <Trophy className="size-5" />
+            </span>
+          )}
           <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
             Invitación a una quiniela privada
           </p>

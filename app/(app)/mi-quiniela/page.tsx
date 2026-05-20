@@ -22,6 +22,7 @@ import { deleteOwnLeague } from "@/lib/league-actions";
 import { formatDateTime, initials } from "@/lib/utils";
 import { InviteLinkCopy } from "@/app/admin/ligas/invite-link-copy";
 import { CodeDisplay } from "./code-display";
+import { EditLeagueForm } from "./edit-league-form";
 import { KickButton, LeaveButton } from "./member-actions";
 
 export const metadata = { title: "Mi Quiniela" };
@@ -62,30 +63,52 @@ export default async function MyLeaguePage() {
 
   return (
     <div className="space-y-8">
-      <PageHeader
-        eyebrow="Quiniela privada"
-        title={league.name}
-        description={
-          isOwner
-            ? "Tu quiniela. Comparte el código o el enlace para que se unan, gestiona miembros y, si quieres, elimínala."
-            : "Aquí ves a quienes están dentro y cómo invitar a más gente."
-        }
-        actions={
-          isOwner ? (
-            <DeleteButton
-              action={deleteOwnLeague}
-              id={league.id}
-              confirmMessage={`¿Eliminar "${league.name}"? Sus ${members.length} miembros pasarán a la Quiniela Pública. Esta acción no se puede deshacer.`}
-              variant="outline"
-              size="sm"
-              label="Eliminar quiniela"
-              className="border-[var(--color-danger)]/40 text-[var(--color-danger)] hover:bg-[var(--color-danger)]/8 hover:text-[var(--color-danger)]"
-            />
-          ) : (
-            <LeaveButton leagueId={league.id} leagueName={league.name} />
-          )
-        }
-      />
+      <div className="flex items-start gap-5">
+        {league.logoUrl ? (
+          <Avatar className="size-20 shrink-0 border-2 border-[var(--color-border-strong)] shadow-[var(--shadow-elev-1)] sm:size-24">
+            <AvatarImage src={league.logoUrl} alt={league.name} />
+            <AvatarFallback className="font-display text-2xl tracking-tight">
+              {initials(league.name)}
+            </AvatarFallback>
+          </Avatar>
+        ) : null}
+        <div className="min-w-0 flex-1">
+          <PageHeader
+            eyebrow="Quiniela privada"
+            title={league.name}
+            description={
+              isOwner
+                ? "Tu quiniela. Comparte el código o el enlace para que se unan, gestiona miembros y, si quieres, elimínala."
+                : "Aquí ves a quienes están dentro y cómo invitar a más gente."
+            }
+            actions={
+              isOwner ? (
+                <DeleteButton
+                  action={deleteOwnLeague}
+                  id={league.id}
+                  confirmMessage={`¿Eliminar "${league.name}"? Sus ${members.length} miembros pasarán a la Quiniela Pública. Esta acción no se puede deshacer.`}
+                  variant="outline"
+                  size="sm"
+                  label="Eliminar quiniela"
+                  className="border-[var(--color-danger)]/40 text-[var(--color-danger)] hover:bg-[var(--color-danger)]/8 hover:text-[var(--color-danger)]"
+                />
+              ) : (
+                <LeaveButton leagueId={league.id} leagueName={league.name} />
+              )
+            }
+          />
+        </div>
+      </div>
+
+      {isOwner ? (
+        <EditLeagueForm
+          league={{
+            id: league.id,
+            name: league.name,
+            logoUrl: league.logoUrl,
+          }}
+        />
+      ) : null}
 
       {league.joinCode ? <CodeDisplay code={league.joinCode} /> : null}
 

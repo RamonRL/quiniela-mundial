@@ -90,6 +90,9 @@ export const leagues = pgTable(
     slug: text("slug").notNull().unique(),
     name: text("name").notNull(),
     description: text("description"),
+    // Logo opcional de la liga privada. Subido por el creador desde
+    // el onboarding o /mi-quiniela. Las ligas públicas no usan logo.
+    logoUrl: text("logo_url"),
     inviteToken: text("invite_token").notNull().unique(),
     // Código corto de 4 dígitos (0000-9999) para que la gente pueda unirse
     // sin compartir el invite link entero. NULL en la liga pública (no se une

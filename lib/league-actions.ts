@@ -13,6 +13,7 @@ import { requireAdmin, requireUser } from "@/lib/auth/guards";
 import { createSupabaseServerClient, createSupabaseServiceClient } from "@/lib/supabase/server";
 import { logAdminAction } from "@/lib/admin/audit";
 import { notifyNewPrivateLeague } from "@/lib/telegram/events";
+import { uploadImage } from "@/lib/storage";
 import {
   PENDING_INVITE_COOKIE,
   PRIVATE_LEAGUES_PER_USER_LIMIT,
@@ -40,6 +41,9 @@ function slugify(input: string): string {
 const PRIVATE_LIMIT_ERROR = `Tienes ${PRIVATE_LEAGUES_PER_USER_LIMIT} quinielas privadas. Para unirte a una nueva, abandona alguna desde tu perfil.`;
 
 const NAME_MAX = 25;
+// Tope defensivo del logo en servidor — el cliente comprime con
+// compressImage(maxDim 400, q 0.85) a <100KB, esto es solo fallback.
+const MAX_LOGO_BYTES = 2 * 1024 * 1024;
 const createSchema = z.object({
   name: z
     .string()
@@ -55,6 +59,7 @@ export type CreateLeagueResult = LeagueFormState & {
     slug: string;
     joinCode: string | null;
     inviteToken: string;
+    logoUrl: string | null;
   };
 };
 
@@ -107,6 +112,27 @@ export async function createLeague(
     })
     .returning();
 
+  // Logo opcional. Lo subimos DESPUÉS del insert para poder usar el
+  // `id` recién generado como path del fichero — así si el usuario
+  // sube un nuevo logo más adelante, sobreescribe el mismo path
+  // (upsert: true en uploadImage). Falla silenciosa: si el upload
+  // peta no abortamos la creación de liga, solo nos quedamos sin logo.
+  const logo = formData.get("logo");
+  if (logo instanceof File && logo.size > 0 && logo.size <= MAX_LOGO_BYTES) {
+    try {
+      const ext = logo.type === "image/png" ? "png" : "jpg";
+      const path = `${created.id}.${ext}`;
+      const logoUrl = await uploadImage({ kind: "league", path, file: logo });
+      await db
+        .update(leagues)
+        .set({ logoUrl })
+        .where(eq(leagues.id, created.id));
+      created.logoUrl = logoUrl;
+    } catch (err) {
+      console.warn("[leagues] logo upload failed at create:", err);
+    }
+  }
+
   // Auto-inscribir al creador y ponerla como activa.
   await db
     .insert(leagueMemberships)
@@ -147,6 +173,7 @@ export async function createLeague(
       slug: created.slug,
       joinCode: created.joinCode,
       inviteToken: created.inviteToken,
+      logoUrl: created.logoUrl,
     },
   };
 }
@@ -328,6 +355,66 @@ export async function acceptInvite(token: string): Promise<{
 }
 
 // ─────────────────── CREADOR DE QUINIELA PRIVADA ───────────────────
+
+const updateSchema = z.object({
+  id: z.coerce.number().int(),
+  name: z
+    .string()
+    .trim()
+    .min(2, "El nombre debe tener al menos 2 caracteres.")
+    .max(NAME_MAX, `El nombre no puede pasar de ${NAME_MAX} caracteres.`),
+});
+
+/**
+ * Actualiza el nombre y/o logo de una liga privada. Solo el creador
+ * puede llamarlo (createdBy === me.id). Si llega un nuevo logo, se
+ * sube a `leagues/<id>.png|jpg` (upsert sobre el path estable). Si
+ * no se sube logo, se preserva el actual.
+ */
+export async function updateLeague(
+  _prev: LeagueFormState,
+  formData: FormData,
+): Promise<LeagueFormState> {
+  const me = await requireUser();
+  const parsed = updateSchema.safeParse({
+    id: formData.get("id"),
+    name: formData.get("name") ?? "",
+  });
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+  }
+
+  const [target] = await db
+    .select()
+    .from(leagues)
+    .where(eq(leagues.id, parsed.data.id))
+    .limit(1);
+  if (!target) return { ok: false, error: "Liga no encontrada." };
+  if (target.isPublic) {
+    return { ok: false, error: "La quiniela pública no se puede editar." };
+  }
+  if (target.createdBy !== me.id) {
+    return { ok: false, error: "Solo el creador puede editar la quiniela." };
+  }
+
+  const update: Record<string, unknown> = { name: parsed.data.name };
+
+  const logo = formData.get("logo");
+  if (logo instanceof File && logo.size > 0) {
+    if (logo.size > MAX_LOGO_BYTES) {
+      return { ok: false, error: "El logo es demasiado grande." };
+    }
+    const ext = logo.type === "image/png" ? "png" : "jpg";
+    const path = `${target.id}.${ext}`;
+    update.logoUrl = await uploadImage({ kind: "league", path, file: logo });
+  }
+
+  await db.update(leagues).set(update).where(eq(leagues.id, target.id));
+
+  revalidatePath("/mi-quiniela");
+  revalidatePath("/", "layout");
+  return { ok: true, message: "Quiniela actualizada." };
+}
 
 /**
  * Borra una quiniela privada. Solo la puede llamar el creador (createdBy).

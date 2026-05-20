@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { initials } from "@/lib/utils";
 import { compressImage, formatBytes } from "@/lib/client-image";
+import { LeagueLogoDropzone } from "@/components/leagues/league-logo-dropzone";
 import {
   createLeague,
   joinLeagueByCode,
@@ -244,6 +245,8 @@ function ChoiceCard({
 
 function CreateLeagueForm({ fresh }: { fresh: boolean }) {
   const [state, action, pending] = useActionState(createLeague, initialCreate);
+  const [logoBusy, setLogoBusy] = useState(false);
+  const [nameValue, setNameValue] = useState("");
 
   if (state.ok && state.league) {
     return (
@@ -268,16 +271,30 @@ function CreateLeagueForm({ fresh }: { fresh: boolean }) {
       </header>
 
       <form action={action} className="space-y-8">
-        <FloatingField
-          name="name"
-          label="Nombre de la quiniela · máx 25 caracteres"
-          placeholder="QUINIELA MUNDIAL 2026"
-          required
-          maxLength={25}
-          autoComplete="off"
-          autoFocus
-          big
-        />
+        <div className="grid items-start gap-6 sm:grid-cols-[auto_1fr] sm:gap-8">
+          <LeagueLogoDropzone
+            initialLogoUrl={null}
+            fallbackName={nameValue}
+            onCompressingChange={setLogoBusy}
+          />
+          <div className="space-y-2">
+            <FloatingField
+              name="name"
+              label="Nombre de la quiniela · máx 25 caracteres"
+              placeholder="QUINIELA MUNDIAL 2026"
+              required
+              maxLength={25}
+              autoComplete="off"
+              autoFocus
+              big
+              value={nameValue}
+              onChange={(e) => setNameValue(e.target.value)}
+            />
+            <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
+              Pulsa el círculo para añadir un logo. Es opcional.
+            </p>
+          </div>
+        </div>
 
         {state.error ? (
           <p className="text-sm text-[var(--color-danger)]">{state.error}</p>
@@ -288,7 +305,7 @@ function CreateLeagueForm({ fresh }: { fresh: boolean }) {
             type="submit"
             size="lg"
             className="h-14 px-8 text-base sm:flex-1"
-            disabled={pending}
+            disabled={pending || logoBusy}
           >
             {pending ? "Creando…" : "Crear quiniela"}
             <ArrowRight />
@@ -313,6 +330,9 @@ function FloatingField({
   autoComplete,
   autoFocus,
   big,
+  value,
+  defaultValue,
+  onChange,
 }: {
   name: string;
   label: string;
@@ -322,10 +342,14 @@ function FloatingField({
   autoComplete?: string;
   autoFocus?: boolean;
   big?: boolean;
+  value?: string;
+  defaultValue?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) {
   // Input "magazine": label en mono uppercase como rótulo arriba, input
   // grande con borde inferior solo (estética minimal-editorial). Foco
-  // resalta la línea inferior con el arena.
+  // resalta la línea inferior con el arena. Acepta uso controlado
+  // (value + onChange) o uncontrolled (defaultValue).
   return (
     <label className="group block space-y-2">
       <span className="block font-mono text-[0.6rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-muted-foreground)] transition-colors group-focus-within:text-[var(--color-arena)]">
@@ -339,6 +363,9 @@ function FloatingField({
         maxLength={maxLength}
         autoComplete={autoComplete}
         autoFocus={autoFocus}
+        value={value}
+        defaultValue={defaultValue}
+        onChange={onChange}
         className={`w-full border-0 border-b-2 border-[var(--color-border)] bg-transparent px-0 pb-3 pt-1 text-[var(--color-foreground)] outline-none transition-colors placeholder:text-[var(--color-muted-foreground)]/50 focus:border-[var(--color-arena)] ${
           big ? "font-display text-3xl tracking-tight sm:text-4xl" : "text-lg"
         }`}

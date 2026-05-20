@@ -6,8 +6,10 @@ import { Check, LogOut, Plus, Trophy } from "lucide-react";
 import { toast } from "sonner";
 import { leaveLeague, setActiveLeague } from "@/lib/league-actions";
 import type { Membership } from "@/lib/leagues";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { initials } from "@/lib/utils";
 
 export function MyLeaguesSection({
   memberships,
@@ -81,13 +83,24 @@ export function MyLeaguesSection({
               }`}
             >
               <div className="flex items-center gap-3">
-                <Trophy
-                  className={`size-4 ${
-                    isActive
-                      ? "text-[var(--color-arena)]"
-                      : "text-[var(--color-muted-foreground)]"
-                  }`}
-                />
+                {!m.isPublic ? (
+                  <Avatar className="size-8 shrink-0 border border-[var(--color-border)]">
+                    {m.logoUrl ? (
+                      <AvatarImage src={m.logoUrl} alt={m.name} />
+                    ) : null}
+                    <AvatarFallback className="text-[0.6rem] font-semibold">
+                      {initials(m.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                ) : (
+                  <Trophy
+                    className={`size-4 ${
+                      isActive
+                        ? "text-[var(--color-arena)]"
+                        : "text-[var(--color-muted-foreground)]"
+                    }`}
+                  />
+                )}
                 <div className="space-y-0.5">
                   <p className="font-display text-base tracking-tight">{m.name}</p>
                   <div className="flex flex-wrap items-center gap-2 text-[0.65rem] text-[var(--color-muted-foreground)]">

@@ -59,6 +59,7 @@ export type Membership = {
   isPublic: boolean;
   joinCode: string | null;
   joinedAt: Date;
+  logoUrl: string | null;
 };
 
 /**
@@ -75,6 +76,7 @@ export async function getMembershipsForUser(userId: string): Promise<Membership[
       isPublic: leagues.isPublic,
       joinCode: leagues.joinCode,
       joinedAt: leagueMemberships.joinedAt,
+      logoUrl: leagues.logoUrl,
     })
     .from(leagueMemberships)
     .innerJoin(leagues, eq(leagueMemberships.leagueId, leagues.id))
