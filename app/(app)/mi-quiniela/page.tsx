@@ -23,7 +23,7 @@ import { deleteOwnLeague } from "@/lib/league-actions";
 import { formatDateTime, initials } from "@/lib/utils";
 import { InviteLinkCopy } from "@/app/admin/ligas/invite-link-copy";
 import { CodeDisplay } from "./code-display";
-import { EditLeagueForm } from "./edit-league-form";
+import { EditLeagueDialog } from "./edit-league-dialog";
 import { KickButton, LeaveButton } from "./member-actions";
 import { AnnouncementForm } from "./announcement-form";
 
@@ -134,15 +134,25 @@ export default async function MyLeaguePage() {
             }
             actions={
               isOwner ? (
-                <DeleteButton
-                  action={deleteOwnLeague}
-                  id={league.id}
-                  confirmMessage={`¿Eliminar "${league.name}"? Sus ${members.length} miembros pasarán a la Quiniela Pública. Esta acción no se puede deshacer.`}
-                  variant="outline"
-                  size="sm"
-                  label="Eliminar quiniela"
-                  className="border-[var(--color-danger)]/40 text-[var(--color-danger)] hover:bg-[var(--color-danger)]/8 hover:text-[var(--color-danger)]"
-                />
+                <div className="flex items-center gap-2">
+                  <EditLeagueDialog
+                    league={{
+                      id: league.id,
+                      name: league.name,
+                      logoUrl: league.logoUrl,
+                      isPremium,
+                    }}
+                  />
+                  <DeleteButton
+                    action={deleteOwnLeague}
+                    id={league.id}
+                    confirmMessage={`¿Eliminar "${league.name}"? Sus ${members.length} miembros pasarán a la Quiniela Pública. Esta acción no se puede deshacer.`}
+                    variant="outline"
+                    size="sm"
+                    label="Eliminar"
+                    className="border-[var(--color-danger)]/40 text-[var(--color-danger)] hover:bg-[var(--color-danger)]/8 hover:text-[var(--color-danger)]"
+                  />
+                </div>
               ) : (
                 <LeaveButton leagueId={league.id} leagueName={league.name} />
               )
@@ -150,17 +160,6 @@ export default async function MyLeaguePage() {
           />
         </div>
       </div>
-
-      {isOwner ? (
-        <EditLeagueForm
-          league={{
-            id: league.id,
-            name: league.name,
-            logoUrl: league.logoUrl,
-            isPremium,
-          }}
-        />
-      ) : null}
 
       {isOwner && isPremium ? (
         <AnnouncementForm leagueId={league.id} initialValue={league.announcement} />

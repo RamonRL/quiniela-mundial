@@ -269,7 +269,7 @@ function CreateLeagueForm({ fresh }: { fresh: boolean }) {
         </p>
       </header>
 
-      <form action={action} className="space-y-8">
+      <form action={action} className="space-y-6">
         <FloatingField
           name="name"
           label="Nombre de la quiniela · máx 25 caracteres"
@@ -283,11 +283,14 @@ function CreateLeagueForm({ fresh }: { fresh: boolean }) {
           onChange={(e) => setNameValue(e.target.value)}
         />
 
-        <div className="space-y-3">
+        <div className="space-y-2">
           <p className="font-mono text-[0.6rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Logo · galería
+            Logo
           </p>
-          <LeagueLogoGalleryPicker initialLogoUrl={null} />
+          <LeagueLogoGalleryPicker initialLogoUrl={null} hideHelper />
+          <p className="font-editorial text-[0.7rem] italic text-[var(--color-muted-foreground)]">
+            Logo corporativo custom — disponible con un Pase Mundial 2026.
+          </p>
         </div>
 
         {state.error ? (
