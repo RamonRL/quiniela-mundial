@@ -14,6 +14,12 @@ const PUBLIC_PATHS = [
   "/auth/callback",
   "/auth/error",
   "/invite",
+  // Rutas /api/* — son stateless, validan auth dentro del handler si
+  // hace falta (admin actions usan requireAdmin(), etc). El middleware
+  // las redirigia a /login cuando no había sesión, lo que rompía
+  // cosas como webhooks de Lemon Squeezy: LS recibía 200 con HTML de
+  // login y se creía que la entrega iba bien.
+  "/api",
   "/manifest.webmanifest",
   "/calendario",
   "/grupos",
