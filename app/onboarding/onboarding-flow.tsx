@@ -287,10 +287,7 @@ function CreateLeagueForm({ fresh }: { fresh: boolean }) {
           <p className="font-mono text-[0.6rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
             Logo
           </p>
-          <LeagueLogoGalleryPicker initialLogoUrl={null} hideHelper />
-          <p className="font-editorial text-[0.7rem] italic text-[var(--color-muted-foreground)]">
-            Logo corporativo custom — disponible con un Pase Mundial 2026.
-          </p>
+          <LeagueLogoGalleryPicker initialLogoUrl={null} />
         </div>
 
         {state.error ? (

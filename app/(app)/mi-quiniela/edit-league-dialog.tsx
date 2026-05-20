@@ -1,8 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import { Pencil, Save, Sparkles } from "lucide-react";
-import Link from "next/link";
+import { Pencil, Save } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -97,14 +96,13 @@ export function EditLeagueDialog({ league }: Props) {
 
           <div className="space-y-1.5">
             <Label>Logo</Label>
-            <LeagueLogoGalleryPicker initialLogoUrl={league.logoUrl} hideHelper />
+            <LeagueLogoGalleryPicker initialLogoUrl={league.logoUrl} />
           </div>
 
           {league.isPremium ? (
-            <div className="rounded-md border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_4%,transparent)] p-3">
-              <div className="flex items-center gap-2 pb-2 font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-arena)]">
-                <Sparkles className="size-3" />
-                <span>Logo corporativo · Pase Mundial 2026</span>
+            <div className="rounded-md border border-[var(--color-border)] p-3">
+              <div className="pb-2 font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
+                Logo custom
               </div>
               <div className="flex items-center gap-3">
                 <LeagueLogoDropzone
@@ -118,18 +116,7 @@ export function EditLeagueDialog({ league }: Props) {
                 </p>
               </div>
             </div>
-          ) : (
-            <p className="font-editorial text-[0.7rem] italic text-[var(--color-muted-foreground)]">
-              ¿Logo corporativo? Incluido en los{" "}
-              <Link
-                href="/precios"
-                className="text-[var(--color-arena)] underline-offset-2 hover:underline"
-              >
-                Pases Mundial 2026
-              </Link>
-              .
-            </p>
-          )}
+          ) : null}
 
           {state.error ? (
             <p className="text-sm text-[var(--color-danger)]">{state.error}</p>
