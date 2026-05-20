@@ -11,7 +11,11 @@ import { uploadImage } from "@/lib/storage";
 
 export type SaveInitialProfileState = { ok: boolean; error?: string };
 
-const MAX_AVATAR_BYTES = 1024 * 1024; // 1 MB
+// Tope de seguridad en servidor. El cliente comprime el avatar a
+// ~100-200 KB con `compressImage` antes de subirlo (mismo pipeline
+// que `/perfil`), así que 2 MB sobra de margen y solo actúa de
+// fallback si un cliente raro saltase la compresión.
+const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
 
 /**
  * Onboarding paso "perfil": primer login. Guardamos apodo (por defecto la
@@ -32,7 +36,7 @@ export async function saveInitialProfile(
   const avatar = formData.get("avatar");
   if (avatar instanceof File && avatar.size > 0) {
     if (avatar.size > MAX_AVATAR_BYTES) {
-      return { ok: false, error: "La imagen pesa más de 1 MB." };
+      return { ok: false, error: "La imagen es demasiado grande." };
     }
     update.avatarUrl = await uploadImage({
       kind: "avatar",

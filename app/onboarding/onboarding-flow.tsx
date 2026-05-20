@@ -19,6 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { initials } from "@/lib/utils";
+import { compressImage, formatBytes } from "@/lib/client-image";
 import {
   createLeague,
   joinLeagueByCode,
@@ -570,7 +571,19 @@ function JoinLeagueForm() {
 
 // ──────────────────────── Perfil (primer login) ────────────────────────
 
-const MAX_AVATAR_BYTES = 1024 * 1024; // 1 MB
+/**
+ * Tope absoluto del archivo crudo antes de comprimir. 20 MB acepta
+ * cualquier foto de móvil moderna; el pipeline de `compressImage` la
+ * deja en ~100-200 KB antes de que viaje al servidor (mismo patrón
+ * que el formulario de `/perfil`).
+ */
+const MAX_RAW_INPUT_BYTES = 20 * 1024 * 1024;
+
+type CompressInfo = {
+  originalBytes: number;
+  finalBytes: number;
+  skipped: boolean;
+};
 
 function ProfileStep({
   email,
@@ -583,18 +596,47 @@ function ProfileStep({
   const defaultNickname = email.split("@")[0];
   const [nicknameValue, setNicknameValue] = useState(defaultNickname);
   const [preview, setPreview] = useState<string | null>(avatarUrl);
-  const [sizeError, setSizeError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [compressing, setCompressing] = useState(false);
+  const [compressInfo, setCompressInfo] = useState<CompressInfo | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const display = nicknameValue.trim() || defaultNickname;
 
-  function pickFile(file: File) {
-    if (file.size > MAX_AVATAR_BYTES) {
-      setSizeError("La imagen pesa más de 1 MB. Súbela algo más ligera.");
+  async function pickFile(file: File) {
+    setError(null);
+    setCompressInfo(null);
+
+    if (file.size > MAX_RAW_INPUT_BYTES) {
+      setError(
+        `La imagen pesa ${formatBytes(file.size)}. Demasiado grande, prueba con otra.`,
+      );
       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
-    setSizeError(null);
-    setPreview(URL.createObjectURL(file));
+
+    setCompressing(true);
+    try {
+      const result = await compressImage(file, { maxDim: 800, quality: 0.85 });
+      // Reemplazamos el File del <input type="file"> por la versión
+      // comprimida usando DataTransfer — así la FormData del submit
+      // envía el archivo optimizado sin tocar el server action.
+      if (fileInputRef.current) {
+        const dt = new DataTransfer();
+        dt.items.add(result.file);
+        fileInputRef.current.files = dt.files;
+      }
+      setPreview(URL.createObjectURL(result.file));
+      setCompressInfo({
+        originalBytes: result.originalBytes,
+        finalBytes: result.finalBytes,
+        skipped: result.skipped,
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo procesar la imagen.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    } finally {
+      setCompressing(false);
+    }
   }
 
   return (
@@ -682,11 +724,22 @@ function ProfileStep({
             <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
               Pulsa o arrastra una imagen sobre el avatar.{" "}
               <span className="font-mono not-italic uppercase tracking-[0.18em]">
-                PNG/JPG · 1 MB máx · opcional
+                PNG/JPG · se optimiza automáticamente · opcional
               </span>
             </p>
-            {sizeError ? (
-              <p className="text-xs text-[var(--color-danger)]">{sizeError}</p>
+            {compressing ? (
+              <p className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+                Optimizando imagen…
+              </p>
+            ) : null}
+            {compressInfo && !compressInfo.skipped ? (
+              <p className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-arena)]">
+                Optimizada: {formatBytes(compressInfo.originalBytes)} →{" "}
+                {formatBytes(compressInfo.finalBytes)}
+              </p>
+            ) : null}
+            {error ? (
+              <p className="text-xs text-[var(--color-danger)]">{error}</p>
             ) : null}
           </div>
 
