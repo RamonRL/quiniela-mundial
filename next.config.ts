@@ -1,15 +1,27 @@
 import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
+// Tras migrar a custom domain (auth.quinielamundial.es), las URLs de
+// Storage nuevas usan ese host. Pero hay URLs ya persistidas en DB con
+// el host viejo (yrdbjwyvojsmeajcrdli.supabase.co) — Supabase sigue
+// sirviéndolas en paralelo como alias. Mantenemos ambos en
+// remotePatterns para que next/image no rechace ninguna.
 const supabaseHostname = process.env.NEXT_PUBLIC_SUPABASE_URL
   ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
   : null;
+const LEGACY_SUPABASE_HOSTNAME = "yrdbjwyvojsmeajcrdli.supabase.co";
+
+const supabaseRemotePatterns = Array.from(
+  new Set([supabaseHostname, LEGACY_SUPABASE_HOSTNAME].filter(Boolean) as string[]),
+).map((hostname) => ({
+  protocol: "https" as const,
+  hostname,
+  pathname: "/storage/v1/object/public/**",
+}));
 
 const nextConfig: NextConfig = {
   images: {
-    remotePatterns: supabaseHostname
-      ? [{ protocol: "https", hostname: supabaseHostname, pathname: "/storage/v1/object/public/**" }]
-      : [],
+    remotePatterns: supabaseRemotePatterns,
   },
   // Forzamos a Next a empaquetar las fuentes y logos PNG con las funciones
   // de OG image. Por defecto los archivos de `public/` NO se bundlean con
