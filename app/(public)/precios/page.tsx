@@ -3,6 +3,7 @@ import { ArrowRight, Check, Mail } from "lucide-react";
 import { PageHeader } from "@/components/shell/page-header";
 import { BreadcrumbLD } from "@/components/seo/jsonld";
 import { CommercialLeadForm } from "@/components/leagues/commercial-lead-form";
+import { getCheckoutUrls, type PaidTierId } from "@/lib/lemonsqueezy";
 
 export const revalidate = 86400;
 
@@ -21,12 +22,18 @@ export const metadata = {
 
 type Plan = {
   id: string;
+  /** Tier id que casa con la env var de Lemon Squeezy. Solo para los
+   * de pago. */
+  paidTierId?: PaidTierId;
   name: string;
   price: string;
   priceNote: string;
   members: string;
   highlight?: boolean;
   ctaLabel: string;
+  /** Enlace interno (p.ej. /onboarding). Si está vacío y existe
+   * `paidTierId`, se usa la URL de checkout de Lemon Squeezy si está
+   * configurada; si no, se cae al formulario de contacto. */
   ctaHref?: string;
 };
 
@@ -42,28 +49,31 @@ const PLANS: Plan[] = [
   },
   {
     id: "team-50",
+    paidTierId: "team-50",
     name: "Pase Equipo",
     price: "29 €",
     priceNote: "Pase Mundial 2026 · pago único",
     members: "Hasta 50 miembros",
-    ctaLabel: "Quiero este plan",
+    ctaLabel: "Comprar",
   },
   {
     id: "team-100",
+    paidTierId: "team-100",
     name: "Pase Empresa",
     price: "69 €",
     priceNote: "Pase Mundial 2026 · pago único",
     members: "Hasta 100 miembros",
     highlight: true,
-    ctaLabel: "Quiero este plan",
+    ctaLabel: "Comprar",
   },
   {
     id: "team-250",
+    paidTierId: "team-250",
     name: "Pase Empresa Plus",
     price: "149 €",
     priceNote: "Pase Mundial 2026 · pago único",
     members: "Hasta 250 miembros",
-    ctaLabel: "Quiero este plan",
+    ctaLabel: "Comprar",
   },
 ];
 
@@ -78,7 +88,7 @@ const PAID_FEATURES: string[] = [
 const FAQ: { q: string; a: string }[] = [
   {
     q: "¿Cómo funciona el pago?",
-    a: "Tras enviar el formulario te contactamos por email en menos de 24h con presupuesto y enlace de pago. Cuando confirmamos el pago, levantamos el límite de miembros de tu quiniela en minutos.",
+    a: "Pulsa Comprar en el plan que quieras, se abre el checkout de Lemon Squeezy (tarjeta o PayPal) y al confirmar el pago recibimos aviso al momento. En cuanto verificamos que vas asociado a la quiniela correcta, levantamos el límite de miembros — normalmente en menos de 24h.",
   },
   {
     q: "¿El precio es por torneo o suscripción?",
@@ -89,16 +99,22 @@ const FAQ: { q: string; a: string }[] = [
     a: "Indícanos la cifra real en el mensaje del formulario y te pasamos presupuesto a medida.",
   },
   {
-    q: "¿Podéis emitir factura?",
-    a: "Indícalo en el mensaje del formulario con los datos fiscales de tu empresa y vemos la mejor opción para tu caso antes de confirmar el pago — depende del método de cobro que acabemos usando.",
+    q: "¿Podéis emitir factura con los datos de mi empresa?",
+    a: "Sí. El pago lo procesa Lemon Squeezy como Merchant of Record: ellos emiten una factura legal con el IVA correspondiente (en España, 21 %; en otros países UE, el aplicable). Durante el checkout puedes introducir los datos fiscales de tu empresa y la factura se descarga al momento en PDF — válida para deducción contable.",
   },
   {
     q: "¿Y si quiero probarlo antes de pagar?",
-    a: "Crea una quiniela gratis hasta 20 miembros para enseñársela al equipo. Cuando confirméis, escríbenos y subimos el límite sin migrar datos — la misma liga, los mismos miembros, más capacidad.",
+    a: "Crea una quiniela gratis hasta 20 miembros para enseñársela al equipo. Cuando confirméis, comprad el Pase desde /precios y subimos el límite sin migrar datos — la misma liga, los mismos miembros, más capacidad.",
+  },
+  {
+    q: "¿Devolución si no estamos satisfechos?",
+    a: "Si el torneo aún no ha empezado y no estás contento con la herramienta, escríbenos: gestionamos la devolución con Lemon Squeezy. Una vez arrancado el Mundial el reembolso ya no aplica al haberse consumido el servicio.",
   },
 ];
 
 export default function PreciosPage() {
+  const checkoutUrls = getCheckoutUrls();
+
   return (
     <div className="space-y-12">
       <BreadcrumbLD
@@ -145,25 +161,7 @@ export default function PreciosPage() {
               </p>
             </div>
             <div className="mt-5">
-              {plan.ctaHref ? (
-                <Link
-                  href={plan.ctaHref}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-[var(--color-border)] bg-[var(--color-surface-2)] px-4 py-2 font-mono text-[0.65rem] uppercase tracking-[0.18em] text-[var(--color-foreground)] transition hover:border-[var(--color-arena)]/40"
-                >
-                  {plan.ctaLabel} <ArrowRight className="size-3.5" />
-                </Link>
-              ) : (
-                <a
-                  href="#contacto"
-                  className={`inline-flex w-full items-center justify-center gap-2 rounded-md px-4 py-2 font-mono text-[0.65rem] uppercase tracking-[0.18em] transition ${
-                    plan.highlight
-                      ? "bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]"
-                      : "border border-[var(--color-arena)]/50 text-[var(--color-arena)] hover:bg-[color-mix(in_oklch,var(--color-arena)_8%,transparent)]"
-                  }`}
-                >
-                  {plan.ctaLabel} <ArrowRight className="size-3.5" />
-                </a>
-              )}
+              <PlanCTA plan={plan} checkoutUrl={plan.paidTierId ? checkoutUrls[plan.paidTierId] : null} />
             </div>
           </article>
         ))}
@@ -285,5 +283,59 @@ export default function PreciosPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+/**
+ * Resuelve a qué destino apunta el botón "Comprar/Crear gratis" de
+ * cada tier:
+ *
+ *  - Tier Free → enlace interno a /onboarding.
+ *  - Tier de pago con URL de Lemon Squeezy configurada → abre el
+ *    hosted checkout en una pestaña nueva (rel=noopener para que LS
+ *    no acceda al window de la app durante la redirección post-pago).
+ *  - Tier de pago sin URL → cae al ancla #contacto del formulario,
+ *    útil mientras el dueño aún no ha publicado los productos en LS.
+ */
+function PlanCTA({
+  plan,
+  checkoutUrl,
+}: {
+  plan: Plan;
+  checkoutUrl: string | null;
+}) {
+  const arenaClasses = plan.highlight
+    ? "bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]"
+    : "border border-[var(--color-arena)]/50 text-[var(--color-arena)] hover:bg-[color-mix(in_oklch,var(--color-arena)_8%,transparent)]";
+
+  if (plan.ctaHref) {
+    return (
+      <Link
+        href={plan.ctaHref}
+        className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-[var(--color-border)] bg-[var(--color-surface-2)] px-4 py-2 font-mono text-[0.65rem] uppercase tracking-[0.18em] text-[var(--color-foreground)] transition hover:border-[var(--color-arena)]/40"
+      >
+        {plan.ctaLabel} <ArrowRight className="size-3.5" />
+      </Link>
+    );
+  }
+  if (checkoutUrl) {
+    return (
+      <a
+        href={checkoutUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`inline-flex w-full items-center justify-center gap-2 rounded-md px-4 py-2 font-mono text-[0.65rem] uppercase tracking-[0.18em] transition ${arenaClasses}`}
+      >
+        {plan.ctaLabel} <ArrowRight className="size-3.5" />
+      </a>
+    );
+  }
+  return (
+    <a
+      href="#contacto"
+      className={`inline-flex w-full items-center justify-center gap-2 rounded-md px-4 py-2 font-mono text-[0.65rem] uppercase tracking-[0.18em] transition ${arenaClasses}`}
+    >
+      Contactar <ArrowRight className="size-3.5" />
+    </a>
   );
 }

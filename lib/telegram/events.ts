@@ -125,6 +125,25 @@ export async function notifyNewCommercialLead(args: {
   await sendTelegramMessage(text);
 }
 
+export async function notifyLemonSqueezyOrder(args: {
+  orderId: string;
+  orderNumber: number;
+  productName: string;
+  amountFormatted: string;
+  customerName: string;
+  customerEmail: string;
+}): Promise<void> {
+  const text = [
+    "💸 <b>Pago recibido · Lemon Squeezy</b>",
+    `🎟 <b>${escapeHTML(args.productName)}</b> · ${escapeHTML(args.amountFormatted)}`,
+    `👤 ${escapeHTML(args.customerName)}`,
+    `📧 <code>${escapeHTML(args.customerEmail)}</code>`,
+    `#${args.orderNumber}`,
+    `<a href="${SITE_URL}/admin/leads">Ver en admin</a>`,
+  ].join("\n");
+  await sendTelegramMessage(text);
+}
+
 export async function notifyServerError(args: {
   message: string;
   route?: string | null;
