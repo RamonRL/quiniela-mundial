@@ -169,19 +169,22 @@ export default async function PreciosPage() {
       />
 
       {buyerLeague && buyerLeague.joinCode ? (
-        <div className="flex items-center gap-3 rounded-xl border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface))] px-4 py-3">
-          <Sparkles className="size-4 shrink-0 text-[var(--color-arena)]" />
-          <p className="font-editorial text-sm italic leading-snug">
-            Comprando para tu quiniela{" "}
-            <strong className="not-italic font-semibold">
+        <p className="flex flex-wrap items-center gap-1.5 text-xs text-[var(--color-muted-foreground)]">
+          <Sparkles
+            aria-hidden
+            className="size-3 text-[var(--color-arena)]"
+          />
+          <span>
+            Comprando para{" "}
+            <span className="font-medium text-[var(--color-foreground)]">
               {buyerLeague.name}
-            </strong>{" "}
-            <span className="font-mono text-[0.65rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-              (código {buyerLeague.joinCode})
-            </span>
-            . El Pase se activa solo en cuanto se confirme el pago.
-          </p>
-        </div>
+            </span>{" "}
+            <span className="font-mono tracking-[0.1em]">
+              ({buyerLeague.joinCode})
+            </span>{" "}
+            — activación automática tras el pago.
+          </span>
+        </p>
       ) : null}
 
       {/* ─── Tabla de planes ─── */}
