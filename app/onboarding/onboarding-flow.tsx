@@ -576,14 +576,13 @@ function JoinLeagueForm() {
  * cualquier foto de móvil moderna; el pipeline de `compressImage` la
  * deja en ~100-200 KB antes de que viaje al servidor (mismo patrón
  * que el formulario de `/perfil`).
+ *
+ * La compresión se hace silenciosa: el usuario no ve indicador
+ * "optimizando" ni el ratio de ahorro — solo aparece su avatar
+ * cargado cuando termina. El submit queda bloqueado mientras se
+ * comprime para evitar enviar el archivo crudo por accidente.
  */
 const MAX_RAW_INPUT_BYTES = 20 * 1024 * 1024;
-
-type CompressInfo = {
-  originalBytes: number;
-  finalBytes: number;
-  skipped: boolean;
-};
 
 function ProfileStep({
   email,
@@ -598,13 +597,11 @@ function ProfileStep({
   const [preview, setPreview] = useState<string | null>(avatarUrl);
   const [error, setError] = useState<string | null>(null);
   const [compressing, setCompressing] = useState(false);
-  const [compressInfo, setCompressInfo] = useState<CompressInfo | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const display = nicknameValue.trim() || defaultNickname;
 
   async function pickFile(file: File) {
     setError(null);
-    setCompressInfo(null);
 
     if (file.size > MAX_RAW_INPUT_BYTES) {
       setError(
@@ -626,11 +623,6 @@ function ProfileStep({
         fileInputRef.current.files = dt.files;
       }
       setPreview(URL.createObjectURL(result.file));
-      setCompressInfo({
-        originalBytes: result.originalBytes,
-        finalBytes: result.finalBytes,
-        skipped: result.skipped,
-      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo procesar la imagen.");
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -724,20 +716,9 @@ function ProfileStep({
             <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
               Pulsa o arrastra una imagen sobre el avatar.{" "}
               <span className="font-mono not-italic uppercase tracking-[0.18em]">
-                PNG/JPG · se optimiza automáticamente · opcional
+                PNG/JPG · opcional
               </span>
             </p>
-            {compressing ? (
-              <p className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-                Optimizando imagen…
-              </p>
-            ) : null}
-            {compressInfo && !compressInfo.skipped ? (
-              <p className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-arena)]">
-                Optimizada: {formatBytes(compressInfo.originalBytes)} →{" "}
-                {formatBytes(compressInfo.finalBytes)}
-              </p>
-            ) : null}
             {error ? (
               <p className="text-xs text-[var(--color-danger)]">{error}</p>
             ) : null}
@@ -766,7 +747,7 @@ function ProfileStep({
             type="submit"
             size="lg"
             className="h-14 px-8 text-base sm:flex-1"
-            disabled={pending}
+            disabled={pending || compressing}
           >
             {pending ? "Guardando…" : "Continuar"}
             <ArrowRight />
