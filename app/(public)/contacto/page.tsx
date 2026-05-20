@@ -4,7 +4,7 @@ import { Briefcase, Bug, Lightbulb, Mail, MessageSquare } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
 import { PageHeader } from "@/components/shell/page-header";
 import { BreadcrumbLD } from "@/components/seo/jsonld";
-import { InstagramIcon, TikTokIcon, XIcon } from "@/components/icons/social";
+import { TikTokIcon, XIcon } from "@/components/icons/social";
 import { CommercialLeadForm } from "@/components/leagues/commercial-lead-form";
 
 // Contacto es estático: cacheamos generosamente (24 h).
@@ -13,12 +13,12 @@ export const revalidate = 86400;
 export const metadata = {
   title: "Contacto",
   description:
-    "Contacto de Quiniela Mundial 2026. Bugs, mejoras o dudas: admin@quinielamundial.es. Redes sociales y sobre el creador.",
+    "Contacto de Quiniela Mundial 2026. Bugs, mejoras, dudas o planes para empresas: admin@quinielamundial.es.",
   alternates: { canonical: "/contacto" },
   openGraph: {
     title: "Contacto · Quiniela Mundial 2026",
     description:
-      "Habla con el creador de Quiniela Mundial 2026. Email, redes sociales y formas de reportar bugs o sugerir mejoras.",
+      "Contacto de Quiniela Mundial 2026. Email, redes sociales y formulario para empresas.",
     url: "/contacto",
   },
 };
@@ -37,12 +37,6 @@ type Social = {
 };
 
 const SOCIALS: Social[] = [
-  {
-    label: "Instagram",
-    href: "https://instagram.com/quiniela.mundial",
-    handle: "@quiniela.mundial",
-    Icon: InstagramIcon,
-  },
   {
     label: "TikTok",
     href: "https://tiktok.com/@quinielamundial",
@@ -70,7 +64,7 @@ export default function ContactoPage() {
       <PageHeader
         eyebrow="Ayuda"
         title="Contacto"
-        description="Habla con el creador de Quiniela Mundial. Bugs, mejoras o cualquier asunto — respondo lo antes que puedo."
+        description="Bugs, mejoras o cualquier asunto — te respondemos lo antes posible."
       />
 
       {/* ─── Email hero ─── */}
@@ -98,17 +92,17 @@ export default function ContactoPage() {
         </div>
       </section>
 
-      {/* ─── Sobre el creador ─── */}
+      {/* ─── Sobre el proyecto ─── */}
       <section className="grid gap-6 lg:grid-cols-[auto_1fr] lg:items-start lg:gap-10">
-        {/* Pareja de círculos: retrato del creador + mark de la app,
-            ligeramente solapados para sugerir "yo + el proyecto". El
-            retrato delante porque pesa más como elemento. */}
+        {/* Pareja de círculos: retrato + mark de la app, ligeramente
+            solapados para sugerir "persona + proyecto". El retrato
+            delante porque pesa más como elemento visual. */}
         <div className="flex justify-center lg:block">
           <div className="relative flex items-center">
             <div className="relative z-10 size-32 overflow-hidden rounded-full border-2 border-[var(--color-arena)]/40 bg-[var(--color-surface)] shadow-[var(--shadow-elev-2)]">
               <Image
                 src="/yo-portrait.jpg"
-                alt="Ramón Romero, creador de Quiniela Mundial"
+                alt="Creador de Quiniela Mundial"
                 width={640}
                 height={640}
                 className="h-full w-full object-cover"
@@ -127,32 +121,30 @@ export default function ContactoPage() {
         </div>
         <div className="space-y-4">
           <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Sobre el creador
+            Sobre el proyecto
           </p>
           <h2 className="font-display text-3xl tracking-tight sm:text-4xl">
-            Hola, soy Ramón.
+            Hecho por un aficionado, para aficionados.
           </h2>
           <p className="font-editorial text-base italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-lg">
-            Científico e ingeniero de datos, desarrollador de IA, fanático del 
-            fútbol y obseso de las apps de Fantasy entre amigos. Quiniela 
-            Mundial nació para mi grupo de amigos, como una alternativa
-            a los juegos fantasy tradicionales — excels infinitos, capturas en el
-            grupo de WhatsApp, batallas de clausulazos sin control pero nunca
-            satisfechos con la experiencia de usuario de algunas apps.
-            Decidí construir la app que nos faltaba y abrirla para que la
+            Quiniela Mundial nació para un grupo de amigos, como alternativa
+            a los juegos fantasy tradicionales — excels infinitos, capturas
+            en el grupo de WhatsApp, batallas de clausulazos sin control y
+            siempre con la sensación de echar en falta una experiencia mejor.
+            Decidimos construir la app que nos faltaba y abrirla para que la
             usara cualquiera.
           </p>
           <p className="font-editorial text-base italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-lg">
             Si te encuentras un bug, tienes una idea, quieres sugerir una
-            categoría nueva o solo darme feedback, escríbeme a{" "}
+            categoría nueva o solo dar feedback, escribe a{" "}
             <a
               href={`mailto:${EMAIL}`}
               className="text-[var(--color-arena)] underline-offset-2 hover:underline"
             >
               {EMAIL}
             </a>
-            . No hay equipo detrás — soy yo y el código, así que puede tardar
-            un día o dos en responder, pero leo todo.
+            . No hay un equipo grande detrás, así que puede tardar un día o
+            dos en responder, pero leemos todo.
           </p>
         </div>
       </section>
@@ -209,14 +201,14 @@ export default function ContactoPage() {
             </h2>
             <p className="max-w-md font-editorial text-base italic leading-relaxed text-[var(--color-muted-foreground)]">
               Las quinielas privadas aguantan 20 personas en plan Free. Para
-              equipos más grandes hay Pases Mundial 2026 desde 29 € — mira{" "}
+              equipos más grandes mira{" "}
               <Link
                 href="/precios"
                 className="text-[var(--color-arena)] underline-offset-2 hover:underline"
               >
                 /precios
               </Link>{" "}
-              o rellena el formulario y te respondo en menos de 24 h.
+              o rellena el formulario y te respondemos en menos de 24 h.
             </p>
           </div>
           <CommercialLeadForm />

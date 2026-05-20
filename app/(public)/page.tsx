@@ -23,6 +23,7 @@ import { TeamFlag } from "@/components/brand/team-flag";
 import { getCurrentUser } from "@/lib/auth/guards";
 import { formatDateTime } from "@/lib/utils";
 import { FAQPageLD, SportsEventLD, WebSiteLD } from "@/components/seo/jsonld";
+import { AnswerText } from "@/components/faq/answer-text";
 import { NewsCard } from "@/components/news/news-card";
 import { listPublishedNews } from "@/lib/news/queries";
 
@@ -590,10 +591,9 @@ export default async function HomePage() {
             </h2>
             <p className="max-w-2xl font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base">
               Las quinielas privadas Free aguantan 20 miembros. Para empresas,
-              comunidades o eventos más grandes, los Pases Mundial 2026
-              escalan a 50, 100 o 250 miembros — con logo corporativo, anuncio
-              fijado del organizador, export CSV del ranking y soporte
-              prioritario. Pago único por torneo, desde 29 €.
+              comunidades o eventos con más gente, los Pases Mundial 2026
+              amplían el tope de miembros y añaden logo corporativo y soporte
+              prioritario. Pago único por torneo.
             </p>
           </div>
           <div className="flex flex-wrap items-center justify-start gap-3 lg:justify-end">
@@ -608,7 +608,7 @@ export default async function HomePage() {
               href="/contacto#empresas"
               className="inline-flex items-center gap-2 rounded-md border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] transition hover:border-[var(--color-arena)]/40"
             >
-              Hablar con Ramón
+              Contactar
             </Link>
           </div>
         </div>
@@ -637,7 +637,7 @@ export default async function HomePage() {
                 </span>
               </summary>
               <p className="pt-3 font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)]">
-                {f.a}
+                <AnswerText text={f.a} />
               </p>
             </details>
           ))}

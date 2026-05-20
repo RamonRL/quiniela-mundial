@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, HelpCircle, Mail } from "lucide-react";
 import { PageHeader } from "@/components/shell/page-header";
 import { BreadcrumbLD, FAQPageLD } from "@/components/seo/jsonld";
+import { AnswerText } from "@/components/faq/answer-text";
 
 // FAQ es estático: cacheamos generosamente (24 h).
 export const revalidate = 86400;
@@ -185,7 +186,7 @@ export default function FaqPage() {
                     </span>
                   </summary>
                   <p className="pt-3 font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base">
-                    {f.a}
+                    <AnswerText text={f.a} />
                   </p>
                 </details>
               ))}

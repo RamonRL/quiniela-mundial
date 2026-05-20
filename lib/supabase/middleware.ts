@@ -25,6 +25,7 @@ const PUBLIC_PATHS = [
   "/noticias",
   "/faq",
   "/contacto",
+  "/precios",
   "/minijuegos",
   "/sitemap.xml",
   "/news-sitemap.xml",

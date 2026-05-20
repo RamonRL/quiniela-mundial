@@ -26,7 +26,6 @@ type Plan = {
   priceNote: string;
   members: string;
   highlight?: boolean;
-  features: string[];
   ctaLabel: string;
   ctaHref?: string;
 };
@@ -38,11 +37,6 @@ const PLANS: Plan[] = [
     price: "0 €",
     priceNote: "Para siempre",
     members: "Hasta 20 miembros",
-    features: [
-      "Quiniela privada con código de 4 dígitos",
-      "Ranking, predicciones, chat",
-      "Logo de la galería",
-    ],
     ctaLabel: "Crear gratis",
     ctaHref: "/onboarding?step=privada-crear",
   },
@@ -52,13 +46,6 @@ const PLANS: Plan[] = [
     price: "29 €",
     priceNote: "Pase Mundial 2026 · pago único",
     members: "Hasta 50 miembros",
-    features: [
-      "Todo lo de Free",
-      "Logo corporativo custom",
-      "Anuncio fijado del organizador",
-      "Export CSV del ranking",
-      "Soporte prioritario (<24h)",
-    ],
     ctaLabel: "Quiero este plan",
   },
   {
@@ -68,11 +55,6 @@ const PLANS: Plan[] = [
     priceNote: "Pase Mundial 2026 · pago único",
     members: "Hasta 100 miembros",
     highlight: true,
-    features: [
-      "Todo lo de Pase Equipo",
-      "Ideal para empresas de 50–100 personas",
-      "Acompañamiento en el lanzamiento",
-    ],
     ctaLabel: "Quiero este plan",
   },
   {
@@ -81,35 +63,38 @@ const PLANS: Plan[] = [
     price: "149 €",
     priceNote: "Pase Mundial 2026 · pago único",
     members: "Hasta 250 miembros",
-    features: [
-      "Todo lo de Pase Empresa",
-      "Onboarding asistido por email",
-      "Soporte directo durante el torneo",
-    ],
     ctaLabel: "Quiero este plan",
   },
+];
+
+/** Lo mismo en todos los Pases — solo cambia el tope de miembros. */
+const PAID_FEATURES: string[] = [
+  "Logo corporativo custom",
+  "Anuncio fijado del organizador",
+  "Export CSV del ranking",
+  "Soporte prioritario por email",
 ];
 
 const FAQ: { q: string; a: string }[] = [
   {
     q: "¿Cómo funciona el pago?",
-    a: "Tras enviar el formulario te contacto por email en menos de 24h con presupuesto y enlace de pago por PayPal. Cuando confirmo el pago, levanto el límite de miembros de tu quiniela en minutos.",
+    a: "Tras enviar el formulario te contactamos por email en menos de 24h con presupuesto y enlace de pago. Cuando confirmamos el pago, levantamos el límite de miembros de tu quiniela en minutos.",
   },
   {
     q: "¿El precio es por torneo o suscripción?",
     a: "Pago único: el Pase Mundial 2026 cubre toda la edición — del 11 de junio al 19 de julio de 2026. No hay suscripción ni renovaciones automáticas.",
   },
   {
-    q: "¿Necesitamos más de 250 miembros, ¿qué hacemos?",
-    a: "Escríbeme en el formulario indicando la cifra real y te paso presupuesto a medida. Soporte enterprise: onboarding, soporte directo y branding extendido.",
+    q: "Necesitamos más de 250 miembros, ¿qué hacemos?",
+    a: "Indícanos la cifra real en el mensaje del formulario y te pasamos presupuesto a medida.",
   },
   {
-    q: "¿Cómo factura?",
-    a: "Emito factura a tu empresa con todos los datos fiscales tras confirmar el pago. Indícamelo en el mensaje del formulario.",
+    q: "¿Podéis emitir factura?",
+    a: "Indícalo en el mensaje del formulario con los datos fiscales de tu empresa y vemos la mejor opción para tu caso antes de confirmar el pago — depende del método de cobro que acabemos usando.",
   },
   {
     q: "¿Y si quiero probarlo antes de pagar?",
-    a: "Crea una quiniela gratis hasta 20 miembros para enseñársela al equipo. Cuando confirméis, escríbeme y subo el límite sin migrar datos — la misma liga, los mismos miembros, más capacidad.",
+    a: "Crea una quiniela gratis hasta 20 miembros para enseñársela al equipo. Cuando confirméis, escríbenos y subimos el límite sin migrar datos — la misma liga, los mismos miembros, más capacidad.",
   },
 ];
 
@@ -154,21 +139,11 @@ export default function PreciosPage() {
                 {plan.priceNote}
               </p>
             </header>
-            <div className="mt-5 border-y border-[var(--color-border)] py-3">
-              <p className="font-display text-base tracking-tight text-[var(--color-arena)]">
+            <div className="mt-5 flex-1 border-y border-[var(--color-border)] py-4">
+              <p className="font-display text-lg tracking-tight text-[var(--color-arena)]">
                 {plan.members}
               </p>
             </div>
-            <ul className="mt-4 flex-1 space-y-2 text-sm">
-              {plan.features.map((f) => (
-                <li key={f} className="flex items-start gap-2">
-                  <Check className="mt-0.5 size-4 shrink-0 text-[var(--color-arena)]" />
-                  <span className="leading-relaxed text-[var(--color-muted-foreground)]">
-                    {f}
-                  </span>
-                </li>
-              ))}
-            </ul>
             <div className="mt-5">
               {plan.ctaHref ? (
                 <Link
@@ -194,6 +169,33 @@ export default function PreciosPage() {
         ))}
       </section>
 
+      {/* ─── Qué incluyen los Pases (mismo para todos los de pago) ─── */}
+      <section className="relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 sm:p-10">
+        <header className="space-y-2">
+          <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
+            Pases Mundial 2026
+          </p>
+          <h2 className="font-display text-3xl tracking-tight">
+            Mismo paquete en los tres planes
+          </h2>
+          <p className="max-w-2xl font-editorial text-base italic leading-relaxed text-[var(--color-muted-foreground)]">
+            Los tres Pases incluyen exactamente las mismas ventajas — lo único
+            que cambia entre ellos es el tope de miembros de tu quiniela.
+          </p>
+        </header>
+        <ul className="mt-6 grid gap-3 sm:grid-cols-2">
+          {PAID_FEATURES.map((f) => (
+            <li
+              key={f}
+              className="flex items-start gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-4"
+            >
+              <Check className="mt-0.5 size-4 shrink-0 text-[var(--color-arena)]" />
+              <span className="text-sm leading-relaxed">{f}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       {/* ─── Enterprise ─── */}
       <section className="relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 sm:p-10">
         <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
@@ -213,7 +215,7 @@ export default function PreciosPage() {
             href="#contacto"
             className="inline-flex items-center justify-center gap-2 rounded-md border border-[var(--color-arena)] bg-[var(--color-arena)] px-5 py-3 font-mono text-[0.65rem] uppercase tracking-[0.18em] text-white shadow-[var(--shadow-arena)]"
           >
-            Hablar con Ramón <ArrowRight className="size-3.5" />
+            Contactar <ArrowRight className="size-3.5" />
           </a>
         </div>
       </section>
@@ -266,8 +268,8 @@ export default function PreciosPage() {
               Cuéntame de tu grupo.
             </h2>
             <p className="font-editorial text-base italic text-[var(--color-muted-foreground)]">
-              Te contesto en menos de 24 h con presupuesto, factura si la
-              necesitas, y enlace de pago por PayPal. Sin compromiso.
+              Te contestamos en menos de 24 h con presupuesto, opciones de
+              facturación y siguiente paso. Sin compromiso.
             </p>
           </header>
           <CommercialLeadForm />

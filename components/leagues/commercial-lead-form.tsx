@@ -55,19 +55,8 @@ export function CommercialLeadForm({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field
-          name="name"
-          label="Tu nombre"
-          required
-          placeholder="Ramón Romero"
-          autoComplete="name"
-        />
-        <Field
-          name="company"
-          label="Empresa / grupo"
-          placeholder="ACME S.L."
-          autoComplete="organization"
-        />
+        <Field name="name" label="Tu nombre" required autoComplete="name" />
+        <Field name="company" label="Empresa / grupo" autoComplete="organization" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field
@@ -75,14 +64,12 @@ export function CommercialLeadForm({
           type="email"
           label="Email de contacto"
           required
-          placeholder="tunombre@empresa.com"
           autoComplete="email"
         />
         <Field
           name="expectedMembers"
           type="number"
           label="Miembros previstos"
-          placeholder="75"
           defaultValue={defaultMembers ? String(defaultMembers) : undefined}
           inputMode="numeric"
         />
