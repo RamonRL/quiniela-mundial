@@ -17,10 +17,14 @@ import { createSupabaseServiceClient } from "@/lib/supabase/server";
  *  - Si el artículo no tiene `coverUrl` aún → lo sube y lo asigna.
  *  - Si ya tiene `coverUrl` → no toca (respeta lo que haya elegido el
  *    admin desde la UI). Usa la flag `--force` para sobreescribir.
+ *  - Con `--alt-only` → NO toca Storage ni `coverUrl`; solo refresca
+ *    `coverAlt` para los slugs que aparezcan en el array. Útil para
+ *    homogeneizar el alt sin re-subir imágenes ya en producción.
  *
  * Uso:
  *   pnpm db:upload-news-covers
  *   pnpm db:upload-news-covers --force
+ *   pnpm db:upload-news-covers --alt-only
  */
 
 const COVERS: { slug: string; file: string; alt: string }[] = [
@@ -118,6 +122,31 @@ const COVERS: { slug: string; file: string; alt: string }[] = [
 
 async function main() {
   const force = process.argv.includes("--force");
+  const altOnly = process.argv.includes("--alt-only");
+
+  // Modo --alt-only: solo actualizamos coverAlt. Sin Storage, sin
+  // re-upload. Refresca el texto descriptivo de portadas ya subidas.
+  if (altOnly) {
+    let updated = 0;
+    let missing = 0;
+    for (const c of COVERS) {
+      const result = await db
+        .update(newsArticles)
+        .set({ coverAlt: c.alt, updatedAt: new Date() })
+        .where(eq(newsArticles.slug, c.slug))
+        .returning({ id: newsArticles.id });
+      if (result.length === 0) {
+        console.log(`  ⚠ artículo no encontrado: ${c.slug}`);
+        missing++;
+      } else {
+        console.log(`  ✓ alt actualizado: ${c.slug}`);
+        updated++;
+      }
+    }
+    console.log(`Hecho. Alt actualizados: ${updated}, no encontrados: ${missing}.`);
+    return;
+  }
+
   const supabase = createSupabaseServiceClient();
   const noticiasDir = path.join(process.cwd(), "noticias");
 
