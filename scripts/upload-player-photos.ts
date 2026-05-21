@@ -46,6 +46,7 @@ const FOLDER_BY_CODE: Record<string, string> = {
   SCO: "escocia",
   FRA: "francia",
   HAI: "haiti",
+  IRN: "iran",
   JPN: "japon",
   KOR: "korea",
   NOR: "noruega",
