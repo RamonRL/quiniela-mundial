@@ -34,6 +34,11 @@ const COVERS: { slug: string; file: string; alt: string }[] = [
     file: "convo_suiza.png",
     alt: "Suiza · convocatoria de Murat Yakin para el Mundial 2026",
   },
+  {
+    slug: "convocatoria-alemania-mundial-2026-nagelsmann-neuer-regreso",
+    file: "convo_alemania.png",
+    alt: "Alemania · convocatoria de Julian Nagelsmann para el Mundial 2026",
+  },
 ];
 
 async function main() {

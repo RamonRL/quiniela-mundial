@@ -921,6 +921,86 @@ Con un grupo asequible y un rendimiento europeo reciente sólido, en 2026 el obj
 
 Para predecir hasta dónde llega Suiza, [crea tu quiniela gratis](/login?next=%2Fonboarding) y arma tu bracket antes del 11 de junio.`,
   },
+  {
+    slug: "convocatoria-alemania-mundial-2026-nagelsmann-neuer-regreso",
+    title:
+      "Convocatoria de Alemania: Manuel Neuer sale del retiro a los 40 y Nagelsmann firma una lista de Kimmich, Wirtz y Musiala",
+    seoTitle: "Convocatoria Alemania Mundial 2026 · Lista de Julian Nagelsmann",
+    excerpt:
+      "Julian Nagelsmann anuncia la lista de 26 de Alemania para el Mundial 2026 con el regreso polémico de Manuel Neuer (40 años) tras su retirada internacional de 2024. Joshua Kimmich capitanea; Wirtz y Musiala lideran el ataque; ter Stegen y Gnabry, fuera por lesión.",
+    category: "convocatoria",
+    tags: [
+      "Alemania",
+      "Julian Nagelsmann",
+      "Manuel Neuer",
+      "Joshua Kimmich",
+      "Florian Wirtz",
+      "Jamal Musiala",
+      "Mundial 2026",
+    ],
+    relatedTeamCodes: ["GER"],
+    daysAgo: 0,
+    body: `**Alemania** anunció el **21 de mayo de 2026** la lista oficial de 26 jugadores para el Mundial 2026. El seleccionador **Julian Nagelsmann** firma una convocatoria con dos titulares de la noticia: **Manuel Neuer**, de **40 años**, **sale de su retirada internacional** para volver a ser titular bajo palos casi dos años después; y **Joshua Kimmich** se mantiene como **capitán** de un grupo que se sostiene sobre **Florian Wirtz** y **Jamal Musiala** en ataque.
+
+## Neuer, el regreso polémico
+
+Manuel Neuer (Bayern Múnich) **anunció su retirada de la selección en 2024** tras la Eurocopa disputada en Alemania. Casi dos años después, Nagelsmann le llamó personalmente para ofrecerle volver al equipo y ser el **número uno** en el Mundial. La decisión se confirmó esta semana junto al resto de la lista, y ha **dividido a la prensa alemana**.
+
+- **Lothar Matthäus** (Balón de Oro 1990, capitán campeón del mundo en Italia 1990) criticó la **falta de transparencia comunicativa** del DFB y la forma de gestionar la decisión frente a **Oliver Baumann**, el portero que llevaba siendo titular toda la clasificación.
+- **Oliver Kahn** (ex portero y ex director deportivo del Bayern) calificó el regreso de "**aventurero**", citando dudas físicas a los 40 años y el riesgo de **erosionar la confianza del grupo**.
+
+Nagelsmann llamó personalmente a **Oliver Baumann** (Hoffenheim) para explicarle que pasaba a ser **segundo portero**. Baumann aceptó el papel públicamente. El tercero será **Alexander Nübel** (VfB Stuttgart), recientemente convertido en uno de los porteros más sólidos de la Bundesliga.
+
+## Las dos ausencias por lesión
+
+La lista la marcan también dos nombres que faltan:
+
+- **Marc-André ter Stegen** (Barcelona): la gran ausencia. Sufrió una **lesión en el isquiotibial izquierdo** el **31 de enero de 2026** en un partido contra Oviedo. La rehabilitación lo deja **fuera entre 7 y 8 meses**, sin opción de llegar al Mundial. Su ausencia es lo que **abrió la puerta del regreso de Neuer**: tras meses de incertidumbre con el barcelonista descartado, Nagelsmann acabó moviendo ficha.
+- **Serge Gnabry** (Bayern Múnich): se **desgarró el aductor del muslo derecho** en el último entrenamiento previo al partido contra Stuttgart hace dos semanas. La lesión lo deja **fuera 2-4 meses** y se queda **sin Mundial**. Era una de las opciones ofensivas firmes de Nagelsmann.
+
+## Kimmich, Wirtz y Musiala: el triángulo del equipo
+
+El equipo se construye sobre tres ejes:
+
+- **Joshua Kimmich** (Bayern Múnich), capitán a sus 31 años, es el organizador del centro del campo. Tras años de discusión sobre su mejor posición (lateral derecho vs mediocentro), Nagelsmann lo ha fijado **como '6' titular**.
+- **Florian Wirtz** (Liverpool): fichado el verano pasado por los *reds* desde el Bayer Leverkusen, llega al Mundial en su techo creativo. A sus 22 años, es el **'10' titular** del equipo.
+- **Jamal Musiala** (Bayern Múnich): el otro 22 años de la generación. Acompaña a Wirtz por el interior izquierdo, en posición flotante. Es el jugador con mayor capacidad de uno-contra-uno del torneo.
+
+## El núcleo del equipo
+
+- **Portería (3)**: Neuer (titular), Baumann, Nübel.
+- **Defensa (7)**: **Antonio Rüdiger** (Real Madrid) lidera la zaga, acompañado por **Nico Schlotterbeck** (Borussia Dortmund), **Jonathan Tah** (Bayern Múnich), **Waldemar Anton** (Borussia Dortmund) y **Malick Thiaw** (Newcastle United). En los laterales, **David Raum** (RB Leipzig) por la izquierda y el joven **Nathaniel Brown** (Eintracht Frankfurt) por la derecha — su inclusión es una de las sorpresas (apenas tiene experiencia internacional y herencia familiar estadounidense).
+- **Mediocampo (10)**: Kimmich, Wirtz y Musiala como ejes. **Leon Goretzka** (Bayern Múnich), **Aleksandar Pavlović** (Bayern Múnich, 21 años), **Angelo Stiller** (VfB Stuttgart) y **Felix Nmecha** (Borussia Dortmund) compiten por el segundo pivote. **Pascal Groß** (34 años, Borussia Dortmund) entra como veterano-novato — disputa su **primer Mundial a los 34 años**. **Nadiem Amiri** (Mainz 05) y el muy joven **Lennart Karl** (Bayern Múnich, 17 años, dos caps previos) completan el centro.
+- **Ataque (6)**: **Kai Havertz** (Arsenal) como '9' titular o falso 9. **Leroy Sané** (Galatasaray) por la banda derecha. **Deniz Undav** (VfB Stuttgart), **Nick Woltemade** (Newcastle United, fichaje récord del verano pasado), **Maximilian Beier** (Borussia Dortmund) y **Jamie Leweling** (VfB Stuttgart) como rotaciones.
+
+Mira la lista completa con dorsales en la [ficha de Alemania](/equipos/GER).
+
+## Las sorpresas: Karl, Brown y el veterano Groß
+
+Tres nombres han copado titulares por encima de los habituales:
+
+- **Lennart Karl** (Bayern Múnich): a sus **17 años**, es el **convocado más joven** del Mundial alemán. Media punta de la cantera del Bayern, solo había vestido la camiseta de la selección absoluta en dos partidos amistosos. Su llamada es una **apuesta de futuro** y, también, una manera de premiar la temporada que está cuajando con Vincent Kompany.
+- **Nathaniel Brown** (Eintracht Frankfurt): lateral derecho de 22 años con herencia familiar estadounidense que rechazó representar a Estados Unidos para apostar por Alemania. Entra como recambio de Joshua Kimmich en el lateral.
+- **Pascal Groß** (Borussia Dortmund): a los **34 años**, primer Mundial. Lleva una década en Europa (Brighton durante años, Dortmund desde 2024) y nunca había aparecido en una lista mundialista. Nagelsmann lo eligió por la **inteligencia táctica** que aporta como pivote experimentado.
+
+## El Grupo E y el calendario
+
+A Alemania le tocó el **Grupo E** como cabeza de serie. Le acompañan **Curazao** (debut absoluto en un Mundial, una de las federaciones más pequeñas de la historia del torneo), **Costa de Marfil** (campeona de África 2024) y **Ecuador** (siempre incómoda en los Mundiales).
+
+- **Domingo 14 de junio** · Alemania vs **Curazao** · debut
+- **Sábado 20 de junio** · Alemania vs **Costa de Marfil**
+- **Jueves 25 de junio** · Alemania vs **Ecuador**
+
+Mira la [composición completa del Grupo E](/grupos) y el [calendario del torneo](/calendario) para los horarios y sedes.
+
+## Lo que está en juego
+
+Alemania llega con **cuatro Copas del Mundo** (1954, 1974, 1990, 2014) — la **tercera selección más laureada** de la historia tras Brasil (5) y empatada con Italia. Pero los últimos dos ciclos han sido un descalabro: **eliminada en fase de grupos en Rusia 2018 y Catar 2022**, dos fracasos consecutivos sin precedentes en la historia del *Nationalmannschaft*.
+
+Nagelsmann llegó al banquillo en septiembre de 2023 con la misión de **enderezar el barco**. La Eurocopa 2024 en casa (cuartos de final, eliminada por España en la prórroga) dejó buenas sensaciones, pero el listón mundialista exige llegar mucho más lejos. Con Wirtz y Musiala en su techo, Kimmich como brújula y Neuer reciclado como talismán emocional, Alemania **se asume candidata a semifinales como mínimo** — cualquier eliminación temprana sería tercera consecutiva, y muy probablemente costaría el puesto al técnico.
+
+Si quieres predecir hasta dónde llega Alemania en tu quiniela, [crea tu cuenta gratis](/login?next=%2Fonboarding) y arma tu bracket antes del 11 de junio.`,
+  },
 
   // ─────────────────────────── ANÁLISIS / DESTACADAS ───────────────────────────
   {
