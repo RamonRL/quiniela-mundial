@@ -7,6 +7,9 @@ import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = {
   title: "Acceso",
+  // El login es para el usuario, no para Google. Sin esto, GSC reporta
+  // las variantes `/login?next=...` como duplicadas sin canonical.
+  robots: { index: false, follow: false },
 };
 
 const KICKOFF = process.env.NEXT_PUBLIC_TOURNAMENT_KICKOFF_AT ?? "2026-06-11T19:00:00Z";

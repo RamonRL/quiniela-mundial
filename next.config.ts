@@ -32,6 +32,10 @@ const nextConfig: NextConfig = {
     return [
       { source: "/$", destination: "/", permanent: true },
       { source: "/%24", destination: "/", permanent: true },
+      // Mismo patrón que /$ — alguna fuente externa generó referencias a
+      // /& que terminaron en GSC. Lo consolidamos en la home.
+      { source: "/&", destination: "/", permanent: true },
+      { source: "/%26", destination: "/", permanent: true },
     ];
   },
   // Forzamos a Next a empaquetar las fuentes y logos PNG con las funciones

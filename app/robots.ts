@@ -28,6 +28,10 @@ export default function robots(): MetadataRoute.Robots {
           "/estadisticas",
           "/onboarding",
           "/logout",
+          // /login redirige a /dashboard si hay sesión, así que sus
+          // variantes `?next=...` generan duplicados sin valor para
+          // indexar. Bloqueamos el crawl + tenemos noindex en la página.
+          "/login",
         ],
       },
     ],
