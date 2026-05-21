@@ -19,18 +19,25 @@ export function TutorialMascot({ tone = "idle" }: { tone?: "idle" | "wiggle" }) 
   return (
     <span
       aria-hidden
-      className={`inline-flex shrink-0 size-9 sm:size-11 ${
+      className={`relative inline-flex shrink-0 size-16 sm:size-20 ${
         tone === "wiggle"
           ? "tutorial-mascot-wiggle"
           : "tutorial-mascot-idle"
       }`}
     >
+      {/* Halo arena suave detrás de la mascota para que destaque
+          contra el surface del card. Decoración pura — sin sombra
+          fuerte porque la mascota ya tiene su silueta propia. */}
+      <span
+        aria-hidden
+        className="absolute inset-0 -z-10 rounded-full bg-[var(--color-arena)]/12 blur-md"
+      />
       <Image
         src="/mascota.png"
         alt=""
-        width={44}
-        height={44}
-        className="size-full object-contain"
+        width={96}
+        height={96}
+        className="size-full object-contain drop-shadow-[0_2px_8px_rgba(184,137,90,0.25)]"
         priority
       />
     </span>

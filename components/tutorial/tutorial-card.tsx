@@ -178,19 +178,20 @@ export function TutorialCard() {
           <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-[var(--color-border-strong)]" />
         ) : null}
 
-        {/* Header: indicador de paso + mascota + botón cerrar. */}
-        <div className="mb-3 flex items-start justify-between gap-3">
-          <div className="flex items-center gap-2">
+        {/* Header: mascota HÉROE arriba al centro, indicador de paso
+            debajo, botón cerrar en esquina superior derecha. */}
+        <div className="relative mb-2">
+          <div className="flex justify-center">
             <TutorialMascot tone={step.fanfare ? "wiggle" : "idle"} />
-            <span className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-              Paso {stepIndex + 1} de {totalSteps}
-            </span>
           </div>
+          <p className="mt-2 text-center font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
+            Paso {stepIndex + 1} de {totalSteps}
+          </p>
           <button
             type="button"
             onClick={skip}
             aria-label="Saltar tutorial"
-            className="grid size-9 place-items-center rounded-md text-[var(--color-muted-foreground)] transition hover:bg-[var(--color-surface-2)] hover:text-[var(--color-foreground)]"
+            className="absolute right-0 top-0 grid size-9 place-items-center rounded-md text-[var(--color-muted-foreground)] transition hover:bg-[var(--color-surface-2)] hover:text-[var(--color-foreground)]"
           >
             <X className="size-4" />
           </button>
