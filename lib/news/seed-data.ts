@@ -1484,9 +1484,11 @@ Las predicciones tienen **deadlines escalonados**:
 
 Eso significa que los **marcadores se pueden ir editando** hasta el último minuto antes de que empiece cada partido. La fase de grupos y el bracket no — esos se cierran de golpe el 11 de junio.
 
-## ¿Es realmente gratis?
+## ¿Cuánto cuesta?
 
-Sí. **Cero coste**. Cero suscripción, cero anuncios. Es un proyecto sin ánimo de lucro entre amigos.
+Para la inmensa mayoría de peñas, **gratis**. Cero suscripción, cero anuncios, **hasta 20 miembros por quiniela privada**. Si juegas con tu grupo de amigos, tu familia o tu equipo de oficina pequeño, no vas a tocar ningún límite y no se te va a pedir ni una tarjeta.
+
+Para **grupos grandes** — peñas de barrio, oficinas con plantilla amplia o asociaciones — hay [planes de pago](/precios) que suben el cupo hasta 50, 150 o ilimitado. Son **pagos únicos** por torneo, sin renovación automática, y se activan en el momento. Es lo que cubre desarrollo, hosting e infraestructura del proyecto.
 
 ## Cómo empezar
 
