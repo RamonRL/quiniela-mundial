@@ -32,6 +32,7 @@
     "db:recover-news-covers": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/recover-news-covers.ts",
     "db:upload-news-covers": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/upload-news-covers.ts",
     "db:upload-player-photos": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/upload-player-photos.ts",
+    "db:seed-iran-squad": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/seed-iran-squad.ts",
     "db:telegram-chat-id": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/telegram-get-chat-id.ts",
     "test": "vitest run",
     "test:watch": "vitest"
