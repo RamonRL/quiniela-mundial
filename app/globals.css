@@ -325,12 +325,23 @@
   .tutorial-sheet-in {
     animation: tutorial-sheet-slide-up 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   }
+  /* Fade puro para el card centered del tutorial — NO toca transform
+     para no pisar el `translate(-50%, -50%)` que necesita para centrarse
+     en el viewport. (.rise-in fija translateY y rompía el centrado.) */
+  @keyframes tutorial-fade-in {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  .tutorial-fade-in {
+    animation: tutorial-fade-in 0.35s ease-out both;
+  }
   @media (prefers-reduced-motion: reduce) {
     .tutorial-mascot-idle,
     .tutorial-mascot-wiggle {
       animation: none;
     }
-    .tutorial-sheet-in {
+    .tutorial-sheet-in,
+    .tutorial-fade-in {
       animation: none;
     }
   }

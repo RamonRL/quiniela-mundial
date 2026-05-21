@@ -150,7 +150,9 @@ export function TutorialCard() {
         className={`z-[121] ${
           useBottomSheet
             ? "tutorial-sheet-in rounded-t-3xl border-t border-[var(--color-arena)]/30 bg-[var(--color-surface)] px-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] pt-3 shadow-[var(--shadow-elev-2)]"
-            : "rise-in rounded-2xl border border-[var(--color-arena)]/30 bg-[var(--color-surface)] p-5 shadow-[var(--shadow-elev-2)] sm:p-6"
+            : isCenteredStep
+              ? "tutorial-fade-in rounded-2xl border border-[var(--color-arena)]/30 bg-[var(--color-surface)] p-5 shadow-[var(--shadow-elev-2)] sm:p-6"
+              : "rise-in rounded-2xl border border-[var(--color-arena)]/30 bg-[var(--color-surface)] p-5 shadow-[var(--shadow-elev-2)] sm:p-6"
         }`}
       >
         {/* Drag-handle visual solo cuando el card actúa como bottom sheet. */}
