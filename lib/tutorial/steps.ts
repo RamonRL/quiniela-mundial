@@ -46,7 +46,7 @@ export const TUTORIAL_STEPS: ReadonlyArray<TutorialStep> = [
     id: "progress-hub",
     kind: "spotlight",
     title: "Tu puesto de mando",
-    body: "Esta es tu base. Aquí ves qué predicciones llevas hechas, cuál es el próximo cierre y tu posición en el ranking. Es la primera pantalla que verás cada vez que entres.",
+    body: "Esta es tu base: predicciones pendientes, próximo cierre, tu posición en el ranking y las próximas jornadas para predecir. Vuelves aquí siempre que entres.",
     anchor: { desktop: '[data-tutorial-id="progress-hub"]' },
   },
   {
