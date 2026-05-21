@@ -631,14 +631,15 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      {/* Progress Hub — visual centerpiece. Pre-torneo: donut + 3 satellites.
-          En-torneo: tarjeta de próximo cierre con countdown + satellites de
-          jornadas abiertas y bracket. */}
-      <ProgressHub {...progressHubProps} />
-
-      {/* Slider de próximas rondas — la jornada activa + las 2 siguientes
-          (1 en móvil). Se anclará a la final cerca del cierre del torneo. */}
-      <UpcomingRoundsStrip userId={me.id} leagueId={leagueId} />
+      {/* Puesto de mando — wrap del tutorial. ProgressHub es el
+          centerpiece visual (donut + satellites pre-torneo · countdown
+          en torneo) y, debajo, el slider de próximas rondas para
+          predecir resultados. El tutorial los ilumina juntos como una
+          sola "base de operaciones" del usuario. */}
+      <div data-tutorial-id="progress-hub" className="space-y-10">
+        <ProgressHub {...progressHubProps} />
+        <UpcomingRoundsStrip userId={me.id} leagueId={leagueId} />
+      </div>
 
       {/* Scoreboard stats — solo en-torneo (pre-torneo todo es 0/--). */}
       {tournamentStarted ? (

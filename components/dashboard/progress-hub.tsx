@@ -121,10 +121,7 @@ function PreHub({
       : "Ver todas las categorías";
 
   return (
-    <section
-      data-tutorial-id="progress-hub"
-      className="rise-in relative overflow-hidden rounded-2xl border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface))]"
-    >
+    <section className="rise-in relative overflow-hidden rounded-2xl border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface))]">
       <span aria-hidden className="halftone pointer-events-none absolute inset-0 opacity-[0.05]" />
       <span aria-hidden className="pitch-grid pointer-events-none absolute inset-0 opacity-[0.18]" />
       <div className="relative grid gap-7 p-6 sm:p-8 lg:grid-cols-[auto_1fr] lg:items-center">
