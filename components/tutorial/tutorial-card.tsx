@@ -28,6 +28,23 @@ export function TutorialCard() {
   const primaryBtnRef = useRef<HTMLButtonElement | null>(null);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
+  // Eje X del centro del <main> de la app. En desktop el sidebar
+  // ocupa la izquierda — usar el centro del viewport para los pasos
+  // modales descentra ópticamente el card. Lo recalculamos en resize
+  // por si el sidebar se colapsa.
+  const [mainCenterX, setMainCenterX] = useState<number | null>(null);
+  useLayoutEffect(() => {
+    if (typeof window === "undefined") return;
+    const main = document.querySelector("main");
+    if (!main) return;
+    const update = () => {
+      const r = main.getBoundingClientRect();
+      setMainCenterX(r.left + r.width / 2);
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
 
   // Lanza confeti cuando el paso tiene fanfare=true (último paso).
   useEffect(() => {
@@ -116,6 +133,10 @@ export function TutorialCard() {
   };
 
   // Estilos del contenedor según breakpoint, tipo de paso y posición.
+  // El centrado "X" en desktop usa el eje del <main>, no el del viewport,
+  // para no quedarse mordido por el sidebar.
+  const centeredLeft =
+    !isMobile && mainCenterX != null ? `${mainCenterX}px` : "50%";
   const containerStyle: React.CSSProperties = useBottomSheet
     ? {
         position: "fixed",
@@ -127,11 +148,11 @@ export function TutorialCard() {
     : !isCenteredStep && pos
       ? { position: "fixed", top: pos.top, left: pos.left, width: CARD_WIDTH_DESKTOP }
       : {
-          // Centrado puro (desktop centered step, mobile centered step,
-          // o fallback desktop sin pos resuelta).
+          // Centrado puro: anclado al centro del main en desktop y al
+          // centro del viewport en móvil (sin sidebar).
           position: "fixed",
           top: "50%",
-          left: "50%",
+          left: centeredLeft,
           transform: "translate(-50%, -50%)",
           width: CARD_WIDTH_DESKTOP,
           maxWidth: "calc(100vw - 2rem)",
