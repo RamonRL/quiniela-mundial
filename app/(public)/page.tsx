@@ -500,7 +500,6 @@ export default async function HomePage() {
             icon={<Swords className="size-5" />}
             title="Bracket eliminatorio"
             text="El cuadro FIFA: dieciseisavos, octavos, cuartos, semifinales y final."
-            primary
           />
           <ExploreCard
             href="/goleadores"
