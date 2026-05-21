@@ -21,6 +21,9 @@ const PUBLIC_PATHS = [
   // login y se creía que la entrega iba bien.
   "/api",
   "/manifest.webmanifest",
+  // Landing PWA install — al escanear el QR del tutorial cualquiera
+  // (logueado o no) debe poder seguir el flow sin pasar por /login.
+  "/instalar",
   "/calendario",
   "/grupos",
   "/goleadores",
