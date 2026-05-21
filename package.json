@@ -34,6 +34,7 @@
     "db:upload-player-photos": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/upload-player-photos.ts",
     "db:seed-iran-squad": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/seed-iran-squad.ts",
     "db:upsert-squad": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/upsert-squad.ts",
+    "db:upsert-news": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/upsert-news.ts",
     "db:telegram-chat-id": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/telegram-get-chat-id.ts",
     "test": "vitest run",
     "test:watch": "vitest"
