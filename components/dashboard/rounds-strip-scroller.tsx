@@ -33,9 +33,13 @@ export function RoundsStripScroller({
   }, [activeIndex]);
 
   return (
+    // py-2 da aire vertical para que el hover-lift (translate -2px) y la
+    // sombra arena no se corten por arriba/abajo. Sin ese padding el
+    // overflow-x:auto fuerza al eje Y a 'auto' también y los pixeles
+    // que se elevan al pasar por encima del card quedan clipeados.
     <div
       ref={containerRef}
-      className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden"
+      className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 py-2 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden"
     >
       {Array.isArray(children)
         ? children.map((child, i) => (
