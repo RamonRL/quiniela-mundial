@@ -106,11 +106,15 @@ export function TutorialProvider({ children }: { children: React.ReactNode }) {
       });
       if (visible) {
         // Aseguramos que esté en pantalla antes de medir. En móvil
-        // posicionamos el target arriba ("start"): el bottom sheet
-        // ocupa la mitad baja y "center" lo escondería detrás. En
-        // desktop centramos para que el spotlight respire por igual.
+        // alineamos el target con el lado opuesto al de la card:
+        //   - card abajo (default) → target arriba (block:"start")
+        //   - card arriba (mobileCardPosition: "top") → target abajo
+        //     (block:"end")
+        // En desktop centramos para que el spotlight respire por igual.
+        const mobileBlock: ScrollLogicalPosition =
+          step?.mobileCardPosition === "top" ? "end" : "start";
         visible.scrollIntoView({
-          block: isMobile ? "start" : "center",
+          block: isMobile ? mobileBlock : "center",
           behavior: "smooth",
         });
         setTimeout(() => {

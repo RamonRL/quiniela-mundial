@@ -126,7 +126,10 @@ function PreHub({
       <span aria-hidden className="pitch-grid pointer-events-none absolute inset-0 opacity-[0.18]" />
       <div className="relative grid gap-7 p-6 sm:p-8 lg:grid-cols-[auto_1fr] lg:items-center">
         {/* Donut + headline */}
-        <div className="flex flex-col items-center gap-4 lg:items-start">
+        <div
+          data-tutorial-id="progress-hub-mobile"
+          className="flex flex-col items-center gap-4 lg:items-start"
+        >
           <div className="flex items-center gap-2 font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
             <Sparkles className="size-3.5" />
             {isDone ? "Pre-torneo listo" : isFresh ? "Bienvenido al Mundial" : "Continúa donde lo dejaste"}
@@ -191,7 +194,10 @@ function RunningHub({
 
   if (hasNothing) {
     return (
-      <section className="rise-in relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 text-center sm:p-8">
+      <section
+        data-tutorial-id="progress-hub-mobile"
+        className="rise-in relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 text-center sm:p-8"
+      >
         <span aria-hidden className="halftone pointer-events-none absolute inset-0 opacity-[0.04]" />
         <p className="relative font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
           Tu quiniela
@@ -217,13 +223,15 @@ function RunningHub({
   return (
     <section className="rise-in space-y-4">
       {nextDeadline ? (
-        <NextDeadlineCard
-          label={nextDeadline.label}
-          href={nextDeadline.href}
-          closesAt={nextDeadline.closesAt}
-          missing={nextDeadline.missing}
-          total={nextDeadline.total}
-        />
+        <div data-tutorial-id="progress-hub-mobile">
+          <NextDeadlineCard
+            label={nextDeadline.label}
+            href={nextDeadline.href}
+            closesAt={nextDeadline.closesAt}
+            missing={nextDeadline.missing}
+            total={nextDeadline.total}
+          />
+        </div>
       ) : null}
 
       {/* Satellites: other open matchdays + bracket */}

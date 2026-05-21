@@ -151,6 +151,7 @@ export default async function PrediccionesHub() {
         title="Pre-torneo"
         subtitle="Una vez por torneo · cierra en el kickoff"
         dataTutorialId="cat-pre-torneo"
+        dataTutorialIdMobile="cat-pre-torneo-mobile"
         meta={
           preTorneoOpen
             ? `Cierre · ${formatDateTime(KICKOFF, {
@@ -217,6 +218,7 @@ export default async function PrediccionesHub() {
         title="Jornada a jornada"
         subtitle="Marcador y goleador del partido en una sola jugada"
         dataTutorialId="cat-jornadas"
+        dataTutorialIdMobile="cat-jornadas-mobile"
         meta={
           openDays.length > 0
             ? `${openDays.length} ${openDays.length === 1 ? "jornada abierta" : "jornadas abiertas"}`
@@ -286,6 +288,7 @@ function Section({
   meta,
   children,
   dataTutorialId,
+  dataTutorialIdMobile,
 }: {
   index: string;
   title: string;
@@ -293,10 +296,14 @@ function Section({
   meta: string;
   children: React.ReactNode;
   dataTutorialId?: string;
+  dataTutorialIdMobile?: string;
 }) {
   return (
     <section className="space-y-5" data-tutorial-id={dataTutorialId}>
-      <header className="flex items-end justify-between gap-4 border-b border-[var(--color-border)] pb-4">
+      <header
+        data-tutorial-id={dataTutorialIdMobile}
+        className="flex items-end justify-between gap-4 border-b border-[var(--color-border)] pb-4"
+      >
         <div className="flex items-end gap-4">
           <span
             aria-hidden

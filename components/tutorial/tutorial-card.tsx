@@ -10,6 +10,20 @@ import { TutorialConfetti } from "./confetti";
 
 const CARD_MARGIN = 16; // separación entre cutout y card
 const CARD_WIDTH_DESKTOP = 360;
+const MOBILE_NEAR_LATERAL = 12; // padding lateral cuando la card flota junto al target
+
+/**
+ * Modos del card en móvil:
+ *  - `bottom`        → sheet anclado al borde inferior (target en mitad superior pero
+ *                       con suficiente distancia).
+ *  - `bottom-near`   → card flotante anclada justo bajo el target (target muy
+ *                       arriba, p.ej. el header / league switcher). Evita el hueco
+ *                       grande entre target y card.
+ *  - `top`           → sheet anclado al borde superior (target en mitad inferior,
+ *                       p.ej. el mobile-nav o la sección eliminatoria). Evita que
+ *                       la card tape lo que el spotlight quiere enseñar.
+ */
+type SheetMode = "bottom" | "bottom-near" | "top";
 
 /**
  * Card flotante (desktop) o bottom-sheet (móvil) con el contenido del
@@ -27,6 +41,7 @@ export function TutorialCard() {
   const cardRef = useRef<HTMLDivElement | null>(null);
   const primaryBtnRef = useRef<HTMLButtonElement | null>(null);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const [sheetMode, setSheetMode] = useState<SheetMode>("bottom");
   const [showConfetti, setShowConfetti] = useState(false);
 
   // Lanza confeti cuando el paso tiene fanfare=true (último paso).
@@ -37,6 +52,47 @@ export function TutorialCard() {
       setShowConfetti(false);
     }
   }, [step]);
+
+  // Decide en móvil dónde montar el sheet según la posición del target.
+  // Regla:
+  //   - target en mitad INFERIOR del viewport → top sheet (no taparlo)
+  //   - target MUY ARRIBA (header) → card flotante pegada bajo el target
+  //   - resto → bottom sheet clásico
+  // Recalculamos en cada cambio de viewport para que rote bien al cambiar
+  // de orientación.
+  useEffect(() => {
+    if (!isMobile || !step || step.kind === "centered" || !targetRect) {
+      setSheetMode("bottom");
+      return;
+    }
+    // Override explícito por step gana sobre la heurística.
+    if (step.mobileCardPosition === "top") {
+      setSheetMode("top");
+      return;
+    }
+    if (step.mobileCardPosition === "bottom") {
+      setSheetMode("bottom");
+      return;
+    }
+    const update = () => {
+      const vh = window.innerHeight;
+      const center = targetRect.y + targetRect.height / 2;
+      if (center > vh / 2) {
+        setSheetMode("top");
+      } else if (targetRect.bottom < vh * 0.32) {
+        setSheetMode("bottom-near");
+      } else {
+        setSheetMode("bottom");
+      }
+    };
+    update();
+    window.addEventListener("resize", update);
+    window.addEventListener("orientationchange", update);
+    return () => {
+      window.removeEventListener("resize", update);
+      window.removeEventListener("orientationchange", update);
+    };
+  }, [isMobile, step, targetRect]);
 
   // Posicionamiento desktop. En móvil la card es bottom-sheet fijo y no
   // necesita cálculo.
@@ -119,24 +175,65 @@ export function TutorialCard() {
   // Para los pasos centered usamos 50/50 puro del viewport — es lo que
   // significa "centro exacto del navegador", independientemente de
   // sidebar/header/contenido.
-  const containerStyle: React.CSSProperties = useBottomSheet
-    ? {
+  const vh = typeof window !== "undefined" ? window.innerHeight : 800;
+  const nearTop =
+    targetRect != null
+      ? Math.min(targetRect.bottom + 16, vh - 200)
+      : 0;
+  let containerStyle: React.CSSProperties;
+  if (useBottomSheet) {
+    if (sheetMode === "top") {
+      containerStyle = {
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        maxHeight: "42vh",
+      };
+    } else if (sheetMode === "bottom-near" && targetRect) {
+      containerStyle = {
+        position: "fixed",
+        top: nearTop,
+        left: MOBILE_NEAR_LATERAL,
+        right: MOBILE_NEAR_LATERAL,
+        maxHeight: `calc(100vh - ${nearTop + 16}px)`,
+      };
+    } else {
+      containerStyle = {
         position: "fixed",
         left: 0,
         right: 0,
         bottom: 0,
         maxHeight: "42vh",
-      }
-    : !isCenteredStep && pos
-      ? { position: "fixed", top: pos.top, left: pos.left, width: CARD_WIDTH_DESKTOP }
-      : {
-          position: "fixed",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: CARD_WIDTH_DESKTOP,
-          maxWidth: "calc(100vw - 2rem)",
-        };
+      };
+    }
+  } else if (!isCenteredStep && pos) {
+    containerStyle = {
+      position: "fixed",
+      top: pos.top,
+      left: pos.left,
+      width: CARD_WIDTH_DESKTOP,
+    };
+  } else {
+    containerStyle = {
+      position: "fixed",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
+      width: CARD_WIDTH_DESKTOP,
+      maxWidth: "calc(100vw - 2rem)",
+    };
+  }
+
+  const sheetClass = useBottomSheet
+    ? sheetMode === "top"
+      ? "tutorial-sheet-top-in rounded-b-3xl border-b border-[var(--color-arena)]/30 bg-[var(--color-surface)] px-5 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-4 shadow-[var(--shadow-elev-2)]"
+      : sheetMode === "bottom-near"
+        ? "tutorial-fade-in overflow-y-auto rounded-2xl border border-[var(--color-arena)]/30 bg-[var(--color-surface)] p-5 shadow-[var(--shadow-elev-2)]"
+        : "tutorial-sheet-in rounded-t-3xl border-t border-[var(--color-arena)]/30 bg-[var(--color-surface)] px-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] pt-3 shadow-[var(--shadow-elev-2)]"
+    : isCenteredStep
+      ? "tutorial-fade-in rounded-2xl border border-[var(--color-arena)]/30 bg-[var(--color-surface)] p-5 shadow-[var(--shadow-elev-2)] sm:p-6"
+      : "rise-in rounded-2xl border border-[var(--color-arena)]/30 bg-[var(--color-surface)] p-5 shadow-[var(--shadow-elev-2)] sm:p-6";
 
   return (
     <>
@@ -147,16 +244,11 @@ export function TutorialCard() {
         aria-labelledby="tutorial-card-title"
         aria-describedby="tutorial-card-body"
         style={containerStyle}
-        className={`z-[121] ${
-          useBottomSheet
-            ? "tutorial-sheet-in rounded-t-3xl border-t border-[var(--color-arena)]/30 bg-[var(--color-surface)] px-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] pt-3 shadow-[var(--shadow-elev-2)]"
-            : isCenteredStep
-              ? "tutorial-fade-in rounded-2xl border border-[var(--color-arena)]/30 bg-[var(--color-surface)] p-5 shadow-[var(--shadow-elev-2)] sm:p-6"
-              : "rise-in rounded-2xl border border-[var(--color-arena)]/30 bg-[var(--color-surface)] p-5 shadow-[var(--shadow-elev-2)] sm:p-6"
-        }`}
+        className={`z-[121] ${sheetClass}`}
       >
-        {/* Drag-handle visual solo cuando el card actúa como bottom sheet. */}
-        {useBottomSheet ? (
+        {/* Drag-handle visual solo en bottom sheet clásico — en top sheet
+            (esquinas redondeadas abajo) y en card flotante no aporta. */}
+        {useBottomSheet && sheetMode === "bottom" ? (
           <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-[var(--color-border-strong)]" />
         ) : null}
 
