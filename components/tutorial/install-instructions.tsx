@@ -6,7 +6,11 @@ import { QRCodeSVG } from "qrcode.react";
 
 type Platform = "android" | "ios";
 
-const PWA_URL = "https://quinielamundial.es";
+// Apunta a la landing /instalar — detecta plataforma del visitante y
+// ofrece la mejor experiencia posible: botón nativo de instalación en
+// Android Chrome (cuando hay `beforeinstallprompt`), pasos visuales
+// dirigidos en iOS Safari, o fallback razonable en iOS Chrome / desktop.
+const PWA_URL = "https://quinielamundial.es/instalar";
 const MOBILE_QUERY = "(max-width: 768px)";
 
 /**

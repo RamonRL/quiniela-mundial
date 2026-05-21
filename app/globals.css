@@ -344,6 +344,16 @@
   .install-qr-pin {
     animation: install-qr-pin-pulse 2.2s ease-in-out infinite;
   }
+  /* Flechas hacia abajo que apuntan al botón compartir de Safari iOS
+     en la página /instalar. Se usan 3 chevrons stackados con
+     animationDelay distinto en JSX para crear efecto "ola". */
+  @keyframes install-ios-chevron-bob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(6px); }
+  }
+  .install-ios-chevron {
+    animation: install-ios-chevron-bob 1.4s ease-in-out infinite;
+  }
   /* Fade puro para el card centered del tutorial — NO toca transform
      para no pisar el `translate(-50%, -50%)` que necesita para centrarse
      en el viewport. (.rise-in fija translateY y rompía el centrado.) */
@@ -362,7 +372,8 @@
     .tutorial-sheet-in,
     .tutorial-sheet-top-in,
     .tutorial-fade-in,
-    .install-qr-pin {
+    .install-qr-pin,
+    .install-ios-chevron {
       animation: none;
     }
   }
