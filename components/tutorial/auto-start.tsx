@@ -2,20 +2,21 @@
 
 import { useEffect, useRef } from "react";
 import { useTutorial } from "./tutorial-provider";
+import { TUTORIAL_REPLAY_KEY } from "./replay-button";
 
 /**
- * Dispara `tutorial.start()` cuando el usuario aterriza por primera
- * vez en `/dashboard`. Se monta solo desde el page del dashboard.
+ * Dispara `tutorial.start()` cuando el usuario aterriza en `/dashboard`
+ * y uno de estos dos casos aplica:
  *
- * `firstSeen=true` significa que `profiles.tutorialCompletedAt` está
- * en null en la DB → es la primera vez de este usuario. Usamos un
- * `useRef` interno para asegurar que `start()` solo se llama una vez
- * por montaje (defensa ante doble-render de StrictMode en dev).
+ *   1. **Primer login**: `firstSeen=true` (la columna
+ *      `tutorialCompletedAt` aún está en null en la DB).
+ *   2. **Replay desde otra ruta**: el `TutorialReplayButton` dejó
+ *      `tutorial:replay=1` en sessionStorage antes de navegar aquí.
+ *      Lo consumimos al detectarlo.
  *
- * El delay de 800 ms da tiempo a que el ProgressHub y el resto de
- * componentes con Suspense terminen de hidratar; sin ese delay el
- * spotlight a veces apunta a un rect (0,0,0,0) porque el target aún
- * no está pintado.
+ * Se monta solo desde el page del dashboard. El delay da tiempo a que
+ * los componentes con Suspense terminen de hidratar; sin él, el
+ * spotlight a veces apuntaba a un rect (0,0,0,0).
  */
 const AUTOSTART_DELAY_MS = 800;
 
@@ -24,8 +25,18 @@ export function TutorialAutoStart({ firstSeen }: { firstSeen: boolean }) {
   const triggeredRef = useRef(false);
 
   useEffect(() => {
-    if (!firstSeen || isOpen || triggeredRef.current) return;
+    if (isOpen || triggeredRef.current) return;
+
+    const fromReplay =
+      typeof window !== "undefined" &&
+      window.sessionStorage.getItem(TUTORIAL_REPLAY_KEY) === "1";
+
+    if (!firstSeen && !fromReplay) return;
+
     triggeredRef.current = true;
+    if (fromReplay && typeof window !== "undefined") {
+      window.sessionStorage.removeItem(TUTORIAL_REPLAY_KEY);
+    }
     const t = setTimeout(start, AUTOSTART_DELAY_MS);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps

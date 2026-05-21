@@ -145,14 +145,12 @@ export default async function PrediccionesHub() {
 
       <ImportPredictionsBanner userId={me.id} activeLeagueId={leagueId} />
 
-      {/* Wrap de las 3 secciones — anchor del paso 5 del tutorial. */}
-      <div data-tutorial-id="categorias" className="space-y-12">
-
       {/* SECTION 1 — Pre-torneo */}
       <Section
         index="I"
         title="Pre-torneo"
         subtitle="Una vez por torneo · cierra en el kickoff"
+        dataTutorialId="cat-pre-torneo"
         meta={
           preTorneoOpen
             ? `Cierre · ${formatDateTime(KICKOFF, {
@@ -218,6 +216,7 @@ export default async function PrediccionesHub() {
         index="II"
         title="Jornada a jornada"
         subtitle="Marcador y goleador del partido en una sola jugada"
+        dataTutorialId="cat-jornadas"
         meta={
           openDays.length > 0
             ? `${openDays.length} ${openDays.length === 1 ? "jornada abierta" : "jornadas abiertas"}`
@@ -260,6 +259,7 @@ export default async function PrediccionesHub() {
         index="III"
         title="Eliminatoria"
         subtitle="Se desbloquea al cerrar la fase de grupos"
+        dataTutorialId="cat-eliminatoria"
         meta={
           bracketStatus.state === "open" && bracketStatus.closesAt
             ? `Cierre · ${formatDateTime(bracketStatus.closesAt, {
@@ -275,7 +275,6 @@ export default async function PrediccionesHub() {
       >
         <BracketCard status={bracketStatus.state} closesAt={bracketStatus.closesAt} />
       </Section>
-      </div>
     </div>
   );
 }
@@ -286,15 +285,17 @@ function Section({
   subtitle,
   meta,
   children,
+  dataTutorialId,
 }: {
   index: string;
   title: string;
   subtitle: string;
   meta: string;
   children: React.ReactNode;
+  dataTutorialId?: string;
 }) {
   return (
-    <section className="space-y-5">
+    <section className="space-y-5" data-tutorial-id={dataTutorialId}>
       <header className="flex items-end justify-between gap-4 border-b border-[var(--color-border)] pb-4">
         <div className="flex items-end gap-4">
           <span

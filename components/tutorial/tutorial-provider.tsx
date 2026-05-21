@@ -105,8 +105,14 @@ export function TutorialProvider({ children }: { children: React.ReactNode }) {
         return r.width > 0 && r.height > 0;
       });
       if (visible) {
-        // Aseguramos que esté en pantalla antes de medir.
-        visible.scrollIntoView({ block: "center", behavior: "smooth" });
+        // Aseguramos que esté en pantalla antes de medir. En móvil
+        // posicionamos el target arriba ("start"): el bottom sheet
+        // ocupa la mitad baja y "center" lo escondería detrás. En
+        // desktop centramos para que el spotlight respire por igual.
+        visible.scrollIntoView({
+          block: isMobile ? "start" : "center",
+          behavior: "smooth",
+        });
         setTimeout(() => {
           if (cancelled) return;
           setTarget(visible);

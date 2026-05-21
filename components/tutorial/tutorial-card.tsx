@@ -101,6 +101,11 @@ export function TutorialCard() {
 
   const isFirst = stepIndex === 0;
   const isLast = stepIndex === totalSteps - 1;
+  // Los pasos centered (bienvenida y cierre) van SIEMPRE como modal
+  // centrado, incluso en móvil — el patrón de bottom sheet ahí no aporta
+  // y rompe la simetría visual del "estás llegando" / "ya está".
+  const isCenteredStep = step.kind === "centered";
+  const useBottomSheet = !isCenteredStep && isMobile;
 
   const handleCta = () => {
     if (!step.cta) return;
@@ -110,18 +115,20 @@ export function TutorialCard() {
     setTimeout(() => router.push(step.cta!.href), step.fanfare ? 900 : 0);
   };
 
-  // Estilos del contenedor según breakpoint y disponibilidad de pos.
-  const containerStyle: React.CSSProperties = isMobile
+  // Estilos del contenedor según breakpoint, tipo de paso y posición.
+  const containerStyle: React.CSSProperties = useBottomSheet
     ? {
         position: "fixed",
         left: 0,
         right: 0,
         bottom: 0,
-        maxHeight: "55vh",
+        maxHeight: "42vh",
       }
-    : pos
+    : !isCenteredStep && pos
       ? { position: "fixed", top: pos.top, left: pos.left, width: CARD_WIDTH_DESKTOP }
       : {
+          // Centrado puro (desktop centered step, mobile centered step,
+          // o fallback desktop sin pos resuelta).
           position: "fixed",
           top: "50%",
           left: "50%",
@@ -140,13 +147,13 @@ export function TutorialCard() {
         aria-describedby="tutorial-card-body"
         style={containerStyle}
         className={`z-[121] ${
-          isMobile
-            ? "tutorial-sheet-in rounded-t-3xl border-t border-[var(--color-arena)]/30 bg-[var(--color-surface)] px-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] pt-3 shadow-[var(--shadow-elev-2)]"
-            : "rise-in rounded-2xl border border-[var(--color-arena)]/30 bg-[var(--color-surface)] p-6 shadow-[var(--shadow-elev-2)]"
+          useBottomSheet
+            ? "tutorial-sheet-in rounded-t-3xl border-t border-[var(--color-arena)]/30 bg-[var(--color-surface)] px-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] pt-3 shadow-[var(--shadow-elev-2)]"
+            : "rise-in rounded-2xl border border-[var(--color-arena)]/30 bg-[var(--color-surface)] p-5 shadow-[var(--shadow-elev-2)] sm:p-6"
         }`}
       >
-        {/* Drag-handle visual solo en móvil. */}
-        {isMobile ? (
+        {/* Drag-handle visual solo cuando el card actúa como bottom sheet. */}
+        {useBottomSheet ? (
           <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-[var(--color-border-strong)]" />
         ) : null}
 
@@ -168,16 +175,25 @@ export function TutorialCard() {
           </button>
         </div>
 
-        {/* Title + body */}
+        {/* Title + body — en bottom sheet móvil hay menos altura, así que
+            apretamos tamaños un poco. */}
         <h2
           id="tutorial-card-title"
-          className="font-display text-2xl leading-tight tracking-tight sm:text-3xl"
+          className={
+            useBottomSheet
+              ? "font-display text-xl leading-tight tracking-tight"
+              : "font-display text-2xl leading-tight tracking-tight sm:text-3xl"
+          }
         >
           {step.title}
         </h2>
         <p
           id="tutorial-card-body"
-          className="mt-2 font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base"
+          className={
+            useBottomSheet
+              ? "mt-1.5 font-editorial text-[0.85rem] italic leading-snug text-[var(--color-muted-foreground)]"
+              : "mt-2 font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base"
+          }
         >
           {step.body}
         </p>
