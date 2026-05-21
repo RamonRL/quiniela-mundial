@@ -60,6 +60,19 @@ const IMAGE_EXT = new Set([".png", ".jpg", ".jpeg", ".webp"]);
 
 function normalize(s: string): string {
   return s
+    // Letras "atómicas" que Unicode NFD NO descompone — necesitan
+    // mapeo manual. Cubre escandinavo (ø, æ, å funciona vía NFD pero
+    // por seguridad), islandés (ð, þ), alemán (ß), polaco (ł), turco
+    // (ı), serbocroata (đ).
+    .replace(/[øØ]/g, "o")
+    .replace(/[æÆ]/g, "ae")
+    .replace(/[ðÐ]/g, "d")
+    .replace(/[þÞ]/g, "th")
+    .replace(/[ßẞ]/g, "ss")
+    .replace(/[łŁ]/g, "l")
+    .replace(/[ıİ]/g, "i")
+    .replace(/[đĐ]/g, "d")
+    // Quita acentos descomponibles (á, é, å, ñ, ã, ç, ü, š, ž, ć…).
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
     .toLowerCase()
