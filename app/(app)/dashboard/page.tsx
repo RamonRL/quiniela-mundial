@@ -31,6 +31,7 @@ import { ImportPredictionsBanner } from "@/components/predictions/import-banner"
 import { loadOpenMatchdays, type OpenMatchdayEntry } from "@/lib/deadlines";
 import { getBracketStatus } from "@/lib/bracket-state";
 import { ProgressHub, type ProgressHubProps } from "@/components/dashboard/progress-hub";
+import { UpcomingRoundsStrip } from "@/components/dashboard/upcoming-rounds-strip";
 import {
   countLeagueMembers,
   loadLeaderboard,
@@ -634,6 +635,10 @@ export default async function DashboardPage() {
           En-torneo: tarjeta de próximo cierre con countdown + satellites de
           jornadas abiertas y bracket. */}
       <ProgressHub {...progressHubProps} />
+
+      {/* Slider de próximas rondas — la jornada activa + las 2 siguientes
+          (1 en móvil). Se anclará a la final cerca del cierre del torneo. */}
+      <UpcomingRoundsStrip userId={me.id} leagueId={leagueId} />
 
       {/* Scoreboard stats — solo en-torneo (pre-torneo todo es 0/--). */}
       {tournamentStarted ? (
