@@ -793,6 +793,134 @@ Modrić y Perišić, los dos jugadores con más recorrido de la generación, est
 
 Para predecir si Croacia da otro paso histórico, [crea tu quiniela gratis](/login?next=%2Fonboarding) y arma tu bracket antes del 11 de junio.`,
   },
+  {
+    slug: "convocatoria-cabo-verde-mundial-2026-bubista-historia",
+    title:
+      "Convocatoria de Cabo Verde: Bubista anuncia la lista del primer Mundial de los Tubarões Azuis",
+    seoTitle: "Convocatoria Cabo Verde Mundial 2026 · Lista de Bubista",
+    excerpt:
+      "Cabo Verde — unos 500.000 habitantes, primer Mundial de su historia — presenta la lista de 26 de Pedro 'Bubista' Brito. Logan Costa, Dailon Livramento y el veterano Ryan Mendes lideran un grupo que debuta el 15 de junio frente a España.",
+    category: "convocatoria",
+    tags: [
+      "Cabo Verde",
+      "Bubista",
+      "Logan Costa",
+      "Dailon Livramento",
+      "Ryan Mendes",
+      "Mundial 2026",
+    ],
+    relatedTeamCodes: ["CPV"],
+    daysAgo: 2,
+    body: `**Cabo Verde** anunció el **19 de mayo de 2026** la lista de 26 jugadores para el Mundial 2026 — la **primera convocatoria mundialista en la historia** de los **Tubarões Azuis**. El seleccionador **Pedro "Bubista" Brito** mezcló veteranía con la nueva generación, apoyándose en futbolistas repartidos por una decena de ligas europeas, africanas y norteamericanas.
+
+## Una historia inédita
+
+Cabo Verde — archipiélago de **diez islas y unos 500.000 habitantes** frente a la costa de Senegal — se convierte en una de las federaciones con **menos población** que ha disputado nunca un Mundial. Su clasificación, sellada en la fase africana de la CAF, se celebró en las islas como el mayor hito deportivo nacional.
+
+Bubista lleva al frente del banquillo desde 2020 y ha consolidado un proyecto que ya alcanzó **cuartos de final en la Copa África de Naciones 2024**. Aquel torneo dejó claro que el equipo competía contra cualquier rival continental.
+
+## Logan Costa, líder de una defensa europea
+
+El gran nombre de la convocatoria es **Logan Costa**, defensa central del **Villarreal** que llega al Mundial como referente de la línea atrás. Su solidez, combinada con la experiencia de **Roberto Lopes** (Shamrock Rovers) y **Steven Moreira** (Columbus Crew), forma el pilar sobre el que Bubista quiere construir el torneo.
+
+## Dailon Livramento, la apuesta ofensiva
+
+A sus **24 años**, **Dailon Livramento** (Casa Pia) llega como **gran referente ofensivo** tras una fase de clasificación con goles decisivos. Lo acompañan veteranos como **Ryan Mendes** (Iğdır FK, Turquía), capitán y máximo goleador histórico de la selección, y nombres más reconocibles para el público europeo como **Jovane Cabral** (Estrela Amadora) — formado en el Sporting CP — y **Garry Rodrigues** (Apollon Limassol).
+
+## La lista completa por posiciones
+
+- **Porteros (3)**: Josimar Dias (Chaves), Márcio da Rosa (Montana), Carlos Santos (San Diego FC).
+- **Defensas (9)**: Steven Moreira (Columbus Crew), Wagner Pina (Trabzonspor), João Paulo Fernandes (FCSB), Sidny Lopes Cabral (Benfica), **Logan Costa (Villarreal)**, Roberto Lopes (Shamrock Rovers), Kelvin Pires (SJK Seinäjoki), Ianique Tavares (Torreense), Edilson Borges (Al-Bataeh).
+- **Mediocampistas (6)**: Jamiro Monteiro (PEC Zwolle), Telmo Arcanjo (Vitória Guimarães), Yannick Semedo (Farense), Laros Duarte (Puskás Akadémia), Deroy Duarte (Ludogorets), Kevin Pina (Krasnodar).
+- **Delanteros (8)**: **Ryan Mendes (Iğdır FK)**, Willy Semedo (Omonia Nicosia), **Garry Rodrigues (Apollon Limassol)**, **Jovane Cabral (Estrela Amadora)**, Nuno da Costa (Başakşehir), **Dailon Livramento (Casa Pia)**, Gilson Benchimol (Akron Togliatti), Hélio Varela (Maccabi Tel Aviv).
+
+La diáspora caboverdiana se nota: **siete jugadores en el fútbol portugués**, tres en Turquía, dos en la MLS, y representación en ligas tan dispares como la finlandesa, la búlgara o la chipriota. Es un grupo que sintetiza lo que es la federación: talento disperso por medio mundo unido en torno a una bandera.
+
+Mira la lista completa con dorsales en la [ficha de Cabo Verde](/equipos/CPV).
+
+## El Grupo H y el cruce con España
+
+Cabo Verde cayó en el **Grupo H** junto a **España** (cabeza de serie y una de las favoritas al título), **Uruguay** y **Arabia Saudí**. El sorteo no podía ser más exigente: dos pesos pesados europeo-sudamericano y un rival asiático con presupuesto top.
+
+El **debut es el lunes 15 de junio contra España** en el **Mercedes-Benz Stadium de Atlanta**. Después llega **Uruguay** el 21 de junio en el Hard Rock Stadium de Miami y, para cerrar la fase, **Arabia Saudí** el 26 de junio en el NRG Stadium de Houston.
+
+Mira la [composición del Grupo H](/grupos) y el [calendario del torneo](/calendario) para los horarios completos.
+
+## Lo que está en juego
+
+Para una federación con un solo recurso real — la pasión y el talento del archipiélago y su diáspora —, **clasificar ya fue la gesta**. El reto sobre el césped es vender cara la derrota contra España y Uruguay, y jugarse el tercer puesto del grupo con Arabia Saudí. Con un buen tercer partido, los **8 mejores terceros pasan a dieciseisavos**: ese es el horizonte realista para Bubista.
+
+Cabo Verde llega al Mundial siendo el equipo más romántico del torneo. Da igual el resultado: lo que pase en estas tres semanas ya forma parte de la historia del país.
+
+Si quieres predecir hasta dónde llega Cabo Verde en tu quiniela, [crea tu cuenta gratis](/login?next=%2Fonboarding) y arma tu bracket antes del 11 de junio.`,
+  },
+  {
+    slug: "convocatoria-suiza-mundial-2026-yakin-xhaka-post-sommer",
+    title:
+      "Convocatoria de Suiza: Xhaka capitanea la era post-Sommer con Kobel bajo palos",
+    seoTitle: "Convocatoria Suiza Mundial 2026 · Lista de Murat Yakin",
+    excerpt:
+      "Suiza presenta su lista de 26 para el Mundial 2026 con un cambio generacional: Sommer y Shaqiri ya retirados de la selección, Gregor Kobel como nuevo titular bajo palos y Granit Xhaka (Sunderland) liderando como capitán.",
+    category: "convocatoria",
+    tags: [
+      "Suiza",
+      "Murat Yakin",
+      "Granit Xhaka",
+      "Gregor Kobel",
+      "Breel Embolo",
+      "Mundial 2026",
+    ],
+    relatedTeamCodes: ["SUI"],
+    daysAgo: 1,
+    body: `**Suiza** entregó el **20 de mayo de 2026** la lista de 26 jugadores para el Mundial 2026. El seleccionador **Murat Yakin** firma una convocatoria de transición tras las **retiradas internacionales de Yann Sommer y Xherdan Shaqiri**: **Gregor Kobel** asume la portería titular y **Granit Xhaka**, ahora en el Sunderland, sigue como capitán.
+
+## La era post-Sommer
+
+La mayor novedad respecto a Catar 2022 no es un nombre que entra, sino dos que ya no están. **Yann Sommer**, portero titular durante más de una década, anunció su retirada internacional el verano pasado tras la Eurocopa 2024. **Xherdan Shaqiri** hizo lo propio poco después, cerrando un ciclo de **17 años** vistiendo la camiseta nacional. Ambos eran símbolos generacionales — su ausencia obliga a Yakin a reordenar piezas en el último corte.
+
+El relevo bajo palos es claro: **Gregor Kobel** (Borussia Dortmund) llega al Mundial como **nuevo número 1**, con Yvon Mvogo (Lorient) y el joven Marvin Keller (Young Boys) como suplentes.
+
+## Yakin, continuidad post-Euro 2024
+
+Suiza llega al Mundial con la confianza de haber firmado **uno de los mejores torneos de su historia reciente**. En la Eurocopa 2024 eliminó a Italia en octavos (2-0) y cayó **en cuartos contra Inglaterra en la tanda de penaltis**, dejando una de las mejores impresiones del campeonato. Yakin, criticado antes del torneo, salió reforzado y renovó hasta este Mundial.
+
+Es la **13ª participación de Suiza en una Copa del Mundo** y la **sexta consecutiva** (2006, 2010, 2014, 2018, 2022 y ahora 2026). En las tres últimas, los helvéticos cayeron en octavos — una barrera que la generación actual quiere romper.
+
+## La lista completa por posiciones
+
+- **Porteros (3)**: **Gregor Kobel (Borussia Dortmund)**, Yvon Mvogo (Lorient), Marvin Keller (Young Boys).
+- **Defensas (8)**: **Manuel Akanji (Inter de Milán)**, Nico Elvedi (Borussia Mönchengladbach), Ricardo Rodríguez (Real Betis), Silvan Widmer (Maguncia), Miro Muheim (Hamburgo), Aurèle Amenda (Eintracht Frankfurt), Eray Cömert (Valencia), Luca Jaquez (Stuttgart).
+- **Mediocampistas (10)**: **Granit Xhaka (Sunderland, capitán)**, Johan Manzambi (Friburgo), Remo Freuler (Bologna), Denis Zakaria (Mónaco), Ardon Jashari (AC Milan), Djibril Sow (Sevilla), Christian Fassnacht (Young Boys), Michel Aebischer (Pisa), Fabian Rieder (Augsburgo), Rubén Vargas (Sevilla).
+- **Delanteros (5)**: **Breel Embolo (Rennes)**, Noah Okafor (Leeds United), Dan Ndoye (Nottingham Forest), Zeki Amdouni (Burnley), Cedric Itten (Fortuna Düsseldorf).
+
+## Xhaka, capitán desde Sunderland
+
+A sus **33 años** y con más de **130 internacionalidades**, **Granit Xhaka** llega al Mundial tras una temporada en la Championship con el **Sunderland** — un giro inesperado para un futbolista habituado a la Premier League y la Bundesliga. Sigue siendo el líder absoluto del vestuario y el cerebro del centro del campo suizo. Le acompañan dos nombres que comparten club: **Djibril Sow** y **Rubén Vargas** llegan desde el **Sevilla**, donde han firmado una buena temporada en LaLiga.
+
+**Ricardo Rodríguez** (Betis) disputa su **cuarto Mundial**, una marca al alcance de muy pocos suizos. **Manuel Akanji**, ahora en el **Inter de Milán** tras dejar el Manchester City, lidera la defensa central junto al fiable Nico Elvedi.
+
+## La nueva generación
+
+Sin Sommer y Shaqiri, el grupo se rejuvenece. **Aurèle Amenda** (Eintracht Frankfurt) y **Luca Jaquez** (Stuttgart) entran como defensas de futuro. **Johan Manzambi** (Friburgo) y **Ardon Jashari** (AC Milan) son las apuestas en el centro del campo. **Noah Okafor** (Leeds United) y **Dan Ndoye** (Nottingham Forest), ambos titulares en la Premier League, refuerzan el ataque.
+
+Mira la lista completa con dorsales en la [ficha de Suiza](/equipos/SUI).
+
+## El Grupo B y el debut contra Catar
+
+Suiza está en el **Grupo B** junto a **Canadá** (anfitriona), **Bosnia y Herzegovina** y **Catar** (con Julen Lopetegui en el banquillo). Es un grupo equilibrado en el que los suizos parten como segundo cabeza de serie y aspiran sin complejos al **primer puesto**.
+
+El **debut es el sábado 13 de junio frente a Catar** en el **Levi's Stadium** de Santa Clara (California). Después llega **Bosnia** el 18 de junio en el SoFi Stadium de Los Ángeles y, para cerrar la fase, **Canadá** el 24 de junio en el BC Place de Vancouver.
+
+Mira la [composición del Grupo B](/grupos) y el [calendario del torneo](/calendario).
+
+## Lo que está en juego
+
+Suiza arrastra una **maldición de octavos**: en Brasil 2014, Rusia 2018 y Catar 2022 cayó siempre en la primera ronda eliminatoria. Con la retirada de Sommer y Shaqiri, la generación de Xhaka, Embolo y Akanji está en su **última oportunidad real** de romper ese muro y meterse, como mínimo, en cuartos de un Mundial — algo que el país no ha conseguido desde **Suecia 1954**, cuando Suiza fue anfitriona.
+
+Con un grupo asequible y un rendimiento europeo reciente sólido, en 2026 el objetivo es **realista**: superar los octavos. El primer test será el 13 de junio en California.
+
+Para predecir hasta dónde llega Suiza, [crea tu quiniela gratis](/login?next=%2Fonboarding) y arma tu bracket antes del 11 de junio.`,
+  },
 
   // ─────────────────────────── ANÁLISIS / DESTACADAS ───────────────────────────
   {

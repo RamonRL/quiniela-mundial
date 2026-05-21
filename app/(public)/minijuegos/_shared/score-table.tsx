@@ -114,11 +114,6 @@ export function MinigameScoreTable({
                         </AvatarFallback>
                       </Avatar>
                       <span className="truncate text-sm font-medium">{r.displayName}</span>
-                      {r.isGuest ? (
-                        <span className="rounded border border-[var(--color-border)] px-1.5 py-0.5 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-                          invitado
-                        </span>
-                      ) : null}
                       {isMe ? (
                         <span className="rounded bg-[var(--color-arena)] px-1.5 py-0.5 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-white">
                           Tú
@@ -250,11 +245,6 @@ function PodiumCard({
           <p className={cn("truncate font-display tracking-tight", nameSize)}>
             {entry.displayName}
           </p>
-          {entry.isGuest ? (
-            <p className="mt-0.5 font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-              invitado
-            </p>
-          ) : null}
           {isMe ? (
             <p className="mt-0.5 font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
               Tú
