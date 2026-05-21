@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { asc, gte, inArray } from "drizzle-orm";
 import {
   ArrowRight,
@@ -20,12 +19,19 @@ import {
 import { db } from "@/lib/db";
 import { matches, teams } from "@/lib/db/schema";
 import { TeamFlag } from "@/components/brand/team-flag";
-import { getCurrentUser } from "@/lib/auth/guards";
 import { formatDateTime } from "@/lib/utils";
 import { FAQPageLD, SportsEventLD, WebSiteLD } from "@/components/seo/jsonld";
 import { AnswerText } from "@/components/faq/answer-text";
 import { NewsCard } from "@/components/news/news-card";
 import { listPublishedNews } from "@/lib/news/queries";
+
+// El desvío de logueados a /dashboard vive en el middleware, no aquí
+// — así esta página no lee cookies y queda preparada para cache. Las
+// queries a DB se regeneran cada 10 minutos vía ISR; lo único que se
+// mueve dentro de esa ventana son los próximos partidos destacados
+// (a medida que pasan) y la lista de noticias publicadas. 10 min es
+// suficiente granularidad sin saturar la DB.
+export const revalidate = 600;
 
 const KICKOFF = new Date(
   process.env.NEXT_PUBLIC_TOURNAMENT_KICKOFF_AT ?? "2026-06-11T19:00:00Z",
@@ -74,11 +80,6 @@ const FAQS: { q: string; a: string }[] = [
 ];
 
 export default async function HomePage() {
-  // Si hay sesión, mantenemos el comportamiento previo: ir directo al
-  // dashboard. Solo los visitantes ven la landing pública SEO.
-  const me = await getCurrentUser();
-  if (me) redirect("/dashboard");
-
   // Próximos 6 partidos para el destacado del calendario. Si la base
   // está vacía (entorno fresco), simplemente no se renderiza la sección.
   const now = new Date();

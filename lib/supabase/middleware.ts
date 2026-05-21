@@ -49,17 +49,31 @@ export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   const pathname = request.nextUrl.pathname;
-  // Tratamos "/" como público: la landing decide si redirigir a /dashboard
-  // (sesión activa) o renderizar la landing SEO (sin sesión).
-  const isPublic =
-    pathname === "/" ||
-    PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  // Rutas públicas estrictas: nunca hace falta validar sesión en ellas.
+  // `/` NO está aquí porque queremos un comportamiento especial: a
+  // visitantes anónimos les servimos la landing, pero a usuarios
+  // autenticados les redirigimos a /dashboard. Ese desvío vive ahora
+  // aquí (antes lo hacía la propia página) para que /app/(public)/page.tsx
+  // ya no lea cookies y quede preparado para cache estática.
+  const isPublic = PUBLIC_PATHS.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`),
+  );
+  if (isPublic) return response;
 
-  // Skip getUser() para rutas públicas: ahorra un round-trip a Supabase
-  // en cada navegación (Chrome refetcha manifest.webmanifest a menudo;
-  // si pasaba por el middleware completo, era un cuello de botella).
-  if (isPublic) {
-    return response;
+  // Fast-path por presencia de cookie. Si no hay token de auth (Googlebot,
+  // visitantes anónimos, etc), nos saltamos la validación contra Supabase:
+  //   - En `/` → seguimos al render de la landing (page-level cacheable).
+  //   - En cualquier ruta protegida → redirect directo a /login sin pegar
+  //     a Supabase Auth (ahorra ~100ms por request).
+  const hasAuthCookie = request.cookies
+    .getAll()
+    .some((c) => c.name.startsWith("sb-") && c.name.includes("auth-token"));
+  if (!hasAuthCookie) {
+    if (pathname === "/") return response;
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/login";
+    redirectUrl.searchParams.set("next", pathname);
+    return NextResponse.redirect(redirectUrl);
   }
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -86,6 +100,15 @@ export async function updateSession(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // En `/`: si la sesión es válida, mandamos a /dashboard. Si la cookie
+  // estaba pero ya expiró (user=null), servimos la landing igualmente.
+  if (pathname === "/") {
+    if (user) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+    return response;
+  }
 
   if (!user) {
     const redirectUrl = request.nextUrl.clone();
