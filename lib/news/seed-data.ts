@@ -1486,9 +1486,9 @@ Eso significa que los **marcadores se pueden ir editando** hasta el último minu
 
 ## ¿Cuánto cuesta?
 
-Para la inmensa mayoría de peñas, **gratis**. Cero suscripción, cero anuncios, **hasta 20 miembros por quiniela privada**. Si juegas con tu grupo de amigos, tu familia o tu equipo de oficina pequeño, no vas a tocar ningún límite y no se te va a pedir ni una tarjeta.
+Para la inmensa mayoría de peñas, **gratis**. Sin suscripción, **hasta 20 miembros por quiniela privada**. Si juegas con tu grupo de amigos, tu familia o tu equipo de oficina pequeño, no vas a tocar ningún límite y no se te va a pedir ni una tarjeta.
 
-Para **grupos grandes** — peñas de barrio, oficinas con plantilla amplia o asociaciones — hay [planes de pago](/precios) que suben el cupo hasta 50, 150 o ilimitado. Son **pagos únicos** por torneo, sin renovación automática, y se activan en el momento. Es lo que cubre desarrollo, hosting e infraestructura del proyecto.
+Para **grupos grandes** — peñas de barrio, oficinas con plantilla amplia o asociaciones — hay [planes de pago](/precios) que suben el cupo hasta **50, 100 o 250 miembros**. Son **pagos únicos** por torneo, sin renovación automática, y se activan en el momento. Es lo que cubre desarrollo, hosting e infraestructura del proyecto.
 
 ## Cómo empezar
 
