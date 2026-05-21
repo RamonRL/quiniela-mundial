@@ -1,23 +1,41 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Apple, Share, MoreVertical, Plus } from "lucide-react";
+import { Apple, ScanLine, Share, MoreVertical, Plus } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 
 type Platform = "android" | "ios";
 
+const PWA_URL = "https://quinielamundial.es";
+const MOBILE_QUERY = "(max-width: 768px)";
+
 /**
  * Mini-componente embebido en el step "Llévalo en el bolsillo" del
- * tutorial. Dos tabs con los pasos para instalar la PWA. Detectamos la
- * plataforma del user-agent al montar para preseleccionar la suya y
- * ahorrarle un click — pero ambas son accesibles.
+ * tutorial. Dos modalidades según viewport:
  *
- * Las instrucciones describen el flujo "Add to Home Screen" estándar
- * (Chrome/Edge en Android, Safari en iOS). No requiere ningún hook
- * de la API `beforeinstallprompt` porque la mayoría de iOS Safari ni
- * la implementa.
+ *  - PC: QR generado al vuelo que apunta a quinielamundial.es. La
+ *    persona escanea con la cámara del móvil y aterriza con la web
+ *    abierta; allí verá las tabs Android/iOS si vuelve a abrir el
+ *    tutorial.
+ *  - Móvil: dos tabs (Android / iOS) con los pasos para añadir la
+ *    PWA a la pantalla de inicio. Auto-selecciona la del UA.
+ *
+ * Las tabs describen el flujo "Add to Home Screen" estándar
+ * (Chrome/Edge en Android, Safari en iOS) — no usamos
+ * `beforeinstallprompt` porque iOS Safari ni la implementa.
  */
 export function InstallInstructions() {
   const [platform, setPlatform] = useState<Platform>("android");
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia(MOBILE_QUERY);
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   useEffect(() => {
     if (typeof navigator === "undefined") return;
@@ -28,6 +46,11 @@ export function InstallInstructions() {
       setPlatform("android");
     }
   }, []);
+
+  // En desktop mostramos QR; en móvil, tabs con pasos.
+  if (!isMobile) {
+    return <DesktopQR />;
+  }
 
   return (
     <div className="mt-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-2)]/50 p-3">
@@ -53,6 +76,41 @@ export function InstallInstructions() {
       {/* Contenido */}
       <div className="mt-3" role="tabpanel">
         {platform === "android" ? <AndroidSteps /> : <IOSSteps />}
+      </div>
+    </div>
+  );
+}
+
+function DesktopQR() {
+  return (
+    <div className="mt-3 flex flex-col items-center gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-2)]/50 p-4 sm:p-5">
+      {/* Marco arena alrededor del QR para que destaque sobre el card. */}
+      <div className="relative rounded-xl border-2 border-[var(--color-arena)]/40 bg-white p-3 shadow-[var(--shadow-arena)]">
+        <QRCodeSVG
+          value={PWA_URL}
+          size={160}
+          level="M"
+          marginSize={0}
+          fgColor="#0e1014"
+          bgColor="#ffffff"
+        />
+        {/* Pin animado en una esquina — guiñito visual que invita a
+            escanear. */}
+        <span
+          aria-hidden
+          className="install-qr-pin absolute -right-2 -top-2 grid size-7 place-items-center rounded-full bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]"
+        >
+          <ScanLine className="size-3.5" />
+        </span>
+      </div>
+      <div className="text-center">
+        <p className="font-mono text-[0.62rem] uppercase tracking-[0.28em] text-[var(--color-arena)]">
+          Escanea con tu móvil
+        </p>
+        <p className="mt-1.5 font-editorial text-sm italic leading-snug text-[var(--color-muted-foreground)]">
+          Abre la cámara y enfoca este código. Cuando aterrices en el móvil,
+          te enseñamos a añadirla a la pantalla de inicio en dos toques.
+        </p>
       </div>
     </div>
   );

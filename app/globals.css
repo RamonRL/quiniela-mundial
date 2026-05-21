@@ -335,6 +335,15 @@
   .tutorial-sheet-top-in {
     animation: tutorial-sheet-slide-down 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   }
+  /* Pulso sutil del pin del QR — atrae el ojo sin marear. Se aplica
+     sobre el círculo arena pegado a la esquina del código. */
+  @keyframes install-qr-pin-pulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 var(--color-arena); }
+    50%      { transform: scale(1.08); box-shadow: 0 0 0 6px transparent; }
+  }
+  .install-qr-pin {
+    animation: install-qr-pin-pulse 2.2s ease-in-out infinite;
+  }
   /* Fade puro para el card centered del tutorial — NO toca transform
      para no pisar el `translate(-50%, -50%)` que necesita para centrarse
      en el viewport. (.rise-in fija translateY y rompía el centrado.) */
@@ -352,7 +361,8 @@
     }
     .tutorial-sheet-in,
     .tutorial-sheet-top-in,
-    .tutorial-fade-in {
+    .tutorial-fade-in,
+    .install-qr-pin {
       animation: none;
     }
   }
