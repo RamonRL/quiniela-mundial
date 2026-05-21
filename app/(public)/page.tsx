@@ -705,6 +705,17 @@ export default async function HomePage() {
             <Link href="/login" className="hover:text-[var(--color-arena)]">Entrar</Link>
           </nav>
         </div>
+        <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[var(--color-border)] pt-4 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]/80">
+          <Link href="/aviso-legal" className="hover:text-[var(--color-arena)]">Aviso legal</Link>
+          <span aria-hidden>·</span>
+          <Link href="/privacidad" className="hover:text-[var(--color-arena)]">Privacidad</Link>
+          <span aria-hidden>·</span>
+          <Link href="/cookies" className="hover:text-[var(--color-arena)]">Cookies</Link>
+          <span aria-hidden>·</span>
+          <Link href="/terminos" className="hover:text-[var(--color-arena)]">Términos</Link>
+          <span aria-hidden>·</span>
+          <Link href="/contacto" className="hover:text-[var(--color-arena)]">Contacto</Link>
+        </div>
       </footer>
     </div>
   );
