@@ -69,6 +69,9 @@ export function MatchdayPredictionForm({
 }: {
   matchdayId: number;
   matches: MatchInput[];
+  /** `false` = la jornada entera está cerrada (todos los partidos arrancaron).
+   *  `true` = al menos un partido sigue upcoming. La granularidad real está
+   *  por partido — cada uno se cierra a su kickoff. */
   open: boolean;
 }) {
   const [predictions, setPredictions] = useState<Prediction[]>(
@@ -94,6 +97,14 @@ export function MatchdayPredictionForm({
     );
   }
 
+  // Cierre por partido: el cliente comprueba con la hora local del navegador
+  // (puede divergir ~segundos del server, aceptable). El server vuelve a
+  // validar al guardar y descarta predicciones de partidos ya iniciados.
+  const now = Date.now();
+  const isMatchOver = (m: MatchInput) =>
+    new Date(m.scheduledAt).getTime() <= now;
+  const someOpen = open && matches.some((m) => !isMatchOver(m));
+
   return (
     <form action={action} className="space-y-4">
       <input
@@ -104,7 +115,7 @@ export function MatchdayPredictionForm({
       {!open ? (
         <div className="flex items-center gap-2 rounded-lg border border-[var(--color-warning)]/40 bg-[var(--color-warning)]/10 p-3 text-sm text-[var(--color-warning)]">
           <Lock className="size-4" />
-          La predicción está cerrada. Sólo puedes consultar lo que enviaste.
+          Todos los partidos de la jornada ya empezaron. Sólo puedes consultar lo que enviaste.
         </div>
       ) : null}
 
@@ -113,20 +124,37 @@ export function MatchdayPredictionForm({
           const p = predictions.find((x) => x.matchId === m.id)!;
           const isKnockout = m.stage !== "group";
           const hasPlayers = m.homePlayers.length > 0 || m.awayPlayers.length > 0;
+          const matchClosed = isMatchOver(m);
+          // Cada input se deshabilita si la jornada entera no está abierta
+          // o si el kickoff del partido ya pasó. El segundo caso es el que
+          // permite reengancharse: la jornada sigue editable para los
+          // partidos posteriores aunque uno temprano ya haya arrancado.
+          const inputsDisabled = !open || matchClosed;
           return (
-            <Card key={m.id}>
+            <Card
+              key={m.id}
+              className={matchClosed && open ? "opacity-60" : undefined}
+            >
               <CardHeader className="flex flex-row items-center justify-between gap-2 p-4">
                 <Badge variant="outline" className="text-[0.65rem] uppercase">
                   {m.stage}
                 </Badge>
-                <span className="text-xs text-[var(--color-muted-foreground)]">
-                  {formatDateTime(m.scheduledAt, {
-                    day: "2-digit",
-                    month: "short",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </span>
+                <div className="flex items-center gap-2">
+                  {matchClosed && open ? (
+                    <Badge variant="outline" className="gap-1 text-[0.55rem] uppercase">
+                      <Lock className="size-3" />
+                      Cerrado
+                    </Badge>
+                  ) : null}
+                  <span className="text-xs text-[var(--color-muted-foreground)]">
+                    {formatDateTime(m.scheduledAt, {
+                      day: "2-digit",
+                      month: "short",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
               </CardHeader>
               <CardContent className="space-y-2.5 p-4 pt-0">
                 <div className="flex items-center justify-between gap-3">
@@ -134,7 +162,7 @@ export function MatchdayPredictionForm({
                   <ScoreStepper
                     value={p.homeScore}
                     onChange={(v) => update(m.id, { homeScore: v })}
-                    disabled={!open}
+                    disabled={inputsDisabled}
                     ariaLabel={`Goles ${m.home?.name ?? "local"}`}
                   />
                 </div>
@@ -143,7 +171,7 @@ export function MatchdayPredictionForm({
                   <ScoreStepper
                     value={p.awayScore}
                     onChange={(v) => update(m.id, { awayScore: v })}
-                    disabled={!open}
+                    disabled={inputsDisabled}
                     ariaLabel={`Goles ${m.away?.name ?? "visitante"}`}
                   />
                 </div>
@@ -156,7 +184,7 @@ export function MatchdayPredictionForm({
                         onCheckedChange={(v) =>
                           update(m.id, { willGoToPens: v === true })
                         }
-                        disabled={!open}
+                        disabled={inputsDisabled}
                       />
                       <Label htmlFor={`pens-${m.id}`}>Predigo penaltis (+2)</Label>
                     </div>
@@ -167,7 +195,7 @@ export function MatchdayPredictionForm({
                         onValueChange={(v) =>
                           update(m.id, { winnerTeamId: v === "" ? null : Number(v) })
                         }
-                        disabled={!open}
+                        disabled={inputsDisabled}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="—" />
@@ -201,7 +229,7 @@ export function MatchdayPredictionForm({
                           scorerPlayerId: v === NO_SCORER ? null : Number(v),
                         })
                       }
-                      disabled={!open}
+                      disabled={inputsDisabled}
                     >
                       <SelectTrigger className="h-9 text-sm">
                         <SelectValue placeholder="Sin pick" />
@@ -250,7 +278,7 @@ export function MatchdayPredictionForm({
         })}
       </div>
 
-      {open ? (
+      {someOpen ? (
         <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+5.5rem)] z-10 flex justify-center rounded-xl border border-[var(--color-border)] bg-[color-mix(in_oklch,var(--color-surface)_92%,transparent)] p-2 backdrop-blur-md sm:bottom-3">
           <SavePredictionButton pending={pending} />
         </div>

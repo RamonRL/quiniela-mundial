@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { isNotNull, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { matches } from "@/lib/db/schema";
 
@@ -25,9 +25,17 @@ const STAGE_LABEL: Record<Stage, string> = {
   final: "la final",
 };
 
+/**
+ * Input mínimo que necesita el resolver. Ya no se le pasa
+ * `predictionDeadlineAt` — la deadline pasó a ser por partido
+ * (cada `match.scheduledAt`) en vez de la deadline única por jornada
+ * que tenía la columna. La jornada se considera "closed" cuando
+ * todos sus partidos ya arrancaron, no cuando se cumple un timestamp
+ * único.
+ */
 export type MatchdayInput = {
+  id: number;
   stage: Stage;
-  predictionDeadlineAt: Date | string;
 };
 
 export type MatchdayStatus = {
@@ -42,35 +50,62 @@ type StageStat = {
   unmatched: number;
 };
 
-async function loadStageStats(): Promise<Map<Stage, StageStat>> {
-  const rows = await db
-    .select({
-      stage: matches.stage,
-      total: sql<number>`count(*)::int`,
-      unfinished: sql<number>`count(*) filter (where status != 'finished')::int`,
-      unmatched: sql<number>`count(*) filter (where home_team_id is null or away_team_id is null)::int`,
-    })
-    .from(matches)
-    .groupBy(matches.stage);
-  return new Map(
-    rows.map((r) => [
-      r.stage as Stage,
-      { total: r.total, unfinished: r.unfinished, unmatched: r.unmatched },
-    ]),
-  );
+type MatchdayMatchStat = {
+  total: number;
+  /** Partidos cuyo kickoff ya pasó (scheduledAt <= now). */
+  started: number;
+  /** Partidos sin home/away (KO con bracket aún por resolver). */
+  unmatched: number;
+};
+
+type AllStats = {
+  stages: Map<Stage, StageStat>;
+  matchdays: Map<number, MatchdayMatchStat>;
+};
+
+async function loadStats(): Promise<AllStats> {
+  const [stageRows, matchdayRows] = await Promise.all([
+    db
+      .select({
+        stage: matches.stage,
+        total: sql<number>`count(*)::int`,
+        unfinished: sql<number>`count(*) filter (where ${matches.status} != 'finished')::int`,
+        unmatched: sql<number>`count(*) filter (where ${matches.homeTeamId} is null or ${matches.awayTeamId} is null)::int`,
+      })
+      .from(matches)
+      .groupBy(matches.stage),
+    db
+      .select({
+        matchdayId: matches.matchdayId,
+        total: sql<number>`count(*)::int`,
+        started: sql<number>`count(*) filter (where ${matches.scheduledAt} <= now())::int`,
+        unmatched: sql<number>`count(*) filter (where ${matches.homeTeamId} is null or ${matches.awayTeamId} is null)::int`,
+      })
+      .from(matches)
+      .where(isNotNull(matches.matchdayId))
+      .groupBy(matches.matchdayId),
+  ]);
+  return {
+    stages: new Map(
+      stageRows.map((r) => [
+        r.stage as Stage,
+        { total: r.total, unfinished: r.unfinished, unmatched: r.unmatched },
+      ]),
+    ),
+    matchdays: new Map(
+      matchdayRows
+        .filter((r): r is { matchdayId: number; total: number; started: number; unmatched: number } => r.matchdayId != null)
+        .map((r) => [r.matchdayId, { total: r.total, started: r.started, unmatched: r.unmatched }]),
+    ),
+  };
 }
 
-function resolveState(
-  matchday: MatchdayInput,
-  stats: Map<Stage, StageStat>,
-): MatchdayStatus {
-  const deadline = new Date(matchday.predictionDeadlineAt);
-  if (deadline.getTime() <= Date.now()) {
-    return { state: "closed" };
-  }
+function resolveState(matchday: MatchdayInput, stats: AllStats): MatchdayStatus {
+  // Si la fase eliminatoria predecesora aún no terminó, esta jornada
+  // queda "waiting" sin importar las horas de sus partidos.
   const predecessor = PREDECESSOR[matchday.stage];
   if (predecessor) {
-    const predStat = stats.get(predecessor);
+    const predStat = stats.stages.get(predecessor);
     if (!predStat || predStat.total === 0 || predStat.unfinished > 0) {
       return {
         state: "waiting",
@@ -78,12 +113,13 @@ function resolveState(
       };
     }
   }
-  // Para jornadas KO, además exigimos que TODOS los partidos del stage
-  // tengan home y away resueltos. Si no, las predicciones por partido no
-  // tendrían contra quién jugar.
+
+  // En jornadas KO, además exigimos que los partidos del propio
+  // matchday tengan home/away resueltos. Sin ellos no hay predicciones
+  // posibles contra equipos concretos.
   if (matchday.stage !== "group") {
-    const ownStat = stats.get(matchday.stage);
-    if (ownStat && ownStat.unmatched > 0) {
+    const mdStat = stats.matchdays.get(matchday.id);
+    if (!mdStat || mdStat.unmatched > 0) {
       return {
         state: "waiting",
         reason:
@@ -93,12 +129,22 @@ function resolveState(
       };
     }
   }
+
+  // "Closed" = todos los partidos ya iniciaron. Mientras quede al menos
+  // uno por arrancar, la jornada sigue "open" (aunque algunos partidos
+  // ya estén cerrados individualmente — eso se gestiona partido a
+  // partido en `isMatchClosed`).
+  const mdStat = stats.matchdays.get(matchday.id);
+  if (mdStat && mdStat.total > 0 && mdStat.started >= mdStat.total) {
+    return { state: "closed" };
+  }
+
   return { state: "open" };
 }
 
 /** Compute the state of a single matchday. */
 export async function getMatchdayState(matchday: MatchdayInput): Promise<MatchdayStatus> {
-  const stats = await loadStageStats();
+  const stats = await loadStats();
   return resolveState(matchday, stats);
 }
 
@@ -106,6 +152,19 @@ export async function getMatchdayState(matchday: MatchdayInput): Promise<Matchda
 export async function computeMatchdayStates<T extends MatchdayInput>(
   matchdays: T[],
 ): Promise<(T & MatchdayStatus)[]> {
-  const stats = await loadStageStats();
+  const stats = await loadStats();
   return matchdays.map((m) => ({ ...m, ...resolveState(m, stats) }));
+}
+
+/**
+ * Per-match deadline: cada partido cierra a su propio kickoff. Lo
+ * usan tanto el guardado (descarta predicciones de partidos
+ * iniciados) como el form de jornada (deshabilita inputs de los
+ * partidos ya cerrados).
+ */
+export function isMatchClosed(
+  match: { scheduledAt: Date | string },
+  now: Date = new Date(),
+): boolean {
+  return new Date(match.scheduledAt).getTime() <= now.getTime();
 }

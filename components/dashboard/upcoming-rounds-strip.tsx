@@ -71,8 +71,8 @@ export async function UpcomingRoundsStrip({
 
   const withState = await computeMatchdayStates(
     all.map((m) => ({
+      id: m.id,
       stage: m.stage as Stage,
-      predictionDeadlineAt: m.predictionDeadlineAt,
     })),
   );
   const enriched = all.map((m, i) => ({ ...m, ...withState[i] }));

@@ -1128,7 +1128,9 @@ function buildRunningHubProps({
   const openMatchdayItems: OpenMatchday[] = openMatchdays.map((m) => ({
     id: m.id,
     label: m.name,
-    closesAt: m.predictionDeadlineAt.toISOString(),
+    // El "next deadline" de una jornada con cierre por partido es el
+    // próximo kickoff que todavía no llegó.
+    closesAt: m.nextDeadlineAt.toISOString(),
     filled: m.filled,
     total: m.total,
   }));

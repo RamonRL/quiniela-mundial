@@ -114,7 +114,7 @@ export default async function PrediccionesHub() {
       id: d.id,
       name: d.name,
       stage: d.stage as Stage,
-      predictionDeadlineAt: d.predictionDeadlineAt,
+      predictionDeadlineAt: d.predictionDeadlineAt, // se sigue mostrando como "primer kickoff" en las cards
     })),
   );
   const dayCards = annotatedDays.map((d) => {
@@ -499,7 +499,7 @@ function FeaturedMatchday({ day }: { day: DayCard }) {
         <div className="flex flex-col items-start gap-3 lg:items-end">
           <div className="space-y-0.5 lg:text-right">
             <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-              Cierra
+              Arranca
             </p>
             <p className="font-display text-2xl tracking-tight">
               {formatDateTime(day.predictionDeadlineAt, {
@@ -509,6 +509,9 @@ function FeaturedMatchday({ day }: { day: DayCard }) {
                 hour: "2-digit",
                 minute: "2-digit",
               })}
+            </p>
+            <p className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+              Cada partido cierra a su pitido
             </p>
           </div>
           <p className="flex items-center gap-1.5 font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)] group-hover:underline">

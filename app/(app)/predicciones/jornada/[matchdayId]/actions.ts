@@ -13,9 +13,14 @@ import {
 } from "@/lib/db/schema";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId } from "@/lib/leagues";
-import { getMatchdayState, type Stage } from "@/lib/matchday-state";
+import { getMatchdayState, isMatchClosed, type Stage } from "@/lib/matchday-state";
 
-export type FormState = { ok: boolean; error?: string };
+export type FormState = {
+  ok: boolean;
+  error?: string;
+  /** Cuántas predicciones se ignoraron porque su partido ya empezó. */
+  skipped?: number;
+};
 
 const schema = z.object({
   matchdayId: z.coerce.number().int(),
@@ -57,8 +62,8 @@ export async function saveMatchdayPredictions(
     .limit(1);
   if (!day) return { ok: false, error: "Jornada no encontrada." };
   const status = await getMatchdayState({
+    id: day.id,
     stage: day.stage as Stage,
-    predictionDeadlineAt: day.predictionDeadlineAt,
   });
   if (status.state === "waiting") {
     return {
@@ -67,7 +72,10 @@ export async function saveMatchdayPredictions(
     };
   }
   if (status.state === "closed") {
-    return { ok: false, error: "La predicción para esta jornada ya está cerrada." };
+    return {
+      ok: false,
+      error: "Todos los partidos de esta jornada ya empezaron — predicciones cerradas.",
+    };
   }
 
   // Validate that all matches belong to this matchday and load their squads
@@ -77,6 +85,7 @@ export async function saveMatchdayPredictions(
       id: matches.id,
       homeTeamId: matches.homeTeamId,
       awayTeamId: matches.awayTeamId,
+      scheduledAt: matches.scheduledAt,
     })
     .from(matches)
     .where(eq(matches.matchdayId, parsed.data.matchdayId));
@@ -87,7 +96,28 @@ export async function saveMatchdayPredictions(
     }
   }
 
-  const scorerIds = parsed.data.predictions
+  // Cierre por partido: filtramos predicciones cuyo partido ya arrancó.
+  // No rompemos el submit — el form ya deshabilita los inputs cerrados,
+  // así que normalmente no llegan. Llegamos aquí solo por race condition
+  // (partido empezó entre el render y el submit), y dropearlos en
+  // silencio es la mejor UX. Devolvemos `skipped` para que el form
+  // pueda enseñar un toast informativo si quiere.
+  const now = new Date();
+  const allPredictions = parsed.data.predictions;
+  const openPredictions = allPredictions.filter((p) => {
+    const m = matchById.get(p.matchId);
+    return m ? !isMatchClosed(m, now) : false;
+  });
+  const skipped = allPredictions.length - openPredictions.length;
+  if (openPredictions.length === 0) {
+    return {
+      ok: false,
+      error: "Todos los partidos ya empezaron — no queda nada por guardar.",
+      skipped,
+    };
+  }
+
+  const scorerIds = openPredictions
     .map((p) => p.scorerPlayerId)
     .filter((id): id is number => typeof id === "number");
   const scorerRows =
@@ -95,7 +125,7 @@ export async function saveMatchdayPredictions(
       ? await db.select().from(players).where(inArray(players.id, scorerIds))
       : [];
   const scorerById = new Map(scorerRows.map((p) => [p.id, p]));
-  for (const p of parsed.data.predictions) {
+  for (const p of openPredictions) {
     if (p.scorerPlayerId == null) continue;
     const player = scorerById.get(p.scorerPlayerId);
     if (!player) {
@@ -113,7 +143,7 @@ export async function saveMatchdayPredictions(
   }
 
   await db.transaction(async (tx) => {
-    for (const p of parsed.data.predictions) {
+    for (const p of openPredictions) {
       await tx
         .insert(predMatchResult)
         .values({
@@ -171,5 +201,5 @@ export async function saveMatchdayPredictions(
   revalidatePath(`/predicciones/jornada/${parsed.data.matchdayId}`);
   revalidatePath("/predicciones");
   revalidatePath("/dashboard");
-  return { ok: true };
+  return { ok: true, skipped: skipped > 0 ? skipped : undefined };
 }

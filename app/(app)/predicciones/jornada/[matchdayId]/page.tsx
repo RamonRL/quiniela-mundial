@@ -41,8 +41,8 @@ export default async function PredictMatchdayPage({
   if (!day) notFound();
 
   const status = await getMatchdayState({
+    id: day.id,
     stage: day.stage as Stage,
-    predictionDeadlineAt: day.predictionDeadlineAt,
   });
 
   if (status.state === "waiting") {

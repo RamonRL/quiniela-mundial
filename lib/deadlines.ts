@@ -8,14 +8,14 @@ const SOON_MS = 24 * 60 * 60 * 1000;
 const DEADLINE_TIMEOUT_MS = 4000;
 
 export type PendingDeadline = {
-  kind: "matchday";
+  kind: "match";
   href: string;
+  /** Texto principal: nombre de la jornada (Jornada 1, Octavos, …). */
   label: string;
-  /** ISO string of when it closes */
+  /** Cuándo cierra (= kickoff de este partido en concreto). */
   closesAt: string;
-  /** Milliseconds remaining at the time of computation */
   msRemaining: number;
-  /** How many sub-items this user still needs to fill in for this deadline */
+  /** Partidos sin predecir restantes en la misma jornada (incluye este). */
   missing: number;
 };
 
@@ -23,18 +23,28 @@ export type OpenMatchdayEntry = {
   id: number;
   name: string;
   stage: Stage;
-  predictionDeadlineAt: Date;
-  /** Total de partidos de la jornada (denominador del "X / Y" del usuario) */
+  /**
+   * Hora del próximo partido upcoming dentro de la jornada — la verdadera
+   * "siguiente deadline" para el usuario. La columna
+   * `matchdays.predictionDeadlineAt` se queda como referencia histórica
+   * ("primer kickoff") pero el flujo activo usa este campo derivado.
+   */
+  nextDeadlineAt: Date;
+  /** Total de partidos de la jornada (denominador del "X / Y"). */
   total: number;
-  /** Predicciones que el usuario ya envió */
+  /** Predicciones que el usuario ya envió en esta jornada. */
   filled: number;
+  /** Partidos cuyo kickoff aún no pasó — siguen editables. */
+  openMatches: number;
+  /** De `openMatches`, los que el usuario aún no ha predicho. */
+  missing: number;
 };
 
 /**
- * Cargador único de jornadas abiertas + cuánto lleva relleno el usuario en
- * cada una. Cacheado con React.cache() para que múltiples llamadas dentro
- * del mismo request (layout + dashboard + Progress Hub) compartan el
- * resultado y solo se pegue una vez a la DB.
+ * Cargador único de jornadas con partidos pendientes (alguno upcoming +
+ * predecesor terminado si KO) + cuánto lleva relleno el usuario en cada
+ * una. Cacheado con `React.cache()` para que múltiples llamadas dentro
+ * del mismo request compartan el resultado.
  *
  * Devuelve siempre `[]` si la query revienta o tarda demasiado — la UI
  * renderiza sin banner en lugar de colgar la página.
@@ -75,28 +85,44 @@ async function loadOpenMatchdaysUnsafe(
   leagueId: number,
 ): Promise<OpenMatchdayEntry[]> {
   const now = new Date();
+  // Jornadas con AL MENOS UN PARTIDO upcoming. Tras el cambio a cierre
+  // por partido, una jornada está "open" mientras quede algún partido
+  // por arrancar — aunque su `predictionDeadlineAt` (primer kickoff) ya
+  // haya pasado. Por eso ahora filtramos por matches.scheduledAt en vez
+  // de por el deadline cacheado.
+  const upcomingMatchdayRows = await db
+    .select({ matchdayId: matches.matchdayId })
+    .from(matches)
+    .where(gt(matches.scheduledAt, now))
+    .groupBy(matches.matchdayId);
+  const candidateIds = upcomingMatchdayRows
+    .map((r) => r.matchdayId)
+    .filter((id): id is number => id != null);
+  if (candidateIds.length === 0) return [];
+
   const days = await db
     .select()
     .from(matchdays)
-    .where(gt(matchdays.predictionDeadlineAt, now))
+    .where(inArray(matchdays.id, candidateIds))
     .orderBy(asc(matchdays.predictionDeadlineAt));
 
-  if (days.length === 0) return [];
-
+  // Filtramos las "waiting" (KO con predecesor sin terminar / bracket
+  // sin asignar).
   const annotated = await computeMatchdayStates(
-    days.map((d) => ({
-      id: d.id,
-      name: d.name,
-      stage: d.stage as Stage,
-      predictionDeadlineAt: d.predictionDeadlineAt,
-    })),
+    days.map((d) => ({ id: d.id, stage: d.stage as Stage })),
   );
+  const openMap = new Map(annotated.map((a) => [a.id, a]));
+  const openDays = days.filter((d) => openMap.get(d.id)?.state === "open");
+  if (openDays.length === 0) return [];
 
-  const openIds = annotated.filter((m) => m.state === "open").map((m) => m.id);
-  if (openIds.length === 0) return [];
+  const openIds = openDays.map((d) => d.id);
 
-  // Dos queries agregadas (totals + filled) en paralelo. Antes era 2*N.
-  const [totalsByDay, filledByDay] = await Promise.all([
+  // 4 queries agregadas en paralelo:
+  //   - total partidos por jornada
+  //   - partidos upcoming por jornada (los que aún se pueden predecir)
+  //   - próximo kickoff (min scheduledAt > now) por jornada
+  //   - predicciones del usuario por jornada (filled) + upcoming sin predecir (missing)
+  const [totalsByDay, openByDay, nextDeadlineByDay, userByDay] = await Promise.all([
     db
       .select({
         matchdayId: matches.matchdayId,
@@ -109,40 +135,114 @@ async function loadOpenMatchdaysUnsafe(
     db
       .select({
         matchdayId: matches.matchdayId,
-        filled: sql<number>`count(*)::int`,
+        openMatches: sql<number>`count(*)::int`,
       })
-      .from(predMatchResult)
-      .innerJoin(matches, eq(matches.id, predMatchResult.matchId))
+      .from(matches)
       .where(
-        and(
-          eq(predMatchResult.userId, userId),
-          eq(predMatchResult.leagueId, leagueId),
-          inArray(matches.matchdayId, openIds),
-        ),
+        and(inArray(matches.matchdayId, openIds), gt(matches.scheduledAt, now)),
       )
       .groupBy(matches.matchdayId)
-      .then((rows) => new Map(rows.map((r) => [r.matchdayId ?? 0, r.filled]))),
+      .then(
+        (rows) => new Map(rows.map((r) => [r.matchdayId ?? 0, r.openMatches])),
+      ),
+    db
+      .select({
+        matchdayId: matches.matchdayId,
+        nextAt: sql<Date>`min(${matches.scheduledAt})`,
+      })
+      .from(matches)
+      .where(
+        and(inArray(matches.matchdayId, openIds), gt(matches.scheduledAt, now)),
+      )
+      .groupBy(matches.matchdayId)
+      .then(
+        (rows) => new Map(rows.map((r) => [r.matchdayId ?? 0, new Date(r.nextAt)])),
+      ),
+    db
+      .select({
+        matchdayId: matches.matchdayId,
+        filled: sql<number>`count(*)::int`,
+        missingUpcoming: sql<number>`count(*) filter (where ${matches.scheduledAt} > now() and ${predMatchResult.matchId} is null)::int`,
+      })
+      .from(matches)
+      .leftJoin(
+        predMatchResult,
+        and(
+          eq(predMatchResult.matchId, matches.id),
+          eq(predMatchResult.userId, userId),
+          eq(predMatchResult.leagueId, leagueId),
+        ),
+      )
+      .where(inArray(matches.matchdayId, openIds))
+      .groupBy(matches.matchdayId)
+      .then(
+        (rows) =>
+          new Map(
+            rows.map((r) => [
+              r.matchdayId ?? 0,
+              {
+                filled:
+                  Number.isFinite(r.filled) && r.filled > 0
+                    ? // El leftJoin cuenta filas con prediction != null. Usamos
+                      // un filter más explícito para ser robustos.
+                      r.filled
+                    : 0,
+                missing: r.missingUpcoming ?? 0,
+              },
+            ]),
+          ),
+      ),
   ]);
 
+  // Re-pegamos: en el leftJoin, "filled" cuenta filas con prediction; pero
+  // PG agrupa filas del leftJoin incluyendo NULL → puede inflar. Calculamos
+  // filled aparte con una query exacta para evitar errores.
+  const filledByDay = await db
+    .select({
+      matchdayId: matches.matchdayId,
+      filled: sql<number>`count(*)::int`,
+    })
+    .from(predMatchResult)
+    .innerJoin(matches, eq(matches.id, predMatchResult.matchId))
+    .where(
+      and(
+        eq(predMatchResult.userId, userId),
+        eq(predMatchResult.leagueId, leagueId),
+        inArray(matches.matchdayId, openIds),
+      ),
+    )
+    .groupBy(matches.matchdayId)
+    .then((rows) => new Map(rows.map((r) => [r.matchdayId ?? 0, r.filled])));
+
   const out: OpenMatchdayEntry[] = [];
-  for (const m of annotated) {
-    if (m.state !== "open") continue;
+  for (const d of openDays) {
+    const total = totalsByDay.get(d.id) ?? 0;
+    const openMatches = openByDay.get(d.id) ?? 0;
+    const nextAt = nextDeadlineByDay.get(d.id);
+    if (!nextAt) continue; // safety: si no hay próximo kickoff, no es "open"
+    const filled = filledByDay.get(d.id) ?? 0;
+    const missing = userByDay.get(d.id)?.missing ?? openMatches;
     out.push({
-      id: m.id,
-      name: m.name,
-      stage: m.stage,
-      predictionDeadlineAt: new Date(m.predictionDeadlineAt),
-      total: totalsByDay.get(m.id) ?? 0,
-      filled: filledByDay.get(m.id) ?? 0,
+      id: d.id,
+      name: d.name,
+      stage: d.stage as Stage,
+      nextDeadlineAt: nextAt,
+      total,
+      filled,
+      openMatches,
+      missing,
     });
   }
+  out.sort((a, b) => a.nextDeadlineAt.getTime() - b.nextDeadlineAt.getTime());
   return out;
 }
 
 /**
- * Resumen rápido para el banner y el badge. Reusa loadOpenMatchdays (cacheada).
- *   - `imminent`: deadline pendiente más urgente que cierra en <24h
- *   - `pendingCount`: total de predicciones que faltan en jornadas abiertas
+ * Resumen rápido para el banner y el badge.
+ *   - `imminent`: la jornada con el próximo partido sin predecir que cierra
+ *     antes de 24 h.
+ *   - `pendingCount`: total de partidos upcoming sin predecir (todas las
+ *     jornadas abiertas).
  */
 export async function loadDeadlineSummary(
   userId: string,
@@ -160,18 +260,17 @@ export async function loadDeadlineSummary(
   let pendingCount = 0;
   const candidates: PendingDeadline[] = [];
   for (const m of open) {
-    const missing = m.total - m.filled;
-    if (missing <= 0) continue;
-    pendingCount += missing;
-    const closesMs = m.predictionDeadlineAt.getTime();
+    pendingCount += m.missing;
+    if (m.missing <= 0) continue;
+    const closesMs = m.nextDeadlineAt.getTime();
     if (closesMs <= soonCutoff) {
       candidates.push({
-        kind: "matchday",
+        kind: "match",
         href: `/predicciones/jornada/${m.id}`,
         label: m.name,
-        closesAt: m.predictionDeadlineAt.toISOString(),
+        closesAt: m.nextDeadlineAt.toISOString(),
         msRemaining: closesMs - now,
-        missing,
+        missing: m.missing,
       });
     }
   }
