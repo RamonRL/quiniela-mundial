@@ -143,12 +143,6 @@ async function processTeam(
   code: string,
   options: { force: boolean; dryRun: boolean },
 ): Promise<{ uploaded: number; skipped: number; missing: number; ambiguous: number }> {
-  const folder = FOLDER_BY_CODE[code];
-  if (!folder) {
-    console.log(`  ✗ ${code}: no hay mapeo de carpeta en FOLDER_BY_CODE.`);
-    return { uploaded: 0, skipped: 0, missing: 0, ambiguous: 0 };
-  }
-
   const [team] = await db
     .select({ id: teams.id, code: teams.code, name: teams.name })
     .from(teams)
@@ -159,12 +153,35 @@ async function processTeam(
     return { uploaded: 0, skipped: 0, missing: 0, ambiguous: 0 };
   }
 
-  const dirPath = path.join(process.cwd(), "plantillas", folder);
-  let entries: string[];
-  try {
-    entries = await readdir(dirPath);
-  } catch {
-    console.log(`  ✗ ${code} (${team.name}): carpeta no encontrada: plantillas/${folder}/`);
+  // Localización flexible de la carpeta. Prioridades:
+  //   1. plantillas/<CODE_lowercase>/ — convención nueva (basada en
+  //      el código FIFA, sin acentos, sin ambigüedad).
+  //   2. plantillas/<nombre_legacy>/ — convención original (nombre
+  //      en español, con espacios). Mantenido para no romper las
+  //      carpetas existentes.
+  const codeFolder = code.toLowerCase();
+  const legacyFolder = FOLDER_BY_CODE[code];
+  const candidates = [codeFolder];
+  if (legacyFolder && legacyFolder !== codeFolder) {
+    candidates.push(legacyFolder);
+  }
+
+  let dirPath: string | null = null;
+  let entries: string[] | null = null;
+  for (const folder of candidates) {
+    const tryPath = path.join(process.cwd(), "plantillas", folder);
+    try {
+      entries = await readdir(tryPath);
+      dirPath = tryPath;
+      break;
+    } catch {
+      // Probamos el siguiente candidato.
+    }
+  }
+  if (!entries || !dirPath) {
+    console.log(
+      `  ↷ ${code} (${team.name}): sin carpeta de fotos (probadas: ${candidates.map((c) => `plantillas/${c}/`).join(", ")}). Skip.`,
+    );
     return { uploaded: 0, skipped: 0, missing: 0, ambiguous: 0 };
   }
 
