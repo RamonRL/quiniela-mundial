@@ -28,6 +28,7 @@ import { formatDateTime } from "@/lib/utils";
 import { computeMatchdayStates, type Stage } from "@/lib/matchday-state";
 import { getBracketStatus } from "@/lib/bracket-state";
 import { ImportPredictionsBanner } from "@/components/predictions/import-banner";
+import { TutorialReplayButton } from "@/components/tutorial/replay-button";
 
 export const metadata = { title: "Mis predicciones" };
 
@@ -139,9 +140,13 @@ export default async function PrediccionesHub() {
         eyebrow="Tus apuestas"
         title="Predicciones"
         description="Tus apuestas. Privadas hasta cada cierre."
+        actions={<TutorialReplayButton />}
       />
 
       <ImportPredictionsBanner userId={me.id} activeLeagueId={leagueId} />
+
+      {/* Wrap de las 3 secciones — anchor del paso 5 del tutorial. */}
+      <div data-tutorial-id="categorias" className="space-y-12">
 
       {/* SECTION 1 — Pre-torneo */}
       <Section
@@ -270,6 +275,7 @@ export default async function PrediccionesHub() {
       >
         <BracketCard status={bracketStatus.state} closesAt={bracketStatus.closesAt} />
       </Section>
+      </div>
     </div>
   );
 }

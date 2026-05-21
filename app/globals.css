@@ -303,6 +303,38 @@
     animation: rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   }
 
+  /* ─── Tutorial ─── */
+  @keyframes tutorial-mascot-idle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+  .tutorial-mascot-idle {
+    animation: tutorial-mascot-idle 2s ease-in-out infinite;
+  }
+  @keyframes tutorial-mascot-wiggle {
+    0%, 100% { transform: rotate(-14deg); }
+    50% { transform: rotate(14deg); }
+  }
+  .tutorial-mascot-wiggle {
+    animation: tutorial-mascot-wiggle 0.4s ease-in-out infinite alternate;
+  }
+  @keyframes tutorial-sheet-slide-up {
+    0% { transform: translateY(100%); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+  .tutorial-sheet-in {
+    animation: tutorial-sheet-slide-up 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tutorial-mascot-idle,
+    .tutorial-mascot-wiggle {
+      animation: none;
+    }
+    .tutorial-sheet-in {
+      animation: none;
+    }
+  }
+
   /* Bracket connectors — "]" between two siblings, "—" stub before parent */
   .bracket-pair {
     position: relative;

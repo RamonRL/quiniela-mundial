@@ -11,6 +11,7 @@ import { AppHeader } from "@/components/shell/header";
 import { Sidebar } from "@/components/shell/sidebar";
 import { MobileBottomNav } from "@/components/shell/mobile-nav";
 import { DeadlineSlot } from "@/components/shell/deadline-slot";
+import { TutorialProvider } from "@/components/tutorial/tutorial-provider";
 
 // El layout corre en CADA navegación, así que aquí es donde más duele un
 // hang. Sólo bloqueamos lo imprescindible para pintar el shell (auth,
@@ -71,34 +72,36 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const showMyLeague = activeMembership ? !activeMembership.isPublic : false;
   const activeLeagueId = currentView ?? me.leagueId!;
   return (
-    <div className="flex min-h-dvh">
-      <Sidebar
-        isAdmin={isAdmin}
-        myId={me.id}
-        defaultCollapsed={sidebarCollapsed}
-        showMyLeague={showMyLeague}
-      />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <Suspense fallback={<div aria-hidden />}>
-          <DeadlineSlot userId={me.id} leagueId={activeLeagueId} />
-        </Suspense>
-        <AppHeader
-          email={me.email}
-          nickname={me.nickname}
-          avatarUrl={me.avatarUrl}
-          isAdmin={isAdmin}
-          memberships={memberships}
-          activeLeagueId={currentView}
-        />
-        <main className="flex-1 px-4 pb-[calc(env(safe-area-inset-bottom)+6rem)] pt-6 lg:px-8 lg:pb-12">
-          <div className="mx-auto w-full max-w-6xl">{children}</div>
-        </main>
-        <MobileBottomNav
+    <TutorialProvider>
+      <div className="flex min-h-dvh">
+        <Sidebar
           isAdmin={isAdmin}
           myId={me.id}
+          defaultCollapsed={sidebarCollapsed}
           showMyLeague={showMyLeague}
         />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <Suspense fallback={<div aria-hidden />}>
+            <DeadlineSlot userId={me.id} leagueId={activeLeagueId} />
+          </Suspense>
+          <AppHeader
+            email={me.email}
+            nickname={me.nickname}
+            avatarUrl={me.avatarUrl}
+            isAdmin={isAdmin}
+            memberships={memberships}
+            activeLeagueId={currentView}
+          />
+          <main className="flex-1 px-4 pb-[calc(env(safe-area-inset-bottom)+6rem)] pt-6 lg:px-8 lg:pb-12">
+            <div className="mx-auto w-full max-w-6xl">{children}</div>
+          </main>
+          <MobileBottomNav
+            isAdmin={isAdmin}
+            myId={me.id}
+            showMyLeague={showMyLeague}
+          />
+        </div>
       </div>
-    </div>
+    </TutorialProvider>
   );
 }

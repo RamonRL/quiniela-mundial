@@ -29,6 +29,7 @@ export function LeagueSwitcher({
       <DropdownMenuTrigger asChild>
         <button
           type="button"
+          data-tutorial-id="league-switcher"
           aria-label="Cambiar quiniela activa"
           className="group inline-flex max-w-[26rem] items-center gap-2 rounded-sm transition hover:opacity-80 focus:outline-none focus-visible:ring-1 focus-visible:ring-[var(--color-arena)]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)]"
         >

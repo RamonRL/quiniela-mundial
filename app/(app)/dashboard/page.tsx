@@ -22,6 +22,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { RealtimeRefresher } from "@/components/realtime/realtime-refresher";
 import { requireUser } from "@/lib/auth/guards";
+import { TutorialAutoStart } from "@/components/tutorial/auto-start";
 import { currentLeagueId } from "@/lib/leagues";
 import { formatDateTime } from "@/lib/utils";
 import { ActivityFeedCard } from "./activity-feed-card";
@@ -396,6 +397,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-10">
+      <TutorialAutoStart firstSeen={me.tutorialCompletedAt == null} />
       <Suspense fallback={<div aria-hidden />}>
         <ImportPredictionsBanner userId={me.id} activeLeagueId={leagueId} />
       </Suspense>

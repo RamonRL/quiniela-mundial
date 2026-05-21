@@ -190,6 +190,10 @@ export const profiles = pgTable(
     // getCurrentUser con throttling de 5 minutos para no martillear la DB
     // en cada navegación.
     lastSeenAt: timestamp("last_seen_at", { withTimezone: true }),
+    // Timestamp del primer cierre / completado del tutorial de bienvenida.
+    // NULL = aún no lo ha visto → se autodispara al entrar a /dashboard.
+    // Se marca también si pulsa "Saltar" para no volver a salir.
+    tutorialCompletedAt: timestamp("tutorial_completed_at", { withTimezone: true }),
   },
   (t) => [
     index("profiles_role_idx").on(t.role),

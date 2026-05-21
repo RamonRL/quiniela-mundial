@@ -127,14 +127,16 @@ export function Sidebar({
             activeHref={activeHref}
             collapsed={collapsed}
           />
-          <NavGroup
-            title="Predicciones"
-            items={preds}
-            activeHref={activeHref}
-            badgeFor="/predicciones"
-            badgeCount={pendingCount}
-            collapsed={collapsed}
-          />
+          <div data-tutorial-id="nav-predicciones">
+            <NavGroup
+              title="Predicciones"
+              items={preds}
+              activeHref={activeHref}
+              badgeFor="/predicciones"
+              badgeCount={pendingCount}
+              collapsed={collapsed}
+            />
+          </div>
           <NavGroup
             title="Comunidad"
             items={social}

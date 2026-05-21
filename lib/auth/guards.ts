@@ -20,6 +20,8 @@ export type CurrentUser = {
   bannedAt: Date | null;
   countryCode: string | null;
   lastSeenAt: Date | null;
+  /** Timestamp del cierre del tutorial. `null` = aún no lo ha completado. */
+  tutorialCompletedAt: Date | null;
 };
 
 // Throttle de actualización de last_seen_at: solo escribimos cada N min
@@ -196,5 +198,6 @@ function mapProfile(row: typeof profiles.$inferSelect): CurrentUser {
     bannedAt: row.bannedAt,
     countryCode: row.countryCode,
     lastSeenAt: row.lastSeenAt,
+    tutorialCompletedAt: row.tutorialCompletedAt,
   };
 }
