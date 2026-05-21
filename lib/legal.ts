@@ -12,14 +12,13 @@
  */
 
 export const LEGAL_OWNER = {
-  fullName: "Ramón Romero",
+  fullName: "Ramón Romero León",
   /** DNI con letra. Obligatorio en el Aviso Legal (LSSI Art. 10). */
-  dni: "TODO: tu DNI con letra (p.ej. 00000000X)",
-  /** Domicilio postal — calle, número, código postal, ciudad. Si usas
-   * apartado de correos: `Apartado de Correos 1234, 08001 Barcelona`. */
-  address: "TODO: tu domicilio postal completo",
-  city: "TODO: ciudad",
-  province: "TODO: provincia",
+  dni: "48093526C",
+  /** Domicilio postal — calle, número, código postal, ciudad. */
+  address: "Calle Vista Alegre 57, Cornellá de Llobregat, Barcelona",
+  city: "Cornellá de Llobregat",
+  province: "Barcelona",
   country: "España",
   email: "admin@quinielamundial.es",
   /** Handles públicos de las redes que SÍ están activas (Instagram
