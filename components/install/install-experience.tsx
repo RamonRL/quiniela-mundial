@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   Apple,
@@ -250,6 +251,8 @@ function IOSSafari() {
         />
       </ol>
 
+      <HomeScreenPreview caption="Así queda en tu Home" />
+
       {/* Pista visual que apunta a la zona donde está el botón
           compartir — el del medio de la barra inferior de Safari. */}
       <div className="mt-10 flex flex-col items-center text-[var(--color-arena)]">
@@ -334,6 +337,8 @@ function IOSChrome() {
           body="Te enseñamos los 3 toques para añadirla."
         />
       </div>
+
+      <HomeScreenPreview caption="Así te quedará en el Home" />
 
       <Footer />
     </div>
@@ -479,6 +484,40 @@ function Step({ n, children }: { n: number; children: React.ReactNode }) {
       </span>
       <span className="flex-1">{children}</span>
     </li>
+  );
+}
+
+/**
+ * Preview de cómo queda el icono en la pantalla de inicio del
+ * dispositivo. La captura es de iOS (favicon/app.jpg movida a
+ * /public/install-preview-ios.jpg) — el icono y el caption son los
+ * mismos en Android (con un fondo distinto), así que reutilizamos.
+ */
+function HomeScreenPreview({ caption }: { caption: string }) {
+  return (
+    <div className="mt-8">
+      <p className="text-center font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
+        {caption}
+      </p>
+      <div className="mt-3 flex justify-center">
+        {/* Marco que evoca un trocito de wallpaper iOS — gradient
+            azulado oscuro con halftone sutil. Encuadra el icono real. */}
+        <div className="relative overflow-hidden rounded-3xl border border-[var(--color-border)] bg-gradient-to-br from-[#1a2440] via-[#0e1530] to-[#0a0d1c] p-6 shadow-[var(--shadow-elev-2)]">
+          <span
+            aria-hidden
+            className="halftone pointer-events-none absolute inset-0 opacity-[0.06]"
+          />
+          <Image
+            src="/install-preview-ios.jpg"
+            alt="Icono de Quiniela Mundial en la pantalla de inicio"
+            width={180}
+            height={200}
+            className="relative h-auto w-[140px] sm:w-[160px]"
+            priority={false}
+          />
+        </div>
+      </div>
+    </div>
   );
 }
 
