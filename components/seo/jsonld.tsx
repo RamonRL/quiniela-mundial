@@ -379,6 +379,61 @@ export function NewsArticleLD({
   );
 }
 
+type ProductOffer = {
+  /** Etiqueta visible del tier — "Pase Equipo · 50 miembros". */
+  name: string;
+  /** Slug interno del tier, usado como `sku`. */
+  sku: string;
+  /** Precio en euros, número entero (sin decimales). */
+  priceEur: number;
+  /** Descripción corta del tier — Google la muestra en SERP cuando hay rich card. */
+  description: string;
+};
+
+/**
+ * Producto con varias ofertas, una por tier de pago. Lo usamos en
+ * /precios para que Google muestre rich card con precios en SERPs.
+ * Solo se siembran los tiers de pago — el plan Free no aporta
+ * estructura comercial y dejarlo dentro confundiría a Google.
+ *
+ * `priceValidUntil` se fija al fin del Mundial (19 jul 2026) porque
+ * los Pases cubren la edición — tras esa fecha la oferta deja de
+ * tener sentido y queremos que Google la jubile.
+ */
+export function ProductOffersLD({ offers }: { offers: ProductOffer[] }) {
+  return (
+    <Script
+      data={{
+        "@context": "https://schema.org",
+        "@type": "Product",
+        name: "Pase Mundial 2026 · Quiniela para empresas",
+        description:
+          "Amplía el tope de miembros de tu quiniela privada para el Mundial 2026. Tres planes: 50, 100 o 250 miembros. Pago único por torneo, sin suscripción.",
+        image: DEFAULT_LD_IMAGE,
+        brand: { "@type": "Brand", name: "Quiniela Mundial" },
+        offers: offers.map((o) => ({
+          "@type": "Offer",
+          name: o.name,
+          sku: o.sku,
+          description: o.description,
+          price: o.priceEur.toString(),
+          priceCurrency: "EUR",
+          url: `${SITE_URL}/precios`,
+          availability: "https://schema.org/InStock",
+          itemCondition: "https://schema.org/NewCondition",
+          validFrom: "2026-05-01",
+          priceValidUntil: "2026-07-19",
+          seller: {
+            "@type": "Organization",
+            name: "Quiniela Mundial",
+            url: SITE_URL,
+          },
+        })),
+      }}
+    />
+  );
+}
+
 type Faq = { q: string; a: string };
 
 export function FAQPageLD({ faqs }: { faqs: Faq[] }) {

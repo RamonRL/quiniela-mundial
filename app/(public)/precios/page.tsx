@@ -1,20 +1,17 @@
 import Link from "next/link";
-import { eq } from "drizzle-orm";
-import { ArrowRight, Check, Mail, Sparkles } from "lucide-react";
-import { db } from "@/lib/db";
-import { leagues } from "@/lib/db/schema";
-import { getCurrentUser } from "@/lib/auth/guards";
-import { isPremiumTier } from "@/lib/leagues";
+import { ArrowRight, Check, Mail } from "lucide-react";
 import { PageHeader } from "@/components/shell/page-header";
-import { BreadcrumbLD } from "@/components/seo/jsonld";
+import { BreadcrumbLD, ProductOffersLD } from "@/components/seo/jsonld";
 import { CommercialLeadForm } from "@/components/leagues/commercial-lead-form";
 import { getCheckoutUrls, type PaidTierId } from "@/lib/lemonsqueezy";
+import { BuyerLeagueBanner } from "./buyer-league-banner";
 
-// Dinámico: si hay sesión, anexamos el código de la liga del owner al
-// checkout para que el webhook pueda auto-activar el Pase sin
-// intervención manual. Eso requiere leer cookies/sesion en cada
-// request, así que no cacheamos.
-export const dynamic = "force-dynamic";
+// Cacheable: la página no depende de la sesión del usuario. La
+// personalización (banner "comprando para tu liga X" y `league_code`
+// en el checkout) ocurre client-side vía /api/me/buyer-context y
+// server-side al click vía /api/checkout/<tier>. Esto deja la HTML
+// estática y rápida para Googlebot.
+export const revalidate = 3600;
 
 export const metadata = {
   title: "Planes para empresas y grupos grandes",
@@ -121,37 +118,11 @@ const FAQ: { q: string; a: string }[] = [
   },
 ];
 
-export default async function PreciosPage() {
-  // Si el visitante es owner de una liga privada Free (la única que
-  // tiene sentido upgradear), resolvemos su joinCode para anexarlo al
-  // checkout. Si tiene varias o ninguna, no auto-link y el webhook
-  // caerá al fallback (email match o lead manual).
-  const me = await getCurrentUser();
-  let buyerLeague: { name: string; joinCode: string | null } | null = null;
-  if (me) {
-    const owned = await db
-      .select({
-        id: leagues.id,
-        name: leagues.name,
-        joinCode: leagues.joinCode,
-        tier: leagues.tier,
-        isPublic: leagues.isPublic,
-      })
-      .from(leagues)
-      .where(eq(leagues.createdBy, me.id))
-      .limit(3);
-    const privateFree = owned.filter(
-      (l) => !l.isPublic && !isPremiumTier(l.tier),
-    );
-    if (privateFree.length === 1) {
-      buyerLeague = {
-        name: privateFree[0].name,
-        joinCode: privateFree[0].joinCode,
-      };
-    }
-  }
-
-  const checkoutUrls = getCheckoutUrls(buyerLeague?.joinCode ?? null);
+export default function PreciosPage() {
+  // Solo nos interesa saber si las env vars de LS están configuradas
+  // para cada tier — sin sesión, sin DB. Las URLs reales con
+  // custom_data las construye /api/checkout/<tier> al click.
+  const lemonConfigured = getCheckoutUrls();
 
   return (
     <div className="space-y-12">
@@ -161,6 +132,31 @@ export default async function PreciosPage() {
           { name: "Planes", href: "/precios" },
         ]}
       />
+      <ProductOffersLD
+        offers={[
+          {
+            name: "Pase Equipo · 50 miembros",
+            sku: "team-50",
+            priceEur: 29,
+            description:
+              "Quiniela privada hasta 50 miembros con logo corporativo, anuncio fijado del organizador, export CSV del ranking y soporte prioritario por email.",
+          },
+          {
+            name: "Pase Empresa · 100 miembros",
+            sku: "team-100",
+            priceEur: 69,
+            description:
+              "Quiniela privada hasta 100 miembros con logo corporativo, anuncio fijado del organizador, export CSV del ranking y soporte prioritario por email.",
+          },
+          {
+            name: "Pase Empresa Plus · 250 miembros",
+            sku: "team-250",
+            priceEur: 149,
+            description:
+              "Quiniela privada hasta 250 miembros con logo corporativo, anuncio fijado del organizador, export CSV del ranking y soporte prioritario por email.",
+          },
+        ]}
+      />
 
       <PageHeader
         eyebrow="Planes"
@@ -168,24 +164,7 @@ export default async function PreciosPage() {
         description="La versión Free aguanta hasta 20 miembros. Para empresas, comunidades y eventos con más gente, los Pases Mundial 2026 escalan la liga a 50, 100 o 250 personas con extras pensados para uso profesional."
       />
 
-      {buyerLeague && buyerLeague.joinCode ? (
-        <p className="flex flex-wrap items-center gap-1.5 text-xs text-[var(--color-muted-foreground)]">
-          <Sparkles
-            aria-hidden
-            className="size-3 text-[var(--color-arena)]"
-          />
-          <span>
-            Comprando para{" "}
-            <span className="font-medium text-[var(--color-foreground)]">
-              {buyerLeague.name}
-            </span>{" "}
-            <span className="font-mono tracking-[0.1em]">
-              ({buyerLeague.joinCode})
-            </span>{" "}
-            — activación automática tras el pago.
-          </span>
-        </p>
-      ) : null}
+      <BuyerLeagueBanner />
 
       {/* ─── Tabla de planes ─── */}
       <section className="grid gap-5 lg:grid-cols-4">
@@ -218,7 +197,12 @@ export default async function PreciosPage() {
               </p>
             </div>
             <div className="mt-5">
-              <PlanCTA plan={plan} checkoutUrl={plan.paidTierId ? checkoutUrls[plan.paidTierId] : null} />
+              <PlanCTA
+                plan={plan}
+                lemonConfigured={
+                  plan.paidTierId ? lemonConfigured[plan.paidTierId] != null : false
+                }
+              />
             </div>
           </article>
         ))}
@@ -348,18 +332,20 @@ export default async function PreciosPage() {
  * cada tier:
  *
  *  - Tier Free → enlace interno a /onboarding.
- *  - Tier de pago con URL de Lemon Squeezy configurada → abre el
- *    hosted checkout en una pestaña nueva (rel=noopener para que LS
- *    no acceda al window de la app durante la redirección post-pago).
- *  - Tier de pago sin URL → cae al ancla #contacto del formulario,
- *    útil mientras el dueño aún no ha publicado los productos en LS.
+ *  - Tier de pago con Lemon Squeezy configurado → /api/checkout/<tier>.
+ *    El endpoint resuelve la liga del comprador y redirige a LS con
+ *    el custom_data correspondiente. No vamos directos a LS para no
+ *    necesitar leer la sesión en el render de /precios (que está
+ *    cacheada).
+ *  - Tier de pago sin LS configurado → cae al ancla #contacto del
+ *    formulario, útil mientras LS aún no esté aprobado en producción.
  */
 function PlanCTA({
   plan,
-  checkoutUrl,
+  lemonConfigured,
 }: {
   plan: Plan;
-  checkoutUrl: string | null;
+  lemonConfigured: boolean;
 }) {
   const arenaClasses = plan.highlight
     ? "bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]"
@@ -375,10 +361,10 @@ function PlanCTA({
       </Link>
     );
   }
-  if (checkoutUrl) {
+  if (lemonConfigured && plan.paidTierId) {
     return (
       <a
-        href={checkoutUrl}
+        href={`/api/checkout/${plan.paidTierId}`}
         target="_blank"
         rel="noopener noreferrer"
         className={`inline-flex w-full items-center justify-center gap-2 rounded-md px-4 py-2 font-mono text-[0.65rem] uppercase tracking-[0.18em] transition ${arenaClasses}`}
