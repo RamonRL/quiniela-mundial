@@ -23,6 +23,17 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: supabaseRemotePatterns,
   },
+  // 301 permanentes para URLs basura que Google haya indexado por error.
+  // El motivo principal del array: durante semanas se ha indexado
+  // `quinielamundial.es/$` (origen desconocido, posiblemente un share
+  // mal formado). Redirigirlas a `/` consolida el rank en la home y le
+  // dice a Google que la canonical real es la home.
+  async redirects() {
+    return [
+      { source: "/$", destination: "/", permanent: true },
+      { source: "/%24", destination: "/", permanent: true },
+    ];
+  },
   // Forzamos a Next a empaquetar las fuentes y logos PNG con las funciones
   // de OG image. Por defecto los archivos de `public/` NO se bundlean con
   // serverless functions (se sirven desde la edge estática), así que un
