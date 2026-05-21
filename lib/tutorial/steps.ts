@@ -45,6 +45,13 @@ export type TutorialStep = {
    * el lado opuesto al de la card.
    */
   mobileCardPosition?: "top" | "bottom";
+  /**
+   * Renderiza un componente especial dentro de la card. Identificador
+   * stringly-typed para que `steps.ts` no tenga que importar JSX.
+   *   - `"install"` → tabs Android / iOS con pasos para añadir la app
+   *     a la pantalla de inicio.
+   */
+  slot?: "install";
 };
 
 export const TUTORIAL_STEPS: ReadonlyArray<TutorialStep> = [
@@ -113,6 +120,13 @@ export const TUTORIAL_STEPS: ReadonlyArray<TutorialStep> = [
     // con el borde inferior (block:"end") para que la zona iluminada
     // quede a la vista bajo el sheet.
     mobileCardPosition: "top",
+  },
+  {
+    id: "install",
+    kind: "centered",
+    title: "Llévalo en el bolsillo",
+    body: "Instala Quiniela Mundial como app — sin pasar por la AppStore ni Google Play. Ocupa lo mismo que un acceso directo.",
+    slot: "install",
   },
   {
     id: "finish",

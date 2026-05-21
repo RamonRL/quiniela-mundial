@@ -41,7 +41,16 @@ export function useTutorial(): TutorialContextValue {
 const MOBILE_QUERY = "(max-width: 768px)";
 const FIND_TIMEOUT_MS = 3000;
 const FIND_INTERVAL_MS = 100;
-const SCROLL_SETTLE_MS = 350;
+const SCROLL_SETTLE_MS = 380;
+/**
+ * Offsets seguros para barras fijas:
+ *  - Header sticky (móvil): `h-16` → 64 px. Sumamos 16 px de respiración.
+ *  - Mobile-nav inferior: ~64 px + safe-area-inset-bottom. Sumamos margen.
+ * `scrollIntoView` no conoce estas barras y sitúa el target tras ellas,
+ * por eso calculamos el delta a aplicar con `window.scrollBy` directamente.
+ */
+const SAFE_TOP_OFFSET = 80;
+const SAFE_BOTTOM_OFFSET = 96;
 
 /**
  * Provider que coordina el tour: estado, resolución de anchors,
@@ -105,18 +114,37 @@ export function TutorialProvider({ children }: { children: React.ReactNode }) {
         return r.width > 0 && r.height > 0;
       });
       if (visible) {
-        // Aseguramos que esté en pantalla antes de medir. En móvil
-        // alineamos el target con el lado opuesto al de la card:
-        //   - card abajo (default) → target arriba (block:"start")
-        //   - card arriba (mobileCardPosition: "top") → target abajo
-        //     (block:"end")
-        // En desktop centramos para que el spotlight respire por igual.
-        const mobileBlock: ScrollLogicalPosition =
-          step?.mobileCardPosition === "top" ? "end" : "start";
-        visible.scrollIntoView({
-          block: isMobile ? mobileBlock : "center",
-          behavior: "smooth",
-        });
+        // Aseguramos que esté en pantalla antes de medir.
+        //
+        // Desktop: `scrollIntoView({block:"center"})` ya funciona bien
+        // porque el shell no tiene barras superpuestas.
+        //
+        // Móvil: `scrollIntoView` ignora el header sticky y la
+        // mobile-nav fija, dejando el target tapado. Calculamos el
+        // delta manualmente con offsets de zona segura:
+        //   - card abajo (default) → queremos target.top en
+        //     `SAFE_TOP_OFFSET` (justo bajo el header).
+        //   - card arriba (mobileCardPosition: "top") → queremos
+        //     target.bottom en `vh - SAFE_BOTTOM_OFFSET` (justo encima
+        //     de la mobile-nav).
+        if (isMobile) {
+          const rect = visible.getBoundingClientRect();
+          const vh = window.innerHeight;
+          let delta: number;
+          if (step?.mobileCardPosition === "top") {
+            // Alinear target.bottom justo encima de la barra inferior.
+            const desiredBottom = vh - SAFE_BOTTOM_OFFSET;
+            delta = rect.bottom - desiredBottom;
+          } else {
+            // Alinear target.top justo bajo el header sticky.
+            delta = rect.top - SAFE_TOP_OFFSET;
+          }
+          if (Math.abs(delta) > 1) {
+            window.scrollBy({ top: delta, behavior: "smooth" });
+          }
+        } else {
+          visible.scrollIntoView({ block: "center", behavior: "smooth" });
+        }
         setTimeout(() => {
           if (cancelled) return;
           setTarget(visible);

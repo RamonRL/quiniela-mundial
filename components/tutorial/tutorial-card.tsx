@@ -7,6 +7,7 @@ import { useTutorial } from "./tutorial-provider";
 import { markTutorialCompleted } from "@/lib/tutorial/actions";
 import { TutorialMascot } from "./mascot";
 import { TutorialConfetti } from "./confetti";
+import { InstallInstructions } from "./install-instructions";
 
 const CARD_MARGIN = 16; // separación entre cutout y card
 const CARD_WIDTH_DESKTOP = 360;
@@ -222,6 +223,11 @@ export function TutorialCard() {
       transform: "translate(-50%, -50%)",
       width: CARD_WIDTH_DESKTOP,
       maxWidth: "calc(100vw - 2rem)",
+      // En pantallas pequeñas el contenido del step "install" puede
+      // crecer (tabs + 4 pasos). Damos scroll interno para que nunca
+      // se desborde del viewport.
+      maxHeight: "calc(100vh - 2rem)",
+      overflowY: "auto",
     };
   }
 
@@ -293,6 +299,10 @@ export function TutorialCard() {
         >
           {step.body}
         </p>
+
+        {/* Slot opcional — actualmente solo "install" (tabs Android/iOS
+            con pasos para añadir la PWA a la pantalla de inicio). */}
+        {step.slot === "install" ? <InstallInstructions /> : null}
 
         {/* Indicador de progreso (puntos). */}
         <div className="mt-4 flex items-center gap-1.5">
