@@ -38,6 +38,8 @@ type PlayerLite = {
 type MatchInput = {
   id: number;
   stage: "group" | "r32" | "r16" | "qf" | "sf" | "third" | "final";
+  /** Código del grupo (A/B/C…) — solo para `stage === "group"`. */
+  groupCode: string | null;
   scheduledAt: string;
   venue: string | null;
   home: TeamLite | null;
@@ -52,6 +54,22 @@ type MatchInput = {
   } | null;
   existingScorerPlayerId: number | null;
 };
+
+const KNOCKOUT_LABEL: Record<MatchInput["stage"], string> = {
+  group: "Grupo",
+  r32: "16avos",
+  r16: "Octavos",
+  qf: "Cuartos",
+  sf: "Semis",
+  third: "3er puesto",
+  final: "Final",
+};
+
+/** Texto del badge: "Grupo A" en fase de grupos, nombre traducido en KO. */
+function stageLabel(m: Pick<MatchInput, "stage" | "groupCode">): string {
+  if (m.stage === "group" && m.groupCode) return `Grupo ${m.groupCode}`;
+  return KNOCKOUT_LABEL[m.stage];
+}
 
 type Prediction = {
   matchId: number;
@@ -137,7 +155,7 @@ export function MatchdayPredictionForm({
             >
               <CardHeader className="flex flex-row items-center justify-between gap-2 p-4">
                 <Badge variant="outline" className="text-[0.65rem] uppercase">
-                  {m.stage}
+                  {stageLabel(m)}
                 </Badge>
                 <div className="flex items-center gap-2">
                   {matchClosed && open ? (

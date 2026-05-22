@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { and, asc, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
+  groups,
   matchdays,
   matches,
   players,
@@ -79,11 +80,23 @@ export default async function PredictMatchdayPage({
     .flatMap((m) => [m.homeTeamId, m.awayTeamId])
     .filter((x): x is number => x != null);
   const matchIds = matchRows.map((m) => m.id);
+  const groupIds = Array.from(
+    new Set(
+      matchRows.map((m) => m.groupId).filter((x): x is number => x != null),
+    ),
+  );
 
   const allTeams =
     teamIds.length > 0
       ? await db.select().from(teams).where(inArray(teams.id, teamIds))
       : [];
+  // Cargamos los grupos referenciados por los partidos para poder pintar
+  // "Grupo A/B/C…" en el badge del card en lugar del genérico "GROUP".
+  const allGroups =
+    groupIds.length > 0
+      ? await db.select().from(groups).where(inArray(groups.id, groupIds))
+      : [];
+  const groupById = new Map(allGroups.map((g) => [g.id, g]));
   const allPlayers =
     teamIds.length > 0
       ? await db
@@ -162,6 +175,7 @@ export default async function PredictMatchdayPage({
           return {
             id: m.id,
             stage: m.stage,
+            groupCode: m.groupId ? groupById.get(m.groupId)?.code ?? null : null,
             scheduledAt: m.scheduledAt.toISOString(),
             venue: m.venue,
             home: homeId
