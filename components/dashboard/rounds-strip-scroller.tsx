@@ -25,11 +25,14 @@ export function RoundsStripScroller({
     if (!container) return;
     const target = container.children[activeIndex] as HTMLElement | undefined;
     if (!target) return;
-    // `inline: "start"` apoya el card activo al borde izquierdo del
-    // viewport del scroller. En móvil esto deja la ronda activa
-    // perfectamente visible; el resto queda fuera de pantalla hasta
-    // que el usuario deslice.
-    target.scrollIntoView({ inline: "start", block: "nearest", behavior: "auto" });
+    // Scroll HORIZONTAL puro del contenedor del slider, sin tocar el
+    // eje vertical de la ventana. Usar `target.scrollIntoView` con
+    // `block: "nearest"` arrastraba el viewport entero hacia abajo
+    // si el slider no estaba completamente visible al entrar a
+    // /dashboard. `container.scrollTo({ left })` mueve solo la barra
+    // horizontal del propio scroller.
+    const left = target.offsetLeft - container.offsetLeft;
+    container.scrollTo({ left, behavior: "auto" });
   }, [activeIndex]);
 
   return (
