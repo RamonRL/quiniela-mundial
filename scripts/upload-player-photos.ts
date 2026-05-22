@@ -43,6 +43,7 @@ const FOLDER_BY_CODE: Record<string, string> = {
   CPV: "cabo verde",
   CIV: "costa de marfil",
   CRO: "croacia",
+  ENG: "inglaterra",
   SCO: "escocia",
   FRA: "francia",
   HAI: "haiti",
@@ -154,15 +155,17 @@ async function processTeam(
   }
 
   // Localización flexible de la carpeta. Prioridades:
-  //   1. plantillas/<CODE_lowercase>/ — convención nueva (basada en
-  //      el código FIFA, sin acentos, sin ambigüedad).
-  //   2. plantillas/<nombre_legacy>/ — convención original (nombre
+  //   1. plantillas/<CODE>/        — código en mayúsculas (case
+  //      preserved, convención nueva tras la migración).
+  //   2. plantillas/<code>/        — lowercase por si acaso.
+  //   3. plantillas/<nombre_legacy>/ — convención original (nombre
   //      en español, con espacios). Mantenido para no romper las
   //      carpetas existentes.
-  const codeFolder = code.toLowerCase();
+  // Linux es case-sensitive, así que probamos ambas formas del
+  // código antes de caer al mapeo legacy.
   const legacyFolder = FOLDER_BY_CODE[code];
-  const candidates = [codeFolder];
-  if (legacyFolder && legacyFolder !== codeFolder) {
+  const candidates = [code, code.toLowerCase()];
+  if (legacyFolder && !candidates.includes(legacyFolder)) {
     candidates.push(legacyFolder);
   }
 
@@ -310,13 +313,12 @@ async function main() {
   const dryRun = args.includes("--dry-run");
   const codeArg = args.find((a) => !a.startsWith("--"))?.toUpperCase();
 
+  // Si el user pasa un código explícito (NOR, SEN…), procesa solo ese.
+  // El lookup posterior en processTeam() prueba `plantillas/<CODE>`,
+  // `<code>` y el alias del FOLDER_BY_CODE, así que NO se exige tener
+  // el código en el mapa: basta con que la carpeta exista por código.
+  // Sin argumento de código → iteramos todas las carpetas conocidas.
   const codes = codeArg ? [codeArg] : Object.keys(FOLDER_BY_CODE);
-  if (codeArg && !FOLDER_BY_CODE[codeArg]) {
-    console.log(
-      `✗ ${codeArg}: añade el mapeo en FOLDER_BY_CODE del script.`,
-    );
-    process.exit(1);
-  }
 
   console.log(
     `→ Subiendo fotos de jugadores ${dryRun ? "(DRY-RUN)" : ""}${force ? " [FORCE]" : ""}`,
