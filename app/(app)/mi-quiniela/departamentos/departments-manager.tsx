@@ -30,7 +30,7 @@ import {
   assignMemberToDepartment,
   createDepartment,
   deleteDepartment,
-  renameDepartment,
+  updateDepartment,
 } from "./actions";
 
 type Department = {
@@ -63,7 +63,7 @@ export function DepartmentsManager({
 }) {
   const router = useRouter();
   const [createOpen, setCreateOpen] = useState(false);
-  const [renameDept, setRenameDept] = useState<Department | null>(null);
+  const [editDept, setEditDept] = useState<Department | null>(null);
 
   const rankingsByDept = new Map(rankings.map((r) => [r.departmentId, r]));
 
@@ -106,7 +106,8 @@ export function DepartmentsManager({
                           variant="ghost"
                           size="icon"
                           className="size-8"
-                          onClick={() => setRenameDept(d)}
+                          onClick={() => setEditDept(d)}
+                          aria-label="Editar departamento"
                         >
                           <Edit2 className="size-3.5" />
                         </Button>
@@ -168,11 +169,11 @@ export function DepartmentsManager({
         ) : null}
       </section>
 
-      {/* Dialog de renombrar */}
-      {renameDept ? (
-        <RenameDepartmentDialog
-          dept={renameDept}
-          onClose={() => setRenameDept(null)}
+      {/* Dialog de editar (nombre + emoji + color) */}
+      {editDept ? (
+        <EditDepartmentDialog
+          dept={editDept}
+          onClose={() => setEditDept(null)}
         />
       ) : null}
     </div>
@@ -300,7 +301,7 @@ function CreateDepartmentDialog({
   );
 }
 
-function RenameDepartmentDialog({
+function EditDepartmentDialog({
   dept,
   onClose,
 }: {
@@ -310,19 +311,23 @@ function RenameDepartmentDialog({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  // Si la columna en DB es NULL, el color picker necesita un valor inicial
+  // razonable. Usamos el arena por defecto pero el form solo persiste lo
+  // que el user envíe — limpiar el campo lo restaura a NULL en la action.
+  const initialColor = dept.color ?? "#ef5043";
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Renombrar departamento</DialogTitle>
+          <DialogTitle>Editar departamento</DialogTitle>
         </DialogHeader>
         <form
           action={(fd: FormData) => {
             setError(null);
             fd.append("deptId", String(dept.id));
             startTransition(async () => {
-              const res = await renameDepartment({ ok: false }, fd);
+              const res = await updateDepartment({ ok: false }, fd);
               if (!res.ok) {
                 setError(res.error ?? "Error");
                 return;
@@ -334,9 +339,9 @@ function RenameDepartmentDialog({
           className="space-y-3"
         >
           <div className="space-y-1.5">
-            <Label htmlFor="dept-rename">Nuevo nombre</Label>
+            <Label htmlFor="dept-name">Nombre</Label>
             <Input
-              id="dept-rename"
+              id="dept-name"
               name="name"
               defaultValue={dept.name}
               required
@@ -344,13 +349,37 @@ function RenameDepartmentDialog({
               autoFocus
             />
           </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="dept-emoji">Emoji</Label>
+              <Input
+                id="dept-emoji"
+                name="emoji"
+                defaultValue={dept.emoji ?? ""}
+                placeholder="📊"
+                maxLength={4}
+              />
+              <p className="font-editorial text-[0.65rem] italic text-[var(--color-muted-foreground)]">
+                Déjalo vacío para quitarlo.
+              </p>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="dept-color">Color</Label>
+              <Input
+                id="dept-color"
+                name="color"
+                type="color"
+                defaultValue={initialColor}
+              />
+            </div>
+          </div>
           {error ? <p className="text-sm text-[var(--color-danger)]">{error}</p> : null}
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={onClose}>
               Cancelar
             </Button>
             <Button type="submit" disabled={pending}>
-              {pending ? "Guardando…" : "Guardar"}
+              {pending ? "Guardando…" : "Guardar cambios"}
             </Button>
           </DialogFooter>
         </form>

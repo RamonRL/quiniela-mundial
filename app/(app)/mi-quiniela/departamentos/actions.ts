@@ -108,19 +108,40 @@ export async function createDepartment(
   return { ok: true, message: "Departamento creado." };
 }
 
-const renameSchema = z.object({
+const updateSchema = z.object({
   deptId: z.coerce.number().int(),
   name: z.string().trim().min(1).max(MAX_NAME),
+  // Emoji y color son nullables y se pueden borrar pasando string vacío.
+  // El preprocess los convierte a null cuando llegan "" desde el form.
+  emoji: z.preprocess(
+    (v) => (typeof v === "string" && v.trim() === "" ? null : v),
+    z.string().trim().max(MAX_EMOJI).nullable().optional(),
+  ),
+  color: z.preprocess(
+    (v) => (typeof v === "string" && v.trim() === "" ? null : v),
+    z
+      .string()
+      .regex(/^#[0-9a-fA-F]{6}$/, "Color en formato #RRGGBB.")
+      .nullable()
+      .optional(),
+  ),
 });
 
-export async function renameDepartment(
+/**
+ * Actualiza nombre, emoji y color de un departamento existente. Todos
+ * los campos opcionales salvo el nombre — pasar "" en emoji o color
+ * limpia el valor (NULL en DB).
+ */
+export async function updateDepartment(
   _prev: DepartmentFormState,
   formData: FormData,
 ): Promise<DepartmentFormState> {
   const me = await requireUser();
-  const parsed = renameSchema.safeParse({
+  const parsed = updateSchema.safeParse({
     deptId: formData.get("deptId"),
     name: formData.get("name"),
+    emoji: formData.get("emoji"),
+    color: formData.get("color"),
   });
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
@@ -139,7 +160,11 @@ export async function renameDepartment(
   try {
     await db
       .update(leagueDepartments)
-      .set({ name: parsed.data.name })
+      .set({
+        name: parsed.data.name,
+        emoji: parsed.data.emoji ?? null,
+        color: parsed.data.color ?? null,
+      })
       .where(eq(leagueDepartments.id, parsed.data.deptId));
   } catch (err) {
     const message = err instanceof Error ? err.message : "";
@@ -151,7 +176,7 @@ export async function renameDepartment(
 
   revalidatePath("/mi-quiniela/departamentos");
   revalidatePath("/ranking");
-  return { ok: true, message: "Departamento renombrado." };
+  return { ok: true, message: "Departamento actualizado." };
 }
 
 export async function deleteDepartment(formData: FormData) {
