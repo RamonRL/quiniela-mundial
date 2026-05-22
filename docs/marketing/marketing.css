@@ -1,0 +1,469 @@
+/* ================================================================
+   QUINIELA MUNDIAL · MARKETING PLAYBOOK
+   Estilos compartidos por index.html, assets.html y los 21 días.
+   Identidad editorial-deportiva: arena rojo, pitch verde, amber oro,
+   sobre ink (dark) y paper (light). Print-friendly A4.
+   ================================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;900&family=DM+Sans:wght@400;500;700&family=Mona+Sans:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;700&display=swap");
+
+:root {
+  /* Paleta */
+  --arena: #ef5043;
+  --arena-deep: #b22e22;
+  --pitch: #4ade80;
+  --pitch-deep: #16a34a;
+  --amber: #fbbf24;
+  --amber-deep: #d97706;
+  --ink: #0c1410;
+  --ink-soft: #1a2520;
+  --paper: #fefcf7;
+  --paper-soft: #f3eee4;
+  --line: rgba(12, 20, 16, 0.12);
+  --muted: rgba(12, 20, 16, 0.62);
+
+  /* Fuentes */
+  --f-display: "Big Shoulders Display", ui-sans-serif, system-ui;
+  --f-body: "DM Sans", ui-sans-serif, system-ui;
+  --f-editorial: "Mona Sans", "DM Sans", ui-sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--arena-deep);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+a:hover { color: var(--arena); }
+
+/* ---------------- Layout ---------------- */
+.shell {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 28px 32px 56px;
+}
+@media (max-width: 640px) {
+  .shell { padding: 20px 18px 40px; }
+}
+
+/* ---------------- Topnav ---------------- */
+.topnav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.topnav a { color: var(--ink); text-decoration: none; }
+.topnav a:hover { color: var(--arena); }
+.topnav .home { font-weight: 700; }
+.topnav .crumbs { display: flex; gap: 14px; align-items: center; }
+
+/* ---------------- Hero ---------------- */
+.hero {
+  position: relative;
+  border: 2px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  padding: 32px 28px;
+  margin-bottom: 32px;
+  overflow: hidden;
+  isolation: isolate;
+}
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 12% 88%, color-mix(in oklch, var(--arena) 65%, transparent) 0%, transparent 38%),
+    radial-gradient(circle at 88% 18%, color-mix(in oklch, var(--pitch) 55%, transparent) 0%, transparent 42%);
+  z-index: -1;
+}
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(0deg, transparent 95%, color-mix(in oklch, var(--pitch) 35%, transparent) 95%),
+    linear-gradient(90deg, transparent 95%, color-mix(in oklch, var(--pitch) 35%, transparent) 95%);
+  background-size: 36px 36px;
+  opacity: 0.18;
+  z-index: -1;
+}
+.hero-tags {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.tag {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  background: color-mix(in oklch, var(--paper) 8%, transparent);
+  border: 1px solid color-mix(in oklch, var(--paper) 25%, transparent);
+  color: var(--paper);
+}
+.tag.arena { background: var(--arena); border-color: var(--arena); }
+.tag.pitch { background: var(--pitch); color: var(--ink); border-color: var(--pitch); }
+.tag.amber { background: var(--amber); color: var(--ink); border-color: var(--amber); }
+.hero-title {
+  font-family: var(--f-display);
+  font-weight: 900;
+  font-stretch: condensed;
+  font-size: clamp(40px, 7vw, 72px);
+  line-height: 0.92;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  margin: 0 0 12px;
+}
+.hero-sub {
+  font-family: var(--f-editorial);
+  font-style: italic;
+  font-size: 17px;
+  line-height: 1.45;
+  max-width: 620px;
+  color: color-mix(in oklch, var(--paper) 78%, transparent);
+}
+
+/* ---------------- Sections ---------------- */
+section {
+  margin-bottom: 36px;
+}
+section > h2 {
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-stretch: condensed;
+  font-size: 28px;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  margin: 0 0 4px;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+section > h2 .h2-num {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--arena);
+  background: color-mix(in oklch, var(--arena) 12%, transparent);
+  padding: 3px 8px;
+  border: 1px solid color-mix(in oklch, var(--arena) 30%, transparent);
+}
+section > .h2-lead {
+  font-family: var(--f-editorial);
+  font-style: italic;
+  color: var(--muted);
+  margin: 0 0 18px;
+}
+
+/* ---------------- Cards ---------------- */
+.card {
+  border: 1px solid var(--line);
+  background: var(--paper);
+  padding: 18px 20px;
+  margin-bottom: 12px;
+}
+.card.accent-arena { border-left: 4px solid var(--arena); }
+.card.accent-pitch { border-left: 4px solid var(--pitch-deep); }
+.card.accent-amber { border-left: 4px solid var(--amber-deep); }
+.card h3 {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: 18px;
+  text-transform: uppercase;
+  letter-spacing: -0.005em;
+  margin: 0 0 8px;
+}
+.card p, .card ul, .card ol { margin: 0 0 10px; }
+.card p:last-child, .card ul:last-child, .card ol:last-child { margin-bottom: 0; }
+
+.kicker {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+/* ---------------- Grid utilities ---------------- */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+@media (max-width: 720px) {
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+}
+
+/* ---------------- KPI ---------------- */
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 14px 0; }
+.kpi {
+  border: 1px solid var(--line);
+  padding: 12px;
+  text-align: center;
+}
+.kpi-val {
+  font-family: var(--f-display);
+  font-weight: 900;
+  font-size: 28px;
+  line-height: 1;
+  color: var(--ink);
+}
+.kpi-lbl {
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 4px;
+}
+@media (max-width: 640px) { .kpi-row { grid-template-columns: repeat(2, 1fr); } }
+
+/* ---------------- Tables ---------------- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 8px 0;
+}
+table th, table td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+table th {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+  background: var(--paper-soft);
+}
+table tr:nth-child(even) td { background: color-mix(in oklch, var(--paper-soft) 50%, transparent); }
+table code {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  background: color-mix(in oklch, var(--ink) 6%, transparent);
+  padding: 1px 5px;
+}
+
+/* ---------------- Code blocks (prompts) ---------------- */
+pre, .codeblock {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  line-height: 1.55;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 14px 16px;
+  border-left: 4px solid var(--arena);
+  white-space: pre-wrap;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+.codeblock-label {
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 4px;
+}
+
+/* ---------------- Checklist ---------------- */
+.checklist { list-style: none; padding: 0; margin: 0; }
+.checklist li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  margin-bottom: 6px;
+  background: var(--paper);
+}
+.checklist input[type="checkbox"] {
+  margin: 2px 0 0;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--arena);
+  flex-shrink: 0;
+}
+.checklist .duration {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+/* ---------------- Phase pill (color por fase) ---------------- */
+.phase-1 { background: var(--arena) !important; color: var(--paper) !important; border-color: var(--arena) !important; }
+.phase-2 { background: var(--pitch) !important; color: var(--ink) !important; border-color: var(--pitch) !important; }
+.phase-3 { background: var(--amber) !important; color: var(--ink) !important; border-color: var(--amber) !important; }
+.phase-4 { background: var(--ink) !important; color: var(--paper) !important; border-color: var(--ink) !important; }
+.phase-5 { background: linear-gradient(90deg, var(--arena) 0%, var(--amber) 100%) !important; color: var(--ink) !important; border-color: var(--arena) !important; }
+
+/* ---------------- Index grid ---------------- */
+.index-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+@media (max-width: 720px) { .index-grid { grid-template-columns: repeat(3, 1fr); } }
+.index-cell {
+  display: block;
+  border: 1px solid var(--line);
+  padding: 12px 10px;
+  text-align: center;
+  text-decoration: none;
+  color: var(--ink);
+  background: var(--paper);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  min-height: 92px;
+}
+.index-cell:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(12, 20, 16, 0.12);
+}
+.index-cell .num {
+  font-family: var(--f-display);
+  font-weight: 900;
+  font-size: 32px;
+  line-height: 1;
+}
+.index-cell .date {
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.index-cell .phase {
+  display: inline-block;
+  font-family: var(--f-mono);
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 2px 5px;
+  margin-top: 6px;
+  border: 1px solid currentColor;
+}
+.index-cell.today {
+  background: var(--ink);
+  color: var(--paper);
+  outline: 3px solid var(--arena);
+  outline-offset: -3px;
+}
+.index-cell.today .date,
+.index-cell.today .phase { color: var(--paper); }
+.index-cell.past {
+  opacity: 0.55;
+}
+
+/* ---------------- Buttons ---------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 9px 14px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+}
+.btn.outline { background: transparent; color: var(--ink); }
+.btn.arena { background: var(--arena); border-color: var(--arena); color: var(--paper); }
+.btn.pitch { background: var(--pitch); border-color: var(--pitch-deep); color: var(--ink); }
+
+/* ---------------- Callouts ---------------- */
+.callout {
+  border: 2px solid var(--arena);
+  background: color-mix(in oklch, var(--arena) 6%, var(--paper));
+  padding: 14px 18px;
+  margin: 14px 0;
+  position: relative;
+}
+.callout .callout-title {
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--arena-deep);
+  margin-bottom: 4px;
+}
+.callout.amber { border-color: var(--amber-deep); background: color-mix(in oklch, var(--amber) 12%, var(--paper)); }
+.callout.amber .callout-title { color: var(--amber-deep); }
+.callout.pitch { border-color: var(--pitch-deep); background: color-mix(in oklch, var(--pitch) 8%, var(--paper)); }
+.callout.pitch .callout-title { color: var(--pitch-deep); }
+
+/* ---------------- Footer ---------------- */
+footer {
+  margin-top: 48px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ---------------- Print A4 ---------------- */
+@page {
+  size: A4;
+  margin: 12mm 14mm;
+}
+@media print {
+  body { background: var(--paper); }
+  .shell { max-width: none; padding: 0; }
+  .topnav, .btn { display: none !important; }
+  .hero { break-inside: avoid; }
+  .card, .callout, table, pre { break-inside: avoid; }
+  a { color: var(--ink); text-decoration: none; }
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 9px;
+    color: var(--muted);
+  }
+  /* No imprimir links internos */
+  a[href^="#"]::after,
+  a[href^="dia-"]::after,
+  a[href^="assets.html"]::after,
+  a[href^="index.html"]::after { content: ""; }
+}

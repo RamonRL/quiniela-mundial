@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Assets compartidos · Plan marketing Quiniela Mundial 2026</title>
+  <link rel="stylesheet" href="marketing.css">
+</head>
+<body>
+<div class="shell">
+
+  <nav class="topnav">
+    <a href="index.html" class="home">← QUINIELA MUNDIAL · MARKETING</a>
+    <span class="crumbs"><a href="index.html">Index</a></span>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-tags">
+      <span class="tag arena">ASSETS</span>
+      <span class="tag">Material compartido</span>
+      <span class="tag">21 días</span>
+    </div>
+    <h1 class="hero-title">Caja de herramientas</h1>
+    <p class="hero-sub">Prompts IA, hooks, hashtags, voz, UTMs y presupuesto. Todo lo que se repite cada día vive aquí — los HTMLs diarios solo referencian.</p>
+  </header>
+
+  <!-- ─────────── 01 · Setup ─────────── -->
+  <section id="setup">
+    <h2><span class="h2-num">01</span> Setup inicial (Día 1)</h2>
+    <p class="h2-lead">Lo que dejas listo una sola vez para no repetirlo cada día.</p>
+
+    <div class="grid-2">
+      <div class="card accent-arena">
+        <h3>Bio TikTok (80 chars max)</h3>
+        <pre>⚽ La quiniela del Mundial 2026 con tu peña
+🆓 Hasta 20 amigos · 👇 únete</pre>
+        <p class="kicker">Display name</p>
+        <pre>Quiniela Mundial</pre>
+        <p class="kicker">Foto perfil · escudo QM redondo (favicon/app.jpg de 1024x1024 funciona)</p>
+      </div>
+      <div class="card accent-pitch">
+        <h3>Bio X (160 chars max)</h3>
+        <pre>La quiniela del Mundial 2026 entre amigos, peñas y empresas. Predicciones, ranking en vivo, bracket, goleadores. Gratis hasta 20.</pre>
+        <p class="kicker">Username</p>
+        <pre>@QuinielaMundial</pre>
+        <p class="kicker">Pinned post — al crear cuenta, pin el hilo "Cómo monté esto. Día 1 de 21."</p>
+      </div>
+    </div>
+
+    <div class="card accent-amber">
+      <h3>Link-in-bio (Beacons.ai recomendado, gratis)</h3>
+      <p>Una sola URL en TikTok y X que abre un menú con 5 botones:</p>
+      <ol>
+        <li><strong>🎯 Crear mi quiniela gratis</strong> → <code>quinielamundial.es/login?utm_source=tiktok&amp;utm_medium=bio&amp;utm_campaign=preworldcup</code></li>
+        <li><strong>📱 Instalar la app</strong> → <code>quinielamundial.es/instalar?utm_source=tiktok&amp;utm_medium=bio</code></li>
+        <li><strong>📰 Convocatorias y noticias</strong> → <code>quinielamundial.es/noticias?utm_source=tiktok&amp;utm_medium=bio</code></li>
+        <li><strong>💼 Para empresas (peñas grandes)</strong> → <code>quinielamundial.es/precios?utm_source=tiktok&amp;utm_medium=bio</code></li>
+        <li><strong>❓ Preguntas frecuentes</strong> → <code>quinielamundial.es/faq?utm_source=tiktok&amp;utm_medium=bio</code></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ─────────── 02 · Voz AI ─────────── -->
+  <section id="voz">
+    <h2><span class="h2-num">02</span> Voz AI (ElevenLabs)</h2>
+    <p class="h2-lead">Una sola voz toda la campaña → consistencia auditiva = marca reconocible.</p>
+
+    <div class="card">
+      <h3>Voice ID recomendado</h3>
+      <p><strong>Diego</strong> (español neutro, ligeramente latino, tono entusiasta deportivo). Voice ID: <code>onwK4e9ZLuTAKqWW03F9</code> alternativa, o cualquier voz masculina ES de la <a href="https://elevenlabs.io/app/voice-library">Voice Library</a> con estos atributos:</p>
+      <ul>
+        <li><strong>Idioma</strong>: Spanish (Spain o Latam neutro).</li>
+        <li><strong>Edad</strong>: 25-35.</li>
+        <li><strong>Tono</strong>: enérgico, narrador deportivo / podcast.</li>
+        <li><strong>Use case</strong>: <em>Social media</em>.</li>
+      </ul>
+      <p>Alternativa B: voz femenina si quieres romper estereotipo de "narrador deportivo masculino" — busca "Sara" o "Lucia" en ES.</p>
+    </div>
+
+    <div class="card accent-arena">
+      <h3>Settings ElevenLabs por defecto</h3>
+      <table>
+        <tr><th>Stability</th><td><strong>40%</strong> — algo de expresividad sin perder consistencia.</td></tr>
+        <tr><th>Similarity</th><td><strong>75%</strong> — fiel al voice ID.</td></tr>
+        <tr><th>Style</th><td><strong>30%</strong> — pizca de inflexión natural.</td></tr>
+        <tr><th>Speaker boost</th><td>ON</td></tr>
+        <tr><th>Model</th><td><code>eleven_multilingual_v2</code></td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Tips de prompt (texto que entregas a ElevenLabs)</h3>
+      <ul>
+        <li>Frases cortas (max 10-12 palabras) → ritmo de TikTok.</li>
+        <li>Usa <code>...</code> para pausas dramáticas (1.5x antes del CTA).</li>
+        <li>MAYÚSCULAS para énfasis natural en una palabra clave.</li>
+        <li>Signos exclamativos cierran con energía: "¿Tu peña usa Excel? <strong>De verdad?</strong>"</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ─────────── 03 · Prompts AI vídeo ─────────── -->
+  <section id="prompts">
+    <h2><span class="h2-num">03</span> Prompts maestros para vídeo IA</h2>
+    <p class="h2-lead">5 plantillas reusables. Sustituye las variables <code>{...}</code> según el día.</p>
+
+    <div class="card accent-arena">
+      <h3>Template A · "Hook + reveal" (Veo 3 / Sora, 8-12s)</h3>
+      <div class="codeblock-label">Prompt</div>
+      <pre>Cinematic close-up shot, slow zoom in. A football fan stares at a phone screen showing a colorful prediction grid in a sports app called "Quiniela Mundial". The screen shows team flags and scores updating live. Soft window light, modern Mediterranean apartment background blurred. Color palette: warm reds, deep greens, amber highlights. Editorial film grain. Aspect ratio 9:16. Realistic, photoreal. No text on screen. Mood: anticipation, FOMO.</pre>
+      <p><strong>Cómo lo uso:</strong> primer plano dura 5-6s. Encima añado mi voz AI con el hook del día. Texto on-screen lo meto yo en CapCut después (no en el prompt).</p>
+    </div>
+
+    <div class="card accent-pitch">
+      <h3>Template B · "Phone showcase" (recorrido por la app)</h3>
+      <div class="codeblock-label">Prompt</div>
+      <pre>A modern smartphone in vertical orientation, floating in a clean ink-dark space with subtle red and green light beams. The screen shows the "{FEATURE}" feature of a football app: {DESCRIPCIÓN_PANTALLA_3_FRASES}. Smooth UI transitions, finger taps visible occasionally. Camera orbits slightly. Aspect ratio 9:16. Hyperrealistic 3D render, premium tech aesthetic. No external branding. Soft chromatic aberration on edges.</pre>
+      <p><strong>Cómo lo uso:</strong> Sustituye <code>{FEATURE}</code> por la feature del día (bracket, ranking, goleador, etc.). Sustituye <code>{DESCRIPCIÓN_PANTALLA_3_FRASES}</code> por la descripción visual de lo que se ve.</p>
+    </div>
+
+    <div class="card accent-amber">
+      <h3>Template C · "Stadium energy" (B-roll genérico de fútbol)</h3>
+      <div class="codeblock-label">Prompt</div>
+      <pre>Aerial sweeping shot of a packed football stadium at night, floodlights flaring. Confetti raining. Fans in red and white scarves jumping. Slow motion. Cinematic, IMAX-grade visual. No team logos visible. Aspect ratio 9:16. Color grade: deep teal shadows, warm red highlights.</pre>
+      <p><strong>Cómo lo uso:</strong> intro o cierre épico de cualquier vídeo. Lo reutilizo en 4-5 días distintos sin que se note repetición.</p>
+    </div>
+
+    <div class="card">
+      <h3>Template D · "Talking head simulado" (avatar IA)</h3>
+      <div class="codeblock-label">Prompt</div>
+      <pre>Medium close-up of a young Spanish football journalist, 28 years old, casual modern attire, mid-monologue addressing camera with energy and slight smile. Sports podcast studio background out of focus: warm tungsten lights, vinyl LP, leather chair. Natural micro-expressions. Aspect ratio 9:16. Cinematic shallow depth of field.</pre>
+      <p><strong>Cómo lo uso:</strong> imito el formato "podcast clip" tan viral en TikTok. Pongo subtítulos quemados sobre el vídeo. Encaja perfecto con la voz AI.</p>
+    </div>
+
+    <div class="card">
+      <h3>Template E · "Brain rot / fast cut" (montaje 0-100)</h3>
+      <div class="codeblock-label">Prompt</div>
+      <pre>Rapid montage of football moments: goal celebrations, fans screaming, a phone screen with the Quiniela Mundial logo flashing, scoreboard with red numbers, ball hitting net in slow motion. Frenetic editing, 0.5s per shot. Drone shot over stadium at golden hour. Color: high saturation arena red and amber accents. Aspect ratio 9:16. Energy: maximum.</pre>
+      <p><strong>Cómo lo uso:</strong> reservado para vídeos de high-energy (días 4, 14, 20, 21). Acompañar con beat de música electrónica/reggaetón trending sin copyright.</p>
+    </div>
+  </section>
+
+  <!-- ─────────── 04 · Hooks ─────────── -->
+  <section id="hooks">
+    <h2><span class="h2-num">04</span> Hooks library (2-3 seg)</h2>
+    <p class="h2-lead">Primeros 2 segundos = todo. Si el hook falla, el vídeo muere antes de empezar. 32 hooks etiquetados.</p>
+
+    <div class="grid-2">
+      <div class="card accent-arena">
+        <h3>🚨 Curiosidad / FOMO</h3>
+        <ol>
+          <li>"Esto que estás viendo… nadie en tu peña lo conoce todavía."</li>
+          <li>"El Mundial empieza en 21 días. Y tú aún con el Excel."</li>
+          <li>"Spoiler: vas a perder la quiniela de este año."</li>
+          <li>"Por qué tu padre va a flipar con esto."</li>
+          <li>"Lo que pasa cuando 12 amigos predicen el mismo Mundial."</li>
+          <li>"Si esto no existiera, lo inventarían."</li>
+          <li>"Casi se me cae el móvil viendo esto en vivo."</li>
+          <li>"Mira lo que pasa cuando Brasil gana 3-0 en un grupo aleatorio."</li>
+        </ol>
+      </div>
+      <div class="card accent-pitch">
+        <h3>💡 Educativo / "did you know"</h3>
+        <ol>
+          <li>"Te explico cómo funciona la quiniela del Mundial 2026 en 15 segundos."</li>
+          <li>"Hay 6 categorías. No, no son solo los marcadores."</li>
+          <li>"Sabías que se pueden predecir hasta los goleadores de cada partido?"</li>
+          <li>"Por esto el bracket del Mundial 2026 es distinto a todos los anteriores."</li>
+          <li>"Mira lo que pasa cuando el algoritmo te empareja contra tu mejor amigo."</li>
+          <li>"Las 3 categorías que se cierran ANTES del 11 de junio."</li>
+          <li>"Cómo se reparten los puntos partido a partido."</li>
+          <li>"El sistema de los 8 mejores terceros, explicado con dibujos."</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card accent-amber">
+        <h3>⚡ Urgencia</h3>
+        <ol>
+          <li>"Te quedan {N} días para cerrar la quiniela."</li>
+          <li>"Aviso: el 11 de junio se cierran 3 cosas para siempre."</li>
+          <li>"Si no haces esto antes del kickoff, ya no podrás."</li>
+          <li>"Última oportunidad para invitar a tu peña."</li>
+          <li>"Pasado mañana, esto cuesta más de hacer."</li>
+          <li>"24 horas. Eso es lo que queda."</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h3>👥 Social proof</h3>
+        <ol>
+          <li>"4.000 personas ya están haciendo su quiniela aquí."</li>
+          <li>"Mi peña entera se ha cambiado de Excel a esto."</li>
+          <li>"3 oficinas españolas la usan para su quiniela de empresa."</li>
+          <li>"El primer en convencer al grupo de WhatsApp gana."</li>
+          <li>"En mi familia llevamos 4 generaciones haciendo quiniela. Esto cambia el juego."</li>
+          <li>"Lo probé con mis colegas. Os cuento qué pasó."</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🎯 Story / POV</h3>
+      <ol>
+        <li>"POV: el de tu peña que SIEMPRE gana la quiniela."</li>
+        <li>"Cuando tu novia te dice que la quiniela es una tontería y luego acierta a Brasil campeón."</li>
+        <li>"Mi padre apostando contra mí en el grupo más imposible."</li>
+        <li>"El día que mi tío descubrió que se podía hacer quiniela sin Excel."</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ─────────── 05 · Hashtags ─────────── -->
+  <section id="hashtags">
+    <h2><span class="h2-num">05</span> Hashtags (4 sets)</h2>
+    <p class="h2-lead">3 broad (volumen) + 3 nicho (relevancia) por publicación. Nunca más de 6.</p>
+
+    <table>
+      <tr>
+        <th>Set</th>
+        <th>Hashtags</th>
+        <th>Cuándo</th>
+      </tr>
+      <tr>
+        <td><strong>Mundial</strong></td>
+        <td><code>#Mundial2026 #FIFAWorldCup #WorldCup2026 #USA2026 #CanadaMexicoUSA</code></td>
+        <td>Todos los días. Picks 2-3 del set.</td>
+      </tr>
+      <tr>
+        <td><strong>Producto</strong></td>
+        <td><code>#QuinielaMundial #QuinielaAmigos #PorraMundial #QuinielaEmpresa #QuinielaPeña</code></td>
+        <td>Días 1-4 (identidad) y 16-19 (conversión).</td>
+      </tr>
+      <tr>
+        <td><strong>Por selección</strong></td>
+        <td><code>#España #Argentina #Brasil #Francia #Marruecos</code> (+ el del día)</td>
+        <td>Días que el contenido habla de un equipo concreto.</td>
+      </tr>
+      <tr>
+        <td><strong>Evergreen TikTok ES</strong></td>
+        <td><code>#FútbolEsPasion #SoccerEspañol #FutbolTok #DeporteEnEspañol</code></td>
+        <td>Siempre 1-2 de estos para algoritmo ES.</td>
+      </tr>
+    </table>
+
+    <div class="callout amber">
+      <div class="callout-title">Regla</div>
+      <p>Máximo <strong>6 hashtags</strong> por TikTok. Más → algoritmo lo lee como spam y baja el reach. En X, máximo <strong>2 hashtags</strong> (Twitter penaliza más).</p>
+    </div>
+  </section>
+
+  <!-- ─────────── 06 · UTMs ─────────── -->
+  <section id="utms">
+    <h2><span class="h2-num">06</span> UTM tracking</h2>
+    <p class="h2-lead">Cada link en cada plataforma lleva UTMs únicos para poder medir qué funciona.</p>
+
+    <div class="card">
+      <h3>Pattern</h3>
+      <pre>?utm_source={tiktok|x|bio}
+&amp;utm_medium={video|post|bio}
+&amp;utm_campaign=preworldcup
+&amp;utm_content=dia-NN</pre>
+      <p>Ejemplos:</p>
+      <ul>
+        <li>TikTok vídeo día 7: <code>?utm_source=tiktok&amp;utm_medium=video&amp;utm_campaign=preworldcup&amp;utm_content=dia-07</code></li>
+        <li>Post X día 12: <code>?utm_source=x&amp;utm_medium=post&amp;utm_campaign=preworldcup&amp;utm_content=dia-12</code></li>
+        <li>Bio link permanente: <code>?utm_source=tiktok&amp;utm_medium=bio&amp;utm_campaign=preworldcup</code></li>
+      </ul>
+    </div>
+
+    <div class="callout pitch">
+      <div class="callout-title">Tracker</div>
+      <p>Revisa GA4 o Vercel Analytics cada 2-3 días para ver qué día genera más conversiones (signups). Los días top valen más boost de TikTok Ads.</p>
+    </div>
+  </section>
+
+  <!-- ─────────── 07 · Presupuesto ─────────── -->
+  <section id="presupuesto">
+    <h2><span class="h2-num">07</span> Presupuesto (€150-200/mes)</h2>
+    <p class="h2-lead">Distribución recomendada — todo opcional, recortable según resultados.</p>
+
+    <table>
+      <tr><th>Concepto</th><th>Coste</th><th>Cuándo</th></tr>
+      <tr>
+        <td><strong>ElevenLabs Creator</strong></td>
+        <td>$22 / mes</td>
+        <td>Día 1 (suscribir). 100k caracteres/mes — sobra para 21 vídeos.</td>
+      </tr>
+      <tr>
+        <td><strong>Veo 3 (Gemini Advanced)</strong></td>
+        <td>$20 / mes</td>
+        <td>Día 1. Mejor coste/calidad para físicas reales de fútbol.</td>
+      </tr>
+      <tr>
+        <td><strong>Sora (ChatGPT Plus)</strong> opcional</td>
+        <td>$20 / mes</td>
+        <td>Solo si te quedas corto con Veo. Recomiendo elegir uno.</td>
+      </tr>
+      <tr>
+        <td><strong>Runway Standard</strong></td>
+        <td>$15 / mes</td>
+        <td>Día 1. Image-to-video para refinar tomas concretas.</td>
+      </tr>
+      <tr>
+        <td><strong>CapCut Pro</strong></td>
+        <td>$8 / mes</td>
+        <td>Día 1. Montaje + captions animadas.</td>
+      </tr>
+      <tr>
+        <td><strong>TikTok Spark Ads (boost)</strong></td>
+        <td>$50-90 puntual</td>
+        <td>Solo si un vídeo orgánico pasa de 2% engagement en 24h.</td>
+      </tr>
+      <tr>
+        <td><strong>X Premium Basic</strong> opcional</td>
+        <td>$4 / mes</td>
+        <td>Solo si quieres posts largos (>280 chars). Recomendable.</td>
+      </tr>
+      <tr>
+        <th>Subtotal sin ads</th>
+        <th colspan="2">~€65-70/mes en herramientas</th>
+      </tr>
+      <tr>
+        <th>Con boosts puntuales</th>
+        <th colspan="2">~€150-160/mes total</th>
+      </tr>
+    </table>
+
+    <div class="callout">
+      <div class="callout-title">Regla de oro de ads</div>
+      <p>Nunca boostear sin tener métricas orgánicas. Espera 24h tras publicar. Solo si el vídeo tiene >2% engagement rate (likes + comments + shares / views) → boost de $20-30. El resto, dinero a otra cosa.</p>
+    </div>
+  </section>
+
+  <!-- ─────────── 08 · Horarios ─────────── -->
+  <section id="horarios">
+    <h2><span class="h2-num">08</span> Horarios óptimos (España UTC+2)</h2>
+    <p class="h2-lead">TikTok ES + LATAM tiene 2 picos diarios. Aprovecha ambos.</p>
+
+    <div class="grid-2">
+      <div class="card accent-arena">
+        <h3>TikTok</h3>
+        <ul>
+          <li><strong>13:00-14:00 ES</strong> · pausa comida ES + mañana México.</li>
+          <li><strong>20:30-22:00 ES</strong> · prime time ES (cena) + tarde LATAM.</li>
+        </ul>
+        <p>Posteo <strong>1 vídeo / día</strong>, alternando los dos slots según tipo de contenido:</p>
+        <ul>
+          <li>Showcase / educativo → 13:00 (gente más receptiva).</li>
+          <li>Viral / brain-rot / hype → 20:30 (prime time).</li>
+        </ul>
+      </div>
+      <div class="card accent-pitch">
+        <h3>X</h3>
+        <ul>
+          <li><strong>09:00 ES</strong> · post matinal con dato/noticia.</li>
+          <li><strong>14:00 ES</strong> · engagement (poll, pregunta).</li>
+          <li><strong>21:00 ES</strong> · post largo / hilo (prime time).</li>
+        </ul>
+        <p>Posteo <strong>2-3 posts / día</strong>. El de las 21:00 lleva el grueso del contenido.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── 09 · Workflow ─────────── -->
+  <section id="workflow">
+    <h2><span class="h2-num">09</span> Workflow diario (2h por día)</h2>
+    <p class="h2-lead">Si dedicas más de 2h, estás haciendo demasiado.</p>
+
+    <ol>
+      <li><strong>0:00-0:15</strong> · Abrir el HTML del día. Leer concepto + checklist.</li>
+      <li><strong>0:15-0:35</strong> · Generar voz AI en ElevenLabs (pegar el VO del HTML, exportar MP3).</li>
+      <li><strong>0:35-1:00</strong> · Generar vídeo IA (Veo 3 / Sora) con el prompt del día. 2-3 takes hasta uno bueno.</li>
+      <li><strong>1:00-1:25</strong> · CapCut: pegar vídeo + audio, captions quemados, beat trending, exportar 9:16 1080p.</li>
+      <li><strong>1:25-1:40</strong> · Subir a TikTok con caption + hashtags del HTML. Schedule para 20:30 si todavía no es hora.</li>
+      <li><strong>1:40-2:00</strong> · Publicar los 2-3 posts de X (manual o usando TweetDeck con schedule).</li>
+    </ol>
+
+    <div class="callout amber">
+      <div class="callout-title">Engagement post-publicación</div>
+      <p>Tras publicar, durante 1h responder TODOS los comments del TikTok (algoritmo lo prioriza). Igual con menciones X. Dedicas 15-20 min extra al final del día.</p>
+    </div>
+  </section>
+
+  <footer>
+    <span>Quiniela Mundial · Plan marketing 2026</span>
+    <span><a href="index.html">← Volver al index</a></span>
+  </footer>
+
+</div>
+</body>
+</html>
