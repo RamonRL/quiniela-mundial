@@ -85,6 +85,8 @@ const PLANS: Plan[] = [
 
 /** Lo mismo en todos los Pases — solo cambia el tope de miembros. */
 const PAID_FEATURES: string[] = [
+  "Departamentos internos con ranking por media de puntos",
+  "Acceso a la Champions de Empresas con premio físico",
   "Logo corporativo custom",
   "Anuncio fijado del organizador",
   "Export CSV del ranking",
@@ -107,6 +109,14 @@ const FAQ: { q: string; a: string }[] = [
   {
     q: "¿Podéis emitir factura con los datos de mi empresa?",
     a: "Sí. El pago lo procesa Lemon Squeezy como Merchant of Record: ellos emiten una factura legal con el IVA correspondiente (en España, 21 %; en otros países UE, el aplicable). Durante el checkout puedes introducir los datos fiscales de tu empresa y la factura se descarga al momento en PDF — válida para deducción contable.",
+  },
+  {
+    q: "¿Cómo funcionan los departamentos?",
+    a: "Cualquier Pase Mundial 2026 (50, 100 o 250) desbloquea departamentos internos. Tú creas sub-grupos (Marketing, Ventas, Ingeniería…) y asignas a cada miembro al suyo. Compiten por MEDIA de puntos, no totales — así un departamento pequeño puede ganar al grande. Hay un ranking aparte en /ranking → Departamentos.",
+  },
+  {
+    q: "¿Qué es la Champions de Empresas?",
+    a: "Una liga global pública entre TODAS las empresas con plan de pago activo. La inscripción es automática al comprar cualquier Pase. La empresa con mayor media de puntos al cierre del Mundial gana un trofeo físico personalizado + difusión en redes. Mira la clasificación en vivo en /champions-empresas.",
   },
   {
     q: "¿Y si quiero probarlo antes de pagar?",

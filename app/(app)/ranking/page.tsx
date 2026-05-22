@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { Award, Crown, ListOrdered, Medal } from "lucide-react";
+import { eq, sql } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { leagueDepartments } from "@/lib/db/schema";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/shell/empty-state";
@@ -7,6 +10,7 @@ import { PageHeader } from "@/components/shell/page-header";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId } from "@/lib/leagues";
 import { loadLeaderboard, type LeaderboardEntry } from "@/lib/leaderboard";
+import { RankingTabs } from "./ranking-tabs";
 import { initials } from "@/lib/utils";
 
 export const metadata = { title: "Ranking" };
@@ -14,6 +18,15 @@ export const metadata = { title: "Ranking" };
 export default async function RankingPage() {
   const me = await requireUser();
   const leagueId = (await currentLeagueId(me))!;
+  // Si la liga tiene ≥1 departamento creado, exponemos los tabs
+  // "Individuales / Departamentos" en la cabecera. Si no hay
+  // departamentos (o liga pública / free), no se muestra nada — el
+  // patrón sigue siendo el ranking individual a pelo.
+  const [deptCount] = await db
+    .select({ c: sql<number>`count(*)::int` })
+    .from(leagueDepartments)
+    .where(eq(leagueDepartments.leagueId, leagueId));
+  const hasDepartments = (deptCount?.c ?? 0) > 0;
   // Una sola query agregada en SQL — antes traíamos todos los profiles +
   // todo points_ledger y procesábamos en JS, lo que escalaba mal en la
   // liga pública.
@@ -52,6 +65,8 @@ export default async function RankingPage() {
         title="Clasificación general"
         description="Quien mejor lea el torneo, gana."
       />
+
+      {hasDepartments ? <RankingTabs active="individual" /> : null}
 
       {allZero ? (
         <div className="rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface)]/60 px-4 py-3 text-center font-editorial text-xs italic text-[var(--color-muted-foreground)]">

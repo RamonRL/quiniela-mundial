@@ -157,6 +157,281 @@ async function loadLeaderboardUnsafe(
   return entries;
 }
 
+// ─────────────────────────────────────────────────────────────────────
+//  Departamentos · ranking por media de puntos (Plan empresa)
+// ─────────────────────────────────────────────────────────────────────
+
+export type DepartmentRankingEntry = {
+  departmentId: number;
+  name: string;
+  emoji: string | null;
+  color: string | null;
+  totalMembers: number;
+  activeMembers: number;
+  totalPoints: number;
+  /** Media sobre activeMembers (>0). 0 si no hay activos. */
+  avgPoints: number;
+  exactScoresCount: number;
+  knockoutPoints: number;
+};
+
+const DEPT_CACHE_SECONDS = 30;
+
+/**
+ * Ranking de departamentos de una liga premium. La métrica principal es
+ * la MEDIA de puntos sobre los miembros activos (≥1 predicción en
+ * cualquiera de las pred_* tables) — un dept. con 5 personas no pierde
+ * automáticamente contra uno con 50.
+ *
+ * Solo se promedia sobre activos: si una empresa tiene 200 inscritos pero
+ * 50 nunca enviaron ni un pick, esos 150 NO penalizan la media de su dept.
+ *
+ * Edge case: dept. con 0 miembros activos → avgPoints=0, queda al final.
+ */
+export async function loadDepartmentRankings(
+  leagueId: number,
+): Promise<DepartmentRankingEntry[]> {
+  const cached = unstable_cache(
+    () => loadDepartmentRankingsUnsafe(leagueId),
+    ["department-rankings", String(leagueId)],
+    {
+      revalidate: DEPT_CACHE_SECONDS,
+      tags: ["leaderboard", `leaderboard:${leagueId}`, `departments:${leagueId}`],
+    },
+  );
+  try {
+    return await cached();
+  } catch (err) {
+    console.error("loadDepartmentRankings failed:", err);
+    return [];
+  }
+}
+
+async function loadDepartmentRankingsUnsafe(
+  leagueId: number,
+): Promise<DepartmentRankingEntry[]> {
+  // Raw SQL: combinar 5 pred_* tables en una sola CTE y dejar que el
+  // planner de Postgres ordene la query. Drizzle no expresa CTE así de
+  // fluidamente, y el coste es bajo porque el caché lo absorbe.
+  const result = await db.execute(sql`
+    WITH active_members AS (
+      SELECT DISTINCT user_id FROM pred_match_result WHERE league_id = ${leagueId}
+      UNION SELECT DISTINCT user_id FROM pred_group_ranking WHERE league_id = ${leagueId}
+      UNION SELECT DISTINCT user_id FROM pred_bracket_slot WHERE league_id = ${leagueId}
+      UNION SELECT DISTINCT user_id FROM pred_tournament_top_scorer WHERE league_id = ${leagueId}
+      UNION SELECT DISTINCT user_id FROM pred_special WHERE league_id = ${leagueId}
+    ),
+    points_by_user AS (
+      SELECT
+        user_id,
+        coalesce(sum(points), 0)::int AS total_points,
+        count(*) FILTER (WHERE source IN ('match_exact_score','knockout_score_90'))::int AS exact_count,
+        coalesce(sum(points) FILTER (WHERE source IN ('bracket_slot','knockout_qualifier','knockout_pens_bonus','knockout_score_90')), 0)::int AS knockout_points
+      FROM points_ledger
+      WHERE league_id = ${leagueId}
+      GROUP BY user_id
+    )
+    SELECT
+      d.id AS department_id,
+      d.name,
+      d.emoji,
+      d.color,
+      (SELECT count(*)::int FROM league_memberships lm WHERE lm.league_id = ${leagueId} AND lm.department_id = d.id) AS total_members,
+      (SELECT count(*)::int FROM league_memberships lm JOIN active_members am ON am.user_id = lm.user_id WHERE lm.league_id = ${leagueId} AND lm.department_id = d.id) AS active_members,
+      coalesce((
+        SELECT sum(p.total_points)::int FROM league_memberships lm
+        JOIN active_members am ON am.user_id = lm.user_id
+        LEFT JOIN points_by_user p ON p.user_id = lm.user_id
+        WHERE lm.league_id = ${leagueId} AND lm.department_id = d.id
+      ), 0) AS total_points,
+      coalesce((
+        SELECT sum(p.exact_count)::int FROM league_memberships lm
+        JOIN active_members am ON am.user_id = lm.user_id
+        LEFT JOIN points_by_user p ON p.user_id = lm.user_id
+        WHERE lm.league_id = ${leagueId} AND lm.department_id = d.id
+      ), 0) AS exact_count,
+      coalesce((
+        SELECT sum(p.knockout_points)::int FROM league_memberships lm
+        JOIN active_members am ON am.user_id = lm.user_id
+        LEFT JOIN points_by_user p ON p.user_id = lm.user_id
+        WHERE lm.league_id = ${leagueId} AND lm.department_id = d.id
+      ), 0) AS knockout_points
+    FROM league_departments d
+    WHERE d.league_id = ${leagueId}
+    ORDER BY d.created_at ASC
+  `);
+
+  const rows = result as unknown as Array<{
+    department_id: number;
+    name: string;
+    emoji: string | null;
+    color: string | null;
+    total_members: number;
+    active_members: number;
+    total_points: number;
+    exact_count: number;
+    knockout_points: number;
+  }>;
+
+  const entries: DepartmentRankingEntry[] = rows.map((r) => ({
+    departmentId: r.department_id,
+    name: r.name,
+    emoji: r.emoji,
+    color: r.color,
+    totalMembers: r.total_members,
+    activeMembers: r.active_members,
+    totalPoints: r.total_points,
+    avgPoints:
+      r.active_members > 0
+        ? Math.round((r.total_points / r.active_members) * 100) / 100
+        : 0,
+    exactScoresCount: r.exact_count,
+    knockoutPoints: r.knockout_points,
+  }));
+
+  // Orden final: avg desc, luego exact por miembro activo, luego KO.
+  entries.sort((a, b) => {
+    if (b.avgPoints !== a.avgPoints) return b.avgPoints - a.avgPoints;
+    const aExactAvg = a.activeMembers > 0 ? a.exactScoresCount / a.activeMembers : 0;
+    const bExactAvg = b.activeMembers > 0 ? b.exactScoresCount / b.activeMembers : 0;
+    if (bExactAvg !== aExactAvg) return bExactAvg - aExactAvg;
+    return b.knockoutPoints - a.knockoutPoints;
+  });
+  return entries;
+}
+
+// ─────────────────────────────────────────────────────────────────────
+//  Champions de Empresas · ranking global de ligas premium
+// ─────────────────────────────────────────────────────────────────────
+
+export type ChampionRankingEntry = {
+  leagueId: number;
+  leagueName: string;
+  logoUrl: string | null;
+  tier: string;
+  totalMembers: number;
+  activeMembers: number;
+  totalPoints: number;
+  /** Media sobre activeMembers. */
+  avgPoints: number;
+  exactScoresCount: number;
+  knockoutPoints: number;
+  /** Fecha en la que la liga activó su plan de pago — tiebreaker final. */
+  paidAt: Date | null;
+};
+
+const CHAMPIONS_CACHE_SECONDS = 60;
+
+/**
+ * Ranking público de la "Champions de Empresas" — todas las ligas con
+ * plan de pago activo compiten por media de puntos. Los miembros que
+ * nunca enviaron una predicción NO se promedian.
+ *
+ * Tier mínimo: cualquiera de los planes pago (team-50/100/250/enterprise).
+ * La liga pública (free) queda fuera por diseño.
+ */
+export async function loadChampionsRanking(): Promise<ChampionRankingEntry[]> {
+  const cached = unstable_cache(
+    () => loadChampionsRankingUnsafe(),
+    ["champions-ranking"],
+    { revalidate: CHAMPIONS_CACHE_SECONDS, tags: ["champions"] },
+  );
+  try {
+    return await cached();
+  } catch (err) {
+    console.error("loadChampionsRanking failed:", err);
+    return [];
+  }
+}
+
+async function loadChampionsRankingUnsafe(): Promise<ChampionRankingEntry[]> {
+  // Igual filosofía que el ranking de departamentos pero agrupando por
+  // liga. Activo = miembro con ≥1 row en cualquier pred_* table de SU
+  // liga (no global).
+  const result = await db.execute(sql`
+    WITH active_per_league AS (
+      SELECT DISTINCT user_id, league_id FROM pred_match_result
+      UNION SELECT DISTINCT user_id, league_id FROM pred_group_ranking
+      UNION SELECT DISTINCT user_id, league_id FROM pred_bracket_slot
+      UNION SELECT DISTINCT user_id, league_id FROM pred_tournament_top_scorer
+      UNION SELECT DISTINCT user_id, league_id FROM pred_special
+    )
+    SELECT
+      l.id AS league_id,
+      l.name AS league_name,
+      l.logo_url,
+      l.tier,
+      l.paid_at,
+      (SELECT count(*)::int FROM league_memberships lm WHERE lm.league_id = l.id) AS total_members,
+      (SELECT count(DISTINCT a.user_id)::int FROM active_per_league a WHERE a.league_id = l.id) AS active_members,
+      coalesce((
+        SELECT sum(pl.points)::int FROM points_ledger pl
+        WHERE pl.league_id = l.id
+        AND EXISTS (SELECT 1 FROM active_per_league a WHERE a.user_id = pl.user_id AND a.league_id = l.id)
+      ), 0) AS total_points,
+      coalesce((
+        SELECT count(*)::int FROM points_ledger pl
+        WHERE pl.league_id = l.id
+        AND pl.source IN ('match_exact_score','knockout_score_90')
+        AND EXISTS (SELECT 1 FROM active_per_league a WHERE a.user_id = pl.user_id AND a.league_id = l.id)
+      ), 0) AS exact_count,
+      coalesce((
+        SELECT sum(pl.points)::int FROM points_ledger pl
+        WHERE pl.league_id = l.id
+        AND pl.source IN ('bracket_slot','knockout_qualifier','knockout_pens_bonus','knockout_score_90')
+        AND EXISTS (SELECT 1 FROM active_per_league a WHERE a.user_id = pl.user_id AND a.league_id = l.id)
+      ), 0) AS knockout_points
+    FROM leagues l
+    WHERE l.tier IN ('team-50', 'team-100', 'team-250', 'enterprise')
+      AND l.paid_at IS NOT NULL
+      AND l.is_public = false
+  `);
+
+  const rows = result as unknown as Array<{
+    league_id: number;
+    league_name: string;
+    logo_url: string | null;
+    tier: string;
+    paid_at: Date | string | null;
+    total_members: number;
+    active_members: number;
+    total_points: number;
+    exact_count: number;
+    knockout_points: number;
+  }>;
+
+  const entries: ChampionRankingEntry[] = rows.map((r) => ({
+    leagueId: r.league_id,
+    leagueName: r.league_name,
+    logoUrl: r.logo_url,
+    tier: r.tier,
+    totalMembers: r.total_members,
+    activeMembers: r.active_members,
+    totalPoints: r.total_points,
+    avgPoints:
+      r.active_members > 0
+        ? Math.round((r.total_points / r.active_members) * 100) / 100
+        : 0,
+    exactScoresCount: r.exact_count,
+    knockoutPoints: r.knockout_points,
+    paidAt: r.paid_at ? new Date(r.paid_at) : null,
+  }));
+
+  // Orden: avg desc → exact-per-member desc → knockout desc → paidAt asc
+  // (la liga más antigua gana empate).
+  entries.sort((a, b) => {
+    if (b.avgPoints !== a.avgPoints) return b.avgPoints - a.avgPoints;
+    const aExactAvg = a.activeMembers > 0 ? a.exactScoresCount / a.activeMembers : 0;
+    const bExactAvg = b.activeMembers > 0 ? b.exactScoresCount / b.activeMembers : 0;
+    if (bExactAvg !== aExactAvg) return bExactAvg - aExactAvg;
+    if (b.knockoutPoints !== a.knockoutPoints) return b.knockoutPoints - a.knockoutPoints;
+    const aPaid = a.paidAt?.getTime() ?? Number.MAX_SAFE_INTEGER;
+    const bPaid = b.paidAt?.getTime() ?? Number.MAX_SAFE_INTEGER;
+    return aPaid - bPaid;
+  });
+  return entries;
+}
+
 /**
  * Cuenta cuántos miembros tiene la liga sin traer las filas. Útil para el
  * empty-state de "X jugadores · sin puntos aún" pre-torneo.

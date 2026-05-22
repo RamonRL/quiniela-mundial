@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, Crown, Download, Mail, Megaphone, Sparkles, ShieldCheck, Users } from "lucide-react";
+import { ArrowRight, Building2, Crown, Download, Mail, Megaphone, Sparkles, ShieldCheck, Users } from "lucide-react";
 import { asc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { leagues, pointsLedger, profiles } from "@/lib/db/schema";
@@ -193,7 +193,21 @@ export default async function MyLeaguePage() {
       </section>
 
       {isOwner && isPremium ? (
-        <section className="grid gap-3 sm:grid-cols-2">
+        <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <Link
+            href="/mi-quiniela/departamentos"
+            className="flex items-center gap-3 rounded-xl border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_4%,var(--color-surface))] p-4 transition hover:border-[var(--color-arena)]/60"
+          >
+            <span className="grid size-9 place-items-center rounded-md bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]">
+              <Building2 className="size-4" />
+            </span>
+            <div className="min-w-0">
+              <p className="font-display text-sm tracking-tight">Departamentos</p>
+              <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
+                Sub-grupos con ranking por media de puntos.
+              </p>
+            </div>
+          </Link>
           <a
             href="/mi-quiniela/export"
             className="flex items-center gap-3 rounded-xl border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_4%,var(--color-surface))] p-4 transition hover:border-[var(--color-arena)]/60"

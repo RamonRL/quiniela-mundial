@@ -13,6 +13,7 @@ import {
   text,
   timestamp,
   unique,
+  uniqueIndex,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
@@ -223,10 +224,46 @@ export const leagueMemberships = pgTable(
       .notNull()
       .references(() => leagues.id, { onDelete: "cascade" }),
     joinedAt: timestamp("joined_at", { withTimezone: true }).notNull().defaultNow(),
+    // Departamento dentro de la liga (solo planes pago). NULL = miembro
+    // sin asignar. Si se borra el dept., los miembros caen aquí a NULL —
+    // siguen en la liga pero pasan a "sin departamento" en el ranking
+    // de departamentos.
+    departmentId: integer("department_id").references(
+      () => leagueDepartments.id,
+      { onDelete: "set null" },
+    ),
   },
   (t) => [
     primaryKey({ columns: [t.userId, t.leagueId] }),
     index("league_memberships_league_idx").on(t.leagueId),
+    index("league_memberships_dept_idx").on(t.departmentId),
+  ],
+);
+
+// Sub-grupos dentro de una liga premium (Marketing, Ventas, Ingeniería…).
+// Solo se crean en ligas con plan de pago activo; el chequeo vive en las
+// server actions (`lib/league-actions.ts`) y en la vista admin.
+// El ranking de departamentos compite por MEDIA DE PUNTOS sobre miembros
+// activos (≥1 predicción) — no totales — para que un dept. de 5 personas
+// no pierda automáticamente contra uno de 50.
+export const leagueDepartments = pgTable(
+  "league_departments",
+  {
+    id: serial("id").primaryKey(),
+    leagueId: integer("league_id")
+      .notNull()
+      .references(() => leagues.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    // Decoración visual opcional para el card del dept. en el ranking.
+    emoji: text("emoji"),
+    color: text("color"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("league_departments_league_name_idx").on(t.leagueId, t.name),
+    index("league_departments_league_idx").on(t.leagueId),
   ],
 );
 

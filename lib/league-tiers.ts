@@ -33,3 +33,21 @@ export function isPremiumTier(
 ): boolean {
   return !!tier && tier !== "free";
 }
+
+/**
+ * Tiers que desbloquean la feature "Departamentos". Hoy son todos los
+ * planes de pago (50/100/250/enterprise). Aislado en una constante por
+ * si en el futuro restringimos la feature a tiers concretos.
+ */
+export const DEPARTMENTS_ENABLED_TIERS: readonly LeagueTier[] = [
+  "team-50",
+  "team-100",
+  "team-250",
+  "enterprise",
+];
+
+export function canUseDepartments(
+  tier: LeagueTier | string | null | undefined,
+): boolean {
+  return !!tier && DEPARTMENTS_ENABLED_TIERS.includes(tier as LeagueTier);
+}
