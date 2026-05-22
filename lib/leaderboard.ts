@@ -383,7 +383,6 @@ async function loadChampionsRankingUnsafe(): Promise<ChampionRankingEntry[]> {
       ), 0) AS knockout_points
     FROM leagues l
     WHERE l.tier IN ('team-50', 'team-100', 'team-250', 'enterprise')
-      AND l.paid_at IS NOT NULL
       AND l.is_public = false
   `);
 

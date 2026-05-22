@@ -56,7 +56,7 @@ async function requireDeptAdmin(
   if (league.createdBy !== meId) {
     return { error: "Solo el creador puede gestionar departamentos." };
   }
-  if (!canUseDepartments(league.tier) || !league.paidAt) {
+  if (!canUseDepartments(league.tier)) {
     return {
       error:
         "Los departamentos requieren un Pase Mundial 2026 (Plan 50, 100 o 250). Mira /precios.",

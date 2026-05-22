@@ -29,7 +29,11 @@ export default async function DepartmentsPage() {
   if (!league || league.isPublic) redirect("/dashboard");
   if (league.createdBy !== me.id) redirect("/mi-quiniela");
 
-  const hasPaidPlan = canUseDepartments(league.tier) && league.paidAt != null;
+  // Basta con que el tier sea premium — no exigimos paidAt para que el
+  // admin pueda asignar planes "de cortesía" desde /admin/ligas sin
+  // marcar markPaidNow. Si en algún momento el admin quiere quitar la
+  // feature a una liga, basta con bajar el tier a "free".
+  const hasPaidPlan = canUseDepartments(league.tier);
 
   if (!hasPaidPlan) {
     return (
