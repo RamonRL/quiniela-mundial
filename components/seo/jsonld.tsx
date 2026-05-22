@@ -81,7 +81,13 @@ export function WebApplicationLD() {
       data={{
         "@context": "https://schema.org",
         "@type": "WebApplication",
-        name: "Quiniela Mundial 2026",
+        // Importante: el name debe coincidir LITERAL con Organization,
+        // WebSite y el applicationName del metadata global. Google
+        // valida consistencia para asignar el "site name" en el SERP.
+        // Si difiere ("Quiniela Mundial 2026" vs "Quiniela Mundial"),
+        // Google cae al dominio como fallback.
+        name: "Quiniela Mundial",
+        alternateName: "Quiniela Mundial 2026",
         url: SITE_URL,
         applicationCategory: "GameApplication",
         operatingSystem: "Web, iOS, Android",
