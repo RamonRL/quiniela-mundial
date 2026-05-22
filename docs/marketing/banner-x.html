@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Banner X · Quiniela Mundial 2026 · 1500×500</title>
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&family=Mona+Sans:ital,wght@1,500&display=swap" rel="stylesheet">
+  <style>
+    /* ─────────────────────────────────────────────────────────────
+       Banner para X (Twitter) — 1500×500.
+       Para exportar PNG:
+         1. Abre este archivo en Chrome
+         2. F12 → Toggle Device Toolbar (Ctrl+Shift+M)
+         3. Define dimensions a 1500×500
+         4. Ctrl+Shift+P → "Capture full size screenshot"
+       O en macOS: Cmd+Shift+5 → captura ventana.
+       ───────────────────────────────────────────────────────────── */
+    :root {
+      --arena: #ef5043;
+      --arena-deep: #b22e22;
+      --pitch: #4ade80;
+      --pitch-deep: #16a34a;
+      --amber: #fbbf24;
+      --ink: #0c1410;
+      --paper: #fefcf7;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: #1a1a1a; }
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      padding: 30px;
+      font-family: "DM Sans", sans-serif;
+      color: var(--paper);
+    }
+
+    .banner {
+      width: 1500px;
+      height: 500px;
+      position: relative;
+      overflow: hidden;
+      background: var(--ink);
+      /* Para preview a tamaño real en navegador grande */
+      box-shadow: 0 12px 60px rgba(0,0,0,0.6);
+    }
+
+    /* ── Capas de fondo (zona DECORATIVA — sin texto crítico) ── */
+    .bg-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(0deg, transparent 95%, color-mix(in oklch, var(--pitch) 38%, transparent) 95%),
+        linear-gradient(90deg, transparent 95%, color-mix(in oklch, var(--pitch) 38%, transparent) 95%);
+      background-size: 42px 42px;
+      opacity: 0.18;
+    }
+    .bg-radials {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 8% 75%, color-mix(in oklch, var(--arena) 75%, transparent) 0%, transparent 38%),
+        radial-gradient(circle at 95% 12%, color-mix(in oklch, var(--pitch) 55%, transparent) 0%, transparent 38%),
+        radial-gradient(circle at 95% 90%, color-mix(in oklch, var(--amber) 35%, transparent) 0%, transparent 28%);
+    }
+    .bg-halftone {
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(rgba(254, 252, 247, 0.18) 1px, transparent 1px);
+      background-size: 8px 8px;
+      opacity: 0.6;
+      mix-blend-mode: overlay;
+    }
+    /* Top safe area: gradient sutil 0-100px que oscurece para que en iPhone
+       la barra superior translúcida no compita con texto. */
+    .bg-top-shade {
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 110px;
+      background: linear-gradient(180deg, rgba(12, 20, 16, 0.55) 0%, transparent 100%);
+    }
+
+    /* ── Contenido principal — vive en la franja vertical 110px → 380px ── */
+    .content {
+      position: absolute;
+      top: 110px;       /* respeta el top-safe iPhone */
+      bottom: 50px;     /* aire abajo */
+      left: 260px;      /* respeta zona del avatar X (max ~200px + margen) */
+      right: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 40px;
+    }
+
+    /* ── Bloque izquierdo (texto) ── */
+    .left {
+      flex: 1;
+      max-width: 720px;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: var(--paper);
+      background: var(--arena);
+      padding: 5px 11px;
+      margin-bottom: 18px;
+    }
+    .eyebrow .dot {
+      width: 6px; height: 6px;
+      background: var(--paper);
+      border-radius: 50%;
+      animation: blink 1.5s infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    .title {
+      font-family: "Big Shoulders Display", sans-serif;
+      font-weight: 900;
+      font-size: 96px;
+      line-height: 0.86;
+      letter-spacing: -0.015em;
+      text-transform: uppercase;
+      color: var(--paper);
+      text-shadow:
+        0 0 1px var(--arena),
+        0 0 32px color-mix(in oklch, var(--arena) 55%, transparent);
+      margin-bottom: 14px;
+    }
+    .title .accent { color: var(--arena); }
+    .tagline {
+      font-family: "Mona Sans", "DM Sans", sans-serif;
+      font-style: italic;
+      font-weight: 500;
+      font-size: 22px;
+      line-height: 1.3;
+      color: color-mix(in oklch, var(--paper) 78%, transparent);
+      margin-bottom: 22px;
+      max-width: 580px;
+    }
+    .meta {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .countdown {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 9px;
+      padding: 9px 14px;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    .countdown .n {
+      font-family: "Big Shoulders Display", sans-serif;
+      font-weight: 900;
+      font-size: 36px;
+      line-height: 1;
+      color: var(--arena-deep);
+    }
+    .countdown .lbl {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+    .url {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--amber);
+    }
+
+    /* ── Bloque derecho (mockup móvil) ── */
+    .right {
+      flex-shrink: 0;
+      width: 240px;
+      height: 380px;
+      position: relative;
+    }
+    .phone {
+      position: absolute;
+      width: 240px;
+      height: 480px;
+      top: -50px;            /* el móvil "sobresale" arriba y abajo del banner — efecto editorial */
+      left: 0;
+      background: #0a0a0a;
+      border-radius: 32px;
+      border: 4px solid #1f1f1f;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.1),
+        0 20px 60px rgba(239, 80, 67, 0.35);
+      transform: rotate(-3deg);
+      overflow: hidden;
+    }
+    .phone::before {
+      /* Notch */
+      content: "";
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 18px;
+      background: #050505;
+      border-radius: 9px;
+    }
+    .phone-screen {
+      position: absolute;
+      top: 36px;
+      left: 6px;
+      right: 6px;
+      bottom: 6px;
+      background: var(--ink);
+      border-radius: 24px;
+      padding: 16px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow: hidden;
+    }
+    .ps-header {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 8px;
+      letter-spacing: 0.18em;
+      color: color-mix(in oklch, var(--paper) 60%, transparent);
+      text-transform: uppercase;
+    }
+    .ps-title {
+      font-family: "Big Shoulders Display", sans-serif;
+      font-weight: 800;
+      font-size: 18px;
+      line-height: 1;
+      color: var(--paper);
+      text-transform: uppercase;
+    }
+    .ps-donut {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 6px 0;
+    }
+    .ps-donut-ring {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background:
+        conic-gradient(var(--arena) 0% 67%, color-mix(in oklch, var(--paper) 12%, transparent) 67% 100%);
+      display: grid;
+      place-items: center;
+    }
+    .ps-donut-ring::after {
+      content: "67%";
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--ink);
+      display: grid;
+      place-items: center;
+      font-family: "Big Shoulders Display", sans-serif;
+      font-weight: 900;
+      font-size: 14px;
+      color: var(--paper);
+    }
+    .ps-donut-text {
+      flex: 1;
+    }
+    .ps-donut-text .n {
+      font-family: "Big Shoulders Display", sans-serif;
+      font-weight: 900;
+      font-size: 22px;
+      line-height: 1;
+      color: var(--paper);
+    }
+    .ps-donut-text .l {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 7px;
+      letter-spacing: 0.18em;
+      color: color-mix(in oklch, var(--paper) 60%, transparent);
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+    .ps-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .ps-card {
+      background: color-mix(in oklch, var(--paper) 5%, var(--ink));
+      border-left: 2px solid var(--arena);
+      padding: 8px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .ps-card .ps-card-l { color: var(--paper); font-size: 10px; font-weight: 500; }
+    .ps-card .ps-card-r {
+      font-family: "Big Shoulders Display", sans-serif;
+      font-weight: 800;
+      font-size: 13px;
+      color: var(--arena);
+    }
+    .ps-card.pitch { border-left-color: var(--pitch); }
+    .ps-card.pitch .ps-card-r { color: var(--pitch); }
+    .ps-card.amber { border-left-color: var(--amber); }
+    .ps-card.amber .ps-card-r { color: var(--amber); }
+
+    /* ── Stripes decorativas (esquina superior derecha, alejadas del avatar) ── */
+    .stripes {
+      position: absolute;
+      top: -20px;
+      right: -20px;
+      width: 200px;
+      height: 80px;
+      background: repeating-linear-gradient(
+        135deg,
+        var(--arena) 0px,
+        var(--arena) 8px,
+        transparent 8px,
+        transparent 18px
+      );
+      opacity: 0.6;
+      transform: rotate(8deg);
+    }
+
+    /* ── Líneas guía (toggle ?guides=1 en URL) ─────────────────────── */
+    body.guides .guide-avatar {
+      position: absolute;
+      bottom: -100px;        /* avatar X sobresale del banner — su mitad superior tapa esta zona */
+      left: 80px;
+      width: 200px;
+      height: 200px;
+      border: 2px dashed var(--amber);
+      border-radius: 50%;
+      pointer-events: none;
+      opacity: 0.7;
+    }
+    body.guides .guide-top {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 100px;
+      border-bottom: 2px dashed var(--amber);
+      opacity: 0.6;
+      pointer-events: none;
+    }
+    body.guides .guide-label {
+      position: absolute;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--amber);
+      background: rgba(0,0,0,0.7);
+      padding: 3px 7px;
+      pointer-events: none;
+    }
+    .guide-avatar, .guide-top, .guide-label { display: none; }
+    body.guides .guide-avatar,
+    body.guides .guide-top,
+    body.guides .guide-label { display: block; }
+
+    /* ── Controles encima del banner ── */
+    .controls {
+      display: flex;
+      gap: 12px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+    }
+    .controls button {
+      padding: 7px 14px;
+      background: #2a2a2a;
+      color: var(--paper);
+      border: 1px solid #3a3a3a;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+    .controls button:hover { background: var(--arena); border-color: var(--arena); }
+    .help {
+      max-width: 1500px;
+      color: #888;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .help code { background: #2a2a2a; padding: 2px 6px; color: var(--amber); }
+  </style>
+</head>
+<body>
+
+  <div class="controls">
+    <button id="toggle-guides">Mostrar zonas seguras</button>
+    <span style="color:#888; align-self:center; padding-left:12px;">
+      ↓ Para exportar PNG: F12 → device 1500×500 → Capture full size screenshot
+    </span>
+  </div>
+
+  <div class="banner" id="banner">
+    <!-- Capas decorativas -->
+    <div class="bg-grid"></div>
+    <div class="bg-radials"></div>
+    <div class="bg-halftone"></div>
+    <div class="bg-top-shade"></div>
+    <div class="stripes"></div>
+
+    <!-- Líneas guía (solo con ?guides=1) -->
+    <div class="guide-top"></div>
+    <div class="guide-label" style="top: 70px; left: 20px;">↑ Top 100px — iPhone status bar safe zone</div>
+    <div class="guide-avatar"></div>
+    <div class="guide-label" style="bottom: 30px; left: 295px;">← X avatar (~200×200 circular) cubre esta zona</div>
+
+    <!-- Contenido principal -->
+    <div class="content">
+      <div class="left">
+        <div class="eyebrow">
+          <span class="dot"></span>
+          Mundial 2026 · USA · Canadá · México
+        </div>
+        <h1 class="title">
+          Quiniela<br>
+          <span class="accent">Mundial.</span>
+        </h1>
+        <p class="tagline">
+          La quiniela del Mundial entre amigos, peñas y empresas.
+          Predicciones, bracket, ranking en vivo. Gratis hasta 20.
+        </p>
+        <div class="meta">
+          <div class="countdown">
+            <span class="n" id="days">--</span>
+            <span class="lbl">días al<br>kickoff</span>
+          </div>
+          <span class="url">quinielamundial.es</span>
+        </div>
+      </div>
+
+      <div class="right">
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="ps-header">11 JUN · DASHBOARD</div>
+            <div class="ps-title">Tu Mundial</div>
+            <div class="ps-donut">
+              <div class="ps-donut-ring"></div>
+              <div class="ps-donut-text">
+                <div class="n">8/12</div>
+                <div class="l">Grupos<br>predichos</div>
+              </div>
+            </div>
+            <div class="ps-cards">
+              <div class="ps-card">
+                <span class="ps-card-l">Argentina vs Brasil</span>
+                <span class="ps-card-r">2-1</span>
+              </div>
+              <div class="ps-card pitch">
+                <span class="ps-card-l">Bota de Oro</span>
+                <span class="ps-card-r">Haaland</span>
+              </div>
+              <div class="ps-card amber">
+                <span class="ps-card-l">Tu posición</span>
+                <span class="ps-card-r">#3 / 12</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="help">
+    <p>
+      <strong style="color:var(--paper)">Zonas seguras respetadas:</strong>
+      Top 100px (barra status iPhone), bottom-left 250×120px (avatar X), márgenes laterales 60px.
+      El contenido importante (título + tagline + countdown + mockup) vive en la franja segura.
+    </p>
+    <p style="margin-top:10px;">
+      <strong style="color:var(--paper)">Cómo exportar PNG 1500×500:</strong>
+      Abre este HTML en Chrome → F12 → <code>Ctrl+Shift+M</code> (Toggle device toolbar) →
+      en el dropdown elige "Responsive" → escribe <code>1500 × 500</code> → <code>Ctrl+Shift+P</code> →
+      "<em>Capture full size screenshot</em>". El PNG sale exacto, listo para subir a X.
+    </p>
+    <p style="margin-top:10px;">
+      <strong style="color:var(--paper)">Toggle de zonas seguras:</strong>
+      Botón arriba o añade <code>?guides=1</code> a la URL. Las líneas dashed amber marcan las áreas que NO debes usar.
+    </p>
+  </div>
+
+  <script>
+    // Countdown dinámico — se calcula al cargar.
+    const KICKOFF = new Date('2026-06-11T17:00:00+02:00');
+    const now = new Date();
+    const days = Math.max(0, Math.ceil((KICKOFF - now) / 86400000));
+    document.getElementById('days').textContent = days;
+
+    // Toggle de líneas guía (botón o ?guides=1).
+    const params = new URLSearchParams(location.search);
+    if (params.get('guides') === '1') {
+      document.body.classList.add('guides');
+    }
+    document.getElementById('toggle-guides').addEventListener('click', (e) => {
+      document.body.classList.toggle('guides');
+      e.target.textContent = document.body.classList.contains('guides')
+        ? 'Ocultar zonas seguras'
+        : 'Mostrar zonas seguras';
+    });
+  </script>
+
+</body>
+</html>
