@@ -121,9 +121,9 @@ export default function TerminosPage() {
             de pago único por torneo:
           </p>
           <ul className="mt-3 list-disc space-y-1.5 pl-6 not-italic">
-            <li>Pase Equipo — hasta 50 miembros (29 €)</li>
-            <li>Pase Empresa — hasta 100 miembros (69 €)</li>
-            <li>Pase Empresa Plus — hasta 250 miembros (149 €)</li>
+            <li>Pase Equipo — hasta 50 miembros (19 €)</li>
+            <li>Pase Empresa — hasta 100 miembros (49 €)</li>
+            <li>Pase Empresa Plus — hasta 250 miembros (99 €)</li>
           </ul>
           <p className="mt-3">
             Detalles e información actualizada en{" "}

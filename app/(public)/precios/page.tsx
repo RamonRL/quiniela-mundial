@@ -16,12 +16,12 @@ export const revalidate = 3600;
 export const metadata = {
   title: "Planes para empresas y grupos grandes",
   description:
-    "Quinielas privadas hasta 250 miembros para empresas, comunidades y eventos. Pase Mundial 2026 desde 29 € con logo corporativo, anuncios fijados y export CSV.",
+    "Quinielas privadas hasta 250 miembros para empresas, comunidades y eventos. Pase Mundial 2026 desde 19 € con logo corporativo, anuncios fijados y export CSV.",
   alternates: { canonical: "/precios" },
   openGraph: {
     title: "Planes · Quiniela Mundial 2026",
     description:
-      "Pase Mundial 2026 para empresas y grupos grandes: hasta 50, 100 o 250 miembros. Desde 29 €.",
+      "Pase Mundial 2026 para empresas y grupos grandes: hasta 50, 100 o 250 miembros. Desde 19 €.",
     url: "/precios",
   },
 };
@@ -57,7 +57,7 @@ const PLANS: Plan[] = [
     id: "team-50",
     paidTierId: "team-50",
     name: "Pase Equipo",
-    price: "29 €",
+    price: "19 €",
     priceNote: "Pase Mundial 2026 · pago único",
     members: "Hasta 50 miembros",
     ctaLabel: "Comprar",
@@ -66,7 +66,7 @@ const PLANS: Plan[] = [
     id: "team-100",
     paidTierId: "team-100",
     name: "Pase Empresa",
-    price: "69 €",
+    price: "49 €",
     priceNote: "Pase Mundial 2026 · pago único",
     members: "Hasta 100 miembros",
     highlight: true,
@@ -76,7 +76,7 @@ const PLANS: Plan[] = [
     id: "team-250",
     paidTierId: "team-250",
     name: "Pase Empresa Plus",
-    price: "149 €",
+    price: "99 €",
     priceNote: "Pase Mundial 2026 · pago único",
     members: "Hasta 250 miembros",
     ctaLabel: "Comprar",
@@ -147,21 +147,21 @@ export default function PreciosPage() {
           {
             name: "Pase Equipo · 50 miembros",
             sku: "team-50",
-            priceEur: 29,
+            priceEur: 19,
             description:
               "Quiniela privada hasta 50 miembros con logo corporativo, anuncio fijado del organizador, export CSV del ranking y soporte prioritario por email.",
           },
           {
             name: "Pase Empresa · 100 miembros",
             sku: "team-100",
-            priceEur: 69,
+            priceEur: 49,
             description:
               "Quiniela privada hasta 100 miembros con logo corporativo, anuncio fijado del organizador, export CSV del ranking y soporte prioritario por email.",
           },
           {
             name: "Pase Empresa Plus · 250 miembros",
             sku: "team-250",
-            priceEur: 149,
+            priceEur: 99,
             description:
               "Quiniela privada hasta 250 miembros con logo corporativo, anuncio fijado del organizador, export CSV del ranking y soporte prioritario por email.",
           },

@@ -47,7 +47,7 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: "¿Es gratis hacer una quiniela?",
-    a: "Sí, hasta 20 miembros por quiniela privada. Puedes crear hasta 5 privadas gratis con tus amigos y participar siempre en la Quiniela Pública. Para empresas o grupos más grandes (50, 100 o 250 miembros), tenemos Pases Mundial 2026 desde 29 € — mira /precios.",
+    a: "Sí, hasta 20 miembros por quiniela privada. Puedes crear hasta 5 privadas gratis con tus amigos y participar siempre en la Quiniela Pública. Para empresas o grupos más grandes (50, 100 o 250 miembros), tenemos Pases Mundial 2026 desde 19 € — mira /precios.",
   },
   {
     q: "¿Hay planes para empresas y grupos grandes?",

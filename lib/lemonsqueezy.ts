@@ -116,18 +116,18 @@ export type LemonSqueezyOrderEvent = {
  */
 export function tierFromOrderItemPrice(priceCents: number): PaidTierId | null {
   switch (priceCents) {
-    case 2900:
+    case 1900:
       return "team-50";
-    case 6900:
+    case 4900:
       return "team-100";
-    case 14900:
+    case 9900:
       return "team-250";
     default:
       return null;
   }
 }
 
-/** Formatea céntimos a "29,00 €" para el mensaje de Telegram. */
+/** Formatea céntimos a "19,00 €" para el mensaje de Telegram. */
 export function formatLemonAmount(cents: number, currency: string): string {
   const eur = cents / 100;
   return `${eur.toLocaleString("es-ES", {

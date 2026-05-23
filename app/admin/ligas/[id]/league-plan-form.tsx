@@ -12,9 +12,9 @@ const initialState: LeagueFormState = { ok: false };
 
 const TIERS: { id: LeagueTier; label: string; priceEur: number | null }[] = [
   { id: "free", label: "Free · 20 miembros", priceEur: 0 },
-  { id: "team-50", label: "Pase Equipo · 50 miembros", priceEur: 29 },
-  { id: "team-100", label: "Pase Empresa · 100 miembros", priceEur: 69 },
-  { id: "team-250", label: "Pase Empresa Plus · 250 miembros", priceEur: 149 },
+  { id: "team-50", label: "Pase Equipo · 50 miembros", priceEur: 19 },
+  { id: "team-100", label: "Pase Empresa · 100 miembros", priceEur: 49 },
+  { id: "team-250", label: "Pase Empresa Plus · 250 miembros", priceEur: 99 },
   { id: "enterprise", label: "Enterprise · a medida", priceEur: null },
 ];
 
