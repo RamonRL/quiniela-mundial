@@ -8,7 +8,6 @@ import {
   Swords,
   Target,
   Users,
-  Zap,
 } from "lucide-react";
 import { and, asc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
@@ -178,8 +177,6 @@ export default async function PrediccionesHub() {
             }
             done={groupPredCount === 12}
             locked={!preTorneoOpen}
-            tourHref={preTorneoOpen ? "/predicciones/grupos/tour" : undefined}
-            tourLabel="1 grupo por pantalla"
           />
           <CategoryCard
             cat="02"
@@ -211,8 +208,6 @@ export default async function PrediccionesHub() {
             }
             done={answeredSpecials >= totalSpecials && totalSpecials > 0}
             locked={false}
-            tourHref={totalSpecials > 0 ? "/predicciones/especiales/tour" : undefined}
-            tourLabel="1 pregunta por pantalla"
           />
         </div>
       </Section>
@@ -341,8 +336,6 @@ function CategoryCard({
   statusBadge,
   done,
   locked,
-  tourHref,
-  tourLabel,
 }: {
   cat: string;
   href: string;
@@ -352,8 +345,6 @@ function CategoryCard({
   statusBadge: { variant: "success" | "warning"; text: string };
   done: boolean;
   locked: boolean;
-  tourHref?: string;
-  tourLabel?: string;
 }) {
   const Inner = (
     <article
@@ -401,30 +392,11 @@ function CategoryCard({
       </div>
     </article>
   );
-  const mainBlock = locked ? (
-    Inner
-  ) : (
+  if (locked) return Inner;
+  return (
     <Link href={href} className="group block">
       {Inner}
     </Link>
-  );
-  if (!tourHref || locked) return mainBlock;
-  return (
-    <div className="space-y-2">
-      {mainBlock}
-      <Link
-        href={tourHref}
-        className="group flex items-center justify-between gap-2 rounded-md border border-dashed border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_4%,var(--color-surface))] px-3 py-2 text-xs transition hover:border-[var(--color-arena)] hover:bg-[color-mix(in_oklch,var(--color-arena)_8%,var(--color-surface))]"
-      >
-        <span className="inline-flex items-center gap-2 text-[var(--color-arena)]">
-          <Zap className="size-3.5" />
-          <span className="font-mono uppercase tracking-[0.18em]">Modo interactivo</span>
-        </span>
-        <span className="font-editorial text-[0.7rem] italic text-[var(--color-muted-foreground)] group-hover:text-[var(--color-foreground)]">
-          {tourLabel ?? "Paso a paso"}
-        </span>
-      </Link>
-    </div>
   );
 }
 
@@ -513,63 +485,49 @@ type DayCard = {
 function FeaturedMatchday({ day }: { day: DayCard }) {
   const remaining = day.total - day.filled;
   return (
-    <div className="space-y-2">
-      <Link
-        href={`/predicciones/jornada/${day.id}`}
-        className="group block overflow-hidden rounded-2xl border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_6%,var(--color-surface))] p-6 transition hover:border-[var(--color-arena)] hover:shadow-[var(--shadow-elev-2)]"
-      >
-        <div className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <Badge variant="success">Abierta</Badge>
-              <span className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                {day.stage} · Cat. 04
-              </span>
-            </div>
-            <h3 className="font-display text-4xl tracking-tight">{day.name}</h3>
-            <p className="font-editorial text-base italic text-[var(--color-muted-foreground)]">
-              {day.filled}/{day.total}{" "}
-              {day.total === 1 ? "partido predicho" : "partidos predichos"}.
-            </p>
+    <Link
+      href={`/predicciones/jornada/${day.id}`}
+      className="group block overflow-hidden rounded-2xl border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_6%,var(--color-surface))] p-6 transition hover:border-[var(--color-arena)] hover:shadow-[var(--shadow-elev-2)]"
+    >
+      <div className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <Badge variant="success">Abierta</Badge>
+            <span className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
+              {day.stage} · Cat. 04
+            </span>
           </div>
-          <div className="flex flex-col items-start gap-3 lg:items-end">
-            <div className="space-y-0.5 lg:text-right">
-              <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-                Arranca
-              </p>
-              <p className="font-display text-2xl tracking-tight">
-                {formatDateTime(day.predictionDeadlineAt, {
-                  weekday: "short",
-                  day: "2-digit",
-                  month: "short",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </p>
-              <p className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-                Cada partido cierra a su pitido
-              </p>
-            </div>
-            <p className="flex items-center gap-1.5 font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)] group-hover:underline">
-              {remaining > 0 ? `${remaining} sin enviar` : "Ya enviada"}{" "}
-              <ArrowUpRight className="size-3" />
-            </p>
-          </div>
+          <h3 className="font-display text-4xl tracking-tight">{day.name}</h3>
+          <p className="font-editorial text-base italic text-[var(--color-muted-foreground)]">
+            {day.filled}/{day.total}{" "}
+            {day.total === 1 ? "partido predicho" : "partidos predichos"}.
+          </p>
         </div>
-      </Link>
-      <Link
-        href={`/predicciones/jornada/${day.id}/tour`}
-        className="group flex items-center justify-between gap-2 rounded-md border border-dashed border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_4%,var(--color-surface))] px-3 py-2 text-xs transition hover:border-[var(--color-arena)] hover:bg-[color-mix(in_oklch,var(--color-arena)_8%,var(--color-surface))]"
-      >
-        <span className="inline-flex items-center gap-2 text-[var(--color-arena)]">
-          <Zap className="size-3.5" />
-          <span className="font-mono uppercase tracking-[0.18em]">Modo interactivo</span>
-        </span>
-        <span className="font-editorial text-[0.7rem] italic text-[var(--color-muted-foreground)] group-hover:text-[var(--color-foreground)]">
-          1 partido por pantalla
-        </span>
-      </Link>
-    </div>
+        <div className="flex flex-col items-start gap-3 lg:items-end">
+          <div className="space-y-0.5 lg:text-right">
+            <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
+              Arranca
+            </p>
+            <p className="font-display text-2xl tracking-tight">
+              {formatDateTime(day.predictionDeadlineAt, {
+                weekday: "short",
+                day: "2-digit",
+                month: "short",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </p>
+            <p className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+              Cada partido cierra a su pitido
+            </p>
+          </div>
+          <p className="flex items-center gap-1.5 font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)] group-hover:underline">
+            {remaining > 0 ? `${remaining} sin enviar` : "Ya enviada"}{" "}
+            <ArrowUpRight className="size-3" />
+          </p>
+        </div>
+      </div>
+    </Link>
   );
 }
 
@@ -653,21 +611,9 @@ function MatchdayMini({ day }: { day: DayCard }) {
     return <div key={day.id}>{inner}</div>;
   }
   return (
-    <div key={day.id} className="relative">
-      <Link href={`/predicciones/jornada/${day.id}`} className="block">
-        {inner}
-      </Link>
-      {day.state === "open" ? (
-        <Link
-          href={`/predicciones/jornada/${day.id}/tour`}
-          aria-label="Modo interactivo"
-          title="Modo interactivo · 1 partido por pantalla"
-          className="absolute right-2 top-2 grid size-7 place-items-center rounded-full border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_8%,var(--color-surface))] text-[var(--color-arena)] transition hover:scale-110 hover:border-[var(--color-arena)] hover:shadow-[var(--shadow-arena)]"
-        >
-          <Zap className="size-3.5" />
-        </Link>
-      ) : null}
-    </div>
+    <Link key={day.id} href={`/predicciones/jornada/${day.id}`} className="block">
+      {inner}
+    </Link>
   );
 }
 

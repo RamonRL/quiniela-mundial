@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { and, asc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { players, predSpecial, specialPredictions, teams } from "@/lib/db/schema";
@@ -9,6 +10,7 @@ import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId } from "@/lib/leagues";
 import { SPECIALS_FOOTNOTE, SPECIALS_SCORING } from "@/lib/scoring/copy";
 import { InteractiveModeBanner } from "@/components/predictions/interactive-mode-banner";
+import { isSpecialAnswered, type SpecialType } from "./types";
 import { SpecialsForm } from "./specials-form";
 
 export const metadata = { title: "Predicciones especiales" };
@@ -26,6 +28,17 @@ export default async function PredictSpecialsPage() {
     db.select().from(teams).orderBy(asc(teams.name)),
   ]);
   const myByKey = new Map(mine.map((m) => [m.specialId, m]));
+
+  // Modo paso a paso por defecto mientras quede alguna pregunta abierta sin
+  // responder. Cuando todas estén respondidas (o cerradas), modo full con
+  // banner para volver al interactivo.
+  const nowMs = Date.now();
+  const anyOpenUnanswered = specials.some((s) => {
+    if (new Date(s.closesAt).getTime() <= nowMs) return false;
+    const v = myByKey.get(s.id)?.valueJson as Record<string, unknown> | undefined;
+    return !isSpecialAnswered(v, s.type as SpecialType);
+  });
+  if (anyOpenUnanswered) redirect("/predicciones/especiales/tour");
 
   if (specials.length === 0) {
     return (

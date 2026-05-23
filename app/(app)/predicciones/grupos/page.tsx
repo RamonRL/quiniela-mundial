@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { and, asc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { groups, predGroupRanking, teams } from "@/lib/db/schema";
@@ -46,6 +47,16 @@ export default async function PredictGroupsPage() {
   const predByGroup = new Map(myPreds.map((p) => [p.groupId, p]));
   const open = KICKOFF.getTime() > Date.now();
   const ready = allGroups.length === 12 && Array.from(teamsByGroup.values()).every((arr) => arr.length === 4);
+
+  // Modo paso a paso por defecto mientras quede algún grupo por ordenar.
+  // Solo se queda en el modo full cuando los 12 grupos tienen las 4
+  // posiciones rellenadas — entonces tiene sentido "ver todo de un vistazo".
+  if (ready && open) {
+    const completed = myPreds.filter(
+      (p) => p.pos1TeamId && p.pos2TeamId && p.pos3TeamId && p.pos4TeamId,
+    ).length;
+    if (completed < 12) redirect("/predicciones/grupos/tour");
+  }
 
   if (!ready) {
     return (

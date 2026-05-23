@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { and, asc, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
@@ -19,7 +19,7 @@ import { Lock } from "lucide-react";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId } from "@/lib/leagues";
 import { formatDateTime } from "@/lib/utils";
-import { getMatchdayState, type Stage } from "@/lib/matchday-state";
+import { getMatchdayState, isMatchClosed, type Stage } from "@/lib/matchday-state";
 import { EmptyState } from "@/components/shell/empty-state";
 import { MATCH_FOOTNOTE, MATCH_SCORING } from "@/lib/scoring/copy";
 import { InteractiveModeBanner } from "@/components/predictions/interactive-mode-banner";
@@ -144,6 +144,24 @@ export default async function PredictMatchdayPage({
   const scorerByMatch = new Map(myScorers.map((r) => [r.matchId, r]));
 
   const open = status.state === "open";
+
+  // Modo paso a paso por defecto mientras quede algún partido abierto sin
+  // marcador + goleador. Los partidos ya empezados (closed) no cuentan —
+  // alguien que entre tarde a la quiniela arranca el tour por el más
+  // próximo abierto. Cuando todo lo predecible está predicho, se queda en
+  // el modo full con banner para volver al interactivo.
+  if (open) {
+    const nowD = new Date();
+    const anyOpenPending = matchRows.some((m) => {
+      if (isMatchClosed(m, nowD)) return false;
+      const result = resultByMatch.get(m.id);
+      const scorer = scorerByMatch.get(m.id);
+      return !result || !scorer;
+    });
+    if (anyOpenPending) {
+      redirect(`/predicciones/jornada/${matchdayId}/tour`);
+    }
+  }
 
   return (
     <div className="space-y-6">
