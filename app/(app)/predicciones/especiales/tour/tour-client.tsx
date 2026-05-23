@@ -8,12 +8,12 @@ import {
   flashSavedToast,
 } from "@/components/predictions/interactive-tour-shell";
 import { formatDateTime } from "@/lib/utils";
+import { SpecialField } from "../specials-form";
 import {
-  SpecialField,
   isSpecialAnswered,
   type SpecialDef,
   type SpecialType,
-} from "../specials-form";
+} from "../types";
 import { endSpecialsTour, saveSpecialPrediction } from "./actions";
 
 type Item = SpecialDef & {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check } from "lucide-react";
+import { AlertTriangle, Check } from "lucide-react";
 import { PlayerAvatar } from "@/components/brand/player-avatar";
 import { TeamFlag } from "@/components/brand/team-flag";
 
@@ -58,18 +58,16 @@ export function ScorerPicker({
   selectedId: number | null;
   onSelect: (playerId: number) => void;
 }) {
-  const [activeTab, setActiveTab] = useState<"home" | "away">("home");
-
-  // Si el jugador seleccionado está en el otro equipo, ir a esa tab al montar.
-  // (Lo hacemos solo en mobile vía el activeTab inicial — desktop ve los dos.)
-  if (selectedId != null && activeTab === "home") {
+  // Tab inicial: si el goleador ya estaba en el equipo visitante, arrancamos
+  // en "away". Se calcula UNA vez al montar (initializer); a partir de ahí el
+  // usuario controla la pestaña libremente — antes había un efecto en render
+  // que devolvía la tab al equipo del goleador y bloqueaba navegar al otro.
+  const [activeTab, setActiveTab] = useState<"home" | "away">(() => {
+    if (selectedId == null) return "home";
     const inAway = awayPlayers.some((p) => p.id === selectedId);
     const inHome = homePlayers.some((p) => p.id === selectedId);
-    if (inAway && !inHome) {
-      // setState durante render → React lo mete en queue, OK aquí.
-      setTimeout(() => setActiveTab("away"), 0);
-    }
-  }
+    return inAway && !inHome ? "away" : "home";
+  });
 
   return (
     <div className="space-y-3">
@@ -143,12 +141,14 @@ function TeamColumn({
   hiddenOnMobile: boolean;
 }) {
   const groups = groupByPosition(players);
+  const unofficial = players.length > 0 && players.every((p) => !p.photoUrl);
   return (
     <div className={`space-y-3 ${hiddenOnMobile ? "hidden md:block" : ""}`}>
       <div className="hidden items-center gap-2 md:flex">
         <TeamFlag code={team.code} size={20} />
         <h3 className="font-display text-base tracking-tight">{team.name}</h3>
       </div>
+      {unofficial ? <UnofficialSquadNotice /> : null}
       {POSITION_ORDER.map((pos) => {
         const list = groups[pos];
         if (!list || list.length === 0) return null;
@@ -192,6 +192,22 @@ function TeamColumn({
           </div>
         </section>
       ) : null}
+    </div>
+  );
+}
+
+function UnofficialSquadNotice() {
+  return (
+    <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2">
+      <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-amber-500" />
+      <div className="space-y-0.5">
+        <p className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-amber-600 dark:text-amber-400">
+          Convocatoria no oficial
+        </p>
+        <p className="font-editorial text-[0.72rem] italic leading-snug text-[var(--color-muted-foreground)]">
+          Esta selección aún no ha confirmado su lista para el Mundial. El jugador que elijas podría quedarse fuera.
+        </p>
+      </div>
     </div>
   );
 }

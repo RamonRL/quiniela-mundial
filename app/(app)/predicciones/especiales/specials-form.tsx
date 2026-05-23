@@ -18,25 +18,15 @@ import { SaveOverlay } from "@/components/predictions/save-overlay";
 import { usePredictionSaveToast } from "@/lib/predictions/use-save-toast";
 import { cn, formatDateTime } from "@/lib/utils";
 import { saveSpecialPredictions, type FormState } from "./actions";
+import {
+  isSpecialAnswered as isSpecialAnsweredHelper,
+  type SpecialDef,
+  type SpecialType,
+} from "./types";
+
+export type { SpecialDef, SpecialType };
 
 const initial: FormState = { ok: false };
-
-export type SpecialType =
-  | "yes_no"
-  | "single_choice"
-  | "team_with_round"
-  | "number_range"
-  | "player";
-
-export type SpecialDef = {
-  id: number;
-  key: string;
-  question: string;
-  type: SpecialType;
-  optionsJson: unknown;
-  pointsConfigJson: unknown;
-  closesAt: string;
-};
 
 type Existing = { specialId: number; valueJson: Record<string, unknown> };
 
@@ -85,26 +75,7 @@ function maxPointsFor(config: unknown): number | null {
   return null;
 }
 
-export function isSpecialAnswered(
-  v: Record<string, unknown> | undefined,
-  type: SpecialType,
-): boolean {
-  return isAnswered(v, type);
-}
-
-function isAnswered(v: Record<string, unknown> | undefined, type: SpecialType): boolean {
-  if (!v) return false;
-  if (type === "yes_no" || type === "single_choice" || type === "number_range") {
-    return v.value !== undefined && v.value !== null && v.value !== "";
-  }
-  if (type === "team_with_round") {
-    return Boolean(v.teamCode) && Boolean(v.round);
-  }
-  if (type === "player") {
-    return v.playerId !== undefined && v.playerId !== null;
-  }
-  return false;
-}
+const isAnswered = isSpecialAnsweredHelper;
 
 export function SpecialsForm({ specials, existing, players, teams }: Props) {
   const initialMap: Record<number, Record<string, unknown>> = Object.fromEntries(

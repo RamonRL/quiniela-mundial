@@ -4,10 +4,7 @@ import { db } from "@/lib/db";
 import { players, predSpecial, specialPredictions, teams } from "@/lib/db/schema";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId } from "@/lib/leagues";
-import {
-  isSpecialAnswered,
-  type SpecialType,
-} from "../specials-form";
+import { isSpecialAnswered, type SpecialType } from "../types";
 import { SpecialsTourClient } from "./tour-client";
 
 export const metadata = { title: "Modo interactivo · Especiales" };
