@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   ArrowLeft,
   Activity,
+  BookOpen,
   CalendarRange,
   ClipboardCheck,
   Gamepad2,
@@ -41,6 +42,7 @@ const items: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/admin/progreso", label: "Progreso", icon: Activity },
   { href: "/admin/chat", label: "Moderación", icon: MessagesSquare },
   { href: "/admin/minijuegos", label: "Minijuegos", icon: Gamepad2 },
+  { href: "/admin/playbook", label: "Playbook marketing", icon: BookOpen },
 ];
 
 function isActive(pathname: string, href: string) {

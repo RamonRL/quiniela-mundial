@@ -48,6 +48,10 @@ const nextConfig: NextConfig = {
       "./public/fwc26.png",
       "./public/qm-mark.png",
     ],
+    // El catch-all `app/admin/playbook/[...slug]/route.ts` lee HTML/CSS/PDF
+    // desde `docs/marketing/` en runtime. Sin esta lista Next no bundlea
+    // esa carpeta y los archivos no existen en el lambda de Vercel.
+    "/admin/playbook/**": ["./docs/marketing/**"],
   },
 };
 
