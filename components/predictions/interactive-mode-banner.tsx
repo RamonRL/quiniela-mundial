@@ -3,7 +3,7 @@ import { ArrowRight, Zap } from "lucide-react";
 
 export function InteractiveModeBanner({
   href,
-  hint = "Una decisión por pantalla. Auto-guardado.",
+  hint = "Repasa con calma.",
 }: {
   href: string;
   hint?: string;
@@ -19,10 +19,10 @@ export function InteractiveModeBanner({
         </span>
         <div className="leading-tight">
           <p className="font-mono text-[0.6rem] uppercase tracking-[0.22em] text-[var(--color-arena)]">
-            ¿Te abruma?
+            ¿Revisar?
           </p>
           <p className="font-editorial text-sm italic text-[var(--color-foreground)]">
-            Prueba el modo paso a paso ·{" "}
+            Vuelve al modo paso a paso ·{" "}
             <span className="text-[var(--color-muted-foreground)]">{hint}</span>
           </p>
         </div>

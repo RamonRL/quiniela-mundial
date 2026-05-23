@@ -112,7 +112,7 @@ export default async function PredictGroupsPage() {
       {open ? (
         <InteractiveModeBanner
           href="/predicciones/grupos/tour"
-          hint="1 grupo por pantalla."
+          hint="Repasa grupo a grupo."
         />
       ) : null}
       <ScoringBox sections={GROUPS_SCORING} footnote={GROUPS_FOOTNOTE} />

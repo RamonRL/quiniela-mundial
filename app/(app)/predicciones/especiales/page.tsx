@@ -68,7 +68,7 @@ export default async function PredictSpecialsPage() {
       {specials.some((s) => new Date(s.closesAt).getTime() > Date.now()) ? (
         <InteractiveModeBanner
           href="/predicciones/especiales/tour"
-          hint="1 pregunta por pantalla."
+          hint="Repasa pregunta a pregunta."
         />
       ) : null}
       <ScoringBox sections={SPECIALS_SCORING} footnote={SPECIALS_FOOTNOTE} />

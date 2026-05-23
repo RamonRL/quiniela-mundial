@@ -183,7 +183,7 @@ export default async function PredictMatchdayPage({
       {open ? (
         <InteractiveModeBanner
           href={`/predicciones/jornada/${day.id}/tour`}
-          hint="1 partido por pantalla, con visor de goleadores."
+          hint="Repasa partido a partido."
         />
       ) : null}
       <ScoringBox sections={MATCH_SCORING} footnote={MATCH_FOOTNOTE} />
