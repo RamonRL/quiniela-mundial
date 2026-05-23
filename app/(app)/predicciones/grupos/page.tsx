@@ -9,6 +9,7 @@ import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId } from "@/lib/leagues";
 import { formatDateTime } from "@/lib/utils";
 import { GROUPS_FOOTNOTE, GROUPS_SCORING } from "@/lib/scoring/copy";
+import { InteractiveModeBanner } from "@/components/predictions/interactive-mode-banner";
 import { GroupRankingForm } from "./group-ranking-form";
 
 export const metadata = { title: "Posiciones por grupo · Predicciones" };
@@ -97,6 +98,12 @@ export default async function PredictGroupsPage() {
             : "Predicción cerrada. Sólo puedes consultar lo que enviaste."
         }
       />
+      {open ? (
+        <InteractiveModeBanner
+          href="/predicciones/grupos/tour"
+          hint="1 grupo por pantalla."
+        />
+      ) : null}
       <ScoringBox sections={GROUPS_SCORING} footnote={GROUPS_FOOTNOTE} />
       <GroupRankingForm
         open={open}

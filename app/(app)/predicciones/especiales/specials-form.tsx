@@ -21,9 +21,14 @@ import { saveSpecialPredictions, type FormState } from "./actions";
 
 const initial: FormState = { ok: false };
 
-type SpecialType = "yes_no" | "single_choice" | "team_with_round" | "number_range" | "player";
+export type SpecialType =
+  | "yes_no"
+  | "single_choice"
+  | "team_with_round"
+  | "number_range"
+  | "player";
 
-type SpecialDef = {
+export type SpecialDef = {
   id: number;
   key: string;
   question: string;
@@ -78,6 +83,13 @@ function maxPointsFor(config: unknown): number | null {
     return values.length > 0 ? Math.max(...values) : null;
   }
   return null;
+}
+
+export function isSpecialAnswered(
+  v: Record<string, unknown> | undefined,
+  type: SpecialType,
+): boolean {
+  return isAnswered(v, type);
 }
 
 function isAnswered(v: Record<string, unknown> | undefined, type: SpecialType): boolean {
@@ -247,6 +259,17 @@ export function SpecialsForm({ specials, existing, players, teams }: Props) {
 }
 
 // ──────────────── Fields ────────────────
+
+export function SpecialField(props: {
+  special: SpecialDef;
+  value: Record<string, unknown>;
+  onChange: (v: Record<string, unknown>) => void;
+  disabled: boolean;
+  players: { id: number; name: string; position: string | null; teamId: number }[];
+  teams: { id: number; code: string; name: string }[];
+}) {
+  return <FieldFor {...props} />;
+}
 
 function FieldFor({
   special,

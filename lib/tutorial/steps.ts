@@ -110,6 +110,12 @@ export const TUTORIAL_STEPS: ReadonlyArray<TutorialStep> = [
     },
   },
   {
+    id: "modo-interactivo",
+    kind: "centered",
+    title: "Predice paso a paso",
+    body: "Si las páginas grandes te abruman, hay un modo paso a paso para grupos, partidos y especiales. Una decisión por pantalla, auto-guardado. Lo verás como ⚡ junto a cada categoría.",
+  },
+  {
     id: "eliminatoria",
     kind: "spotlight",
     title: "Eliminatoria",

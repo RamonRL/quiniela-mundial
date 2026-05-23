@@ -22,6 +22,7 @@ import { formatDateTime } from "@/lib/utils";
 import { getMatchdayState, type Stage } from "@/lib/matchday-state";
 import { EmptyState } from "@/components/shell/empty-state";
 import { MATCH_FOOTNOTE, MATCH_SCORING } from "@/lib/scoring/copy";
+import { InteractiveModeBanner } from "@/components/predictions/interactive-mode-banner";
 import { MatchdayPredictionForm } from "./matchday-form";
 
 export default async function PredictMatchdayPage({
@@ -161,6 +162,12 @@ export default async function PredictMatchdayPage({
             : `Cierre pasado: ${formatDateTime(day.predictionDeadlineAt)}.`
         }
       />
+      {open ? (
+        <InteractiveModeBanner
+          href={`/predicciones/jornada/${day.id}/tour`}
+          hint="1 partido por pantalla, con visor de goleadores."
+        />
+      ) : null}
       <ScoringBox sections={MATCH_SCORING} footnote={MATCH_FOOTNOTE} />
       <MatchdayPredictionForm
         matchdayId={day.id}

@@ -354,6 +354,36 @@
   .install-ios-chevron {
     animation: install-ios-chevron-bob 1.4s ease-in-out infinite;
   }
+  /* Transiciones del modo interactivo de predicción (Tinder-style).
+     Cuando el usuario pulsa "Siguiente" el step actual sale al lado
+     opuesto al que entrará el nuevo (sale a izq, entra el siguiente
+     desde der). Y al revés con "Anterior". Solo transform+opacity
+     para que el GPU no sufra ni en móvil. */
+  @keyframes tour-slide-in-right {
+    0%   { opacity: 0; transform: translateX(28px); }
+    100% { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes tour-slide-in-left {
+    0%   { opacity: 0; transform: translateX(-28px); }
+    100% { opacity: 1; transform: translateX(0); }
+  }
+  .tour-slide-right { animation: tour-slide-in-right 0.22s ease-out both; }
+  .tour-slide-left  { animation: tour-slide-in-left  0.22s ease-out both; }
+
+  /* Toast efímero del auto-save en la esquina inferior izquierda. */
+  @keyframes tour-save-toast {
+    0%   { opacity: 0; transform: translateY(8px); }
+    20%  { opacity: 1; transform: translateY(0); }
+    80%  { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(8px); }
+  }
+  .tour-save-toast { animation: tour-save-toast 1.5s ease-out both; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tour-slide-right,
+    .tour-slide-left,
+    .tour-save-toast { animation: none; }
+  }
   /* Fade puro para el card centered del tutorial — NO toca transform
      para no pisar el `translate(-50%, -50%)` que necesita para centrarse
      en el viewport. (.rise-in fija translateY y rompía el centrado.) */

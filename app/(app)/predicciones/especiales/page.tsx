@@ -8,6 +8,7 @@ import { ScoringBox } from "@/components/brand/scoring-box";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId } from "@/lib/leagues";
 import { SPECIALS_FOOTNOTE, SPECIALS_SCORING } from "@/lib/scoring/copy";
+import { InteractiveModeBanner } from "@/components/predictions/interactive-mode-banner";
 import { SpecialsForm } from "./specials-form";
 
 export const metadata = { title: "Predicciones especiales" };
@@ -51,6 +52,12 @@ export default async function PredictSpecialsPage() {
         title="Predicciones especiales"
         description="Cada una con su propio cierre."
       />
+      {specials.some((s) => new Date(s.closesAt).getTime() > Date.now()) ? (
+        <InteractiveModeBanner
+          href="/predicciones/especiales/tour"
+          hint="1 pregunta por pantalla."
+        />
+      ) : null}
       <ScoringBox sections={SPECIALS_SCORING} footnote={SPECIALS_FOOTNOTE} />
       <SpecialsForm
         specials={specials.map((s) => ({

@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import { TUTORIAL_STEPS, TUTORIAL_TOTAL_STEPS } from "../steps";
 
 describe("TUTORIAL_STEPS", () => {
-  it("tiene 9 pasos exactos (bienvenida, 3 del dashboard, 3 de predicciones, install, cierre)", () => {
-    expect(TUTORIAL_STEPS).toHaveLength(9);
-    expect(TUTORIAL_TOTAL_STEPS).toBe(9);
+  it("tiene 10 pasos exactos (bienvenida, 3 del dashboard, 3 de predicciones, modo interactivo, install, cierre)", () => {
+    expect(TUTORIAL_STEPS).toHaveLength(10);
+    expect(TUTORIAL_TOTAL_STEPS).toBe(10);
   });
 
   it("todos los ids son únicos", () => {
