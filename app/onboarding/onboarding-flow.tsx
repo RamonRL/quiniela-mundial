@@ -19,7 +19,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { initials } from "@/lib/utils";
-import { compressImage, formatBytes } from "@/lib/client-image";
+import { formatBytes } from "@/lib/client-image";
+import { AvatarCropDialog } from "@/components/profile/avatar-crop-dialog";
 import { LeagueLogoGalleryPicker } from "@/components/leagues/league-logo-gallery-picker";
 import {
   createLeague,
@@ -617,13 +618,13 @@ function ProfileStep({
   const [nicknameValue, setNicknameValue] = useState(defaultNickname);
   const [preview, setPreview] = useState<string | null>(avatarUrl);
   const [error, setError] = useState<string | null>(null);
-  const [compressing, setCompressing] = useState(false);
+  const [cropSource, setCropSource] = useState<string | null>(null);
+  const [cropOpen, setCropOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const display = nicknameValue.trim() || defaultNickname;
 
-  async function pickFile(file: File) {
+  function pickFile(file: File) {
     setError(null);
-
     if (file.size > MAX_RAW_INPUT_BYTES) {
       setError(
         `La imagen pesa ${formatBytes(file.size)}. Demasiado grande, prueba con otra.`,
@@ -631,25 +632,34 @@ function ProfileStep({
       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
+    const url = URL.createObjectURL(file);
+    setCropSource((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return url;
+    });
+    setCropOpen(true);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
 
-    setCompressing(true);
-    try {
-      const result = await compressImage(file, { maxDim: 800, quality: 0.85 });
-      // Reemplazamos el File del <input type="file"> por la versión
-      // comprimida usando DataTransfer — así la FormData del submit
-      // envía el archivo optimizado sin tocar el server action.
-      if (fileInputRef.current) {
-        const dt = new DataTransfer();
-        dt.items.add(result.file);
-        fileInputRef.current.files = dt.files;
-      }
-      setPreview(URL.createObjectURL(result.file));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo procesar la imagen.");
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    } finally {
-      setCompressing(false);
+  function closeCrop() {
+    setCropOpen(false);
+    if (cropSource) {
+      URL.revokeObjectURL(cropSource);
+      setCropSource(null);
     }
+  }
+
+  function onCropConfirm(file: File) {
+    // El crop devuelve un JPEG 800×800 listo. Lo metemos en el <input
+    // type="file"> vía DataTransfer para que se envíe con el form al
+    // pulsar "Continuar" — el onboarding mantiene su submit atómico.
+    if (fileInputRef.current) {
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      fileInputRef.current.files = dt.files;
+    }
+    setPreview(URL.createObjectURL(file));
+    closeCrop();
   }
 
   return (
@@ -768,7 +778,7 @@ function ProfileStep({
             type="submit"
             size="lg"
             className="h-14 px-8 text-base sm:flex-1"
-            disabled={pending || compressing}
+            disabled={pending}
           >
             {pending ? "Guardando…" : "Continuar"}
             <ArrowRight />
@@ -778,6 +788,13 @@ function ProfileStep({
           </p>
         </div>
       </form>
+
+      <AvatarCropDialog
+        open={cropOpen}
+        sourceUrl={cropSource}
+        onCancel={closeCrop}
+        onConfirm={onCropConfirm}
+      />
     </div>
   );
 }

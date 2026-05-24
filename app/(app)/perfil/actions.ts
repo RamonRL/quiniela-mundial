@@ -10,47 +10,72 @@ import { uploadImage } from "@/lib/storage";
 
 export type FormState = { ok: boolean; error?: string };
 
-const schema = z.object({
-  nickname: z
-    .string()
-    .max(40)
-    .optional()
-    .transform((v) => (v?.trim() ? v.trim() : null)),
-});
+const nicknameSchema = z
+  .string()
+  .max(40)
+  .optional()
+  .transform((v) => (v?.trim() ? v.trim() : null));
 
-export async function updateProfile(_prev: FormState, formData: FormData): Promise<FormState> {
+/**
+ * Solo apodo. La foto se guarda de forma independiente al confirmar el
+ * crop (`uploadAvatar`) para que el botón "Guardar" no sea necesario
+ * cuando el usuario solo quiere actualizar la imagen.
+ */
+export async function updateNickname(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
   const me = await requireUser();
-  const parsed = schema.safeParse({ nickname: formData.get("nickname") ?? "" });
+  const parsed = nicknameSchema.safeParse(formData.get("nickname") ?? "");
   if (!parsed.success) {
-    return { ok: false, error: "Nickname inválido (máx 40 chars)." };
+    return { ok: false, error: "Apodo inválido (máx 40 chars)." };
   }
-
-  const update: Record<string, unknown> = { nickname: parsed.data.nickname };
-
-  // El cliente comprime la imagen a JPEG 800x800 q=0.85 (~100-200 KB)
-  // antes de subirla — ver `profile-form.tsx` + `lib/client-image.ts`.
-  // Este límite es una red de seguridad para abuso directo de la action.
-  const MAX_AVATAR_BYTES = 2 * 1024 * 1024; // 2 MB
-  const avatar = formData.get("avatar");
-  if (avatar instanceof File && avatar.size > 0) {
-    if (avatar.size > MAX_AVATAR_BYTES) {
-      return {
-        ok: false,
-        error:
-          "La imagen excede el tamaño aceptado tras optimizar. Prueba con otra foto.",
-      };
-    }
-    const url = await uploadImage({
-      kind: "avatar",
-      path: `${me.id}.png`,
-      file: avatar,
-    });
-    update.avatarUrl = url;
-  }
-
-  await db.update(profiles).set(update).where(eq(profiles.id, me.id));
+  await db
+    .update(profiles)
+    .set({ nickname: parsed.data })
+    .where(eq(profiles.id, me.id));
   revalidatePath("/perfil");
   revalidatePath("/dashboard");
   revalidatePath("/ranking");
   return { ok: true };
+}
+
+/**
+ * Sube la foto recortada (JPEG 800×800 generado en cliente por
+ * `AvatarCropDialog`) y la persiste como `avatarUrl`. Devuelve la URL
+ * pública para que el cliente refresque la preview sin esperar al
+ * revalidate.
+ */
+export async function uploadAvatar(formData: FormData): Promise<{
+  ok: boolean;
+  error?: string;
+  avatarUrl?: string;
+}> {
+  const me = await requireUser();
+  const avatar = formData.get("avatar");
+  if (!(avatar instanceof File) || avatar.size === 0) {
+    return { ok: false, error: "Falta la imagen." };
+  }
+  // Red de seguridad: el cliente ya emite ~100-200 KB; tope generoso
+  // para abusos directos contra la action.
+  const MAX_AVATAR_BYTES = 2 * 1024 * 1024; // 2 MB
+  if (avatar.size > MAX_AVATAR_BYTES) {
+    return {
+      ok: false,
+      error: "La imagen excede el tamaño aceptado tras recortar.",
+    };
+  }
+  const url = await uploadImage({
+    kind: "avatar",
+    path: `${me.id}.png`,
+    file: avatar,
+  });
+  await db
+    .update(profiles)
+    .set({ avatarUrl: url })
+    .where(eq(profiles.id, me.id));
+  revalidatePath("/perfil");
+  revalidatePath("/dashboard");
+  revalidatePath("/ranking");
+  return { ok: true, avatarUrl: url };
 }
