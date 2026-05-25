@@ -1,4 +1,12 @@
-import { AlertTriangle, CheckCircle2, CircleDashed, Info, XCircle } from "lucide-react";
+import Link from "next/link";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  CircleDashed,
+  Info,
+  PlayCircle,
+  XCircle,
+} from "lucide-react";
 import { requireAdmin } from "@/lib/auth/guards";
 import { PageHeader } from "@/components/shell/page-header";
 import {
@@ -26,8 +34,28 @@ type PriceCheckResult =
     }
   | { tier: PaidTierId; status: "error"; priceId: string; error: string };
 
-export default async function PaddleDiagnosticsPage() {
+type TxTestResult =
+  | { status: "not_run" }
+  | { status: "skipped"; reason: string }
+  | {
+      status: "ok";
+      txId: string;
+      checkoutUrl: string;
+    }
+  | {
+      status: "no_checkout_url";
+      txId: string;
+    }
+  | { status: "error"; error: string };
+
+export default async function PaddleDiagnosticsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ test?: string }>;
+}) {
   await requireAdmin();
+  const sp = await searchParams;
+  const runTest = sp.test === "1";
 
   const env = process.env.PADDLE_ENV === "live" ? "live" : "sandbox";
   const hasApiKey = !!process.env.PADDLE_API_KEY;
@@ -76,6 +104,42 @@ export default async function PaddleDiagnosticsPage() {
     hasWebhookSecret &&
     PAID_TIERS.every((t) => configured[t]) &&
     checks.every((c) => c.status === "ok");
+
+  // Test real de creación de transaction. Solo se dispara con ?test=1
+  // para evitar generar transactions cada vez que abres la página. En
+  // sandbox no cuesta nada, en live se crearía una transaction real
+  // (sin pago, queda en "ready") así que también es segura.
+  let txTest: TxTestResult = { status: "not_run" };
+  if (runTest) {
+    const testTier: PaidTierId = "team-50";
+    const testPriceId = paddlePriceIdForTier(testTier);
+    if (!paddle || !testPriceId) {
+      txTest = {
+        status: "skipped",
+        reason: !paddle
+          ? "Cliente Paddle no inicializado."
+          : "Sin priceId para team-50.",
+      };
+    } else {
+      try {
+        const tx = await paddle.transactions.create({
+          items: [{ priceId: testPriceId, quantity: 1 }],
+          customData: { test: "admin-diagnostic" },
+        });
+        const checkoutUrl = tx.checkout?.url;
+        if (checkoutUrl) {
+          txTest = { status: "ok", txId: tx.id, checkoutUrl };
+        } else {
+          txTest = { status: "no_checkout_url", txId: tx.id };
+        }
+      } catch (err) {
+        txTest = {
+          status: "error",
+          error: err instanceof Error ? err.message : String(err),
+        };
+      }
+    }
+  }
 
   return (
     <div className="space-y-8">
@@ -160,6 +224,30 @@ export default async function PaddleDiagnosticsPage() {
           Si un priceId existe pero el environment es el equivocado, vendrá un error tipo &quot;not_found&quot;. Verifica que los IDs son del mismo
           environment que <code>PADDLE_ENV</code>.
         </p>
+      </section>
+
+      {/* ─── Test real de creación de transaction ─── */}
+      <section className="space-y-3 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
+        <header className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="font-display text-xl tracking-tight">
+              Test real · creación de transaction
+            </h2>
+            <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
+              Crea una transaction de prueba para el Pase Equipo (19 €) y verifica si Paddle
+              devuelve el <code>checkout.url</code>. Detecta el gotcha más común: &quot;Default
+              payment link&quot; sin configurar en el dashboard de Paddle.
+            </p>
+          </div>
+          <Link
+            href={runTest ? "/admin/paddle" : "/admin/paddle?test=1"}
+            className="inline-flex items-center gap-2 rounded-md border border-[var(--color-arena)] bg-[var(--color-arena)] px-4 py-2 font-mono text-[0.65rem] uppercase tracking-[0.18em] text-white shadow-[var(--shadow-arena)] transition hover:opacity-90"
+          >
+            <PlayCircle className="size-3.5" />
+            {runTest ? "Volver a ejecutar" : "Ejecutar test"}
+          </Link>
+        </header>
+        <TxTestResultView result={txTest} />
       </section>
 
       {/* ─── Cómo arreglar ─── */}
@@ -251,6 +339,80 @@ function EnvRow({
         </span>
       </span>
     </li>
+  );
+}
+
+function TxTestResultView({ result }: { result: TxTestResult }) {
+  if (result.status === "not_run") {
+    return (
+      <p className="rounded-md border border-dashed border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-3 font-editorial text-sm italic text-[var(--color-muted-foreground)]">
+        Pulsa &quot;Ejecutar test&quot; para hacer una llamada real a Paddle.
+      </p>
+    );
+  }
+  if (result.status === "skipped") {
+    return (
+      <p className="rounded-md border border-[var(--color-warning)]/40 bg-[var(--color-warning)]/5 px-4 py-3 font-editorial text-sm italic">
+        Saltado: {result.reason}
+      </p>
+    );
+  }
+  if (result.status === "error") {
+    return (
+      <article className="space-y-2 rounded-md border border-[var(--color-danger)]/40 bg-[color-mix(in_oklch,var(--color-danger)_5%,var(--color-surface))] p-4">
+        <p className="inline-flex items-center gap-2 font-display text-base tracking-tight text-[var(--color-danger)]">
+          <XCircle className="size-4" /> La API devolvió un error
+        </p>
+        <pre className="overflow-x-auto rounded bg-[var(--color-bg)] p-2 font-mono text-xs">
+          {result.error}
+        </pre>
+        <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
+          Causas habituales: priceId archivado / inactive, API key sin
+          permisos suficientes, o validation del request.
+        </p>
+      </article>
+    );
+  }
+  if (result.status === "no_checkout_url") {
+    return (
+      <article className="space-y-3 rounded-md border border-[var(--color-danger)]/40 bg-[color-mix(in_oklch,var(--color-danger)_5%,var(--color-surface))] p-4">
+        <p className="inline-flex items-center gap-2 font-display text-base tracking-tight text-[var(--color-danger)]">
+          <XCircle className="size-4" /> Transaction creada · falta checkout.url
+        </p>
+        <p className="font-editorial text-sm leading-relaxed">
+          La API aceptó la transaction (<code>{result.txId}</code>) pero la respuesta no incluye un <code>checkout.url</code>. Esto es lo que hace que <code>/api/checkout/[tier]</code> caiga al fallback aunque las env vars estén bien.
+        </p>
+        <div className="rounded border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-bg))] p-3">
+          <p className="font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-arena)]">
+            Fix
+          </p>
+          <p className="mt-1 font-editorial text-sm leading-relaxed">
+            Paddle dashboard → <strong>Checkout settings → Default payment link</strong> → pega una URL cualquiera (por ej. <code>https://quinielamundial.es/dashboard</code>) → <strong>Save</strong>. Vuelve a ejecutar el test después.
+          </p>
+        </div>
+      </article>
+    );
+  }
+  return (
+    <article className="space-y-2 rounded-md border border-[var(--color-success)]/40 bg-[color-mix(in_oklch,var(--color-success)_5%,var(--color-surface))] p-4">
+      <p className="inline-flex items-center gap-2 font-display text-base tracking-tight text-[var(--color-success)]">
+        <CheckCircle2 className="size-4" /> Todo correcto · checkout.url emitido
+      </p>
+      <p className="font-mono text-xs text-[var(--color-muted-foreground)]">
+        Transaction: {result.txId}
+      </p>
+      <a
+        href={result.checkoutUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1.5 break-all rounded border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 font-mono text-xs text-[var(--color-arena)] hover:bg-[var(--color-surface-2)]"
+      >
+        {result.checkoutUrl}
+      </a>
+      <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
+        Puedes abrir esta URL para verificar el hosted checkout funcionando.
+      </p>
+    </article>
   );
 }
 
