@@ -3,7 +3,9 @@ import Link from "next/link";
 import { asc, gte, inArray } from "drizzle-orm";
 import {
   ArrowRight,
+  Building2,
   CalendarDays,
+  Check,
   Crown,
   Goal,
   ListChecks,
@@ -280,6 +282,108 @@ export default async function HomePage() {
             title="Gana"
             text="El que mejor lea el torneo gana. Reconocimiento entre amigos, trofeo simbólico de la liga, o lo que pacten los participantes."
           />
+        </div>
+      </section>
+
+      {/* ───────── EMPRESAS ─────────
+          Sección reposicionada arriba (justo tras "Cómo funciona") y
+          ampliada con tier-cards + features visibles. Objetivo: que el
+          visitante B2B entienda en la primera visita que existe un
+          camino claro para grupos grandes, sin tener que scrollear
+          hasta el final ni adivinar precios.
+      */}
+      <section className="relative overflow-hidden rounded-2xl border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_6%,var(--color-surface))] p-8 sm:p-10">
+        <div
+          aria-hidden
+          className="halftone pointer-events-none absolute inset-0 opacity-[0.05]"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full opacity-30 blur-3xl"
+          style={{
+            background:
+              "radial-gradient(circle, color-mix(in oklch, var(--color-arena) 32%, transparent), transparent 70%)",
+          }}
+        />
+
+        <div className="relative space-y-8">
+          <header className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2">
+                <Building2 className="size-3.5 text-[var(--color-arena)]" />
+                <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
+                  Para empresas y grupos grandes
+                </p>
+              </div>
+              <h2 className="font-display text-4xl tracking-tight sm:text-5xl">
+                El ritual de oficina del Mundial
+              </h2>
+              <p className="max-w-2xl font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base">
+                Tres semanas con tu equipo pegado al ranking, comentando los
+                partidos en el chat interno y compitiendo entre departamentos.
+                Sin Excel, sin grupos de WhatsApp, sin renovación. Pago único
+                por todo el torneo.
+              </p>
+            </div>
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
+              <Link
+                href="/precios"
+                className="inline-flex items-center gap-2 rounded-md border border-[var(--color-arena)] bg-[var(--color-arena)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white shadow-[var(--shadow-arena)] transition hover:opacity-90"
+              >
+                Ver planes
+                <ArrowRight className="size-4" />
+              </Link>
+              <Link
+                href="/precios#contacto"
+                className="inline-flex items-center gap-2 rounded-md border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] transition hover:border-[var(--color-arena)]/40"
+              >
+                Pídeme presupuesto
+              </Link>
+            </div>
+          </header>
+
+          {/* Tier cards · prices al frente */}
+          <div className="grid gap-3 sm:grid-cols-3">
+            <TierTeaser
+              priceEur={19}
+              label="Pase Equipo"
+              members="Hasta 50 miembros"
+              perPerson="0,38 €/persona"
+            />
+            <TierTeaser
+              priceEur={49}
+              label="Pase Empresa"
+              members="Hasta 100 miembros"
+              perPerson="0,49 €/persona"
+              highlight
+            />
+            <TierTeaser
+              priceEur={99}
+              label="Empresa Plus"
+              members="Hasta 250 miembros"
+              perPerson="0,40 €/persona"
+            />
+          </div>
+
+          {/* Killer features · una línea cada uno */}
+          <ul className="grid gap-3 sm:grid-cols-2">
+            <FeatureBullet
+              title="Departamentos internos"
+              text="Marketing, Ventas, Ingeniería… compitiendo por media de puntos. Un equipo de 8 puede ganar al de 20."
+            />
+            <FeatureBullet
+              title="Champions de Empresas"
+              text="Todas las empresas con plan compiten entre sí. La ganadora se lleva un trofeo físico personalizado a la oficina."
+            />
+            <FeatureBullet
+              title="Pago único, sin renovación"
+              text="Cubre del 11 de junio al 19 de julio. Sin suscripción, sin cargos posteriores."
+            />
+            <FeatureBullet
+              title="Logo, export CSV, soporte prioritario"
+              text="Branding corporativo en la cabecera, ranking exportable y respuesta directa por email durante el torneo."
+            />
+          </ul>
         </div>
       </section>
 
@@ -571,49 +675,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ───────── EMPRESAS ───────── */}
-      <section className="relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 sm:p-10">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full opacity-25 blur-3xl"
-          style={{
-            background:
-              "radial-gradient(circle, color-mix(in oklch, var(--color-arena) 28%, transparent), transparent 70%)",
-          }}
-        />
-        <div className="relative grid items-center gap-6 lg:grid-cols-[1.3fr_auto] lg:gap-10">
-          <div className="space-y-3">
-            <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-              Empresas y grupos grandes
-            </p>
-            <h2 className="font-display text-3xl tracking-tight sm:text-4xl">
-              ¿Una quiniela para todo el equipo?
-            </h2>
-            <p className="max-w-2xl font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base">
-              Las quinielas privadas Free aguantan 20 miembros. Para empresas,
-              comunidades o eventos con más gente, los Pases Mundial 2026
-              amplían el tope de miembros y añaden logo corporativo y soporte
-              prioritario. Pago único por torneo.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center justify-start gap-3 lg:justify-end">
-            <Link
-              href="/precios"
-              className="inline-flex items-center gap-2 rounded-md border border-[var(--color-arena)] bg-[var(--color-arena)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white shadow-[var(--shadow-arena)]"
-            >
-              Ver planes
-              <ArrowRight className="size-4" />
-            </Link>
-            <Link
-              href="/contacto#empresas"
-              className="inline-flex items-center gap-2 rounded-md border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] transition hover:border-[var(--color-arena)]/40"
-            >
-              Contactar
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* ───────── FAQ ───────── */}
       <section className="space-y-6">
         <header className="space-y-2">
@@ -721,6 +782,62 @@ export default async function HomePage() {
 }
 
 // ─────────── Helpers ───────────
+
+function TierTeaser({
+  priceEur,
+  label,
+  members,
+  perPerson,
+  highlight,
+}: {
+  priceEur: number;
+  label: string;
+  members: string;
+  perPerson: string;
+  highlight?: boolean;
+}) {
+  return (
+    <article
+      className={`relative overflow-hidden rounded-xl border p-5 transition ${
+        highlight
+          ? "border-[var(--color-arena)] bg-[var(--color-surface)] shadow-[var(--shadow-arena)]"
+          : "border-[var(--color-border)] bg-[var(--color-surface)]"
+      }`}
+    >
+      {highlight ? (
+        <span className="absolute right-3 top-3 rounded-full bg-[var(--color-arena)] px-2 py-0.5 font-mono text-[0.5rem] uppercase tracking-[0.18em] text-white">
+          Más elegido
+        </span>
+      ) : null}
+      <p className="font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
+        {label}
+      </p>
+      <p className="mt-1 font-display tabular text-4xl tracking-tight text-[var(--color-arena)] glow-arena">
+        {priceEur} €
+      </p>
+      <p className="mt-1 font-display text-base tracking-tight">{members}</p>
+      <p className="mt-1 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+        ≈ {perPerson}
+      </p>
+    </article>
+  );
+}
+
+function FeatureBullet({ title, text }: { title: string; text: string }) {
+  return (
+    <li className="flex items-start gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+      <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-[var(--color-arena)] text-white">
+        <Check className="size-3" />
+      </span>
+      <div className="space-y-0.5">
+        <p className="font-display text-base tracking-tight">{title}</p>
+        <p className="font-editorial text-xs italic leading-snug text-[var(--color-muted-foreground)]">
+          {text}
+        </p>
+      </div>
+    </li>
+  );
+}
 
 function StepCard({
   n,

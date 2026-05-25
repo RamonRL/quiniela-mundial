@@ -67,6 +67,12 @@ export function AppHeader({
         ) : (
           <>
             <Link
+              href="/precios"
+              className="hidden text-xs font-mono uppercase tracking-[0.18em] text-[var(--color-muted-foreground)] transition hover:text-[var(--color-arena)] sm:inline-flex"
+            >
+              Empresas
+            </Link>
+            <Link
               href="/login"
               className="text-xs font-mono uppercase tracking-[0.18em] text-[var(--color-muted-foreground)] transition hover:text-[var(--color-foreground)]"
             >
