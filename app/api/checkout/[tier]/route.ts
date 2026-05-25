@@ -41,6 +41,11 @@ export async function GET(
   const paddle = getPaddleClient();
   const priceId = paddlePriceIdForTier(tier as PaidTierId);
   if (!paddle || !priceId) {
+    console.warn(
+      `[paddle/checkout] fallback to /precios#contacto · tier=${tier} ` +
+        `clientReady=${!!paddle} priceId=${priceId ? "set" : "missing"} ` +
+        `env=${process.env.PADDLE_ENV ?? "(unset)"}`,
+    );
     return NextResponse.redirect(new URL("/precios#contacto", request.url));
   }
 
