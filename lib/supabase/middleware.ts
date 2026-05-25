@@ -35,7 +35,6 @@ const PUBLIC_PATHS = [
   "/faq",
   "/contacto",
   "/precios",
-  "/champions-empresas",
   "/aviso-legal",
   "/privacidad",
   "/cookies",

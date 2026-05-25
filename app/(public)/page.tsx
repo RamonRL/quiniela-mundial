@@ -372,12 +372,12 @@ export default async function HomePage() {
               text="Marketing, Ventas, Ingeniería… compitiendo por media de puntos. Un equipo de 8 puede ganar al de 20."
             />
             <FeatureBullet
-              title="Champions de Empresas"
-              text="Todas las empresas con plan compiten entre sí. La ganadora se lleva un trofeo físico personalizado a la oficina."
-            />
-            <FeatureBullet
               title="Pago único, sin renovación"
               text="Cubre del 11 de junio al 19 de julio. Sin suscripción, sin cargos posteriores."
+            />
+            <FeatureBullet
+              title="Hasta 250 miembros por liga"
+              text="Tres tamaños para que entren los equipos pequeños o las plantillas grandes — escalas sin migrar datos."
             />
             <FeatureBullet
               title="Logo, export CSV, soporte prioritario"

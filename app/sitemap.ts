@@ -44,7 +44,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteUrl}/faq`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${siteUrl}/contacto`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
     { url: `${siteUrl}/precios`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${siteUrl}/champions-empresas`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
     { url: `${siteUrl}/aviso-legal`, lastModified: now, changeFrequency: "yearly", priority: 0.2 },
     { url: `${siteUrl}/privacidad`, lastModified: now, changeFrequency: "yearly", priority: 0.2 },
     { url: `${siteUrl}/cookies`, lastModified: now, changeFrequency: "yearly", priority: 0.2 },

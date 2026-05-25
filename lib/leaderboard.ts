@@ -302,6 +302,11 @@ async function loadDepartmentRankingsUnsafe(
 
 // ─────────────────────────────────────────────────────────────────────
 //  Champions de Empresas · ranking global de ligas premium
+//  DESACTIVADO — feature retirada hasta tener volumen de empresas que
+//  justifique mantenerla. El código queda escondido tras un guard para
+//  poder reactivarlo más adelante sin reescribirlo. Si decides borrarlo
+//  definitivamente, quita esta sección entera y el `unstable_cache` no
+//  importado se va de paso.
 // ─────────────────────────────────────────────────────────────────────
 
 export type ChampionRankingEntry = {
@@ -322,15 +327,17 @@ export type ChampionRankingEntry = {
 
 const CHAMPIONS_CACHE_SECONDS = 60;
 
+/** Feature flag de la Champions de Empresas. Activar de nuevo cuando
+ *  haya masa crítica de empresas con plan activo. */
+const CHAMPIONS_DE_EMPRESAS_ENABLED = false;
+
 /**
  * Ranking público de la "Champions de Empresas" — todas las ligas con
- * plan de pago activo compiten por media de puntos. Los miembros que
- * nunca enviaron una predicción NO se promedian.
- *
- * Tier mínimo: cualquiera de los planes pago (team-50/100/250/enterprise).
- * La liga pública (free) queda fuera por diseño.
+ * plan de pago activo compiten por media de puntos. Devuelve siempre
+ * lista vacía mientras `CHAMPIONS_DE_EMPRESAS_ENABLED` esté en false.
  */
 export async function loadChampionsRanking(): Promise<ChampionRankingEntry[]> {
+  if (!CHAMPIONS_DE_EMPRESAS_ENABLED) return [];
   const cached = unstable_cache(
     () => loadChampionsRankingUnsafe(),
     ["champions-ranking"],

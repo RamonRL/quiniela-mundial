@@ -406,7 +406,7 @@ function UpgradePromo({
 
           <ul className="grid gap-1.5 pt-1 sm:grid-cols-2">
             <PromoBullet>Departamentos internos con ranking por media</PromoBullet>
-            <PromoBullet>Champions de Empresas con trofeo físico</PromoBullet>
+            <PromoBullet>Hasta 250 miembros por liga</PromoBullet>
             <PromoBullet>Logo corporativo + anuncio fijado</PromoBullet>
             <PromoBullet>Export CSV del ranking y soporte prioritario</PromoBullet>
           </ul>

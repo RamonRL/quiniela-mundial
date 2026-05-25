@@ -46,7 +46,7 @@ Texto para rellenar la solicitud de Paddle (https://paddle.com → sign up → o
 > - **Company Pass · €49** — up to 100 members per pool
 > - **Company Plus Pass · €99** — up to 250 members per pool
 >
-> All paid tiers include the same software features (corporate logo, pinned announcement, CSV export of standings, internal departments with sub-rankings, access to the Champions de Empresas inter-company league, priority email support).
+> All paid tiers include the same software features (corporate logo, pinned announcement, CSV export of standings, internal departments with sub-rankings, priority email support).
 
 ## Pricing model
 
