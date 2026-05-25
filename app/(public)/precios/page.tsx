@@ -326,10 +326,11 @@ export default function PreciosPage() {
  * cada tier:
  *
  *  - Tier Free → enlace interno a /onboarding.
- *  - Tier de pago → `/api/checkout/<tier>`. El endpoint crea la
- *    transaction en Paddle con custom_data (league_code, user_id) y
- *    redirige al hosted checkout. Si Paddle no está configurado en
- *    runtime, el endpoint cae a /precios#contacto automáticamente.
+ *  - Tier de pago → ancla `#contacto` (formulario lead inline). Mientras
+ *    no terminemos de afinar la integración Paddle (overlay + Default
+ *    Payment Link + Approved Domains) preferimos que el comprador deje
+ *    sus datos y le respondamos. TODO: reactivar `/api/checkout/<tier>`
+ *    cuando todo el wiring de Paddle esté listo.
  */
 function PlanCTA({ plan }: { plan: Plan }) {
   const arenaClasses = plan.highlight
@@ -349,7 +350,7 @@ function PlanCTA({ plan }: { plan: Plan }) {
   if (plan.paidTierId) {
     return (
       <a
-        href={`/api/checkout/${plan.paidTierId}`}
+        href="#contacto"
         className={`inline-flex w-full items-center justify-center gap-2 rounded-md px-4 py-2 font-mono text-[0.65rem] uppercase tracking-[0.18em] transition ${arenaClasses}`}
       >
         {plan.ctaLabel} <ArrowRight className="size-3.5" />
