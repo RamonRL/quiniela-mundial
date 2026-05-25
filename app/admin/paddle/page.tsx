@@ -13,6 +13,7 @@ import {
   PAID_TIERS,
   TIER_AMOUNT_EUR,
   getPaddleClient,
+  paddleClientToken,
   paddleConfiguredTiers,
   paddlePriceIdForTier,
   paddleWebhookSecret,
@@ -60,6 +61,7 @@ export default async function PaddleDiagnosticsPage({
   const env = process.env.PADDLE_ENV === "live" ? "live" : "sandbox";
   const hasApiKey = !!process.env.PADDLE_API_KEY;
   const hasWebhookSecret = !!paddleWebhookSecret();
+  const hasClientToken = !!paddleClientToken();
   const configured = paddleConfiguredTiers();
 
   const paddle = getPaddleClient();
@@ -102,6 +104,7 @@ export default async function PaddleDiagnosticsPage({
   const allGreen =
     hasApiKey &&
     hasWebhookSecret &&
+    hasClientToken &&
     PAID_TIERS.every((t) => configured[t]) &&
     checks.every((c) => c.status === "ok");
 
@@ -188,6 +191,12 @@ export default async function PaddleDiagnosticsPage({
             name="PADDLE_WEBHOOK_SECRET"
             value={hasWebhookSecret ? "set" : "missing"}
             ok={hasWebhookSecret}
+          />
+          <EnvRow
+            name="NEXT_PUBLIC_PADDLE_CLIENT_TOKEN"
+            value={hasClientToken ? "set" : "missing"}
+            ok={hasClientToken}
+            hint="Para Paddle.js"
           />
           <EnvRow
             name="PADDLE_PRICE_TEAM_50"
@@ -380,14 +389,14 @@ function TxTestResultView({ result }: { result: TxTestResult }) {
           <XCircle className="size-4" /> Transaction creada · falta checkout.url
         </p>
         <p className="font-editorial text-sm leading-relaxed">
-          La API aceptó la transaction (<code>{result.txId}</code>) pero la respuesta no incluye un <code>checkout.url</code>. Esto es lo que hace que <code>/api/checkout/[tier]</code> caiga al fallback aunque las env vars estén bien.
+          La API aceptó la transaction (<code>{result.txId}</code>) pero la respuesta no incluye un <code>checkout.url</code>. Esto suele ser falta del &quot;Default Payment Link&quot; en el dashboard de Paddle.
         </p>
         <div className="rounded border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-bg))] p-3">
           <p className="font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-arena)]">
             Fix
           </p>
           <p className="mt-1 font-editorial text-sm leading-relaxed">
-            Paddle dashboard → <strong>Checkout settings → Default payment link</strong> → pega una URL cualquiera (por ej. <code>https://quinielamundial.es/dashboard</code>) → <strong>Save</strong>. Vuelve a ejecutar el test después.
+            Paddle dashboard → <strong>Checkout settings → Default payment link</strong> → <code>https://quinielamundial.es/checkout</code> → <strong>Save</strong>. Esa URL apunta a la página propia que carga Paddle.js y abre el overlay.
           </p>
         </div>
       </article>

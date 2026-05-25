@@ -102,6 +102,27 @@ export function paddleWebhookSecret(): string | null {
   return process.env.PADDLE_WEBHOOK_SECRET ?? null;
 }
 
+/**
+ * Token público para Paddle.js (cliente). Imprescindible en `/checkout`
+ * para inicializar el SDK y abrir el overlay. Inyectado al cliente a
+ * través de `NEXT_PUBLIC_*` — no es secreto, está pensado para ser
+ * visible en el navegador.
+ */
+export function paddleClientToken(): string | null {
+  return process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN ?? null;
+}
+
+/** "sandbox" | "production" — interpretado tanto en server como cliente. */
+export function paddlePublicEnv(): "sandbox" | "production" {
+  // En cliente, NEXT_PUBLIC_PADDLE_ENV se inyecta en build time. En
+  // server podemos usar PADDLE_ENV como fallback para que el server y
+  // el cliente acaben coincidiendo en el 99% de los casos.
+  const fromPublic = process.env.NEXT_PUBLIC_PADDLE_ENV;
+  const fromServer = typeof window === "undefined" ? process.env.PADDLE_ENV : null;
+  const raw = (fromPublic ?? fromServer ?? "sandbox").toLowerCase();
+  return raw === "live" || raw === "production" ? "production" : "sandbox";
+}
+
 /** "19,00 EUR" — para mensajes de Telegram, etc. */
 export function formatPaddleMoney(amountMinor: string | number, currency: string): string {
   const minor = typeof amountMinor === "string" ? Number(amountMinor) : amountMinor;
