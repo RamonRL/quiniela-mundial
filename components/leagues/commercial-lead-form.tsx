@@ -22,8 +22,14 @@ const initialState: CommercialLeadFormState = { ok: false };
  */
 export function CommercialLeadForm({
   defaultMembers,
+  defaultMessage,
+  defaultMessagePlaceholder,
 }: {
   defaultMembers?: number;
+  /** Pre-rellena el textarea (útil cuando se entra desde un tier concreto). */
+  defaultMessage?: string;
+  /** Override del placeholder del textarea. */
+  defaultMessagePlaceholder?: string;
 }) {
   const [state, action, pending] = useActionState(submitCommercialLead, initialState);
 
@@ -83,7 +89,11 @@ export function CommercialLeadForm({
           name="message"
           rows={4}
           maxLength={1500}
-          placeholder="Cuéntame brevemente para qué la queréis, plazos, dudas…"
+          defaultValue={defaultMessage}
+          placeholder={
+            defaultMessagePlaceholder ??
+            "Cuéntame brevemente para qué la queréis, plazos, dudas…"
+          }
           className="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2.5 text-sm text-[var(--color-foreground)] outline-none transition focus:border-[var(--color-arena)]"
         />
       </label>

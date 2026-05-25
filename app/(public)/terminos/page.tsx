@@ -144,26 +144,19 @@ export default function TerminosPage() {
 
         <Block title="6. Procesamiento del pago y facturación">
           <p>
-            El cobro de los Pases lo procesa{" "}
-            <strong className="not-italic font-semibold">Lemon Squeezy</strong>{" "}
-            como Merchant of Record. Esto significa que Lemon Squeezy es
-            quien legalmente vende el producto al usuario, emite la
-            factura con el IVA correspondiente y gestiona las obligaciones
-            fiscales asociadas. Quiniela Mundial actúa como proveedor del
-            servicio subyacente.
+            La contratación de los Pases se gestiona directamente entre{" "}
+            {LEGAL_OWNER.fullName} y el cliente, fuera del Sitio. Tras
+            enviar la solicitud desde /precios, te contactamos por email
+            con las instrucciones de pago, los datos fiscales necesarios
+            para la factura/recibo y resolvemos cualquier duda específica
+            de tu caso.
           </p>
           <p className="mt-3">
-            Al adquirir un Pase, aceptas también los{" "}
-            <a
-              href="https://www.lemonsqueezy.com/terms"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[var(--color-arena)] underline-offset-2 hover:underline"
-            >
-              Términos de Lemon Squeezy
-            </a>
-            . La factura legal con los datos fiscales que indiques durante
-            el checkout queda disponible para descarga inmediata.
+            El recibo o factura emitido se ajusta a los datos fiscales que
+            indiques durante esa conversación y se entrega tras confirmar
+            el ingreso. Si tu empresa requiere un formato concreto
+            (factura ordinaria, factura simplificada, etc.), indícalo en
+            la solicitud y se acomoda al gestionar el pago.
           </p>
         </Block>
 
@@ -184,9 +177,9 @@ export default function TerminosPage() {
             >
               {LEGAL_OWNER.email}
             </a>
-            . Tramitaremos la devolución a través de Lemon Squeezy en un
-            plazo máximo de 14 días naturales desde la solicitud, siempre
-            que el torneo no haya comenzado.
+            . Tramitaremos el reintegro por el mismo medio por el que se
+            recibió el pago en un plazo máximo de 14 días naturales desde
+            la solicitud, siempre que el torneo no haya comenzado.
           </p>
         </Block>
 

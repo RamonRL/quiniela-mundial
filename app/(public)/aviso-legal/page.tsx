@@ -71,8 +71,15 @@ export default function AvisoLegalPage() {
             personas físicas y jurídicas que deseen organizar quinielas de
             predicciones sobre la Copa Mundial de la FIFA 2026. El uso del
             Sitio es gratuito hasta 20 miembros por quiniela privada. Para
-            grupos mayores se ofrecen Pases Mundial 2026 de pago, cuyo cobro
-            y facturación los procesa Lemon Squeezy como Merchant of Record
+            grupos mayores se ofrecen Pases Mundial 2026 de pago, cuya
+            contratación se gestiona directamente con el titular del Sitio
+            tras solicitud previa desde{" "}
+            <Link
+              href="/precios"
+              className="text-[var(--color-arena)] underline-offset-2 hover:underline"
+            >
+              /precios
+            </Link>{" "}
             (más detalles en{" "}
             <Link
               href="/terminos"

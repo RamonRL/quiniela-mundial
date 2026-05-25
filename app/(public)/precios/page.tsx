@@ -29,8 +29,8 @@ export const metadata = {
 
 type Plan = {
   id: string;
-  /** Tier id que casa con la env var de Lemon Squeezy. Solo para los
-   * de pago. */
+  /** Tier id de pago. Si está presente, el CTA apunta a
+   * `/precios/pagar/[tier]` (contacto previo al pago). */
   paidTierId?: PaidTierId;
   name: string;
   price: string;
@@ -38,9 +38,7 @@ type Plan = {
   members: string;
   highlight?: boolean;
   ctaLabel: string;
-  /** Enlace interno (p.ej. /onboarding). Si está vacío y existe
-   * `paidTierId`, se usa la URL de checkout de Lemon Squeezy si está
-   * configurada; si no, se cae al formulario de contacto. */
+  /** Enlace interno explícito (p.ej. /onboarding para el plan Free). */
   ctaHref?: string;
 };
 
@@ -97,7 +95,7 @@ const PAID_FEATURES: string[] = [
 const FAQ: { q: string; a: string }[] = [
   {
     q: "¿Cómo funciona el pago?",
-    a: "Pulsa Comprar en el plan que quieras, se abre el checkout de Lemon Squeezy (tarjeta o PayPal) y al confirmar el pago recibimos aviso al momento. En cuanto verificamos que vas asociado a la quiniela correcta, levantamos el límite de miembros — normalmente en menos de 24h.",
+    a: "Pulsa Comprar en el plan que quieras y se abre un formulario corto para que te pongas en contacto conmigo. En menos de 24 h te respondo personalmente con las instrucciones de pago, datos para la factura si la necesitas y resolvemos cualquier duda. Cuando se confirma el ingreso, levantamos el tope de miembros de tu liga al instante — sin migrar nada.",
   },
   {
     q: "¿El precio es por torneo o suscripción?",
@@ -109,7 +107,7 @@ const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "¿Podéis emitir factura con los datos de mi empresa?",
-    a: "Sí. El pago lo procesa Lemon Squeezy como Merchant of Record: ellos emiten una factura legal con el IVA correspondiente (en España, 21 %; en otros países UE, el aplicable). Durante el checkout puedes introducir los datos fiscales de tu empresa y la factura se descarga al momento en PDF — válida para deducción contable.",
+    a: "Sí. Durante la conversación previa al pago me indicas los datos fiscales (CIF, razón social, dirección) y los incluimos en la factura/recibo que recibes tras confirmar el ingreso.",
   },
   {
     q: "¿Cómo funcionan los departamentos?",
@@ -125,7 +123,7 @@ const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "¿Devolución si no estamos satisfechos?",
-    a: "Si el torneo aún no ha empezado y no estás contento con la herramienta, escríbenos: gestionamos la devolución con Lemon Squeezy. Una vez arrancado el Mundial el reembolso ya no aplica al haberse consumido el servicio.",
+    a: "Si el torneo aún no ha empezado y no estás contento con la herramienta, escríbenos y te devolvemos el importe íntegro. Una vez arrancado el Mundial el reembolso ya no aplica al haberse consumido el servicio.",
   },
 ];
 
