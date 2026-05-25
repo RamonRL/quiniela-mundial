@@ -87,11 +87,10 @@ export default function PrivacidadPage() {
               seguridad del Sitio.
             </li>
             <li>
-              <strong className="font-semibold">Datos de pago:</strong> el
-              pago se gestiona directamente entre el cliente y el titular
-              del Sitio por transferencia bancaria, Bizum o PayPal tras
-              recibir las instrucciones por email. No almacenamos datos
-              de tarjeta ni credenciales de pago en nuestros sistemas.
+              <strong className="font-semibold">Datos de pago:</strong> los
+              gestiona íntegramente Paddle como Merchant of Record. No
+              almacenamos datos de tarjeta ni credenciales de pago en
+              nuestros sistemas.
             </li>
           </ul>
           <p className="mt-3">
@@ -165,6 +164,12 @@ export default function PrivacidadPage() {
             <li>
               <strong className="font-semibold">Sentry (Estados Unidos):</strong>{" "}
               monitorización de errores técnicos.
+            </li>
+            <li>
+              <strong className="font-semibold">Paddle (Reino Unido):</strong>{" "}
+              procesamiento de pagos y emisión de facturas como Merchant of
+              Record. Solo recibe los datos necesarios para completar la
+              compra.
             </li>
             <li>
               <strong className="font-semibold">Telegram (Reino Unido / UAE):</strong>{" "}

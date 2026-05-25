@@ -30,7 +30,7 @@ export const metadata = {
 type Plan = {
   id: string;
   /** Tier id de pago. Si está presente, el CTA apunta a
-   * `/precios/pagar/[tier]` (contacto previo al pago). */
+   * `/api/checkout/[tier]` para iniciar el flujo de Paddle. */
   paidTierId?: PaidTierId;
   name: string;
   price: string;
@@ -95,7 +95,11 @@ const PAID_FEATURES: string[] = [
 const FAQ: { q: string; a: string }[] = [
   {
     q: "¿Cómo funciona el pago?",
-    a: "Pulsa Comprar en el plan que quieras y se abre un formulario corto para que te pongas en contacto conmigo. En menos de 24 h te respondo personalmente con las instrucciones de pago y resolvemos cualquier duda. Cuando se confirma el ingreso, levantamos el tope de miembros de tu liga al instante — sin migrar nada.",
+    a: "Pulsa Comprar en el plan que quieras, se abre el checkout de Paddle (tarjeta o PayPal) y al confirmar el pago recibimos aviso al instante. En cuanto verificamos que vas asociado a la quiniela correcta, levantamos el tope de miembros — normalmente al momento.",
+  },
+  {
+    q: "¿Podéis emitir factura con los datos de mi empresa?",
+    a: "Sí. El pago lo procesa Paddle como Merchant of Record: ellos emiten una factura legal con el IVA correspondiente (en España, 21 %; en otros países UE, el aplicable). Durante el checkout puedes introducir los datos fiscales de tu empresa y la factura se descarga al momento en PDF — válida para deducción contable.",
   },
   {
     q: "¿El precio es por torneo o suscripción?",
@@ -119,7 +123,7 @@ const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "¿Devolución si no estamos satisfechos?",
-    a: "Si el torneo aún no ha empezado y no estás contento con la herramienta, escríbenos y te devolvemos el importe íntegro. Una vez arrancado el Mundial el reembolso ya no aplica al haberse consumido el servicio.",
+    a: "Si el torneo aún no ha empezado y no estás contento con la herramienta, escríbenos: gestionamos la devolución con Paddle. Una vez arrancado el Mundial el reembolso ya no aplica al haberse consumido el servicio.",
   },
 ];
 
@@ -327,9 +331,10 @@ export default function PreciosPage() {
  * cada tier:
  *
  *  - Tier Free → enlace interno a /onboarding.
- *  - Tier de pago → `/precios/pagar/<tier>` con instrucciones de
- *    pago manual (Bizum / IBAN / PayPal). Sin pasarela MoR mientras
- *    no haya aprobación de Paddle / similar.
+ *  - Tier de pago → `/api/checkout/<tier>`. El endpoint crea la
+ *    transaction en Paddle con custom_data (league_code, user_id) y
+ *    redirige al hosted checkout. Si Paddle no está configurado en
+ *    runtime, el endpoint cae a /precios#contacto automáticamente.
  */
 function PlanCTA({ plan }: { plan: Plan }) {
   const arenaClasses = plan.highlight
@@ -348,12 +353,12 @@ function PlanCTA({ plan }: { plan: Plan }) {
   }
   if (plan.paidTierId) {
     return (
-      <Link
-        href={`/precios/pagar/${plan.paidTierId}`}
+      <a
+        href={`/api/checkout/${plan.paidTierId}`}
         className={`inline-flex w-full items-center justify-center gap-2 rounded-md px-4 py-2 font-mono text-[0.65rem] uppercase tracking-[0.18em] transition ${arenaClasses}`}
       >
         {plan.ctaLabel} <ArrowRight className="size-3.5" />
-      </Link>
+      </a>
     );
   }
   return (

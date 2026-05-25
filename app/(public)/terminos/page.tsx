@@ -142,18 +142,29 @@ export default function TerminosPage() {
           </p>
         </Block>
 
-        <Block title="6. Procesamiento del pago">
+        <Block title="6. Procesamiento del pago y facturación">
           <p>
-            La contratación de los Pases se gestiona directamente entre{" "}
-            {LEGAL_OWNER.fullName} y el cliente, fuera del Sitio. Tras
-            enviar la solicitud desde /precios, te contactamos por email
-            con las instrucciones de pago y resolvemos cualquier duda
-            específica de tu caso.
+            El cobro de los Pases lo procesa{" "}
+            <strong className="not-italic font-semibold">Paddle</strong>{" "}
+            (Paddle.com Market Limited, Reino Unido) como Merchant of
+            Record. Esto significa que Paddle es quien legalmente vende
+            el producto al usuario, emite la factura con el IVA
+            correspondiente y gestiona las obligaciones fiscales
+            asociadas. Quiniela Mundial actúa como proveedor del
+            servicio subyacente.
           </p>
           <p className="mt-3">
-            Una vez confirmado el ingreso, se aplica el upgrade del tope
-            de miembros de la liga correspondiente sin migrar datos —
-            misma liga, mismos miembros, más capacidad.
+            Al adquirir un Pase, aceptas también los{" "}
+            <a
+              href="https://www.paddle.com/legal/checkout-buyer-terms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[var(--color-arena)] underline-offset-2 hover:underline"
+            >
+              Términos de Paddle
+            </a>
+            . La factura legal con los datos fiscales que indiques durante
+            el checkout queda disponible para descarga inmediata en PDF.
           </p>
         </Block>
 
@@ -174,9 +185,9 @@ export default function TerminosPage() {
             >
               {LEGAL_OWNER.email}
             </a>
-            . Tramitaremos el reintegro por el mismo medio por el que se
-            recibió el pago en un plazo máximo de 14 días naturales desde
-            la solicitud, siempre que el torneo no haya comenzado.
+            . Tramitaremos la devolución a través de Paddle en un plazo
+            máximo de 14 días naturales desde la solicitud, siempre que
+            el torneo no haya comenzado.
           </p>
         </Block>
 

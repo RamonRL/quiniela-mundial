@@ -125,9 +125,8 @@ export async function notifyNewCommercialLead(args: {
   await sendTelegramMessage(text);
 }
 
-export async function notifyLemonSqueezyOrder(args: {
-  orderId: string;
-  orderNumber: number;
+export async function notifyPaddleOrder(args: {
+  transactionId: string;
   productName: string;
   amountFormatted: string;
   customerName: string;
@@ -142,8 +141,8 @@ export async function notifyLemonSqueezyOrder(args: {
   };
 }): Promise<void> {
   const headline = args.autoActivation
-    ? "✅ <b>Pase activado automáticamente · Lemon Squeezy</b>"
-    : "💸 <b>Pago recibido · Lemon Squeezy</b>";
+    ? "✅ <b>Pase activado automáticamente · Paddle</b>"
+    : "💸 <b>Pago recibido · Paddle</b>";
 
   const lines = [
     headline,
@@ -153,9 +152,10 @@ export async function notifyLemonSqueezyOrder(args: {
   ];
 
   if (args.autoActivation) {
-    const via = args.autoActivation.resolvedBy === "league_code"
-      ? "código en checkout"
-      : "email del comprador";
+    const via =
+      args.autoActivation.resolvedBy === "league_code"
+        ? "código en checkout"
+        : "email del comprador";
     lines.push(
       `🏆 <b>${escapeHTML(args.autoActivation.leagueName)}</b> (${via})`,
       `<a href="${SITE_URL}/admin/ligas/${args.autoActivation.leagueId}">Ver liga</a>`,
@@ -167,7 +167,7 @@ export async function notifyLemonSqueezyOrder(args: {
     );
   }
 
-  lines.push(`#${args.orderNumber}`);
+  lines.push(`<code>${escapeHTML(args.transactionId)}</code>`);
   await sendTelegramMessage(lines.join("\n"));
 }
 
