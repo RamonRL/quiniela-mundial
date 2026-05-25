@@ -95,7 +95,7 @@ const PAID_FEATURES: string[] = [
 const FAQ: { q: string; a: string }[] = [
   {
     q: "¿Cómo funciona el pago?",
-    a: "Pulsa Comprar en el plan que quieras y se abre un formulario corto para que te pongas en contacto conmigo. En menos de 24 h te respondo personalmente con las instrucciones de pago, datos para la factura si la necesitas y resolvemos cualquier duda. Cuando se confirma el ingreso, levantamos el tope de miembros de tu liga al instante — sin migrar nada.",
+    a: "Pulsa Comprar en el plan que quieras y se abre un formulario corto para que te pongas en contacto conmigo. En menos de 24 h te respondo personalmente con las instrucciones de pago y resolvemos cualquier duda. Cuando se confirma el ingreso, levantamos el tope de miembros de tu liga al instante — sin migrar nada.",
   },
   {
     q: "¿El precio es por torneo o suscripción?",
@@ -104,10 +104,6 @@ const FAQ: { q: string; a: string }[] = [
   {
     q: "Necesitamos más de 250 miembros, ¿qué hacemos?",
     a: "Indícanos la cifra real en el mensaje del formulario y te pasamos presupuesto a medida.",
-  },
-  {
-    q: "¿Podéis emitir factura con los datos de mi empresa?",
-    a: "Sí. Durante la conversación previa al pago me indicas los datos fiscales (CIF, razón social, dirección) y los incluimos en la factura/recibo que recibes tras confirmar el ingreso.",
   },
   {
     q: "¿Cómo funcionan los departamentos?",
@@ -306,8 +302,8 @@ export default function PreciosPage() {
               Cuéntame de tu grupo.
             </h2>
             <p className="font-editorial text-base italic text-[var(--color-muted-foreground)]">
-              Te contestamos en menos de 24 h con presupuesto, opciones de
-              facturación y siguiente paso. Sin compromiso.
+              Te contestamos en menos de 24 h con presupuesto y siguiente paso.
+              Sin compromiso.
             </p>
           </header>
           <CommercialLeadForm />

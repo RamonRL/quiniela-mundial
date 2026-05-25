@@ -91,7 +91,7 @@ export default async function ContratarTierPage({
       <PageHeader
         eyebrow={`${TIER_LABEL[tier]} · ${TIER_MEMBERS[tier]}`}
         title={`Solicita el ${TIER_LABEL[tier]}`}
-        description="Cuéntame de tu grupo y te respondo en menos de 24 h con los detalles para activarlo: instrucciones de pago, datos para la factura si la necesitas y siguiente paso."
+        description="Cuéntame de tu grupo y te respondo en menos de 24 h con los detalles para activarlo y los siguientes pasos."
       />
 
       {/* ─── Resumen del pedido ─── */}
@@ -126,7 +126,7 @@ export default async function ContratarTierPage({
           n={2}
           icon={<Clock className="size-4" />}
           title="Respondo en &lt;24h"
-          text="Te escribo personalmente con instrucciones de pago, datos fiscales para la factura y dudas que tengas."
+          text="Te escribo personalmente con las instrucciones de pago y resolvemos cualquier duda que tengas."
         />
         <Step
           n={3}
@@ -179,11 +179,6 @@ function buildDefaultMessage(input: {
   } else {
     lines.push("Aún no he creado la quiniela.");
   }
-  lines.push("");
-  lines.push("Cosas que te pueden venir bien que incluya:");
-  lines.push("· Tamaño aproximado del grupo");
-  lines.push("· Fecha objetivo de activación");
-  lines.push("· Si necesitas factura con datos fiscales de empresa");
   return lines.join("\n");
 }
 

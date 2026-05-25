@@ -142,21 +142,18 @@ export default function TerminosPage() {
           </p>
         </Block>
 
-        <Block title="6. Procesamiento del pago y facturación">
+        <Block title="6. Procesamiento del pago">
           <p>
             La contratación de los Pases se gestiona directamente entre{" "}
             {LEGAL_OWNER.fullName} y el cliente, fuera del Sitio. Tras
             enviar la solicitud desde /precios, te contactamos por email
-            con las instrucciones de pago, los datos fiscales necesarios
-            para la factura/recibo y resolvemos cualquier duda específica
-            de tu caso.
+            con las instrucciones de pago y resolvemos cualquier duda
+            específica de tu caso.
           </p>
           <p className="mt-3">
-            El recibo o factura emitido se ajusta a los datos fiscales que
-            indiques durante esa conversación y se entrega tras confirmar
-            el ingreso. Si tu empresa requiere un formato concreto
-            (factura ordinaria, factura simplificada, etc.), indícalo en
-            la solicitud y se acomoda al gestionar el pago.
+            Una vez confirmado el ingreso, se aplica el upgrade del tope
+            de miembros de la liga correspondiente sin migrar datos —
+            misma liga, mismos miembros, más capacidad.
           </p>
         </Block>
 
