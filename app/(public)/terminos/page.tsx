@@ -53,12 +53,17 @@ export default function TerminosPage() {
             participantes.
           </p>
           <p className="mt-3">
-            El servicio tiene <strong className="font-semibold not-italic">
-              fines lúdicos y de entretenimiento
+            El servicio es un <strong className="font-semibold not-italic">
+              juego de predicción deportiva por habilidad
+            </strong>, con fines lúdicos y de entretenimiento exclusivamente.{" "}
+            <strong className="font-semibold not-italic">
+              No constituye apuestas, no es juego de azar y no exige
+              contraprestación económica para participar
             </strong>{" "}
-            exclusivamente. No constituye apuestas reguladas ni juegos de
-            azar conforme a la Ley 13/2011 de regulación del juego. No hay
-            premios monetarios garantizados por el Sitio.
+            (conforme a la Ley 13/2011 de regulación del juego). El Sitio{" "}
+            <strong className="font-semibold not-italic">no entrega premios monetarios</strong>;
+            el reconocimiento al ganador, en su caso, es un trofeo físico
+            simbólico o lo que pacten los participantes entre sí.
           </p>
         </Block>
 
@@ -229,8 +234,8 @@ export default function TerminosPage() {
             </li>
             <li>Resultados deportivos imprevistos que afecten al cálculo de puntuaciones.</li>
             <li>
-              Decisiones adoptadas por los participantes sobre premios
-              acordados entre ellos al margen del Sitio.
+              Decisiones adoptadas por los participantes sobre cualquier
+              reconocimiento que acuerden entre ellos al margen del Sitio.
             </li>
             <li>
               Contenidos de terceros enlazados desde el Sitio (federaciones,

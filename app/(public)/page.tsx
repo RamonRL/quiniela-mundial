@@ -278,7 +278,7 @@ export default async function HomePage() {
             n={4}
             icon={<Crown className="size-5" />}
             title="Gana"
-            text="El que mejor lea el torneo gana. Premio: la gloria, lo que pacten los amigos, o ambas."
+            text="El que mejor lea el torneo gana. Reconocimiento entre amigos, trofeo simbólico de la liga, o lo que pacten los participantes."
           />
         </div>
       </section>
@@ -532,8 +532,8 @@ export default async function HomePage() {
             Seis formas de sumar puntos
           </h2>
           <p className="max-w-3xl font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base">
-            La quiniela no se limita a marcadores. Combinas predicciones a largo
-            plazo (grupos, bracket, goleador del torneo) con apuestas más
+            El juego no se limita a marcadores. Combinas predicciones a largo
+            plazo (grupos, bracket, goleador del torneo) con predicciones más
             inmediatas (marcador exacto y goleador de cada partido).
           </p>
         </header>

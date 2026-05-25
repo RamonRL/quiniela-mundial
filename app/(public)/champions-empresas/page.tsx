@@ -70,7 +70,7 @@ export default async function ChampionsEmpresasPage() {
         description="Todas las empresas con un Pase Mundial 2026 compiten en una sola liga. Gana la que tenga mayor media de puntos al cierre del torneo."
       />
 
-      {/* ─── Card del premio ─── */}
+      {/* ─── Card del trofeo ─── */}
       <section className="overflow-hidden rounded-2xl border-2 border-[var(--color-arena)] bg-[color-mix(in_oklch,var(--color-arena)_6%,var(--color-surface))]">
         <div className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[auto_1fr] lg:items-center">
           <div className="flex shrink-0 items-center justify-center">
@@ -85,7 +85,7 @@ export default async function ChampionsEmpresasPage() {
             </div>
           </div>
           <div className="space-y-3">
-            <h2 className="font-display text-3xl tracking-tight">El premio</h2>
+            <h2 className="font-display text-3xl tracking-tight">El trofeo</h2>
             <p className="font-editorial text-base italic leading-relaxed text-[var(--color-muted-foreground)]">
               Trofeo físico personalizado para la empresa ganadora + difusión en nuestras
               redes (TikTok &amp; X). Lo enviamos a la dirección de la oficina nada más

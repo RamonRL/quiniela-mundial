@@ -3,8 +3,9 @@ import { ArrowRight, Check, Mail } from "lucide-react";
 import { PageHeader } from "@/components/shell/page-header";
 import { BreadcrumbLD, ProductOffersLD } from "@/components/seo/jsonld";
 import { CommercialLeadForm } from "@/components/leagues/commercial-lead-form";
-import { getCheckoutUrls, type PaidTierId } from "@/lib/lemonsqueezy";
 import { BuyerLeagueBanner } from "./buyer-league-banner";
+
+type PaidTierId = "team-50" | "team-100" | "team-250";
 
 // Cacheable: la página no depende de la sesión del usuario. La
 // personalización (banner "comprando para tu liga X" y `league_code`
@@ -86,7 +87,7 @@ const PLANS: Plan[] = [
 /** Lo mismo en todos los Pases — solo cambia el tope de miembros. */
 const PAID_FEATURES: string[] = [
   "Departamentos internos con ranking por media de puntos",
-  "Acceso a la Champions de Empresas con premio físico",
+  "Acceso a la Champions de Empresas con trofeo físico al ganador",
   "Logo corporativo custom",
   "Anuncio fijado del organizador",
   "Export CSV del ranking",
@@ -129,11 +130,6 @@ const FAQ: { q: string; a: string }[] = [
 ];
 
 export default function PreciosPage() {
-  // Solo nos interesa saber si las env vars de LS están configuradas
-  // para cada tier — sin sesión, sin DB. Las URLs reales con
-  // custom_data las construye /api/checkout/<tier> al click.
-  const lemonConfigured = getCheckoutUrls();
-
   return (
     <div className="space-y-12">
       <BreadcrumbLD
@@ -207,12 +203,7 @@ export default function PreciosPage() {
               </p>
             </div>
             <div className="mt-5">
-              <PlanCTA
-                plan={plan}
-                lemonConfigured={
-                  plan.paidTierId ? lemonConfigured[plan.paidTierId] != null : false
-                }
-              />
+              <PlanCTA plan={plan} />
             </div>
           </article>
         ))}
@@ -342,21 +333,11 @@ export default function PreciosPage() {
  * cada tier:
  *
  *  - Tier Free → enlace interno a /onboarding.
- *  - Tier de pago con Lemon Squeezy configurado → /api/checkout/<tier>.
- *    El endpoint resuelve la liga del comprador y redirige a LS con
- *    el custom_data correspondiente. No vamos directos a LS para no
- *    necesitar leer la sesión en el render de /precios (que está
- *    cacheada).
- *  - Tier de pago sin LS configurado → cae al ancla #contacto del
- *    formulario, útil mientras LS aún no esté aprobado en producción.
+ *  - Tier de pago → `/precios/pagar/<tier>` con instrucciones de
+ *    pago manual (Bizum / IBAN / PayPal). Sin pasarela MoR mientras
+ *    no haya aprobación de Paddle / similar.
  */
-function PlanCTA({
-  plan,
-  lemonConfigured,
-}: {
-  plan: Plan;
-  lemonConfigured: boolean;
-}) {
+function PlanCTA({ plan }: { plan: Plan }) {
   const arenaClasses = plan.highlight
     ? "bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]"
     : "border border-[var(--color-arena)]/50 text-[var(--color-arena)] hover:bg-[color-mix(in_oklch,var(--color-arena)_8%,transparent)]";
@@ -371,16 +352,14 @@ function PlanCTA({
       </Link>
     );
   }
-  if (lemonConfigured && plan.paidTierId) {
+  if (plan.paidTierId) {
     return (
-      <a
-        href={`/api/checkout/${plan.paidTierId}`}
-        target="_blank"
-        rel="noopener noreferrer"
+      <Link
+        href={`/precios/pagar/${plan.paidTierId}`}
         className={`inline-flex w-full items-center justify-center gap-2 rounded-md px-4 py-2 font-mono text-[0.65rem] uppercase tracking-[0.18em] transition ${arenaClasses}`}
       >
         {plan.ctaLabel} <ArrowRight className="size-3.5" />
-      </a>
+      </Link>
     );
   }
   return (

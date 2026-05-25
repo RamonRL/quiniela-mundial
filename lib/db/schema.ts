@@ -76,6 +76,25 @@ export const commercialLeadStatus = pgEnum("commercial_lead_status", [
   "lost",
 ]);
 
+/**
+ * Intenciones de pago manual (Bizum / IBAN / PayPal) tras quitar Lemon
+ * Squeezy. El usuario clica "He pagado" en `/precios/pagar/[tier]` y se
+ * persiste aquí. Admin verifica el ingreso en banco, marca verified y
+ * sube el tier de la liga en `/admin/ligas/[id]`.
+ */
+export const pendingPaymentStatus = pgEnum("pending_payment_status", [
+  "pending",
+  "verified",
+  "rejected",
+]);
+
+export const pendingPaymentMethod = pgEnum("pending_payment_method", [
+  "bizum",
+  "bank",
+  "paypal",
+  "unknown",
+]);
+
 export const pointsSource = pgEnum("points_source", [
   "group_position",
   "group_top2_swap",
@@ -164,6 +183,39 @@ export const commercialLeads = pgTable(
   (t) => [
     index("commercial_leads_status_idx").on(t.status, t.createdAt),
     index("commercial_leads_created_idx").on(t.createdAt),
+  ],
+);
+
+/**
+ * Intención de pago manual creada cuando el usuario clica "He pagado"
+ * en `/precios/pagar/[tier]`. El admin cruza este registro con el
+ * ingreso real en banco/Bizum/PayPal (matcheando por `concept` o por
+ * email) y entonces aplica el upgrade del tier de la liga
+ * correspondiente desde `/admin/ligas/[id]`. Si tras X días el pago no
+ * aparece, se marca `rejected`.
+ */
+export const pendingPayments = pgTable(
+  "pending_payments",
+  {
+    id: serial("id").primaryKey(),
+    userId: uuid("user_id").references(() => profiles.id, { onDelete: "set null" }),
+    leagueId: integer("league_id").references(() => leagues.id, { onDelete: "set null" }),
+    tier: leagueTier("tier").notNull(),
+    method: pendingPaymentMethod("method").notNull().default("unknown"),
+    priceEur: integer("price_eur").notNull(),
+    /** Concepto sugerido al usuario, ej. `QM26-TEAM100-A1B2`. */
+    concept: text("concept").notNull(),
+    /** Email + nombre que rellena el comprador en el formulario público. */
+    email: text("email"),
+    name: text("name"),
+    status: pendingPaymentStatus("status").notNull().default("pending"),
+    notes: text("notes"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("pending_payments_status_idx").on(t.status, t.createdAt),
+    index("pending_payments_league_idx").on(t.leagueId),
   ],
 );
 
