@@ -192,6 +192,13 @@ export default async function MyLeaguePage() {
         />
       </section>
 
+      {isOwner && !isPremium ? (
+        <UpgradePromo
+          currentMembers={members.length}
+          currentLimit={memberLimit}
+        />
+      ) : null}
+
       {isOwner && isPremium ? (
         <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Link
@@ -350,6 +357,86 @@ export default async function MyLeaguePage() {
         </p>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * Promo persistente para owners de ligas Free dentro de /mi-quiniela.
+ * Complementa los banners `isFull` / `nearLimit` (que solo aparecen
+ * bajo presión) con info pasiva: qué desbloquea pagar, aunque tengan
+ * el límite muy lejos. Una sola CTA a /precios. Sin sticky, sin
+ * pop-ups — sección normal del scroll.
+ */
+function UpgradePromo({
+  currentMembers,
+  currentLimit,
+}: {
+  currentMembers: number;
+  currentLimit: number | null;
+}) {
+  return (
+    <section className="relative overflow-hidden rounded-2xl border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface))] p-5 sm:p-6">
+      <div
+        aria-hidden
+        className="halftone pointer-events-none absolute inset-0 opacity-[0.05]"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full opacity-30 blur-3xl"
+        style={{
+          background:
+            "radial-gradient(circle, color-mix(in oklch, var(--color-arena) 28%, transparent), transparent 70%)",
+        }}
+      />
+
+      <div className="relative grid gap-5 lg:grid-cols-[1.2fr_auto] lg:items-center">
+        <div className="space-y-3">
+          <div className="inline-flex items-center gap-2">
+            <Crown className="size-3.5 text-[var(--color-arena)]" />
+            <p className="font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-arena)]">
+              Pase Mundial 2026
+            </p>
+          </div>
+          <h2 className="font-display text-2xl tracking-tight sm:text-3xl">
+            Hazlo el ritual de oficina del Mundial
+          </h2>
+          <p className="font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)]">
+            Tu liga Free está topada a {currentLimit ?? 20} miembros (vais {currentMembers}). Con un Pase ampliamos a 50, 100 o 250 y desbloqueamos las funciones pensadas para grupos grandes.
+          </p>
+
+          <ul className="grid gap-1.5 pt-1 sm:grid-cols-2">
+            <PromoBullet>Departamentos internos con ranking por media</PromoBullet>
+            <PromoBullet>Champions de Empresas con trofeo físico</PromoBullet>
+            <PromoBullet>Logo corporativo + anuncio fijado</PromoBullet>
+            <PromoBullet>Export CSV del ranking y soporte prioritario</PromoBullet>
+          </ul>
+        </div>
+
+        <div className="flex flex-col items-start gap-2 lg:items-end">
+          <p className="font-display tabular text-4xl tracking-tight text-[var(--color-arena)] glow-arena">
+            desde 19 €
+          </p>
+          <p className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+            Pago único · sin renovación
+          </p>
+          <Link
+            href="/precios"
+            className="inline-flex items-center gap-2 rounded-md border border-[var(--color-arena)] bg-[var(--color-arena)] px-4 py-2 font-mono text-[0.65rem] uppercase tracking-[0.18em] text-white shadow-[var(--shadow-arena)] transition hover:opacity-90"
+          >
+            Ver planes <ArrowRight className="size-3.5" />
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PromoBullet({ children }: { children: React.ReactNode }) {
+  return (
+    <li className="flex items-start gap-2">
+      <Sparkles className="mt-0.5 size-3 shrink-0 text-[var(--color-arena)]" />
+      <span className="font-editorial text-xs italic leading-snug">{children}</span>
+    </li>
   );
 }
 
