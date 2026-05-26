@@ -1,4 +1,4 @@
-import { asc } from "drizzle-orm";
+import { asc, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { profiles } from "@/lib/db/schema";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -13,22 +13,56 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PageHeader } from "@/components/shell/page-header";
+import { Pagination } from "@/components/admin/pagination";
 import { formatDate, formatDateTime, initials } from "@/lib/utils";
 import { UserActions } from "./user-actions";
 
 export const metadata = { title: "Usuarios · Admin" };
+export const dynamic = "force-dynamic";
 
-export default async function AdminUsersPage() {
-  const users = await db.select().from(profiles).orderBy(asc(profiles.createdAt));
+const DEFAULT_PER_PAGE = 25;
+const MAX_PER_PAGE = 200;
+
+export default async function AdminUsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = await searchParams;
+  const rawPage = Number(sp.page);
+  const rawPer = Number(sp.per);
+  const perPage =
+    Number.isFinite(rawPer) && rawPer > 0
+      ? Math.min(MAX_PER_PAGE, Math.max(1, Math.floor(rawPer)))
+      : DEFAULT_PER_PAGE;
+
+  // Total para calcular cuántas páginas hay. Drizzle no expone count() de
+  // forma nativa, así que usamos sql template.
+  const [{ total }] = await db
+    .select({ total: sql<number>`count(*)::int` })
+    .from(profiles);
+  const totalPages = Math.max(1, Math.ceil(total / perPage));
+  const currentPage =
+    Number.isFinite(rawPage) && rawPage > 0
+      ? Math.min(totalPages, Math.max(1, Math.floor(rawPage)))
+      : 1;
+  const offset = (currentPage - 1) * perPage;
+
+  const users = await db
+    .select()
+    .from(profiles)
+    .orderBy(asc(profiles.createdAt))
+    .limit(perPage)
+    .offset(offset);
 
   return (
     <div className="space-y-6">
       <PageHeader
         eyebrow="Admin"
         title="Usuarios"
-        description="Roles, baneos y suspensiones."
+        description={`Roles, baneos y suspensiones · ${total} usuario${total === 1 ? "" : "s"} registrado${total === 1 ? "" : "s"}.`}
       />
-      <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]">
+      <div className="overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]">
         <Table>
           <TableHeader>
             <TableRow>
@@ -114,12 +148,23 @@ export default async function AdminUsersPage() {
                   colSpan={8}
                   className="py-12 text-center text-sm text-[var(--color-muted-foreground)]"
                 >
-                  Aún no hay usuarios registrados.
+                  {total === 0
+                    ? "Aún no hay usuarios registrados."
+                    : "No hay usuarios en esta página."}
                 </TableCell>
               </TableRow>
             ) : null}
           </TableBody>
         </Table>
+
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={total}
+          perPage={perPage}
+          baseHref="/admin/usuarios"
+          searchParams={sp}
+        />
       </div>
     </div>
   );
