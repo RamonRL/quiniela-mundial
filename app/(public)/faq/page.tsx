@@ -110,7 +110,7 @@ const SECTIONS: { title: string; faqs: Faq[] }[] = [
       },
       {
         q: "¿Cómo se calculan los puntos?",
-        a: "Cada categoría tiene su propia rúbrica. Por ejemplo: en marcadores ganas más puntos por marcador exacto que por solo acertar el ganador; en goleador por partido sumas si tu jugador marca; en grupos sumas por cada posición correcta. Las reglas exactas están en /admin/reglas pero también las explicamos en cada pantalla de predicción.",
+        a: "Cada categoría tiene su propia rúbrica. Por ejemplo: en marcadores ganas más puntos por marcador exacto que por solo acertar el ganador; en goleador por partido sumas si tu jugador marca; en grupos sumas por cada posición correcta. Tienes el desglose completo y los puntos exactos en /puntuacion, y también los verás en cada pantalla de predicción.",
       },
       {
         q: "¿Puedo ver las predicciones de los demás?",

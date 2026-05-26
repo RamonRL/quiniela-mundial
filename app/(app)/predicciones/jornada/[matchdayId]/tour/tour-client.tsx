@@ -234,15 +234,6 @@ export function MatchdayTourClient({
           </div>
         </header>
 
-        <PointsHint
-          items={pointsHintItems}
-          footnote={
-            isKnockout
-              ? "Hasta 16 pts en este partido de eliminatoria."
-              : "Hasta 11 pts en este partido de la fase de grupos."
-          }
-        />
-
         {/* Marcador */}
         <section className="flex items-center justify-center gap-6">
           <div className="flex flex-col items-center gap-2">
@@ -267,6 +258,15 @@ export function MatchdayTourClient({
             />
           </div>
         </section>
+
+        <PointsHint
+          items={pointsHintItems}
+          footnote={
+            isKnockout
+              ? "Hasta 16 pts en este partido de eliminatoria."
+              : "Hasta 11 pts en este partido de la fase de grupos."
+          }
+        />
 
         {/* Penaltis (solo KO) */}
         {isKnockout ? (

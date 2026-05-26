@@ -1442,7 +1442,7 @@ Cada usuario puede **pertenecer a 5 quinielas privadas** (creadas por él o por 
 
 ## Cómo se puntúa
 
-El sistema de puntos es transparente y configurable: en cada quiniela, el admin puede ajustar los pesos desde \`/admin/reglas\`. **Por defecto**:
+El sistema de puntos es **el mismo para todas las quinielas** y se aplica por igual: quien lea mejor el torneo gana. Tienes el desglose completo en [/puntuacion](/puntuacion). **Resumen**:
 
 | Categoría | Puntos |
 |-----------|--------|

@@ -762,6 +762,7 @@ export default async function HomePage() {
             <Link href="/noticias" className="hover:text-[var(--color-arena)]">Noticias</Link>
             <Link href="/equipos" className="hover:text-[var(--color-arena)]">Selecciones</Link>
             <Link href="/sedes" className="hover:text-[var(--color-arena)]">Sedes</Link>
+            <Link href="/puntuacion" className="hover:text-[var(--color-arena)]">Puntuación</Link>
             <Link href="/login" className="hover:text-[var(--color-arena)]">Entrar</Link>
           </nav>
         </div>

@@ -179,10 +179,7 @@ function GroupStep({
   return (
     <div className="space-y-6">
       <header className="text-center">
-        <p className="font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-arena)]">
-          Grupo {group.code}
-        </p>
-        <h1 className="mt-1 font-display text-3xl tracking-tight sm:text-4xl">
+        <h1 className="font-display text-3xl tracking-tight sm:text-4xl">
           Ordena del 1º al 4º
         </h1>
         <p className="mt-2 font-editorial text-sm italic leading-snug text-[var(--color-muted-foreground)]">
@@ -198,6 +195,22 @@ function GroupStep({
         ]}
         footnote="Máximo 13 pts en este grupo."
       />
+
+      {/* Billboard "GRUPO X" — toma protagonismo justo antes del drag. */}
+      <div className="relative overflow-hidden rounded-xl border-2 border-[var(--color-arena)] bg-[color-mix(in_oklch,var(--color-arena)_8%,var(--color-surface))] py-5 text-center">
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -right-6 -top-10 select-none font-display text-[8rem] leading-none text-[var(--color-arena)]/10"
+        >
+          {group.code}
+        </span>
+        <p className="relative font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
+          Grupo
+        </p>
+        <p className="relative mt-0.5 font-display text-5xl leading-none tracking-tight text-[var(--color-arena)] glow-arena sm:text-6xl">
+          {group.code}
+        </p>
+      </div>
 
       <DndContext
         sensors={sensors}
