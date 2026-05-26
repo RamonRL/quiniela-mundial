@@ -4,11 +4,16 @@ import {
   CheckCircle2,
   CircleDashed,
   Info,
+  Inbox,
   PlayCircle,
   XCircle,
 } from "lucide-react";
+import { desc, like } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { commercialLeads } from "@/lib/db/schema";
 import { requireAdmin } from "@/lib/auth/guards";
 import { PageHeader } from "@/components/shell/page-header";
+import { formatDateTime } from "@/lib/utils";
 import {
   PAID_TIERS,
   TIER_AMOUNT_EUR,
@@ -108,6 +113,24 @@ export default async function PaddleDiagnosticsPage({
     PAID_TIERS.every((t) => configured[t]) &&
     checks.every((c) => c.status === "ok");
 
+  // Webhooks recibidos: cada transaction.completed que pasa la firma deja
+  // un commercial_lead con tag "Tx: PADDLE#...". Si hay registros, el
+  // webhook LLEGA y la firma valida (el problema sería upgrade/telegram).
+  // Si está vacío tras un pago real → Paddle no entrega o devuelve 401.
+  const recentWebhooks = await db
+    .select({
+      id: commercialLeads.id,
+      name: commercialLeads.name,
+      email: commercialLeads.email,
+      message: commercialLeads.message,
+      notes: commercialLeads.notes,
+      createdAt: commercialLeads.createdAt,
+    })
+    .from(commercialLeads)
+    .where(like(commercialLeads.notes, "%PADDLE#%"))
+    .orderBy(desc(commercialLeads.createdAt))
+    .limit(5);
+
   // Test real de creación de transaction. Solo se dispara con ?test=1
   // para evitar generar transactions cada vez que abres la página. En
   // sandbox no cuesta nada, en live se crearía una transaction real
@@ -175,6 +198,80 @@ export default async function PaddleDiagnosticsPage({
               : "Revisa los puntos en rojo abajo. Cualquier fallo aquí hace que /api/checkout/[tier] caiga al fallback /precios#contacto."}
           </p>
         </div>
+      </section>
+
+      {/* ─── Webhooks recibidos ─── */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-xl tracking-tight">Webhooks recibidos</h2>
+          <span className="font-mono text-[0.6rem] uppercase tracking-[0.22em] text-[var(--color-muted-foreground)]">
+            últimos 5
+          </span>
+        </div>
+        {recentWebhooks.length === 0 ? (
+          <article className="flex items-start gap-3 rounded-xl border border-[var(--color-warning)]/40 bg-[color-mix(in_oklch,var(--color-warning)_5%,var(--color-surface))] p-4">
+            <Inbox className="mt-0.5 size-5 shrink-0 text-[var(--color-warning)]" />
+            <div className="space-y-1.5">
+              <p className="font-display text-base tracking-tight">
+                Ningún webhook procesado todavía
+              </p>
+              <p className="font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)]">
+                Si ya hiciste un pago de prueba y esto sigue vacío, Paddle{" "}
+                <strong className="not-italic font-semibold">no está entregando</strong> el
+                evento o lo rechazamos por firma. Comprueba en Paddle → Notifications:
+              </p>
+              <ul className="list-disc space-y-1 pl-5 font-editorial text-sm leading-relaxed text-[var(--color-muted-foreground)]">
+                <li>
+                  Que el destination esté en el <strong>mismo environment</strong>{" "}
+                  (<code>{env}</code>) que tu PADDLE_ENV. Un webhook creado en Live no
+                  recibe pagos de Sandbox y viceversa — esta es la causa #1.
+                </li>
+                <li>
+                  Que esté suscrito a <code>transaction.completed</code>.
+                </li>
+                <li>
+                  Que el <strong>secret</strong> del destination sea exactamente el de
+                  PADDLE_WEBHOOK_SECRET en Vercel.
+                </li>
+                <li>
+                  Mira el <strong>delivery log</strong> del destination: si ves intentos
+                  con respuesta 401 → secret mal. Si no ves intentos → environment o
+                  suscripción mal.
+                </li>
+              </ul>
+            </div>
+          </article>
+        ) : (
+          <div className="overflow-hidden rounded-xl border border-[var(--color-success)]/40">
+            <div className="bg-[color-mix(in_oklch,var(--color-success)_6%,var(--color-surface))] px-4 py-2">
+              <p className="inline-flex items-center gap-2 font-mono text-[0.6rem] uppercase tracking-[0.22em] text-[var(--color-success)]">
+                <CheckCircle2 className="size-3.5" /> El webhook llega y la firma valida
+              </p>
+            </div>
+            <ul className="divide-y divide-[var(--color-border)]">
+              {recentWebhooks.map((w) => (
+                <li key={w.id} className="space-y-1 bg-[var(--color-surface)] px-4 py-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="truncate font-mono text-xs text-[var(--color-arena)]">
+                      {w.message}
+                    </span>
+                    <span className="shrink-0 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+                      {formatDateTime(w.createdAt, {
+                        day: "2-digit",
+                        month: "short",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </div>
+                  <p className="font-editorial text-[0.72rem] italic leading-snug text-[var(--color-muted-foreground)]">
+                    {w.notes}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </section>
 
       {/* ─── Env vars básicas ─── */}
