@@ -36,6 +36,16 @@ const nextConfig: NextConfig = {
       // /& que terminaron en GSC. Lo consolidamos en la home.
       { source: "/&", destination: "/", permanent: true },
       { source: "/%26", destination: "/", permanent: true },
+      // Red de seguridad Paddle: si el "Default Payment Link" del
+      // dashboard quedó apuntando a /precios (en vez de /checkout),
+      // cualquier transaction redirige aquí con ?_ptxn=. Lo reenviamos
+      // a la página del overlay sin perder el id de la transaction.
+      {
+        source: "/precios",
+        has: [{ type: "query", key: "_ptxn", value: "(?<ptxn>.*)" }],
+        destination: "/checkout?_ptxn=:ptxn",
+        permanent: false,
+      },
     ];
   },
   // Forzamos a Next a empaquetar las fuentes y logos PNG con las funciones

@@ -36,6 +36,9 @@ const PUBLIC_PATHS = [
   "/contacto",
   "/precios",
   "/puntuacion",
+  // Paddle redirige aquí (con ?_ptxn=...) tras crear la transaction. El
+  // comprador puede llegar sin sesión activa, así que debe ser pública.
+  "/checkout",
   "/aviso-legal",
   "/privacidad",
   "/cookies",
