@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, Loader2, ShieldAlert, ShieldCheck } from "lucide-react";
 import { initializePaddle, type Paddle } from "@paddle/paddle-js";
 
@@ -24,9 +25,11 @@ export function CheckoutOverlay({
   token: string | null;
   environment: "sandbox" | "production";
 }) {
+  const router = useRouter();
   const [paddle, setPaddle] = useState<Paddle | null>(null);
   const [error, setError] = useState<string | null>(null);
   const openedRef = useRef(false);
+  const completedRef = useRef(false);
 
   useEffect(() => {
     if (!token) {
@@ -42,7 +45,23 @@ export function CheckoutOverlay({
       return;
     }
     let cancelled = false;
-    initializePaddle({ environment, token })
+    initializePaddle({
+      environment,
+      token,
+      eventCallback: (event) => {
+        // Al completar el pago, Paddle.js emite checkout.completed. Lo
+        // usamos para llevar al comprador a la pantalla de éxito con el
+        // tier que venía en custom_data (lo metió /api/checkout).
+        if (event?.name === "checkout.completed" && !completedRef.current) {
+          completedRef.current = true;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const data = event.data as any;
+          const tier: string | undefined = data?.custom_data?.tier;
+          const qs = tier ? `?tier=${encodeURIComponent(tier)}` : "";
+          router.push(`/checkout/exito${qs}`);
+        }
+      },
+    })
       .then((instance) => {
         if (cancelled || !instance) return;
         setPaddle(instance);
@@ -56,7 +75,7 @@ export function CheckoutOverlay({
     return () => {
       cancelled = true;
     };
-  }, [token, transactionId, environment]);
+  }, [token, transactionId, environment, router]);
 
   useEffect(() => {
     if (!paddle || !transactionId || openedRef.current) return;

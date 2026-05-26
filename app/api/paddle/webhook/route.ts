@@ -35,17 +35,28 @@ export async function POST(request: Request) {
   const secret = paddleWebhookSecret();
   const paddle = getPaddleClient();
 
-  if (!paddle || !secret || !signature) {
+  // Distinguimos config-faltante (503, problema nuestro/Vercel) de
+  // firma-ausente (400, llamada mal formada) para diagnosticar en logs.
+  if (!paddle || !secret) {
+    console.error(
+      `[paddle/webhook] config incompleta · client=${!!paddle} secret=${!!secret}`,
+    );
     return new NextResponse("Paddle webhook not configured", { status: 503 });
+  }
+  if (!signature) {
+    console.warn("[paddle/webhook] petición sin header paddle-signature");
+    return new NextResponse("Missing signature", { status: 400 });
   }
 
   let event;
   try {
     event = await paddle.webhooks.unmarshal(rawBody, secret, signature);
   } catch (err) {
-    console.error("[paddle] signature verification failed", err);
+    console.error("[paddle/webhook] verificación de firma falló", err);
     return new NextResponse("Invalid signature", { status: 401 });
   }
+
+  console.log(`[paddle/webhook] evento recibido: ${event.eventType}`);
 
   if (event.eventType !== EventName.TransactionCompleted) {
     return NextResponse.json({ ok: true, ignored: event.eventType });
@@ -122,6 +133,11 @@ export async function POST(request: Request) {
         ? "Tier no reconocido por priceId. Revisar manualmente."
         : "Faltan datos para auto-upgrade. Revisar manualmente.";
   const leadNotes = `${upgradeNote} · Tx: ${orderTag} · Total: ${amountFormatted}.`;
+
+  console.log(
+    `[paddle/webhook] tx=${txId} tier=${tier ?? "?"} email=${customerEmail || "(vacío)"} ` +
+      `league_code=${leagueCode ?? "(none)"} → ${upgradeNote}`,
+  );
 
   await db.insert(commercialLeads).values({
     name: customerName,
