@@ -169,6 +169,8 @@ export default async function PaddleDiagnosticsPage({
     }
   }
 
+  const isLive = env === "live";
+
   return (
     <div className="space-y-8">
       <PageHeader
@@ -176,6 +178,28 @@ export default async function PaddleDiagnosticsPage({
         title="Diagnóstico Paddle"
         description="Verifica que las env vars están configuradas y que los priceIds existen en el environment activo. Esta página NO muestra valores secretos, solo si están o no."
       />
+
+      {/* ─── Badge de environment ─── */}
+      <div
+        className={`flex items-center justify-between gap-3 rounded-xl border px-4 py-3 ${
+          isLive
+            ? "border-[var(--color-danger)]/50 bg-[color-mix(in_oklch,var(--color-danger)_8%,var(--color-surface))]"
+            : "border-[var(--color-border)] bg-[var(--color-surface-2)]"
+        }`}
+      >
+        <span className="font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
+          Environment activo
+        </span>
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-[0.65rem] font-semibold uppercase tracking-[0.2em] ${
+            isLive
+              ? "bg-[var(--color-danger)] text-white"
+              : "bg-[var(--color-surface)] text-[var(--color-muted-foreground)] border border-[var(--color-border)]"
+          }`}
+        >
+          {isLive ? "● LIVE · dinero real" : "Sandbox · pruebas"}
+        </span>
+      </div>
 
       {/* ─── Estado global ─── */}
       <section
@@ -395,6 +419,12 @@ export default async function PaddleDiagnosticsPage({
               devuelve el <code>checkout.url</code>. Detecta el gotcha más común: &quot;Default
               payment link&quot; sin configurar en el dashboard de Paddle.
             </p>
+            {isLive ? (
+              <p className="mt-1.5 inline-flex items-center gap-1.5 rounded-md border border-[var(--color-danger)]/40 bg-[color-mix(in_oklch,var(--color-danger)_6%,transparent)] px-2 py-1 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-danger)]">
+                <AlertTriangle className="size-3" />
+                En LIVE crea una transaction real (sin pago, queda en &quot;ready&quot;). No cobra a nadie pero ensucia el dashboard — úsalo solo si lo necesitas.
+              </p>
+            ) : null}
           </div>
           <Link
             href={runTest ? "/admin/paddle" : "/admin/paddle?test=1"}
