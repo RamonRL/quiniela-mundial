@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Calendar, MapPin } from "lucide-react";
 import { TeamFlag } from "@/components/brand/team-flag";
 import { ScoreStepper } from "@/components/forms/score-stepper";
+import { PointsHint, type PointsHintItem } from "@/components/predictions/points-hint";
 import {
   InteractiveTourShell,
   flashSavedToast,
@@ -166,6 +167,21 @@ export function MatchdayTourClient({
 
   const isKnockout = current.stage !== "group";
 
+  // Tabla de puntuación de este partido. En grupos: marcador + goleador.
+  // En knockout: añadimos los bonuses específicos de eliminatoria.
+  const pointsHintItems: PointsHintItem[] = [
+    { points: 5, label: "Marcador exacto" },
+    { points: 2, label: "Aciertas ganador (o empate) sin el marcador exacto" },
+    { points: 4, label: "Tu goleador marca un gol" },
+    { points: 2, prefix: "+", label: "Bonus si además es el primer gol del partido", bonus: true },
+  ];
+  if (isKnockout) {
+    pointsHintItems.push(
+      { points: 3, prefix: "+", label: "Bonus si aciertas el clasificado a la siguiente ronda", bonus: true },
+      { points: 2, prefix: "+", label: "Bonus si predices que va a penaltis y ocurre", bonus: true },
+    );
+  }
+
   return (
     <InteractiveTourShell
       title={matchdayName}
@@ -217,6 +233,15 @@ export function MatchdayTourClient({
             ) : null}
           </div>
         </header>
+
+        <PointsHint
+          items={pointsHintItems}
+          footnote={
+            isKnockout
+              ? "Hasta 16 pts en este partido de eliminatoria."
+              : "Hasta 11 pts en este partido de la fase de grupos."
+          }
+        />
 
         {/* Marcador */}
         <section className="flex items-center justify-center gap-6">

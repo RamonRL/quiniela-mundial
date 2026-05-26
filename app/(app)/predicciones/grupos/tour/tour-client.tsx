@@ -24,6 +24,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Trophy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { TeamFlag } from "@/components/brand/team-flag";
+import { PointsHint } from "@/components/predictions/points-hint";
 import {
   InteractiveTourShell,
   flashSavedToast,
@@ -188,6 +189,15 @@ function GroupStep({
           Arrastra cada selección a su posición. Los dos primeros pasan a la fase eliminatoria.
         </p>
       </header>
+
+      <PointsHint
+        items={[
+          { points: 3, label: "Por cada selección en su posición exacta" },
+          { points: 1, label: "Por cada selección a ±1 posición" },
+          { points: 1, prefix: "+", label: "Bonus si aciertas top-2 aunque cambies su orden", bonus: true },
+        ]}
+        footnote="Máximo 13 pts en este grupo."
+      />
 
       <DndContext
         sensors={sensors}

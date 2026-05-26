@@ -1,5 +1,6 @@
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PointsPill } from "./points-pill";
 
 export type ScoringRule = {
   points: number;
@@ -35,8 +36,13 @@ type Props = {
 /**
  * Collapsible breakdown of the scoring rules for a category. Closed by
  * default — clicking the header expands a scrollable body that lists each
- * rule as `[N pts] · description`. Uses native `<details>`/`<summary>` so
- * keyboard nav and screen readers work without extra JS.
+ * rule as `[N pts] · description`.
+ *
+ * Refactor visual (mayo 2026): el número manda. La pill pasa de pequeña
+ * y aplastada a un bloque de 56×56 a la izquierda de cada fila, con la
+ * unidad ("pts" / "+pts") debajo. La descripción ocupa más eje vertical.
+ * Las reglas bonus mantienen el aspecto punteado pero pasan a "indented"
+ * visualmente (margin-left) para enseñar que se apilan sobre la anterior.
  */
 export function ScoringBox({
   title = "Cómo se puntúa",
@@ -82,32 +88,31 @@ export function ScoringBox({
       <div className="border-t border-[var(--color-border)]">
         <div
           className={cn(
-            "max-h-60 overflow-y-auto",
-            dense ? "px-3 py-2.5" : "px-3 py-3",
+            "max-h-72 overflow-y-auto",
+            dense ? "px-3 py-3" : "px-3 py-4 sm:px-4",
           )}
         >
-          <div className="space-y-2.5">
+          <div className="space-y-4">
             {sections.map((section, sIdx) => (
               <div
                 key={section.heading ?? `s${sIdx}`}
-                className={cn(sIdx > 0 && "border-t border-dashed border-[var(--color-border)] pt-2.5")}
+                className={cn(
+                  sIdx > 0 &&
+                    "border-t border-dashed border-[var(--color-border)] pt-3",
+                )}
               >
                 {section.heading ? (
-                  <p className="mb-1.5 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+                  <p className="mb-2 font-mono text-[0.55rem] uppercase tracking-[0.22em] text-[var(--color-arena)]">
                     {section.heading}
                   </p>
                 ) : null}
-                <ul className="space-y-1">
+                <ul className="space-y-1.5">
                   {section.rules.map((rule, rIdx) => (
-                    <li
+                    <ScoringRow
                       key={`${sIdx}-${rIdx}`}
-                      className="flex items-center gap-2"
-                    >
-                      <PointPill points={rule.points} prefix={rule.prefix} bonus={rule.bonus} />
-                      <span className="text-xs leading-snug text-[var(--color-foreground)]">
-                        {rule.label}
-                      </span>
-                    </li>
+                      rule={rule}
+                      dense={dense}
+                    />
                   ))}
                 </ul>
               </div>
@@ -125,28 +130,48 @@ export function ScoringBox({
   );
 }
 
-function PointPill({
-  points,
-  prefix,
-  bonus,
-}: {
-  points: number;
-  prefix?: "+" | "";
-  bonus?: boolean;
-}) {
-  const sign = prefix !== undefined ? prefix : bonus ? "+" : "";
+function ScoringRow({ rule, dense }: { rule: ScoringRule; dense: boolean }) {
   return (
-    <span
+    <li
       className={cn(
-        "inline-flex shrink-0 items-baseline justify-center gap-0 rounded font-display tabular leading-none",
-        "min-w-[2rem] px-1.5 py-1 text-sm",
-        bonus
-          ? "border border-dashed border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_8%,transparent)] text-[var(--color-arena)]"
-          : "border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_12%,transparent)] text-[var(--color-arena)] glow-arena",
+        "flex items-center gap-3 rounded-md px-1 py-1.5",
+        rule.bonus ? "ml-4 sm:ml-5" : "",
       )}
     >
-      {sign ? <span className="text-[0.65rem] opacity-70">{sign}</span> : null}
-      <span>{points}</span>
-    </span>
+      {/* Pill grande a la izquierda — el número manda */}
+      <div
+        className={cn(
+          "flex shrink-0 flex-col items-center justify-center rounded-md border text-center",
+          dense ? "min-w-[3rem] px-2 py-1.5" : "min-w-[3.5rem] px-2.5 py-2",
+          rule.bonus
+            ? "border-dashed border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_6%,transparent)]"
+            : "border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_12%,transparent)] shadow-[var(--shadow-arena)]",
+        )}
+      >
+        <span
+          className={cn(
+            "font-display tabular leading-none text-[var(--color-arena)]",
+            dense ? "text-xl" : "text-2xl",
+            !rule.bonus && "glow-arena",
+          )}
+        >
+          {(rule.prefix ?? (rule.bonus ? "+" : "")) + rule.points}
+        </span>
+        <span className="mt-0.5 font-mono text-[0.5rem] uppercase tracking-[0.18em] text-[var(--color-arena)]/70">
+          {rule.bonus ? "bonus" : rule.points === 1 ? "pt" : "pts"}
+        </span>
+      </div>
+
+      <span
+        className={cn(
+          "flex-1 leading-snug text-[var(--color-foreground)]",
+          dense ? "text-xs" : "text-sm",
+        )}
+      >
+        {rule.label}
+      </span>
+    </li>
   );
 }
+
+export { PointsPill };

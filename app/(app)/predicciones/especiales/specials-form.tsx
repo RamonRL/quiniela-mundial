@@ -18,6 +18,7 @@ import { SaveOverlay } from "@/components/predictions/save-overlay";
 import { usePredictionSaveToast } from "@/lib/predictions/use-save-toast";
 import { cn, formatDateTime } from "@/lib/utils";
 import { saveSpecialPredictions, type FormState } from "./actions";
+import { maxPointsForSpecial as maxPointsFor } from "./points";
 import {
   isSpecialAnswered as isSpecialAnsweredHelper,
   type SpecialDef,
@@ -57,23 +58,6 @@ const ROUND_LABEL: Record<string, string> = {
   final: "Final",
   champion: "Campeón",
 };
-
-function maxPointsFor(config: unknown): number | null {
-  if (!config || typeof config !== "object") return null;
-  const obj = config as Record<string, unknown>;
-  if (typeof obj.correct === "number") {
-    const bonus = typeof obj.exactRoundBonus === "number" ? obj.exactRoundBonus : 0;
-    return obj.correct + bonus;
-  }
-  if (typeof obj.maxPoints === "number") return obj.maxPoints;
-  if (obj.perRound && typeof obj.perRound === "object") {
-    const values = Object.values(obj.perRound as Record<string, unknown>).filter(
-      (v): v is number => typeof v === "number",
-    );
-    return values.length > 0 ? Math.max(...values) : null;
-  }
-  return null;
-}
 
 const isAnswered = isSpecialAnsweredHelper;
 
@@ -456,7 +440,7 @@ function TeamRoundField({
           <p className="font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
             Selección
           </p>
-          {correctPts != null ? <PointsPill points={correctPts} /> : null}
+          {correctPts != null ? <InlinePointsPill points={correctPts} /> : null}
         </div>
         <div
           className="-mx-1 flex gap-2 overflow-x-auto px-1 py-2"
@@ -492,7 +476,7 @@ function TeamRoundField({
           <p className="font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
             Hasta qué ronda
           </p>
-          {bonusPts != null ? <PointsPill points={bonusPts} bonus /> : null}
+          {bonusPts != null ? <InlinePointsPill points={bonusPts} bonus /> : null}
         </div>
         <div className="flex flex-wrap gap-1.5">
           {rounds.map((r) => {
@@ -520,7 +504,7 @@ function TeamRoundField({
   );
 }
 
-function PointsPill({ points, bonus = false }: { points: number; bonus?: boolean }) {
+function InlinePointsPill({ points, bonus = false }: { points: number; bonus?: boolean }) {
   return (
     <span
       className={cn(
