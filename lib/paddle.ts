@@ -97,9 +97,45 @@ export function getPaddleClient(): Paddle | null {
   return cachedClient;
 }
 
-/** Devuelve el webhook secret tal cual; el handler lo necesita para verificar. */
+/**
+ * Devuelve el webhook secret (trimmed). El trim evita que un salto de
+ * línea o espacio accidental al pegar en Vercel rompa la verificación
+ * HMAC con un 401 difícil de diagnosticar.
+ */
 export function paddleWebhookSecret(): string | null {
-  return process.env.PADDLE_WEBHOOK_SECRET ?? null;
+  const raw = process.env.PADDLE_WEBHOOK_SECRET;
+  if (!raw) return null;
+  const trimmed = raw.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+/**
+ * Diagnóstico del PADDLE_WEBHOOK_SECRET sin exponer su valor. Sirve para
+ * detectar los errores más comunes que provocan 401 "Invalid signature":
+ *  - copiar el API key (`pdl_sdbx_apikey_…`) en vez del secret del
+ *    notification destination (`pdl_ntfset_…`),
+ *  - espacios o saltos de línea al pegar en Vercel,
+ *  - secret de otro destination.
+ */
+export function paddleWebhookSecretDiagnostics(): {
+  present: boolean;
+  length: number;
+  prefix: string;
+  looksValid: boolean;
+  hasWhitespace: boolean;
+} {
+  const raw = process.env.PADDLE_WEBHOOK_SECRET ?? "";
+  const present = raw.length > 0;
+  const trimmed = raw.trim();
+  return {
+    present,
+    length: raw.length,
+    // Solo los primeros 11 chars — suficiente para ver el prefijo
+    // `pdl_ntfset_` sin revelar el secret entero.
+    prefix: present ? `${trimmed.slice(0, 11)}…` : "",
+    looksValid: trimmed.startsWith("pdl_ntfset_"),
+    hasWhitespace: raw !== trimmed || /\s/.test(raw),
+  };
 }
 
 /**

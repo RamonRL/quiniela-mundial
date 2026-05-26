@@ -22,6 +22,7 @@ import {
   paddleConfiguredTiers,
   paddlePriceIdForTier,
   paddleWebhookSecret,
+  paddleWebhookSecretDiagnostics,
   type PaidTierId,
 } from "@/lib/paddle";
 
@@ -67,6 +68,7 @@ export default async function PaddleDiagnosticsPage({
   const hasApiKey = !!process.env.PADDLE_API_KEY;
   const hasWebhookSecret = !!paddleWebhookSecret();
   const hasClientToken = !!paddleClientToken();
+  const secretDiag = paddleWebhookSecretDiagnostics();
   const configured = paddleConfiguredTiers();
 
   const paddle = getPaddleClient();
@@ -314,6 +316,55 @@ export default async function PaddleDiagnosticsPage({
         <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
           Si alguna está en <code>missing</code>: añádela en Vercel → Project Settings → Environment Variables → todos los environments → Redeploy.
         </p>
+
+        {/* Diagnóstico del formato del webhook secret — la causa típica
+            del 401 "Invalid signature". */}
+        {secretDiag.present ? (
+          <div
+            className={`rounded-lg border p-4 ${
+              secretDiag.looksValid && !secretDiag.hasWhitespace
+                ? "border-[var(--color-success)]/40 bg-[color-mix(in_oklch,var(--color-success)_5%,var(--color-surface))]"
+                : "border-[var(--color-danger)]/40 bg-[color-mix(in_oklch,var(--color-danger)_5%,var(--color-surface))]"
+            }`}
+          >
+            <p className="font-mono text-[0.6rem] uppercase tracking-[0.22em] text-[var(--color-muted-foreground)]">
+              Formato del PADDLE_WEBHOOK_SECRET
+            </p>
+            <ul className="mt-2 space-y-1 font-mono text-xs">
+              <li>
+                Empieza por{" "}
+                <code className={secretDiag.looksValid ? "text-[var(--color-success)]" : "text-[var(--color-danger)]"}>
+                  {secretDiag.prefix}
+                </code>{" "}
+                {secretDiag.looksValid ? (
+                  <span className="text-[var(--color-success)]">✓ es un secret de notification</span>
+                ) : (
+                  <span className="text-[var(--color-danger)]">
+                    ✗ debería empezar por <code>pdl_ntfset_</code> — parece que copiaste otra cosa (¿el API key?)
+                  </span>
+                )}
+              </li>
+              <li>
+                Longitud: {secretDiag.length} caracteres{" "}
+                {secretDiag.hasWhitespace ? (
+                  <span className="text-[var(--color-danger)]">
+                    ✗ contiene espacios o saltos de línea — bórralos y vuelve a pegar
+                  </span>
+                ) : (
+                  <span className="text-[var(--color-success)]">✓ sin espacios sobrantes</span>
+                )}
+              </li>
+            </ul>
+            {!secretDiag.looksValid || secretDiag.hasWhitespace ? (
+              <p className="mt-2 font-editorial text-xs italic leading-relaxed text-[var(--color-foreground)]">
+                Copia el <strong>secret key</strong> del notification destination
+                (Paddle → Notifications → tu destination → &quot;secret key&quot;,
+                empieza por <code>pdl_ntfset_</code>), pégalo limpio en
+                PADDLE_WEBHOOK_SECRET y redeploy.
+              </p>
+            ) : null}
+          </div>
+        ) : null}
       </section>
 
       {/* ─── Verificación de priceIds contra Paddle API ─── */}
