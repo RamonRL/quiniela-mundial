@@ -7,6 +7,8 @@ import { db } from "@/lib/db";
 import { profiles } from "@/lib/db/schema";
 import { requireUser } from "@/lib/auth/guards";
 import { uploadImage } from "@/lib/storage";
+import { runAction } from "@/lib/actions/guard";
+import { rateLimit } from "@/lib/ratelimit";
 
 export type FormState = { ok: boolean; error?: string };
 
@@ -30,14 +32,20 @@ export async function updateNickname(
   if (!parsed.success) {
     return { ok: false, error: "Apodo inválido (máx 40 chars)." };
   }
-  await db
-    .update(profiles)
-    .set({ nickname: parsed.data })
-    .where(eq(profiles.id, me.id));
-  revalidatePath("/perfil");
-  revalidatePath("/dashboard");
-  revalidatePath("/ranking");
-  return { ok: true };
+  return runAction(
+    { action: "updateNickname", userId: me.id },
+    async () => {
+      await db
+        .update(profiles)
+        .set({ nickname: parsed.data })
+        .where(eq(profiles.id, me.id));
+      revalidatePath("/perfil");
+      revalidatePath("/dashboard");
+      revalidatePath("/ranking");
+      return { ok: true };
+    },
+    (error) => ({ ok: false, error }),
+  );
 }
 
 /**
@@ -65,17 +73,28 @@ export async function uploadAvatar(formData: FormData): Promise<{
       error: "La imagen excede el tamaño aceptado tras recortar.",
     };
   }
-  const url = await uploadImage({
-    kind: "avatar",
-    path: `${me.id}.png`,
-    file: avatar,
-  });
-  await db
-    .update(profiles)
-    .set({ avatarUrl: url })
-    .where(eq(profiles.id, me.id));
-  revalidatePath("/perfil");
-  revalidatePath("/dashboard");
-  revalidatePath("/ranking");
-  return { ok: true, avatarUrl: url };
+  // Anti-abuso de Storage: máx. 5 subidas por minuto y usuario.
+  const limited = await rateLimit(`avatar:${me.id}`, 5, 60_000);
+  if (!limited.ok) {
+    return { ok: false, error: "Demasiados intentos. Espera un momento." };
+  }
+  return runAction(
+    { action: "uploadAvatar", userId: me.id },
+    async () => {
+      const url = await uploadImage({
+        kind: "avatar",
+        path: `${me.id}.png`,
+        file: avatar,
+      });
+      await db
+        .update(profiles)
+        .set({ avatarUrl: url })
+        .where(eq(profiles.id, me.id));
+      revalidatePath("/perfil");
+      revalidatePath("/dashboard");
+      revalidatePath("/ranking");
+      return { ok: true, avatarUrl: url };
+    },
+    (error) => ({ ok: false, error }),
+  );
 }

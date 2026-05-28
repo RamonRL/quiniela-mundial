@@ -1,4 +1,4 @@
-import { AlertTriangle, Database, ExternalLink, ServerCog, Zap } from "lucide-react";
+import { AlertTriangle, Archive, Clock, Database, ExternalLink, ServerCog, Zap } from "lucide-react";
 import { sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +17,29 @@ export const dynamic = "force-dynamic";
 
 type TableSizeRow = { tableName: string; sizePretty: string; rows: number };
 type ConnRow = { state: string | null; count: number };
+type BackupRow = { kind: string; lastAt: string | null };
+
+// Umbral de saturación del transaction pooler (límite ~15-20 conexiones).
+const CONN_SATURATION = 18;
+// Frescura esperada de cada copia: BD cada 6 h (rojo > 7 h), Storage diaria
+// (rojo > 30 h). Ver .github/workflows/backup-*.yml.
+const DB_BACKUP_STALE_H = 7;
+const STORAGE_BACKUP_STALE_H = 30;
+
+function backupStatus(
+  iso: string | null,
+  staleHours: number,
+): { label: string; ago: string; tone: "ok" | "stale" | "none" } {
+  if (!iso) return { label: "Sin registro", ago: "—", tone: "none" };
+  const hours = (Date.now() - new Date(iso).getTime()) / 3_600_000;
+  const ago =
+    hours < 1
+      ? `hace ${Math.round(hours * 60)} min`
+      : hours < 48
+        ? `hace ${Math.round(hours)} h`
+        : `hace ${Math.round(hours / 24)} d`;
+  return { label: hours > staleHours ? "Desactualizada" : "Al día", ago, tone: hours > staleHours ? "stale" : "ok" };
+}
 
 export default async function MonitoringSistemaPage() {
   await requireAdmin();
@@ -51,7 +74,30 @@ export default async function MonitoringSistemaPage() {
   `);
   const connections = connectionsRaw as ConnRow[];
   const totalConnections = connections.reduce((s, r) => s + r.count, 0);
+  const connectionsSaturated = totalConnections > CONN_SATURATION;
   const sentryUrl = process.env.SENTRY_DASHBOARD_URL ?? null;
+
+  // Frescura de las copias. La tabla puede no existir aún si la migración no
+  // se ha aplicado — lo tratamos como "sin registro" en vez de romper la página.
+  let backups: BackupRow[] = [];
+  try {
+    const backupsRaw = await db.execute<BackupRow>(sql`
+      SELECT kind AS "kind", max(finished_at)::text AS "lastAt"
+      FROM backup_runs
+      GROUP BY kind
+    `);
+    backups = backupsRaw as BackupRow[];
+  } catch {
+    backups = [];
+  }
+  const dbBackup = backupStatus(
+    backups.find((b) => b.kind === "db")?.lastAt ?? null,
+    DB_BACKUP_STALE_H,
+  );
+  const storageBackup = backupStatus(
+    backups.find((b) => b.kind === "storage")?.lastAt ?? null,
+    STORAGE_BACKUP_STALE_H,
+  );
 
   return (
     <div className="space-y-6">
@@ -127,6 +173,50 @@ export default async function MonitoringSistemaPage() {
         )}
       </section>
 
+      {/* ───────── Copias de seguridad ───────── */}
+      <section className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
+        <header className="flex items-center justify-between pb-3">
+          <div className="flex items-center gap-2 text-[var(--color-muted-foreground)]">
+            <Archive className="size-4" />
+            <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em]">
+              Copias de seguridad (Cloudflare R2)
+            </p>
+          </div>
+        </header>
+        <ul className="grid gap-2 sm:grid-cols-2">
+          {[
+            { title: "Base de datos", sub: "cada 6 h", s: dbBackup },
+            { title: "Storage (avatars / news / logos)", sub: "diaria", s: storageBackup },
+          ].map((row) => (
+            <li
+              key={row.title}
+              className="flex items-center justify-between gap-3 rounded-md border border-[var(--color-border)] bg-[var(--color-surface-2)] px-3 py-2.5"
+            >
+              <div className="min-w-0">
+                <p className="truncate font-display text-sm tracking-tight">{row.title}</p>
+                <p className="flex items-center gap-1 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+                  <Clock className="size-3" /> {row.s.ago} · {row.sub}
+                </p>
+              </div>
+              <Badge
+                variant={row.s.tone === "ok" ? "default" : "outline"}
+                className={`shrink-0 text-[0.55rem] ${
+                  row.s.tone === "stale"
+                    ? "border-[var(--color-danger)]/50 text-[var(--color-danger)]"
+                    : ""
+                }`}
+              >
+                {row.s.label}
+              </Badge>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 text-xs text-[var(--color-muted-foreground)]">
+          Snapshot diario gestionado por Supabase + dump propio a R2. Runbook de
+          restauración en <code className="rounded bg-[var(--color-surface-2)] px-1.5 py-0.5 font-mono text-xs">docs/disaster-recovery.md</code>.
+        </p>
+      </section>
+
       {/* ───────── Conexiones DB ───────── */}
       <section className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
         <header className="flex items-center justify-between pb-3">
@@ -136,8 +226,15 @@ export default async function MonitoringSistemaPage() {
               Conexiones Postgres activas
             </p>
           </div>
-          <Badge variant="outline" className="text-[0.55rem]">
-            {totalConnections} total
+          <Badge
+            variant="outline"
+            className={`text-[0.55rem] ${
+              connectionsSaturated
+                ? "border-[var(--color-danger)]/50 text-[var(--color-danger)]"
+                : ""
+            }`}
+          >
+            {totalConnections} total{connectionsSaturated ? " · saturado" : ""}
           </Badge>
         </header>
         {connections.length === 0 ? (

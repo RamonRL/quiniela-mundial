@@ -8,6 +8,7 @@ import { specialPredictions } from "@/lib/db/schema";
 import { requireAdmin } from "@/lib/auth/guards";
 import { logAdminAction } from "@/lib/admin/audit";
 import { recomputeSpecialPredictionForAllUsers } from "@/lib/scoring/persistence";
+import { runAction } from "@/lib/actions/guard";
 
 export type FormState = { ok: boolean; error?: string };
 
@@ -31,38 +32,49 @@ export async function resolveSpecial(
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos." };
   }
 
-  if (parsed.data.clear) {
-    await db
-      .update(specialPredictions)
-      .set({ resolvedValueJson: null, resolvedAt: null })
-      .where(eq(specialPredictions.id, parsed.data.specialId));
-    await logAdminAction({
-      adminId: me.id,
-      action: "special.unresolve",
-      payload: { specialId: parsed.data.specialId },
-    });
-  } else {
-    let parsedValue: unknown;
+  // Validamos/parseamos el JSON resuelto ANTES del wrapper para devolver su
+  // mensaje específico (no el genérico de BD).
+  let parsedValue: unknown;
+  if (!parsed.data.clear) {
     try {
       parsedValue = JSON.parse(parsed.data.resolvedJson);
     } catch {
       return { ok: false, error: "El valor resuelto no es JSON válido." };
     }
-    await db
-      .update(specialPredictions)
-      .set({ resolvedValueJson: parsedValue as unknown, resolvedAt: new Date() })
-      .where(eq(specialPredictions.id, parsed.data.specialId));
-    await logAdminAction({
-      adminId: me.id,
-      action: "special.resolve",
-      payload: { specialId: parsed.data.specialId, value: parsedValue },
-    });
   }
 
-  await recomputeSpecialPredictionForAllUsers(parsed.data.specialId);
-  revalidatePath("/admin/especiales");
-  revalidatePath("/ranking");
-  return { ok: true };
+  return runAction(
+    { action: "resolveSpecial", userId: me.id },
+    async () => {
+      if (parsed.data.clear) {
+        await db
+          .update(specialPredictions)
+          .set({ resolvedValueJson: null, resolvedAt: null })
+          .where(eq(specialPredictions.id, parsed.data.specialId));
+        await logAdminAction({
+          adminId: me.id,
+          action: "special.unresolve",
+          payload: { specialId: parsed.data.specialId },
+        });
+      } else {
+        await db
+          .update(specialPredictions)
+          .set({ resolvedValueJson: parsedValue as unknown, resolvedAt: new Date() })
+          .where(eq(specialPredictions.id, parsed.data.specialId));
+        await logAdminAction({
+          adminId: me.id,
+          action: "special.resolve",
+          payload: { specialId: parsed.data.specialId, value: parsedValue },
+        });
+      }
+
+      await recomputeSpecialPredictionForAllUsers(parsed.data.specialId);
+      revalidatePath("/admin/especiales");
+      revalidatePath("/ranking");
+      return { ok: true };
+    },
+    (error) => ({ ok: false, error }),
+  );
 }
 
 const upsertSchema = z.object({
@@ -121,34 +133,40 @@ export async function upsertSpecial(
     closesAt: new Date(parsed.data.closesAt),
   };
 
-  if (parsed.data.id) {
-    await db
-      .update(specialPredictions)
-      .set(data)
-      .where(eq(specialPredictions.id, parsed.data.id));
-    await logAdminAction({
-      adminId: me.id,
-      action: "special.update",
-      payload: { id: parsed.data.id },
-    });
-  } else {
-    // Auto-pick the next orderIndex
-    const [{ next }] = await db
-      .select({ next: sql<number>`coalesce(max(${specialPredictions.orderIndex}), 0)::int + 1` })
-      .from(specialPredictions);
-    const [created] = await db
-      .insert(specialPredictions)
-      .values({ ...data, orderIndex: next })
-      .returning();
-    await logAdminAction({
-      adminId: me.id,
-      action: "special.create",
-      payload: { id: created.id, key: parsed.data.key },
-    });
-  }
-  revalidatePath("/admin/especiales");
-  revalidatePath("/predicciones/especiales");
-  return { ok: true };
+  return runAction(
+    { action: "upsertSpecial", userId: me.id },
+    async () => {
+      if (parsed.data.id) {
+        await db
+          .update(specialPredictions)
+          .set(data)
+          .where(eq(specialPredictions.id, parsed.data.id));
+        await logAdminAction({
+          adminId: me.id,
+          action: "special.update",
+          payload: { id: parsed.data.id },
+        });
+      } else {
+        // Auto-pick the next orderIndex
+        const [{ next }] = await db
+          .select({ next: sql<number>`coalesce(max(${specialPredictions.orderIndex}), 0)::int + 1` })
+          .from(specialPredictions);
+        const [created] = await db
+          .insert(specialPredictions)
+          .values({ ...data, orderIndex: next })
+          .returning();
+        await logAdminAction({
+          adminId: me.id,
+          action: "special.create",
+          payload: { id: created.id, key: parsed.data.key },
+        });
+      }
+      revalidatePath("/admin/especiales");
+      revalidatePath("/predicciones/especiales");
+      return { ok: true };
+    },
+    (error) => ({ ok: false, error }),
+  );
 }
 
 export async function deleteSpecial(formData: FormData) {

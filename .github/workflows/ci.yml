@@ -1,0 +1,59 @@
+name: CI
+
+# Red de seguridad ante regresiones: typecheck + lint + tests en cada push y PR.
+# Los tests de idempotencia del scoring (lib/scoring/__tests__/persistence.*)
+# necesitan una BD: levantamos un Postgres efímero, aplicamos el esquema con
+# drizzle-kit push y exponemos TEST_DATABASE_URL para que el test deje de
+# saltarse a sí mismo.
+
+on:
+  push:
+    branches: [main]
+  pull_request: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: quiniela_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/quiniela_test
+      DATABASE_DIRECT_URL: postgres://postgres:postgres@localhost:5432/quiniela_test
+      TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/quiniela_test
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Aplicar esquema a la BD de test
+        run: pnpm drizzle-kit push --force
+
+      - name: Tests
+        run: pnpm test

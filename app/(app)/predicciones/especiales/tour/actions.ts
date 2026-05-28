@@ -7,6 +7,8 @@ import { db } from "@/lib/db";
 import { predSpecial, specialPredictions } from "@/lib/db/schema";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId } from "@/lib/leagues";
+import { runAction } from "@/lib/actions/guard";
+import { rateLimit } from "@/lib/ratelimit";
 
 export type SaveSpecialResult = { ok: boolean; error?: string };
 
@@ -43,42 +45,60 @@ export async function saveSpecialPrediction(
   const leagueId = await currentLeagueId(me);
   if (leagueId == null) return { ok: false, error: "Sin liga activa." };
 
+  // Anti-abuso del autosave: bucket compartido de saves de predicción
+  // (40 cada 10 s por usuario) — holgado para un usuario rápido, frena un
+  // cliente en bucle.
+  const limited = await rateLimit(`predsave:${me.id}`, 40, 10_000);
+  if (!limited.ok) {
+    return { ok: false, error: "Vas demasiado rápido. Espera unos segundos." };
+  }
+
   // Si el valor está totalmente vacío, borramos la fila.
   const isEmpty =
     Object.keys(parsed.data.valueJson).length === 0 ||
     Object.values(parsed.data.valueJson).every((v) => v == null || v === "");
 
-  if (isEmpty) {
-    await db
-      .delete(predSpecial)
-      .where(
-        and(
-          eq(predSpecial.userId, me.id),
-          eq(predSpecial.leagueId, leagueId),
-          eq(predSpecial.specialId, parsed.data.specialId),
-        ),
-      );
-    return { ok: true };
-  }
+  return runAction(
+    { action: "saveSpecialPrediction", userId: me.id, leagueId },
+    async () => {
+      // Transacción aunque sea una sola sentencia: mantiene el mismo patrón
+      // que el resto de saves y deja sitio para crecer sin sorpresas.
+      await db.transaction(async (tx) => {
+        if (isEmpty) {
+          await tx
+            .delete(predSpecial)
+            .where(
+              and(
+                eq(predSpecial.userId, me.id),
+                eq(predSpecial.leagueId, leagueId),
+                eq(predSpecial.specialId, parsed.data.specialId),
+              ),
+            );
+          return;
+        }
 
-  await db
-    .insert(predSpecial)
-    .values({
-      userId: me.id,
-      leagueId,
-      specialId: parsed.data.specialId,
-      valueJson: parsed.data.valueJson as unknown,
-      submittedAt: new Date(),
-    })
-    .onConflictDoUpdate({
-      target: [predSpecial.userId, predSpecial.leagueId, predSpecial.specialId],
-      set: {
-        valueJson: parsed.data.valueJson as unknown,
-        submittedAt: new Date(),
-      },
-    });
+        await tx
+          .insert(predSpecial)
+          .values({
+            userId: me.id,
+            leagueId,
+            specialId: parsed.data.specialId,
+            valueJson: parsed.data.valueJson as unknown,
+            submittedAt: new Date(),
+          })
+          .onConflictDoUpdate({
+            target: [predSpecial.userId, predSpecial.leagueId, predSpecial.specialId],
+            set: {
+              valueJson: parsed.data.valueJson as unknown,
+              submittedAt: new Date(),
+            },
+          });
+      });
 
-  return { ok: true };
+      return { ok: true };
+    },
+    (error) => ({ ok: false, error }),
+  );
 }
 
 export async function endSpecialsTour(): Promise<void> {

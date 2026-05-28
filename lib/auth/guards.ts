@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { cookies, headers } from "next/headers";
 import { after } from "next/server";
 import { redirect } from "next/navigation";
@@ -53,7 +54,7 @@ async function detectCountryCode(): Promise<string | null> {
  * consumiendo la cookie `pending_league_token` si el usuario llegó por un
  * invite link y aún no tiene liga asignada.
  */
-export async function getCurrentUser(): Promise<CurrentUser | null> {
+export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -76,7 +77,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     const activeLeagueId = inviteLeagueId ?? null;
     const countryCode = await detectCountryCode();
 
-    const [created] = await db
+    const [inserted] = await db
       .insert(profiles)
       .values({
         id: user.id,
@@ -86,8 +87,21 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
         countryCode,
         lastSeenAt: new Date(),
       })
+      .onConflictDoNothing({ target: profiles.id })
       .returning();
 
+    // Carrera del primer login: el layout y la page se renderizan en
+    // paralelo y ambos pueden ver `!existing`. Con onConflictDoNothing, la
+    // request que pierde recibe `inserted === undefined`; recuperamos el
+    // perfil ya creado por la ganadora en vez de reventar con una violación
+    // de PK (que antes provocaba un 500 intermitente en el primer login).
+    const created =
+      inserted ??
+      (await db.select().from(profiles).where(eq(profiles.id, user.id)).limit(1))[0];
+    if (!created) return null;
+
+    // Las membresías son idempotentes (onConflictDoNothing), así que es
+    // seguro intentarlas incluso si perdimos la carrera.
     const memberships: { userId: string; leagueId: number }[] = [];
     if (pub) memberships.push({ userId: user.id, leagueId: pub.id });
     if (inviteLeagueId && inviteLeagueId !== pub?.id) {
@@ -102,17 +116,21 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     // Alerta Telegram diferida con `after()` — se ejecuta DESPUÉS de
     // enviar la respuesta al cliente pero antes de que la función
     // serverless termine, así sobrevive al teardown de Vercel que
-    // mataba el `void` fire-and-forget en producción. Si
+    // mataba el `void` fire-and-forget en producción. Solo notificamos si
+    // ESTA request creó el perfil (`inserted`), no si solo lo recuperó tras
+    // perder la carrera — así no se duplican alertas de "nuevo usuario". Si
     // TELEGRAM_BOT_TOKEN no está configurado, no-op silencioso
     // (ver lib/telegram/notify.ts).
-    console.log(`[telegram] new user created → notifying for ${created.email}`);
-    after(() =>
-      notifyNewUser({
-        email: created.email,
-        countryCode: created.countryCode,
-        role: created.role,
-      }),
-    );
+    if (inserted) {
+      console.log(`[telegram] new user created → notifying for ${inserted.email}`);
+      after(() =>
+        notifyNewUser({
+          email: inserted.email,
+          countryCode: inserted.countryCode,
+          role: inserted.role,
+        }),
+      );
+    }
 
     return mapProfile(created);
   }
@@ -147,7 +165,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   }
 
   return mapProfile(existing);
-}
+});
 
 /**
  * Lee la cookie `pending_league_token` y devuelve el id de la liga privada

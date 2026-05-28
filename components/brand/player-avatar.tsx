@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { initials } from "@/lib/utils";
 
 type Props = {
@@ -27,8 +28,14 @@ export function PlayerAvatar({
       style={{ width: size, height: size }}
     >
       {photoUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={photoUrl} alt="" className="size-full object-cover" />
+        <Image
+          src={photoUrl}
+          alt=""
+          width={size}
+          height={size}
+          loading="lazy"
+          className="size-full object-cover"
+        />
       ) : jerseyNumber != null ? (
         <span
           className="font-display tabular text-[var(--color-foreground)]"

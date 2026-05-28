@@ -1,0 +1,69 @@
+name: Backup Storage → R2
+
+# Copia diaria de los objetos NO reproducibles de Supabase Storage (avatars,
+# news, leagues) a Cloudflare R2. Cambian poco, así que basta una vez al día.
+# Los buckets flags/players se regeneran desde fuentes externas y se omiten.
+#
+# Restauración: ver docs/disaster-recovery.md.
+
+on:
+  schedule:
+    - cron: "30 3 * * *" # 03:30 UTC diario
+  workflow_dispatch: {}
+
+concurrency:
+  group: backup-storage
+  cancel-in-progress: false
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Descargar objetos de Storage
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: pnpm db:backup-storage --out=./backup-storage
+
+      - name: Empaquetar y subir a R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: |
+          STAMP="$(date -u +%Y%m%d)"
+          tar -czf "storage-$STAMP.tar.gz" -C backup-storage .
+          ls -lh "storage-$STAMP.tar.gz"
+          aws s3 cp "storage-$STAMP.tar.gz" \
+            "s3://$R2_BUCKET/storage/storage-$STAMP.tar.gz" \
+            --endpoint-url "$R2_ENDPOINT"
+          echo "✓ Subido storage/storage-$STAMP.tar.gz a R2"
+          echo "STAMP=$STAMP" >> "$GITHUB_ENV"
+
+      - name: Registrar la copia en backup_runs
+        env:
+          DATABASE_DIRECT_URL: ${{ secrets.DATABASE_DIRECT_URL }}
+        run: |
+          sudo sh -c 'echo "deb [signed-by=/usr/share/keyrings/pgdg.gpg] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /usr/share/keyrings/pgdg.gpg
+          sudo apt-get update && sudo apt-get install -y postgresql-client-17
+          psql "$DATABASE_DIRECT_URL" -v ON_ERROR_STOP=1 -c \
+            "insert into backup_runs (kind, object_key) values ('storage', 'storage/storage-$STAMP.tar.gz');"
+          echo "✓ Registrado en backup_runs"
+
+      - name: Limpiar
+        if: always()
+        run: rm -rf backup-storage storage-*.tar.gz

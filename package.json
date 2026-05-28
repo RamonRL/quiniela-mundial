@@ -36,6 +36,8 @@
     "db:upsert-squad": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/upsert-squad.ts",
     "db:upsert-news": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/upsert-news.ts",
     "db:telegram-chat-id": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/telegram-get-chat-id.ts",
+    "db:backup-storage": "tsx --env-file-if-exists=.env.local --env-file-if-exists=.env scripts/backup-storage.ts",
+    "db:audit-points": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/audit-points.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },

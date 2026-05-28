@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { predGroupRanking } from "@/lib/db/schema";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId } from "@/lib/leagues";
+import { runAction } from "@/lib/actions/guard";
 
 export type FormState = { ok: boolean; error?: string };
 
@@ -55,38 +56,44 @@ export async function saveGroupPredictions(
     return { ok: false, error: "Sin liga activa." };
   }
 
-  await db.transaction(async (tx) => {
-    for (const p of parsed.data.predictions) {
-      await tx
-        .insert(predGroupRanking)
-        .values({
-          userId: me.id,
-          leagueId,
-          groupId: p.groupId,
-          pos1TeamId: p.pos1TeamId ?? null,
-          pos2TeamId: p.pos2TeamId ?? null,
-          pos3TeamId: p.pos3TeamId ?? null,
-          pos4TeamId: p.pos4TeamId ?? null,
-          submittedAt: new Date(),
-        })
-        .onConflictDoUpdate({
-          target: [
-            predGroupRanking.userId,
-            predGroupRanking.leagueId,
-            predGroupRanking.groupId,
-          ],
-          set: {
-            pos1TeamId: p.pos1TeamId ?? null,
-            pos2TeamId: p.pos2TeamId ?? null,
-            pos3TeamId: p.pos3TeamId ?? null,
-            pos4TeamId: p.pos4TeamId ?? null,
-            submittedAt: new Date(),
-          },
-        });
-    }
-  });
+  return runAction(
+    { action: "saveGroupPredictions", userId: me.id, leagueId },
+    async () => {
+      await db.transaction(async (tx) => {
+        for (const p of parsed.data.predictions) {
+          await tx
+            .insert(predGroupRanking)
+            .values({
+              userId: me.id,
+              leagueId,
+              groupId: p.groupId,
+              pos1TeamId: p.pos1TeamId ?? null,
+              pos2TeamId: p.pos2TeamId ?? null,
+              pos3TeamId: p.pos3TeamId ?? null,
+              pos4TeamId: p.pos4TeamId ?? null,
+              submittedAt: new Date(),
+            })
+            .onConflictDoUpdate({
+              target: [
+                predGroupRanking.userId,
+                predGroupRanking.leagueId,
+                predGroupRanking.groupId,
+              ],
+              set: {
+                pos1TeamId: p.pos1TeamId ?? null,
+                pos2TeamId: p.pos2TeamId ?? null,
+                pos3TeamId: p.pos3TeamId ?? null,
+                pos4TeamId: p.pos4TeamId ?? null,
+                submittedAt: new Date(),
+              },
+            });
+        }
+      });
 
-  revalidatePath("/predicciones/grupos");
-  revalidatePath("/predicciones");
-  return { ok: true };
+      revalidatePath("/predicciones/grupos");
+      revalidatePath("/predicciones");
+      return { ok: true };
+    },
+    (error) => ({ ok: false, error }),
+  );
 }
