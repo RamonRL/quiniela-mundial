@@ -12,6 +12,7 @@ import {
   specialPredictions,
 } from "@/lib/db/schema";
 import { isMemberOf } from "@/lib/leagues";
+import { getBracketStatus } from "@/lib/bracket-state";
 
 const KICKOFF = new Date(
   process.env.NEXT_PUBLIC_TOURNAMENT_KICKOFF_AT ?? "2026-06-11T19:00:00Z",
@@ -320,31 +321,36 @@ export async function importPredictionsBetweenLeagues(args: {
       }
     }
 
-    // ─── Bracket slots (cierran al primer R32) ───
-    // La regla "fina" la hace el bracket-state; aquí copiamos siempre, las
-    // picks pasadas de fecha no se podrán editar igualmente.
-    const bracketSrc = await tx
-      .select()
-      .from(predBracketSlot)
-      .where(
-        and(
-          eq(predBracketSlot.userId, userId),
-          eq(predBracketSlot.leagueId, sourceLeagueId),
-        ),
-      );
-    for (const p of bracketSrc) {
-      await tx
-        .insert(predBracketSlot)
-        .values({
-          userId,
-          leagueId: targetLeagueId,
-          stage: p.stage,
-          slotPosition: p.slotPosition,
-          predictedTeamId: p.predictedTeamId,
-          submittedAt: new Date(),
-        })
-        .onConflictDoNothing();
-      bracket++;
+    // ─── Bracket slots (cierran cuando arranca el primer R32) ───
+    // INTEGRIDAD: solo copiamos si el bracket sigue abierto. Una vez cerrado,
+    // `onConflictDoNothing` rellenaría huecos del destino con picks acertadas
+    // del origen — sería una vía de trampa para mover predicciones desde una
+    // liga que va bien a otra que va mal. Saltamos la copia entera del bracket.
+    const bracketStatus = await getBracketStatus();
+    if (bracketStatus.state !== "closed") {
+      const bracketSrc = await tx
+        .select()
+        .from(predBracketSlot)
+        .where(
+          and(
+            eq(predBracketSlot.userId, userId),
+            eq(predBracketSlot.leagueId, sourceLeagueId),
+          ),
+        );
+      for (const p of bracketSrc) {
+        await tx
+          .insert(predBracketSlot)
+          .values({
+            userId,
+            leagueId: targetLeagueId,
+            stage: p.stage,
+            slotPosition: p.slotPosition,
+            predictedTeamId: p.predictedTeamId,
+            submittedAt: new Date(),
+          })
+          .onConflictDoNothing();
+        bracket++;
+      }
     }
 
     // ─── Top scorer (cierra al kickoff) ───
