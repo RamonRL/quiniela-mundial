@@ -2,13 +2,20 @@
 
 import Link from "next/link";
 import { useTransition } from "react";
-import { Check, LogOut, Plus, Trophy } from "lucide-react";
+import { Check, Copy, LogOut, Plus, Trophy } from "lucide-react";
 import { toast } from "sonner";
 import { leaveLeague, setActiveLeague } from "@/lib/league-actions";
+import { copyPredictionsBetweenLeaguesAction } from "@/app/predictions-actions";
 import type { Membership } from "@/lib/leagues";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { initials } from "@/lib/utils";
 
 export function MyLeaguesSection({
@@ -16,11 +23,14 @@ export function MyLeaguesSection({
   activeLeagueId,
   privateCount,
   privateLimit,
+  pickCountByLeagueId,
 }: {
   memberships: Membership[];
   activeLeagueId: number | null;
   privateCount: number;
   privateLimit: number;
+  /** Total de picks (suma de las 6 tablas pred_*) por liga del usuario. */
+  pickCountByLeagueId: Record<number, number>;
 }) {
   const [pending, start] = useTransition();
 
@@ -45,6 +55,28 @@ export function MyLeaguesSection({
       const res = await leaveLeague(fd);
       if (res.ok) toast.success(res.message ?? "Abandonada.");
       else toast.error(res.error ?? "No se pudo abandonar.");
+    });
+  };
+
+  const copyFrom = (
+    sourceId: number,
+    sourceName: string,
+    targetId: number,
+    targetName: string,
+  ) => {
+    if (
+      !window.confirm(
+        `Copiar las predicciones de "${sourceName}" que falten en "${targetName}". No se sobrescribe ninguna que ya tengas en "${targetName}". ¿Continuar?`,
+      )
+    )
+      return;
+    const fd = new FormData();
+    fd.set("sourceLeagueId", String(sourceId));
+    fd.set("targetLeagueId", String(targetId));
+    start(async () => {
+      const res = await copyPredictionsBetweenLeaguesAction({ ok: false }, fd);
+      if (res.ok) toast.success(res.message ?? "Predicciones copiadas.");
+      else toast.error(res.error ?? "No se pudo copiar.");
     });
   };
 
@@ -73,6 +105,15 @@ export function MyLeaguesSection({
       <ul className="space-y-2">
         {memberships.map((m) => {
           const isActive = m.id === activeLeagueId;
+          const thisCount = pickCountByLeagueId[m.id] ?? 0;
+          // Otras ligas del usuario donde tiene MÁS predicciones que en esta —
+          // son las únicas elegibles como origen para copiar hacia aquí. La
+          // restricción "más → menos" es explícita por petición: nada de copiar
+          // al revés y perder progreso (aunque internamente solo rellenemos
+          // huecos, mostrar la opción confundiría).
+          const eligibleSources = memberships.filter(
+            (s) => s.id !== m.id && (pickCountByLeagueId[s.id] ?? 0) > thisCount,
+          );
           return (
             <li
               key={m.id}
@@ -117,10 +158,13 @@ export function MyLeaguesSection({
                         ) : null}
                       </>
                     )}
+                    <span className="font-mono uppercase tracking-[0.18em]">
+                      {thisCount} pick{thisCount === 1 ? "" : "s"}
+                    </span>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {isActive ? (
                   <span className="inline-flex items-center gap-1 rounded-md border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_8%,transparent)] px-2.5 py-1 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-arena)]">
                     <Check className="size-3" /> Activa
@@ -136,6 +180,42 @@ export function MyLeaguesSection({
                     Hacer activa
                   </Button>
                 )}
+                {eligibleSources.length > 0 ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={pending}
+                      >
+                        <Copy className="size-3.5" />
+                        Copiar predicciones
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="min-w-[16rem]">
+                      <p className="px-2 pb-1.5 pt-1 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+                        {`Copiar a "${m.name}" desde…`}
+                      </p>
+                      {eligibleSources.map((s) => {
+                        const sourceCount = pickCountByLeagueId[s.id] ?? 0;
+                        return (
+                          <DropdownMenuItem
+                            key={s.id}
+                            disabled={pending}
+                            onSelect={() => copyFrom(s.id, s.name, m.id, m.name)}
+                            className="flex items-center justify-between gap-3"
+                          >
+                            <span className="truncate">{s.name}</span>
+                            <span className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+                              +{sourceCount - thisCount}
+                            </span>
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : null}
                 {!m.isPublic ? (
                   <Button
                     type="button"

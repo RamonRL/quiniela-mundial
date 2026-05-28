@@ -97,6 +97,74 @@ export async function countAnyPicksInLeague(
 }
 
 /**
+ * Conteo total de picks (suma de las 6 tablas pred_*) agrupado por liga para
+ * un usuario. Útil para la fila de "Copiar predicciones" del perfil, donde
+ * necesitamos saber cuántas tiene cada una de SUS ligas para decidir desde
+ * cuál ofrecer copiar (más → menos, nunca al revés).
+ */
+export async function getPickCountsByLeague(
+  userId: string,
+): Promise<Map<number, number>> {
+  const queries = await Promise.all([
+    db
+      .select({
+        leagueId: predGroupRanking.leagueId,
+        c: sql<number>`count(*)::int`,
+      })
+      .from(predGroupRanking)
+      .where(eq(predGroupRanking.userId, userId))
+      .groupBy(predGroupRanking.leagueId),
+    db
+      .select({
+        leagueId: predBracketSlot.leagueId,
+        c: sql<number>`count(*)::int`,
+      })
+      .from(predBracketSlot)
+      .where(eq(predBracketSlot.userId, userId))
+      .groupBy(predBracketSlot.leagueId),
+    db
+      .select({
+        leagueId: predTournamentTopScorer.leagueId,
+        c: sql<number>`count(*)::int`,
+      })
+      .from(predTournamentTopScorer)
+      .where(eq(predTournamentTopScorer.userId, userId))
+      .groupBy(predTournamentTopScorer.leagueId),
+    db
+      .select({
+        leagueId: predMatchResult.leagueId,
+        c: sql<number>`count(*)::int`,
+      })
+      .from(predMatchResult)
+      .where(eq(predMatchResult.userId, userId))
+      .groupBy(predMatchResult.leagueId),
+    db
+      .select({
+        leagueId: predMatchScorer.leagueId,
+        c: sql<number>`count(*)::int`,
+      })
+      .from(predMatchScorer)
+      .where(eq(predMatchScorer.userId, userId))
+      .groupBy(predMatchScorer.leagueId),
+    db
+      .select({
+        leagueId: predSpecial.leagueId,
+        c: sql<number>`count(*)::int`,
+      })
+      .from(predSpecial)
+      .where(eq(predSpecial.userId, userId))
+      .groupBy(predSpecial.leagueId),
+  ]);
+  const byLeague = new Map<number, number>();
+  for (const rows of queries) {
+    for (const r of rows) {
+      byLeague.set(r.leagueId, (byLeague.get(r.leagueId) ?? 0) + r.c);
+    }
+  }
+  return byLeague;
+}
+
+/**
  * Lista de OTRAS ligas del usuario donde tiene predicciones — para que el
  * banner ofrezca un selector de fuente.
  */
