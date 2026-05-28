@@ -8,6 +8,7 @@ import {
   PRIVATE_LEAGUES_PER_USER_LIMIT,
   getMembershipsForUser,
 } from "@/lib/leagues";
+import { getPickCountsByLeague } from "@/lib/import-predictions";
 import { initials } from "@/lib/utils";
 import { ProfileForm } from "./profile-form";
 import { MyLeaguesSection } from "./my-leagues-section";
@@ -19,6 +20,15 @@ export default async function ProfilePage() {
   const display = me.nickname || me.email.split("@")[0];
   const memberships = await getMembershipsForUser(me.id);
   const privateCount = memberships.filter((m) => !m.isPublic).length;
+  // Picks por liga (solo de las ligas del usuario) para alimentar el botón
+  // "Copiar predicciones" — visible cuando una liga tiene menos picks que otra
+  // a la que el usuario pertenece. Convertimos a objeto plano serializable
+  // para pasarlo al client component sin pérdida.
+  const pickCounts = await getPickCountsByLeague(me.id);
+  const pickCountByLeagueId: Record<number, number> = {};
+  for (const m of memberships) {
+    pickCountByLeagueId[m.id] = pickCounts.get(m.id) ?? 0;
+  }
 
   return (
     <div className="space-y-6">
@@ -71,6 +81,7 @@ export default async function ProfilePage() {
         activeLeagueId={me.leagueId}
         privateCount={privateCount}
         privateLimit={PRIVATE_LEAGUES_PER_USER_LIMIT}
+        pickCountByLeagueId={pickCountByLeagueId}
       />
     </div>
   );

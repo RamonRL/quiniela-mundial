@@ -12,6 +12,7 @@ import {
   specialPredictions,
 } from "@/lib/db/schema";
 import { isMemberOf } from "@/lib/leagues";
+import { getBracketStatus } from "@/lib/bracket-state";
 
 const KICKOFF = new Date(
   process.env.NEXT_PUBLIC_TOURNAMENT_KICKOFF_AT ?? "2026-06-11T19:00:00Z",
@@ -94,6 +95,74 @@ export async function countAnyPicksInLeague(
       ),
   ]);
   return c1 + c2 + c3 + c4 + c5 + c6;
+}
+
+/**
+ * Conteo total de picks (suma de las 6 tablas pred_*) agrupado por liga para
+ * un usuario. Útil para la fila de "Copiar predicciones" del perfil, donde
+ * necesitamos saber cuántas tiene cada una de SUS ligas para decidir desde
+ * cuál ofrecer copiar (más → menos, nunca al revés).
+ */
+export async function getPickCountsByLeague(
+  userId: string,
+): Promise<Map<number, number>> {
+  const queries = await Promise.all([
+    db
+      .select({
+        leagueId: predGroupRanking.leagueId,
+        c: sql<number>`count(*)::int`,
+      })
+      .from(predGroupRanking)
+      .where(eq(predGroupRanking.userId, userId))
+      .groupBy(predGroupRanking.leagueId),
+    db
+      .select({
+        leagueId: predBracketSlot.leagueId,
+        c: sql<number>`count(*)::int`,
+      })
+      .from(predBracketSlot)
+      .where(eq(predBracketSlot.userId, userId))
+      .groupBy(predBracketSlot.leagueId),
+    db
+      .select({
+        leagueId: predTournamentTopScorer.leagueId,
+        c: sql<number>`count(*)::int`,
+      })
+      .from(predTournamentTopScorer)
+      .where(eq(predTournamentTopScorer.userId, userId))
+      .groupBy(predTournamentTopScorer.leagueId),
+    db
+      .select({
+        leagueId: predMatchResult.leagueId,
+        c: sql<number>`count(*)::int`,
+      })
+      .from(predMatchResult)
+      .where(eq(predMatchResult.userId, userId))
+      .groupBy(predMatchResult.leagueId),
+    db
+      .select({
+        leagueId: predMatchScorer.leagueId,
+        c: sql<number>`count(*)::int`,
+      })
+      .from(predMatchScorer)
+      .where(eq(predMatchScorer.userId, userId))
+      .groupBy(predMatchScorer.leagueId),
+    db
+      .select({
+        leagueId: predSpecial.leagueId,
+        c: sql<number>`count(*)::int`,
+      })
+      .from(predSpecial)
+      .where(eq(predSpecial.userId, userId))
+      .groupBy(predSpecial.leagueId),
+  ]);
+  const byLeague = new Map<number, number>();
+  for (const rows of queries) {
+    for (const r of rows) {
+      byLeague.set(r.leagueId, (byLeague.get(r.leagueId) ?? 0) + r.c);
+    }
+  }
+  return byLeague;
 }
 
 /**
@@ -252,31 +321,36 @@ export async function importPredictionsBetweenLeagues(args: {
       }
     }
 
-    // ─── Bracket slots (cierran al primer R32) ───
-    // La regla "fina" la hace el bracket-state; aquí copiamos siempre, las
-    // picks pasadas de fecha no se podrán editar igualmente.
-    const bracketSrc = await tx
-      .select()
-      .from(predBracketSlot)
-      .where(
-        and(
-          eq(predBracketSlot.userId, userId),
-          eq(predBracketSlot.leagueId, sourceLeagueId),
-        ),
-      );
-    for (const p of bracketSrc) {
-      await tx
-        .insert(predBracketSlot)
-        .values({
-          userId,
-          leagueId: targetLeagueId,
-          stage: p.stage,
-          slotPosition: p.slotPosition,
-          predictedTeamId: p.predictedTeamId,
-          submittedAt: new Date(),
-        })
-        .onConflictDoNothing();
-      bracket++;
+    // ─── Bracket slots (cierran cuando arranca el primer R32) ───
+    // INTEGRIDAD: solo copiamos si el bracket sigue abierto. Una vez cerrado,
+    // `onConflictDoNothing` rellenaría huecos del destino con picks acertadas
+    // del origen — sería una vía de trampa para mover predicciones desde una
+    // liga que va bien a otra que va mal. Saltamos la copia entera del bracket.
+    const bracketStatus = await getBracketStatus();
+    if (bracketStatus.state !== "closed") {
+      const bracketSrc = await tx
+        .select()
+        .from(predBracketSlot)
+        .where(
+          and(
+            eq(predBracketSlot.userId, userId),
+            eq(predBracketSlot.leagueId, sourceLeagueId),
+          ),
+        );
+      for (const p of bracketSrc) {
+        await tx
+          .insert(predBracketSlot)
+          .values({
+            userId,
+            leagueId: targetLeagueId,
+            stage: p.stage,
+            slotPosition: p.slotPosition,
+            predictedTeamId: p.predictedTeamId,
+            submittedAt: new Date(),
+          })
+          .onConflictDoNothing();
+        bracket++;
+      }
     }
 
     // ─── Top scorer (cierra al kickoff) ───
