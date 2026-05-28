@@ -763,3 +763,38 @@ export const minigameScores = pgTable(
     index("minigame_scores_game_score_idx").on(t.gameKey, t.bestScore),
   ],
 );
+
+// ───────────────────────── rate limiting ─────────────────────────
+
+/**
+ * Limitador fixed-window por clave (p. ej. "chat:<userId>"). Una sola fila por
+ * clave: guardamos el inicio de la ventana actual y el contador, y en cada hit
+ * hacemos un upsert atómico que resetea el contador si la ventana ya expiró.
+ * Ver `lib/ratelimit.ts`.
+ */
+export const rateLimits = pgTable("rate_limits", {
+  key: text("key").primaryKey(),
+  windowStart: timestamp("window_start", { withTimezone: true }).notNull(),
+  count: integer("count").notNull().default(0),
+});
+
+// ───────────────────────── backups ─────────────────────────
+
+/**
+ * Bitácora de copias de seguridad. Los workflows de GitHub Actions insertan una
+ * fila tras subir con éxito el dump/tar a Cloudflare R2. El panel
+ * /admin/monitoreo/sistema lee el `max(finished_at)` por tipo para mostrar la
+ * frescura de la última copia (y confirmar que el cron sigue vivo).
+ */
+export const backupRuns = pgTable(
+  "backup_runs",
+  {
+    id: serial("id").primaryKey(),
+    kind: text("kind").notNull(), // 'db' | 'storage'
+    objectKey: text("object_key"),
+    finishedAt: timestamp("finished_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("backup_runs_kind_finished_idx").on(t.kind, t.finishedAt)],
+);

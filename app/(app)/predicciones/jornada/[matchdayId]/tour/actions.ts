@@ -14,6 +14,8 @@ import {
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId } from "@/lib/leagues";
 import { getMatchdayState, isMatchClosed, type Stage } from "@/lib/matchday-state";
+import { runAction } from "@/lib/actions/guard";
+import { rateLimit } from "@/lib/ratelimit";
 
 export type SaveMatchResult = { ok: boolean; error?: string };
 
@@ -87,49 +89,61 @@ export async function saveMatchPrediction(
   const leagueId = await currentLeagueId(me);
   if (leagueId == null) return { ok: false, error: "Sin liga activa." };
 
-  await db.transaction(async (tx) => {
-    await tx
-      .insert(predMatchResult)
-      .values({
-        userId: me.id,
-        leagueId,
-        matchId: parsed.data.matchId,
-        homeScore: parsed.data.homeScore,
-        awayScore: parsed.data.awayScore,
-        willGoToPens: parsed.data.willGoToPens,
-        winnerTeamId: parsed.data.winnerTeamId ?? null,
-        submittedAt: new Date(),
-      })
-      .onConflictDoUpdate({
-        target: [predMatchResult.userId, predMatchResult.leagueId, predMatchResult.matchId],
-        set: {
-          homeScore: parsed.data.homeScore,
-          awayScore: parsed.data.awayScore,
-          willGoToPens: parsed.data.willGoToPens,
-          winnerTeamId: parsed.data.winnerTeamId ?? null,
-          submittedAt: new Date(),
-        },
+  // Anti-abuso del autosave: bucket compartido de saves de predicción.
+  const limited = await rateLimit(`predsave:${me.id}`, 40, 10_000);
+  if (!limited.ok) {
+    return { ok: false, error: "Vas demasiado rápido. Espera unos segundos." };
+  }
+
+  return runAction(
+    { action: "saveMatchPrediction", userId: me.id, leagueId },
+    async () => {
+      await db.transaction(async (tx) => {
+        await tx
+          .insert(predMatchResult)
+          .values({
+            userId: me.id,
+            leagueId,
+            matchId: parsed.data.matchId,
+            homeScore: parsed.data.homeScore,
+            awayScore: parsed.data.awayScore,
+            willGoToPens: parsed.data.willGoToPens,
+            winnerTeamId: parsed.data.winnerTeamId ?? null,
+            submittedAt: new Date(),
+          })
+          .onConflictDoUpdate({
+            target: [predMatchResult.userId, predMatchResult.leagueId, predMatchResult.matchId],
+            set: {
+              homeScore: parsed.data.homeScore,
+              awayScore: parsed.data.awayScore,
+              willGoToPens: parsed.data.willGoToPens,
+              winnerTeamId: parsed.data.winnerTeamId ?? null,
+              submittedAt: new Date(),
+            },
+          });
+
+        await tx
+          .insert(predMatchScorer)
+          .values({
+            userId: me.id,
+            leagueId,
+            matchId: parsed.data.matchId,
+            playerId: parsed.data.scorerPlayerId,
+            submittedAt: new Date(),
+          })
+          .onConflictDoUpdate({
+            target: [predMatchScorer.userId, predMatchScorer.leagueId, predMatchScorer.matchId],
+            set: {
+              playerId: parsed.data.scorerPlayerId,
+              submittedAt: new Date(),
+            },
+          });
       });
 
-    await tx
-      .insert(predMatchScorer)
-      .values({
-        userId: me.id,
-        leagueId,
-        matchId: parsed.data.matchId,
-        playerId: parsed.data.scorerPlayerId,
-        submittedAt: new Date(),
-      })
-      .onConflictDoUpdate({
-        target: [predMatchScorer.userId, predMatchScorer.leagueId, predMatchScorer.matchId],
-        set: {
-          playerId: parsed.data.scorerPlayerId,
-          submittedAt: new Date(),
-        },
-      });
-  });
-
-  return { ok: true };
+      return { ok: true };
+    },
+    (error) => ({ ok: false, error }),
+  );
 }
 
 /**

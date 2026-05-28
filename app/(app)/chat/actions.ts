@@ -9,6 +9,8 @@ import { chatMessages, leagues, profiles } from "@/lib/db/schema";
 import { requireAdmin, requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, isMemberOf } from "@/lib/leagues";
 import { notifyNewChatMessage } from "@/lib/telegram/events";
+import { runAction } from "@/lib/actions/guard";
+import { rateLimit } from "@/lib/ratelimit";
 
 export type FormState = { ok: boolean; error?: string };
 
@@ -30,32 +32,44 @@ export async function sendMessage(
   const member = await isMemberOf(me.id, leagueId);
   if (!member) return { ok: false, error: "No perteneces a esta liga." };
 
-  await db.insert(chatMessages).values({
-    leagueId,
-    userId: me.id,
-    body: parsed.data.body,
-  });
+  // Anti-spam: máx. 5 mensajes cada 10 s por usuario.
+  const limited = await rateLimit(`chat:${me.id}`, 5, 10_000);
+  if (!limited.ok) {
+    return { ok: false, error: "Vas demasiado rápido. Espera unos segundos." };
+  }
 
-  // Alerta Telegram diferida (sobrevive al teardown serverless). Lee la
-  // liga (nombre + isPublic) post-respuesta y manda silent para no spam.
-  after(async () => {
-    const [league] = await db
-      .select({ name: leagues.name, isPublic: leagues.isPublic })
-      .from(leagues)
-      .where(eq(leagues.id, leagueId))
-      .limit(1);
-    if (!league) return;
-    await notifyNewChatMessage({
-      leagueName: league.name,
-      isPublic: league.isPublic,
-      authorEmail: me.email,
-      authorNickname: me.nickname,
-      body: parsed.data.body,
-    });
-  });
+  return runAction(
+    { action: "sendMessage", userId: me.id, leagueId },
+    async () => {
+      await db.insert(chatMessages).values({
+        leagueId,
+        userId: me.id,
+        body: parsed.data.body,
+      });
 
-  revalidatePath("/chat");
-  return { ok: true };
+      // Alerta Telegram diferida (sobrevive al teardown serverless). Lee la
+      // liga (nombre + isPublic) post-respuesta y manda silent para no spam.
+      after(async () => {
+        const [league] = await db
+          .select({ name: leagues.name, isPublic: leagues.isPublic })
+          .from(leagues)
+          .where(eq(leagues.id, leagueId))
+          .limit(1);
+        if (!league) return;
+        await notifyNewChatMessage({
+          leagueName: league.name,
+          isPublic: league.isPublic,
+          authorEmail: me.email,
+          authorNickname: me.nickname,
+          body: parsed.data.body,
+        });
+      });
+
+      revalidatePath("/chat");
+      return { ok: true };
+    },
+    (error) => ({ ok: false, error }),
+  );
 }
 
 export async function deleteMessage(formData: FormData) {

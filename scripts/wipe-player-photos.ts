@@ -9,12 +9,16 @@ import { players } from "@/lib/db/schema";
  * relaciones — solo las imágenes.
  *
  * Uso:
- *   pnpm db:wipe-player-photos             # ejecuta
- *   pnpm db:wipe-player-photos --dry-run   # logs, sin tocar nada
+ *   pnpm db:wipe-player-photos --dry-run   # logs, sin tocar nada (recomendado primero)
+ *   pnpm db:wipe-player-photos --yes       # ejecuta de verdad
+ *
+ * Una ejecución real exige `--yes`: borrar TODAS las fotos de jugadores de
+ * producción no debe poder ocurrir por un comando suelto sin querer.
  */
 
 const BUCKET = "players";
 const dryRun = process.argv.includes("--dry-run");
+const confirmed = process.argv.includes("--yes");
 
 async function listAllKeys(): Promise<string[]> {
   const supabase = createSupabaseServiceClient();
@@ -46,6 +50,15 @@ async function listAllKeys(): Promise<string[]> {
 }
 
 async function main() {
+  if (!dryRun && !confirmed) {
+    console.error(
+      "✋ Esto borra TODAS las fotos de jugadores (storage + photoUrl).\n" +
+        "   Prueba primero con --dry-run, y confirma con --yes para ejecutar:\n" +
+        "   pnpm db:wipe-player-photos --yes",
+    );
+    process.exit(1);
+  }
+
   const supabase = createSupabaseServiceClient();
 
   const keys = await listAllKeys();

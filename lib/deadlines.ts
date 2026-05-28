@@ -117,52 +117,44 @@ async function loadOpenMatchdaysUnsafe(
 
   const openIds = openDays.map((d) => d.id);
 
-  // 4 queries agregadas en paralelo:
-  //   - total partidos por jornada
-  //   - partidos upcoming por jornada (los que aún se pueden predecir)
-  //   - próximo kickoff (min scheduledAt > now) por jornada
-  //   - predicciones del usuario por jornada (filled) + upcoming sin predecir (missing)
-  const [totalsByDay, openByDay, nextDeadlineByDay, userByDay] = await Promise.all([
+  // Dos queries agregadas en paralelo (antes eran cinco). Cada una hace una
+  // sola pasada sobre `matches` usando agregados condicionales (FILTER):
+  //   1) stats de la jornada: total de partidos, upcoming (aún predecibles) y
+  //      próximo kickoff (min scheduledAt futuro).
+  //   2) stats del usuario vía leftJoin 1:1 con sus predicciones: partidos ya
+  //      predichos (filled) y upcoming sin predecir (missing). El join es
+  //      como mucho una fila por partido (target = matchId+userId+leagueId),
+  //      así que `count(*) filter (where matchId is not null)` es exacto —
+  //      no infla, por lo que ya no hace falta la query separada de antes.
+  const [matchStatsByDay, userStatsByDay] = await Promise.all([
     db
       .select({
         matchdayId: matches.matchdayId,
         total: sql<number>`count(*)::int`,
+        openMatches: sql<number>`count(*) filter (where ${matches.scheduledAt} > now())::int`,
+        nextAt: sql<string | null>`min(${matches.scheduledAt}) filter (where ${matches.scheduledAt} > now())`,
       })
       .from(matches)
       .where(inArray(matches.matchdayId, openIds))
       .groupBy(matches.matchdayId)
-      .then((rows) => new Map(rows.map((r) => [r.matchdayId ?? 0, r.total]))),
-    db
-      .select({
-        matchdayId: matches.matchdayId,
-        openMatches: sql<number>`count(*)::int`,
-      })
-      .from(matches)
-      .where(
-        and(inArray(matches.matchdayId, openIds), gt(matches.scheduledAt, now)),
-      )
-      .groupBy(matches.matchdayId)
       .then(
-        (rows) => new Map(rows.map((r) => [r.matchdayId ?? 0, r.openMatches])),
+        (rows) =>
+          new Map(
+            rows.map((r) => [
+              r.matchdayId ?? 0,
+              {
+                total: r.total,
+                openMatches: r.openMatches,
+                nextAt: r.nextAt ? new Date(r.nextAt) : null,
+              },
+            ]),
+          ),
       ),
     db
       .select({
         matchdayId: matches.matchdayId,
-        nextAt: sql<Date>`min(${matches.scheduledAt})`,
-      })
-      .from(matches)
-      .where(
-        and(inArray(matches.matchdayId, openIds), gt(matches.scheduledAt, now)),
-      )
-      .groupBy(matches.matchdayId)
-      .then(
-        (rows) => new Map(rows.map((r) => [r.matchdayId ?? 0, new Date(r.nextAt)])),
-      ),
-    db
-      .select({
-        matchdayId: matches.matchdayId,
-        filled: sql<number>`count(*)::int`,
-        missingUpcoming: sql<number>`count(*) filter (where ${matches.scheduledAt} > now() and ${predMatchResult.matchId} is null)::int`,
+        filled: sql<number>`count(*) filter (where ${predMatchResult.matchId} is not null)::int`,
+        missing: sql<number>`count(*) filter (where ${matches.scheduledAt} > now() and ${predMatchResult.matchId} is null)::int`,
       })
       .from(matches)
       .leftJoin(
@@ -180,57 +172,27 @@ async function loadOpenMatchdaysUnsafe(
           new Map(
             rows.map((r) => [
               r.matchdayId ?? 0,
-              {
-                filled:
-                  Number.isFinite(r.filled) && r.filled > 0
-                    ? // El leftJoin cuenta filas con prediction != null. Usamos
-                      // un filter más explícito para ser robustos.
-                      r.filled
-                    : 0,
-                missing: r.missingUpcoming ?? 0,
-              },
+              { filled: r.filled ?? 0, missing: r.missing ?? 0 },
             ]),
           ),
       ),
   ]);
 
-  // Re-pegamos: en el leftJoin, "filled" cuenta filas con prediction; pero
-  // PG agrupa filas del leftJoin incluyendo NULL → puede inflar. Calculamos
-  // filled aparte con una query exacta para evitar errores.
-  const filledByDay = await db
-    .select({
-      matchdayId: matches.matchdayId,
-      filled: sql<number>`count(*)::int`,
-    })
-    .from(predMatchResult)
-    .innerJoin(matches, eq(matches.id, predMatchResult.matchId))
-    .where(
-      and(
-        eq(predMatchResult.userId, userId),
-        eq(predMatchResult.leagueId, leagueId),
-        inArray(matches.matchdayId, openIds),
-      ),
-    )
-    .groupBy(matches.matchdayId)
-    .then((rows) => new Map(rows.map((r) => [r.matchdayId ?? 0, r.filled])));
-
   const out: OpenMatchdayEntry[] = [];
   for (const d of openDays) {
-    const total = totalsByDay.get(d.id) ?? 0;
-    const openMatches = openByDay.get(d.id) ?? 0;
-    const nextAt = nextDeadlineByDay.get(d.id);
-    if (!nextAt) continue; // safety: si no hay próximo kickoff, no es "open"
-    const filled = filledByDay.get(d.id) ?? 0;
-    const missing = userByDay.get(d.id)?.missing ?? openMatches;
+    const stats = matchStatsByDay.get(d.id);
+    if (!stats || !stats.nextAt) continue; // sin próximo kickoff → no es "open"
+    const user = userStatsByDay.get(d.id);
+    const openMatches = stats.openMatches;
     out.push({
       id: d.id,
       name: d.name,
       stage: d.stage as Stage,
-      nextDeadlineAt: nextAt,
-      total,
-      filled,
+      nextDeadlineAt: stats.nextAt,
+      total: stats.total,
+      filled: user?.filled ?? 0,
       openMatches,
-      missing,
+      missing: user?.missing ?? openMatches,
     });
   }
   out.sort((a, b) => a.nextDeadlineAt.getTime() - b.nextDeadlineAt.getTime());

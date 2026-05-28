@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { predSpecial, specialPredictions } from "@/lib/db/schema";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId } from "@/lib/leagues";
+import { runAction } from "@/lib/actions/guard";
 
 export type FormState = { ok: boolean; error?: string };
 
@@ -61,38 +62,44 @@ export async function saveSpecialPredictions(
     return { ok: false, error: "Sin liga activa." };
   }
 
-  await db.transaction(async (tx) => {
-    for (const p of parsed.data.predictions) {
-      if (Object.keys(p.valueJson).length === 0) continue;
-      if (Object.values(p.valueJson).every((v) => v == null || v === "")) {
-        await tx
-          .delete(predSpecial)
-          .where(
-            and(
-              eq(predSpecial.userId, me.id),
-              eq(predSpecial.leagueId, leagueId),
-              eq(predSpecial.specialId, p.specialId),
-            ),
-          );
-        continue;
-      }
-      await tx
-        .insert(predSpecial)
-        .values({
-          userId: me.id,
-          leagueId,
-          specialId: p.specialId,
-          valueJson: p.valueJson as unknown,
-          submittedAt: new Date(),
-        })
-        .onConflictDoUpdate({
-          target: [predSpecial.userId, predSpecial.leagueId, predSpecial.specialId],
-          set: { valueJson: p.valueJson as unknown, submittedAt: new Date() },
-        });
-    }
-  });
+  return runAction(
+    { action: "saveSpecialPredictions", userId: me.id, leagueId },
+    async () => {
+      await db.transaction(async (tx) => {
+        for (const p of parsed.data.predictions) {
+          if (Object.keys(p.valueJson).length === 0) continue;
+          if (Object.values(p.valueJson).every((v) => v == null || v === "")) {
+            await tx
+              .delete(predSpecial)
+              .where(
+                and(
+                  eq(predSpecial.userId, me.id),
+                  eq(predSpecial.leagueId, leagueId),
+                  eq(predSpecial.specialId, p.specialId),
+                ),
+              );
+            continue;
+          }
+          await tx
+            .insert(predSpecial)
+            .values({
+              userId: me.id,
+              leagueId,
+              specialId: p.specialId,
+              valueJson: p.valueJson as unknown,
+              submittedAt: new Date(),
+            })
+            .onConflictDoUpdate({
+              target: [predSpecial.userId, predSpecial.leagueId, predSpecial.specialId],
+              set: { valueJson: p.valueJson as unknown, submittedAt: new Date() },
+            });
+        }
+      });
 
-  revalidatePath("/predicciones/especiales");
-  revalidatePath("/predicciones");
-  return { ok: true };
+      revalidatePath("/predicciones/especiales");
+      revalidatePath("/predicciones");
+      return { ok: true };
+    },
+    (error) => ({ ok: false, error }),
+  );
 }

@@ -14,6 +14,7 @@ import {
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId } from "@/lib/leagues";
 import { getMatchdayState, isMatchClosed, type Stage } from "@/lib/matchday-state";
+import { runAction } from "@/lib/actions/guard";
 
 export type FormState = {
   ok: boolean;
@@ -142,64 +143,70 @@ export async function saveMatchdayPredictions(
     return { ok: false, error: "Sin liga activa." };
   }
 
-  await db.transaction(async (tx) => {
-    for (const p of openPredictions) {
-      await tx
-        .insert(predMatchResult)
-        .values({
-          userId: me.id,
-          leagueId,
-          matchId: p.matchId,
-          homeScore: p.homeScore,
-          awayScore: p.awayScore,
-          willGoToPens: p.willGoToPens,
-          winnerTeamId: p.winnerTeamId ?? null,
-          submittedAt: new Date(),
-        })
-        .onConflictDoUpdate({
-          target: [predMatchResult.userId, predMatchResult.leagueId, predMatchResult.matchId],
-          set: {
-            homeScore: p.homeScore,
-            awayScore: p.awayScore,
-            willGoToPens: p.willGoToPens,
-            winnerTeamId: p.winnerTeamId ?? null,
-            submittedAt: new Date(),
-          },
-        });
-
-      if (p.scorerPlayerId == null) {
-        await tx
-          .delete(predMatchScorer)
-          .where(
-            and(
-              eq(predMatchScorer.userId, me.id),
-              eq(predMatchScorer.leagueId, leagueId),
-              eq(predMatchScorer.matchId, p.matchId),
-            ),
-          );
-      } else {
-        await tx
-          .insert(predMatchScorer)
-          .values({
-            userId: me.id,
-            leagueId,
-            matchId: p.matchId,
-            playerId: p.scorerPlayerId,
-            submittedAt: new Date(),
-          })
-          .onConflictDoUpdate({
-            target: [predMatchScorer.userId, predMatchScorer.leagueId, predMatchScorer.matchId],
-            set: {
-              playerId: p.scorerPlayerId,
+  return runAction(
+    { action: "saveMatchdayPredictions", userId: me.id, leagueId },
+    async () => {
+      await db.transaction(async (tx) => {
+        for (const p of openPredictions) {
+          await tx
+            .insert(predMatchResult)
+            .values({
+              userId: me.id,
+              leagueId,
+              matchId: p.matchId,
+              homeScore: p.homeScore,
+              awayScore: p.awayScore,
+              willGoToPens: p.willGoToPens,
+              winnerTeamId: p.winnerTeamId ?? null,
               submittedAt: new Date(),
-            },
-          });
-      }
-    }
-  });
+            })
+            .onConflictDoUpdate({
+              target: [predMatchResult.userId, predMatchResult.leagueId, predMatchResult.matchId],
+              set: {
+                homeScore: p.homeScore,
+                awayScore: p.awayScore,
+                willGoToPens: p.willGoToPens,
+                winnerTeamId: p.winnerTeamId ?? null,
+                submittedAt: new Date(),
+              },
+            });
 
-  revalidatePath(`/predicciones/jornada/${parsed.data.matchdayId}`);
-  revalidatePath("/predicciones");
-  revalidatePath("/dashboard");
-  return { ok: true, skipped: skipped > 0 ? skipped : undefined };
+          if (p.scorerPlayerId == null) {
+            await tx
+              .delete(predMatchScorer)
+              .where(
+                and(
+                  eq(predMatchScorer.userId, me.id),
+                  eq(predMatchScorer.leagueId, leagueId),
+                  eq(predMatchScorer.matchId, p.matchId),
+                ),
+              );
+          } else {
+            await tx
+              .insert(predMatchScorer)
+              .values({
+                userId: me.id,
+                leagueId,
+                matchId: p.matchId,
+                playerId: p.scorerPlayerId,
+                submittedAt: new Date(),
+              })
+              .onConflictDoUpdate({
+                target: [predMatchScorer.userId, predMatchScorer.leagueId, predMatchScorer.matchId],
+                set: {
+                  playerId: p.scorerPlayerId,
+                  submittedAt: new Date(),
+                },
+              });
+          }
+        }
+      });
+
+      revalidatePath(`/predicciones/jornada/${parsed.data.matchdayId}`);
+      revalidatePath("/predicciones");
+      revalidatePath("/dashboard");
+      return { ok: true, skipped: skipped > 0 ? skipped : undefined };
+    },
+    (error) => ({ ok: false, error }),
+  );
 }

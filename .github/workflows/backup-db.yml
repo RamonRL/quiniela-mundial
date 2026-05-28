@@ -1,0 +1,67 @@
+name: Backup DB → R2
+
+# Copia lógica de la base de datos a Cloudflare R2 cada 6 horas. Es la capa
+# off-platform que complementa los snapshots diarios de Supabase Pro: si la
+# cuenta de Supabase fallase, estos dumps siguen estando en R2 (otro
+# proveedor). Cadencia de 6 h → peor ventana de pérdida ~6 h sin pagar PITR.
+#
+# Restauración: ver docs/disaster-recovery.md.
+
+on:
+  schedule:
+    - cron: "0 */6 * * *" # 00:00, 06:00, 12:00, 18:00 UTC
+  workflow_dispatch: {} # disparo manual desde la pestaña Actions
+
+concurrency:
+  group: backup-db
+  cancel-in-progress: false
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Instalar pg_dump (PostgreSQL 17 client)
+        run: |
+          sudo sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /usr/share/keyrings/pgdg.gpg
+          sudo sed -i 's|deb |deb [signed-by=/usr/share/keyrings/pgdg.gpg] |' /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-17
+          pg_dump --version
+
+      - name: Volcar la base de datos
+        env:
+          # Pooler de sesión (puerto 5432). El transaction pooler NO soporta pg_dump.
+          DATABASE_DIRECT_URL: ${{ secrets.DATABASE_DIRECT_URL }}
+        run: |
+          STAMP="$(date -u +%Y%m%d-%H%M)"
+          echo "STAMP=$STAMP" >> "$GITHUB_ENV"
+          # -Fc: formato custom comprimido (restaurable con pg_restore, selectivo).
+          pg_dump "$DATABASE_DIRECT_URL" -Fc -Z9 --no-owner --no-privileges -f "quiniela-$STAMP.dump"
+          ls -lh "quiniela-$STAMP.dump"
+
+      - name: Subir a Cloudflare R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: |
+          aws s3 cp "quiniela-$STAMP.dump" \
+            "s3://$R2_BUCKET/db/quiniela-$STAMP.dump" \
+            --endpoint-url "$R2_ENDPOINT"
+          echo "✓ Subido db/quiniela-$STAMP.dump a R2"
+
+      - name: Registrar la copia en backup_runs
+        env:
+          DATABASE_DIRECT_URL: ${{ secrets.DATABASE_DIRECT_URL }}
+        run: |
+          psql "$DATABASE_DIRECT_URL" -v ON_ERROR_STOP=1 -c \
+            "insert into backup_runs (kind, object_key) values ('db', 'db/quiniela-$STAMP.dump');"
+          echo "✓ Registrado en backup_runs"
+
+      - name: Limpiar el dump local
+        if: always()
+        run: rm -f quiniela-*.dump

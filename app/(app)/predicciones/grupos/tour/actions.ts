@@ -6,6 +6,8 @@ import { db } from "@/lib/db";
 import { predGroupRanking } from "@/lib/db/schema";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId } from "@/lib/leagues";
+import { runAction } from "@/lib/actions/guard";
+import { rateLimit } from "@/lib/ratelimit";
 
 export type SaveGroupResult = { ok: boolean; error?: string };
 
@@ -41,34 +43,46 @@ export async function saveGroupPredictionForGroup(
   const leagueId = await currentLeagueId(me);
   if (leagueId == null) return { ok: false, error: "Sin liga activa." };
 
-  await db
-    .insert(predGroupRanking)
-    .values({
-      userId: me.id,
-      leagueId,
-      groupId: parsed.data.groupId,
-      pos1TeamId: parsed.data.pos1TeamId,
-      pos2TeamId: parsed.data.pos2TeamId,
-      pos3TeamId: parsed.data.pos3TeamId,
-      pos4TeamId: parsed.data.pos4TeamId,
-      submittedAt: new Date(),
-    })
-    .onConflictDoUpdate({
-      target: [
-        predGroupRanking.userId,
-        predGroupRanking.leagueId,
-        predGroupRanking.groupId,
-      ],
-      set: {
-        pos1TeamId: parsed.data.pos1TeamId,
-        pos2TeamId: parsed.data.pos2TeamId,
-        pos3TeamId: parsed.data.pos3TeamId,
-        pos4TeamId: parsed.data.pos4TeamId,
-        submittedAt: new Date(),
-      },
-    });
+  // Anti-abuso del autosave: bucket compartido de saves de predicción.
+  const limited = await rateLimit(`predsave:${me.id}`, 40, 10_000);
+  if (!limited.ok) {
+    return { ok: false, error: "Vas demasiado rápido. Espera unos segundos." };
+  }
 
-  return { ok: true };
+  return runAction(
+    { action: "saveGroupPredictionForGroup", userId: me.id, leagueId },
+    async () => {
+      await db
+        .insert(predGroupRanking)
+        .values({
+          userId: me.id,
+          leagueId,
+          groupId: parsed.data.groupId,
+          pos1TeamId: parsed.data.pos1TeamId,
+          pos2TeamId: parsed.data.pos2TeamId,
+          pos3TeamId: parsed.data.pos3TeamId,
+          pos4TeamId: parsed.data.pos4TeamId,
+          submittedAt: new Date(),
+        })
+        .onConflictDoUpdate({
+          target: [
+            predGroupRanking.userId,
+            predGroupRanking.leagueId,
+            predGroupRanking.groupId,
+          ],
+          set: {
+            pos1TeamId: parsed.data.pos1TeamId,
+            pos2TeamId: parsed.data.pos2TeamId,
+            pos3TeamId: parsed.data.pos3TeamId,
+            pos4TeamId: parsed.data.pos4TeamId,
+            submittedAt: new Date(),
+          },
+        });
+
+      return { ok: true };
+    },
+    (error) => ({ ok: false, error }),
+  );
 }
 
 /**

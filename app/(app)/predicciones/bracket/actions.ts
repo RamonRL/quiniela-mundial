@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { predBracketSlot } from "@/lib/db/schema";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId } from "@/lib/leagues";
+import { runAction } from "@/lib/actions/guard";
 
 export type FormState = { ok: boolean; error?: string };
 
@@ -70,60 +71,66 @@ export async function saveBracketPicks(
     return { ok: false, error: "Sin liga activa." };
   }
 
-  await db.transaction(async (tx) => {
-    // Reemplazar las picks de bracket de este usuario en la liga activa.
-    await tx
-      .delete(predBracketSlot)
-      .where(
-        and(
-          eq(predBracketSlot.userId, me.id),
-          eq(predBracketSlot.leagueId, leagueId),
-        ),
-      );
+  return runAction(
+    { action: "saveBracketPicks", userId: me.id, leagueId },
+    async () => {
+      await db.transaction(async (tx) => {
+        // Reemplazar las picks de bracket de este usuario en la liga activa.
+        await tx
+          .delete(predBracketSlot)
+          .where(
+            and(
+              eq(predBracketSlot.userId, me.id),
+              eq(predBracketSlot.leagueId, leagueId),
+            ),
+          );
 
-    const rows: (typeof predBracketSlot.$inferInsert)[] = [];
-    r16.forEach((teamId, i) =>
-      rows.push({ userId: me.id, leagueId, stage: "r16", slotPosition: i + 1, predictedTeamId: teamId }),
-    );
-    qf.forEach((teamId, i) =>
-      rows.push({ userId: me.id, leagueId, stage: "qf", slotPosition: i + 1, predictedTeamId: teamId }),
-    );
-    sf.forEach((teamId, i) =>
-      rows.push({ userId: me.id, leagueId, stage: "sf", slotPosition: i + 1, predictedTeamId: teamId }),
-    );
-    finalists.forEach((teamId, i) =>
-      rows.push({
-        userId: me.id,
-        leagueId,
-        stage: "final",
-        slotPosition: i + 1,
-        predictedTeamId: teamId,
-      }),
-    );
-    if (championTeamId) {
-      rows.push({
-        userId: me.id,
-        leagueId,
-        stage: "final",
-        slotPosition: 0,
-        predictedTeamId: championTeamId,
+        const rows: (typeof predBracketSlot.$inferInsert)[] = [];
+        r16.forEach((teamId, i) =>
+          rows.push({ userId: me.id, leagueId, stage: "r16", slotPosition: i + 1, predictedTeamId: teamId }),
+        );
+        qf.forEach((teamId, i) =>
+          rows.push({ userId: me.id, leagueId, stage: "qf", slotPosition: i + 1, predictedTeamId: teamId }),
+        );
+        sf.forEach((teamId, i) =>
+          rows.push({ userId: me.id, leagueId, stage: "sf", slotPosition: i + 1, predictedTeamId: teamId }),
+        );
+        finalists.forEach((teamId, i) =>
+          rows.push({
+            userId: me.id,
+            leagueId,
+            stage: "final",
+            slotPosition: i + 1,
+            predictedTeamId: teamId,
+          }),
+        );
+        if (championTeamId) {
+          rows.push({
+            userId: me.id,
+            leagueId,
+            stage: "final",
+            slotPosition: 0,
+            predictedTeamId: championTeamId,
+          });
+        }
+        if (thirdTeamId) {
+          // El 3.º puesto se persiste para que el bracket visual lo refleje, pero
+          // el motor de scoring NO le da puntos (decisión del producto).
+          rows.push({
+            userId: me.id,
+            leagueId,
+            stage: "third",
+            slotPosition: 0,
+            predictedTeamId: thirdTeamId,
+          });
+        }
+        if (rows.length > 0) await tx.insert(predBracketSlot).values(rows);
       });
-    }
-    if (thirdTeamId) {
-      // El 3.º puesto se persiste para que el bracket visual lo refleje, pero
-      // el motor de scoring NO le da puntos (decisión del producto).
-      rows.push({
-        userId: me.id,
-        leagueId,
-        stage: "third",
-        slotPosition: 0,
-        predictedTeamId: thirdTeamId,
-      });
-    }
-    if (rows.length > 0) await tx.insert(predBracketSlot).values(rows);
-  });
 
-  revalidatePath("/predicciones/bracket");
-  revalidatePath("/predicciones");
-  return { ok: true };
+      revalidatePath("/predicciones/bracket");
+      revalidatePath("/predicciones");
+      return { ok: true };
+    },
+    (error) => ({ ok: false, error }),
+  );
 }

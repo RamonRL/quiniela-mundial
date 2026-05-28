@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { predTournamentTopScorer } from "@/lib/db/schema";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId } from "@/lib/leagues";
+import { runAction } from "@/lib/actions/guard";
 
 export type FormState = { ok: boolean; error?: string };
 
@@ -29,19 +30,25 @@ export async function saveTopScorerPrediction(
   if (leagueId == null) {
     return { ok: false, error: "Sin liga activa." };
   }
-  await db
-    .insert(predTournamentTopScorer)
-    .values({
-      userId: me.id,
-      leagueId,
-      playerId: parsed.data.playerId,
-      submittedAt: new Date(),
-    })
-    .onConflictDoUpdate({
-      target: [predTournamentTopScorer.userId, predTournamentTopScorer.leagueId],
-      set: { playerId: parsed.data.playerId, submittedAt: new Date() },
-    });
-  revalidatePath("/predicciones/goleador-torneo");
-  revalidatePath("/predicciones");
-  return { ok: true };
+  return runAction(
+    { action: "saveTopScorerPrediction", userId: me.id, leagueId },
+    async () => {
+      await db
+        .insert(predTournamentTopScorer)
+        .values({
+          userId: me.id,
+          leagueId,
+          playerId: parsed.data.playerId,
+          submittedAt: new Date(),
+        })
+        .onConflictDoUpdate({
+          target: [predTournamentTopScorer.userId, predTournamentTopScorer.leagueId],
+          set: { playerId: parsed.data.playerId, submittedAt: new Date() },
+        });
+      revalidatePath("/predicciones/goleador-torneo");
+      revalidatePath("/predicciones");
+      return { ok: true };
+    },
+    (error) => ({ ok: false, error }),
+  );
 }
