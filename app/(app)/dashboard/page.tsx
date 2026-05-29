@@ -102,6 +102,8 @@ function safe<T>(
 export default async function DashboardPage() {
   const me = await requireUser();
   const leagueId = (await currentLeagueId(me))!;
+  // TZ del usuario para horarios de partidos; null → fallback Spain TZ.
+  const userTz = me.timezone ?? undefined;
   const kickoff = new Date(KICKOFF);
   const tournamentStarted = kickoff.getTime() <= Date.now();
   const days = Math.max(0, Math.ceil((kickoff.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
@@ -542,6 +544,7 @@ export default async function DashboardPage() {
             </div>
             <p className="font-editorial text-base italic text-[var(--color-muted-foreground)] sm:text-lg">
               {formatDateTime(kickoff, {
+                timeZone: userTz,
                 weekday: "long",
                 day: "2-digit",
                 month: "long",
@@ -577,6 +580,7 @@ export default async function DashboardPage() {
                   <div className="flex items-center justify-between border-t border-dashed border-[var(--color-border)] pt-3 text-xs text-[var(--color-muted-foreground)]">
                     <span>
                       {formatDateTime(next.scheduledAt, {
+                        timeZone: userTz,
                         weekday: "short",
                         day: "2-digit",
                         month: "short",
@@ -616,6 +620,7 @@ export default async function DashboardPage() {
                   {upcomingMatchdays[0] ? (
                     <p className="text-xs text-[var(--color-muted-foreground)]">
                       {formatDateTime(upcomingMatchdays[0].predictionDeadlineAt, {
+                        timeZone: userTz,
                         day: "2-digit",
                         month: "short",
                         hour: "2-digit",
@@ -749,6 +754,7 @@ export default async function DashboardPage() {
                         </span>
                         <span className="font-mono text-[0.55rem] uppercase tracking-[0.22em] text-[var(--color-muted-foreground)]">
                           {formatDateTime(m.scheduledAt, {
+                            timeZone: userTz,
                             day: "2-digit",
                             month: "short",
                           })}

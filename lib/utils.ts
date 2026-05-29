@@ -39,15 +39,27 @@ const DEFAULT_TIME_OPTS: Intl.DateTimeFormatOptions = {
   minute: "2-digit",
 };
 
+/**
+ * Para que `options.timeZone === undefined` no sobrescriba el default a
+ * undefined (lo que dejaría a `toLocaleString` cayendo al TZ del runtime
+ * — UTC en Vercel — y descuadraría los partidos), extraemos el campo
+ * aparte y aplicamos el fallback explícito.
+ */
+function resolveTz(options: Intl.DateTimeFormatOptions): Intl.DateTimeFormatOptions {
+  const { timeZone, ...rest } = options;
+  return { timeZone: timeZone ?? SPAIN_TZ, ...rest };
+}
+
 export function formatDateTime(
   value: Date | string | number,
   options: Intl.DateTimeFormatOptions = {},
 ) {
   const date = value instanceof Date ? value : new Date(value);
+  const { timeZone, ...rest } = resolveTz(options);
   return date.toLocaleString("es-ES", {
-    timeZone: SPAIN_TZ,
+    timeZone,
     ...DEFAULT_DATETIME_OPTS,
-    ...options,
+    ...rest,
   });
 }
 
@@ -56,7 +68,7 @@ export function formatDate(
   options: Intl.DateTimeFormatOptions = {},
 ) {
   const date = value instanceof Date ? value : new Date(value);
-  return date.toLocaleDateString("es-ES", { timeZone: SPAIN_TZ, ...options });
+  return date.toLocaleDateString("es-ES", resolveTz(options));
 }
 
 export function formatTime(
@@ -64,10 +76,11 @@ export function formatTime(
   options: Intl.DateTimeFormatOptions = {},
 ) {
   const date = value instanceof Date ? value : new Date(value);
+  const { timeZone, ...rest } = resolveTz(options);
   return date.toLocaleTimeString("es-ES", {
-    timeZone: SPAIN_TZ,
+    timeZone,
     ...DEFAULT_TIME_OPTS,
-    ...options,
+    ...rest,
   });
 }
 

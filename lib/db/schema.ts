@@ -247,6 +247,12 @@ export const profiles = pgTable(
     // NULL = aún no lo ha visto → se autodispara al entrar a /dashboard.
     // Se marca también si pulsa "Saltar" para no volver a salir.
     tutorialCompletedAt: timestamp("tutorial_completed_at", { withTimezone: true }),
+    // Zona horaria preferida del usuario (IANA, p. ej. "Europe/Madrid",
+    // "America/Mexico_City"). NULL = "auto": el front la detecta del
+    // navegador la primera vez que entra a /ajustes y la guarda, y en SSR
+    // caemos a Europe/Madrid como default seguro. Cuando se establece,
+    // los horarios de partidos en la app se renderizan en esa TZ.
+    timezone: text("timezone"),
   },
   (t) => [
     index("profiles_role_idx").on(t.role),
