@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   ArrowRight,
@@ -54,6 +54,12 @@ export function OnboardingFlow({
   userAvatarUrl: string | null;
 }) {
   const router = useRouter();
+  // Si el usuario llegó al onboarding desde el gateway de compra (p. ej.
+  // pulsó "Comprar" sin tener liga), `?next=/precios/comprar/team-100`
+  // arrastra a dónde queremos devolverle al terminar. Lo propagamos por
+  // todos los pasos para que no se pierda entre `router.push`.
+  const nextParam = useSearchParams().get("next");
+  const nextQuery = nextParam ? `&next=${encodeURIComponent(nextParam)}` : "";
   void userNickname;
 
   if (step === "perfil") {
@@ -89,7 +95,7 @@ export function OnboardingFlow({
             label="Quiniela Privada"
             description="Para tu grupo. Sólo los tuyos."
             onClick={() => {
-              router.push("/onboarding?step=privada-elegir");
+              router.push(`/onboarding?step=privada-elegir${nextQuery}`);
             }}
             actionLabel="Continuar"
           />
@@ -116,7 +122,7 @@ export function OnboardingFlow({
             description="Le pones nombre y la lanzas."
             primary
             onClick={() => {
-              router.push("/onboarding?step=privada-crear");
+              router.push(`/onboarding?step=privada-crear${nextQuery}`);
             }}
             actionLabel="Crear"
           />
@@ -125,7 +131,7 @@ export function OnboardingFlow({
             label="Unirse a una quiniela"
             description="Pega el código y entras."
             onClick={() => {
-              router.push("/onboarding?step=privada-unirse");
+              router.push(`/onboarding?step=privada-unirse${nextQuery}`);
             }}
             actionLabel="Unirse"
           />
@@ -379,6 +385,10 @@ function CreatedSuccess({
   inviteToken: string;
 }) {
   const router = useRouter();
+  // Si veníamos del gateway de compra, terminamos volviendo allí en vez de a
+  // /dashboard — así el usuario completa la compra del tier sin tener que
+  // navegar manualmente.
+  const nextParam = useSearchParams().get("next");
   const inviteUrl =
     typeof window !== "undefined"
       ? `${window.location.origin}/invite/${inviteToken}`
@@ -431,10 +441,10 @@ function CreatedSuccess({
       <div className="flex flex-wrap items-center gap-4 pt-2">
         <Button
           size="lg"
-          onClick={() => router.push("/dashboard")}
+          onClick={() => router.push(nextParam ?? "/dashboard")}
           className="h-14 px-8 text-base sm:flex-1"
         >
-          Ir al dashboard <ArrowRight />
+          {nextParam ? "Continuar a pagar" : "Ir al dashboard"} <ArrowRight />
         </Button>
         <Link
           href="/onboarding?step=privada-elegir"
