@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import { ArrowLeft, KeyRound, Mail } from "lucide-react";
+import { ArrowLeft, Info, KeyRound, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,7 @@ import {
   signInWithGoogle,
   verifyEmailOtp,
 } from "./actions";
+import { GMAIL_USE_GOOGLE_MESSAGE, isGmailAddress } from "./gmail";
 
 const SEND_INITIAL: OtpSendState = { ok: false };
 const VERIFY_INITIAL: OtpVerifyState = { ok: false };
@@ -20,6 +21,10 @@ const VERIFY_INITIAL: OtpVerifyState = { ok: false };
 export function LoginForm({ next }: { next?: string }) {
   const [step, setStep] = useState<"email" | "code">("email");
   const [email, setEmail] = useState("");
+  // Capturamos el valor del input en vivo para detectar Gmail mientras se
+  // teclea y mostrar el aviso "usa el botón de Google" sin esperar a submit.
+  const [emailDraft, setEmailDraft] = useState("");
+  const draftIsGmail = isGmailAddress(emailDraft);
 
   const [sendState, sendAction, sending] = useActionState(sendEmailOtp, SEND_INITIAL);
   const [verifyState, verifyAction, verifying] = useActionState(
@@ -74,17 +79,30 @@ export function LoginForm({ next }: { next?: string }) {
                 inputMode="email"
                 autoComplete="email"
                 required
-                defaultValue={email}
+                value={emailDraft}
+                onChange={(e) => setEmailDraft(e.target.value)}
                 placeholder="tu@empresa.com"
                 disabled={sending}
                 className="pl-9"
               />
             </div>
           </div>
-          <Button type="submit" variant="default" size="lg" className="w-full" disabled={sending}>
+          {draftIsGmail ? (
+            <div className="flex items-start gap-2 rounded-md border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_6%,transparent)] px-3 py-2 text-xs leading-relaxed text-[var(--color-foreground)]">
+              <Info className="size-3.5 shrink-0 text-[var(--color-arena)]" />
+              <span>{GMAIL_USE_GOOGLE_MESSAGE}</span>
+            </div>
+          ) : null}
+          <Button
+            type="submit"
+            variant="default"
+            size="lg"
+            className="w-full"
+            disabled={sending || draftIsGmail}
+          >
             {sending ? "Enviando código…" : "Enviarme un código"}
           </Button>
-          {sendState.error ? (
+          {sendState.error && !draftIsGmail ? (
             <p className="text-center text-xs text-[var(--color-danger)]">{sendState.error}</p>
           ) : null}
           <p className="text-center text-[0.65rem] text-[var(--color-muted-foreground)]">

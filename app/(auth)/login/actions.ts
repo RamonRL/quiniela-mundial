@@ -6,6 +6,7 @@ import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { resolvePostSignInRedirect } from "@/lib/auth/post-signin";
 import { rateLimit } from "@/lib/ratelimit";
+import { GMAIL_USE_GOOGLE_MESSAGE, isGmailAddress } from "./gmail";
 
 async function getOrigin() {
   const headerList = await headers();
@@ -82,6 +83,13 @@ export async function sendEmailOtp(
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Email inválido." };
   }
   const email = parsed.data;
+
+  // Para cuentas Gmail mandamos al usuario al botón de Google: entra en un
+  // clic, sin código. Es además un ahorro nuestro de SMTP y rate-limit. El
+  // bloqueo está también en el cliente (UX), aquí es la red de seguridad.
+  if (isGmailAddress(email)) {
+    return { ok: false, error: GMAIL_USE_GOOGLE_MESSAGE };
+  }
 
   // Anti-abuso: máx. 5 envíos por hora desde la misma IP+email para no
   // habilitar mandar miles de OTPs a un buzón. Supabase también tiene su
