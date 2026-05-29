@@ -124,7 +124,7 @@ export default async function LoginPage({
                 Entra a Quiniela Mundial
               </h1>
               <p className="font-editorial text-lg italic text-[var(--color-muted-foreground)]">
-                Con tu cuenta de Google. Para amigos, equipos y empresas.
+                Con tu cuenta de Google o con tu email. Para amigos, equipos y empresas.
               </p>
             </div>
 
