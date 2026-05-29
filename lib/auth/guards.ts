@@ -23,6 +23,12 @@ export type CurrentUser = {
   lastSeenAt: Date | null;
   /** Timestamp del cierre del tutorial. `null` = aún no lo ha completado. */
   tutorialCompletedAt: Date | null;
+  /**
+   * Zona horaria preferida del usuario (IANA, p. ej. "Europe/Madrid"). `null`
+   * = "auto/default": las páginas de partidos caen a Europe/Madrid en SSR.
+   * Configurable desde /ajustes.
+   */
+  timezone: string | null;
 };
 
 // Throttle de actualización de last_seen_at: solo escribimos cada N min
@@ -217,5 +223,6 @@ function mapProfile(row: typeof profiles.$inferSelect): CurrentUser {
     countryCode: row.countryCode,
     lastSeenAt: row.lastSeenAt,
     tutorialCompletedAt: row.tutorialCompletedAt,
+    timezone: row.timezone,
   };
 }

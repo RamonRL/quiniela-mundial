@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogOut, ShieldCheck, UserCog } from "lucide-react";
+import { LogOut, Settings, ShieldCheck, UserCog } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -47,6 +47,12 @@ export function UserMenu({ email, nickname, avatarUrl, isAdmin }: UserMenuProps)
           <Link href="/perfil">
             <UserCog className="size-4" />
             <span>Mi perfil</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/ajustes">
+            <Settings className="size-4" />
+            <span>Ajustes</span>
           </Link>
         </DropdownMenuItem>
         {isAdmin ? (

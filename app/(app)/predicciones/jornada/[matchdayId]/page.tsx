@@ -32,6 +32,7 @@ export default async function PredictMatchdayPage({
 }) {
   const me = await requireUser();
   const leagueId = (await currentLeagueId(me))!;
+  const userTz = me.timezone ?? undefined;
   const { matchdayId: idParam } = await params;
   const matchdayId = Number(idParam);
   if (!Number.isFinite(matchdayId)) notFound();
@@ -65,7 +66,7 @@ export default async function PredictMatchdayPage({
         <EmptyState
           icon={<Lock className="size-5" />}
           title="Bloqueada"
-          description={`${status.reason} Cuando se desbloquee tendrás hasta ${formatDateTime(day.predictionDeadlineAt)} para predecir.`}
+          description={`${status.reason} Cuando se desbloquee tendrás hasta ${formatDateTime(day.predictionDeadlineAt, { timeZone: userTz })} para predecir.`}
         />
       </div>
     );
@@ -176,8 +177,8 @@ export default async function PredictMatchdayPage({
         title={day.name}
         description={
           open
-            ? `Cierra el ${formatDateTime(day.predictionDeadlineAt)}. Marcador y goleador en una sola jugada.`
-            : `Cierre pasado: ${formatDateTime(day.predictionDeadlineAt)}.`
+            ? `Cierra el ${formatDateTime(day.predictionDeadlineAt, { timeZone: userTz })}. Marcador y goleador en una sola jugada.`
+            : `Cierre pasado: ${formatDateTime(day.predictionDeadlineAt, { timeZone: userTz })}.`
         }
       />
       {open ? (
