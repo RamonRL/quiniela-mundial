@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ShieldCheck, Users } from "lucide-react";
 import { asc, eq, ne, sql } from "drizzle-orm";
@@ -75,10 +76,40 @@ export default async function AdminLeagueDetailPage({
         </Link>
       </Button>
 
-      <PageHeader
-        eyebrow={league.isPublic ? "Liga pública" : "Liga privada"}
-        title={league.name}
-      />
+      <div className="flex items-start gap-5">
+        <span
+          className={`relative grid size-16 shrink-0 place-items-center overflow-hidden rounded-xl border ${
+            league.isPublic
+              ? "border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_8%,var(--color-surface))]"
+              : "border-[var(--color-border)] bg-[var(--color-surface-2)]"
+          }`}
+        >
+          {league.logoUrl ? (
+            <Image
+              src={league.logoUrl}
+              alt=""
+              width={64}
+              height={64}
+              loading="lazy"
+              className="size-full object-cover"
+            />
+          ) : (
+            <span
+              className={`font-display tabular text-2xl tracking-tight ${
+                league.isPublic ? "text-[var(--color-arena)]" : "text-[var(--color-muted-foreground)]"
+              }`}
+            >
+              {initials(league.name)}
+            </span>
+          )}
+        </span>
+        <div className="min-w-0 flex-1">
+          <PageHeader
+            eyebrow={league.isPublic ? "Liga pública" : "Liga privada"}
+            title={league.name}
+          />
+        </div>
+      </div>
 
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatTile
