@@ -326,10 +326,10 @@ export default function PreciosPage() {
  * cada tier:
  *
  *  - Tier Free → enlace interno a /onboarding.
- *  - Tier de pago → `/api/checkout/<tier>`. El endpoint crea la
- *    transaction en Paddle con custom_data (league_code, user_id) y
- *    redirige al overlay en /checkout. Si Paddle no está configurado
- *    en runtime, el propio endpoint cae a /precios#contacto.
+ *  - Tier de pago → `/precios/comprar/<tier>`, el gateway que exige
+ *    sesión + liga elegible explícita antes de crear la transaction en
+ *    Paddle. Cierra el agujero por el que entró Salvador (pagar sin
+ *    cuenta) y evita las pasadas sin `league_code` en `customData`.
  */
 function PlanCTA({ plan }: { plan: Plan }) {
   const arenaClasses = plan.highlight
@@ -348,12 +348,12 @@ function PlanCTA({ plan }: { plan: Plan }) {
   }
   if (plan.paidTierId) {
     return (
-      <a
-        href={`/api/checkout/${plan.paidTierId}`}
+      <Link
+        href={`/precios/comprar/${plan.paidTierId}`}
         className={`inline-flex w-full items-center justify-center gap-2 rounded-md px-4 py-2 font-mono text-[0.65rem] uppercase tracking-[0.18em] transition ${arenaClasses}`}
       >
         {plan.ctaLabel} <ArrowRight className="size-3.5" />
-      </a>
+      </Link>
     );
   }
   return (

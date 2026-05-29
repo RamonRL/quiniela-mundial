@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { leagues } from "@/lib/db/schema";
 import { getCurrentUser } from "@/lib/auth/guards";
@@ -14,20 +14,23 @@ import {
 export const dynamic = "force-dynamic";
 
 /**
- * Endpoint intermediario entre el botón "Comprar" de /precios y el
- * hosted checkout de Paddle. Crea una transaction vía Paddle API con
- * los datos del comprador y el `customData` necesario para que el
- * webhook pueda resolver la liga automáticamente. Devuelve un redirect
- * al `checkout.url` que Paddle genera.
+ * Endpoint final del flujo de compra. NO se llega aquí desde un enlace
+ * suelto — el botón "Comprar" de /precios apunta al gateway
+ * `/precios/comprar/[tier]`, que clasifica al usuario y construye este
+ * submit con `?league=<joinCode>` ya elegido.
  *
- *  - Si el visitante está logueado y es owner de exactamente UNA
- *    quiniela privada Free → anexa su joinCode como `customData.league_code`
- *    y su id como `customData.user_id`. El webhook lo lee y auto-activa.
- *  - Si no, crea la transaction sin esos campos y el webhook caerá al
- *    fallback por email del comprador, o al alta manual.
- *  - Si Paddle no está configurado (env vars faltando) o falla la
- *    creación de la transaction, devolvemos al usuario a /precios#contacto
- *    para que deje un lead manual.
+ * Por seguridad y para cerrar el caso Salvador (pago sin liga vinculada),
+ * exigimos aquí TRES cosas estrictamente:
+ *   1. Tier paid válido.
+ *   2. Usuario autenticado.
+ *   3. `?league=<joinCode>` que sea de una liga PROPIA del usuario,
+ *      privada y aún en plan no-premium.
+ *
+ * Si falta o falla cualquiera, devolvemos al gateway que mostrará el
+ * camino correcto (login, crear liga, etc.). Solo cuando los tres
+ * checks pasan creamos la transaction en Paddle, y siempre con
+ * `customData` completo (league_code + user_id + user_email) para que
+ * el webhook resuelva el upgrade sin ambigüedad.
  */
 export async function GET(
   request: Request,
@@ -37,9 +40,42 @@ export async function GET(
   if (!isPaidTier(tier)) {
     return NextResponse.redirect(new URL("/precios", request.url));
   }
+  const tierId = tier as PaidTierId;
+  const gatewayUrl = new URL(`/precios/comprar/${tierId}`, request.url);
 
+  // 1. Auth obligatoria → si no, al gateway, que enseña el login.
+  const me = await getCurrentUser();
+  if (!me) {
+    return NextResponse.redirect(gatewayUrl);
+  }
+
+  // 2. ?league=<joinCode> obligatorio.
+  const { searchParams } = new URL(request.url);
+  const leagueCode = searchParams.get("league")?.trim().toUpperCase();
+  if (!leagueCode) {
+    return NextResponse.redirect(gatewayUrl);
+  }
+
+  // 3. La liga debe ser PROPIA del user, privada, con joinCode coincidente y
+  // aún en plan no-premium. Filtramos en el SELECT (no en JS) para que un
+  // joinCode no nuestro nunca pueda materializarse.
+  const [league] = await db
+    .select({
+      id: leagues.id,
+      tier: leagues.tier,
+      isPublic: leagues.isPublic,
+      joinCode: leagues.joinCode,
+    })
+    .from(leagues)
+    .where(and(eq(leagues.createdBy, me.id), eq(leagues.joinCode, leagueCode)))
+    .limit(1);
+  if (!league || league.isPublic || isPremiumTier(league.tier)) {
+    return NextResponse.redirect(gatewayUrl);
+  }
+
+  // Paddle disponible.
   const paddle = getPaddleClient();
-  const priceId = paddlePriceIdForTier(tier as PaidTierId);
+  const priceId = paddlePriceIdForTier(tierId);
   if (!paddle || !priceId) {
     console.warn(
       `[paddle/checkout] fallback to /precios#contacto · tier=${tier} ` +
@@ -49,41 +85,20 @@ export async function GET(
     return NextResponse.redirect(new URL("/precios#contacto", request.url));
   }
 
-  const me = await getCurrentUser();
-  let leagueCode: string | null = null;
-  if (me) {
-    const owned = await db
-      .select({
-        joinCode: leagues.joinCode,
-        tier: leagues.tier,
-        isPublic: leagues.isPublic,
-      })
-      .from(leagues)
-      .where(eq(leagues.createdBy, me.id))
-      .limit(3);
-    const eligible = owned.filter(
-      (l) => !l.isPublic && !isPremiumTier(l.tier) && l.joinCode,
-    );
-    if (eligible.length === 1) {
-      leagueCode = eligible[0].joinCode;
-    }
-  }
-
-  // customData lleva todo lo que el webhook necesita para auto-activar
-  // la liga sin recurrir al fallback por email. También guardamos el
-  // email del comprador aquí (cuando hay sesión) para tener un segundo
-  // canal de matching aunque Paddle pierda la asociación con el customer.
-  const customData: Record<string, string> = { tier };
-  if (leagueCode) customData.league_code = leagueCode;
-  if (me?.id) customData.user_id = me.id;
-  if (me?.email) customData.user_email = me.email;
+  // customData siempre completo — sin esto el webhook no puede resolver
+  // el upgrade y volveríamos al caso Salvador.
+  const customData: Record<string, string> = {
+    tier: tierId,
+    league_code: league.joinCode!,
+    user_id: me.id,
+    user_email: me.email,
+  };
 
   try {
     const tx = await paddle.transactions.create({
       items: [{ priceId, quantity: 1 }],
       customData,
     });
-
     const checkoutUrl = tx.checkout?.url;
     if (!checkoutUrl) {
       console.error("[paddle] transaction created without checkout.url", {
