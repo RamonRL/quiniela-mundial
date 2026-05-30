@@ -176,8 +176,16 @@ export default async function HomePage() {
           </h1>
 
           <p className="max-w-xl font-editorial text-base italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-lg">
-            Predice los 104 partidos del Mundial con tu grupo de amigos, tu equipo o
+            Predice los 104 partidos del Mundial 2026 con tu grupo de amigos, tu equipo o
             toda tu empresa.
+          </p>
+
+          <p className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
+            La <span className="text-[var(--color-foreground)]">quiniela del Mundial 2026</span>{" "}
+            también llamada <strong className="font-semibold not-italic">porra</strong> (España),{" "}
+            <strong className="font-semibold not-italic">prode</strong> (Argentina · Uruguay),{" "}
+            <strong className="font-semibold not-italic">polla</strong> (Colombia · Venezuela) o{" "}
+            <strong className="font-semibold not-italic">pool</strong>.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
@@ -240,6 +248,76 @@ export default async function HomePage() {
             </ul>
           </div>
         )}
+      </section>
+
+      {/* ───────── EL MUNDIAL 2026 EN CIFRAS ─────────
+          Bloque de contenido pensado tanto para el usuario que aterriza
+          y quiere ubicarse rápido en el torneo, como para SEO: densifica
+          el bigrama exacto "Mundial 2026" cerca de la parte alta del
+          documento (donde Google da más peso) sin sonar a relleno. */}
+      <section className="space-y-6">
+        <header className="space-y-2">
+          <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
+            El Mundial 2026 en cifras
+          </p>
+          <h2 className="font-display text-4xl tracking-tight sm:text-5xl">
+            Por qué este Mundial 2026 es histórico
+          </h2>
+          <p className="max-w-3xl font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base">
+            La Copa Mundial de la FIFA 2026 — la primera con 48 selecciones, organizada
+            entre Estados Unidos, Canadá y México — arranca el 11 de junio en el
+            Estadio Azteca y termina el 19 de julio en el MetLife de Nueva
+            York/Nueva Jersey. Un mes y medio largo de fútbol, 104 partidos, 16
+            sedes en tres países. Tu quiniela del Mundial 2026 los cubre todos.
+          </p>
+        </header>
+        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { value: "48", label: "selecciones", note: "Primer Mundial con 48 equipos" },
+            { value: "104", label: "partidos", note: "Del 11 jun al 19 jul de 2026" },
+            { value: "16", label: "sedes", note: "USA · Canadá · México" },
+            { value: "12", label: "grupos", label2: "+ KO", note: "Grupos de 4, luego R32" },
+          ].map((stat) => (
+            <li
+              key={stat.label}
+              className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5"
+            >
+              <p className="flex items-baseline gap-2 font-display tabular text-5xl tracking-tight text-[var(--color-arena)]">
+                {stat.value}
+                {"label2" in stat ? (
+                  <span className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+                    {stat.label2}
+                  </span>
+                ) : null}
+              </p>
+              <p className="mt-1 font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
+                {stat.label}
+              </p>
+              <p className="mt-2 text-xs leading-snug text-[var(--color-muted-foreground)]">
+                {stat.note}
+              </p>
+            </li>
+          ))}
+        </ul>
+        <p className="font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base">
+          Lo que verás en la app del primer día al último: el{" "}
+          <Link href="/calendario" className="text-[var(--color-arena)] underline-offset-4 hover:underline">
+            calendario completo del Mundial 2026
+          </Link>{" "}
+          con todos los partidos y sus horarios en tu zona, los{" "}
+          <Link href="/grupos" className="text-[var(--color-arena)] underline-offset-4 hover:underline">
+            12 grupos del Mundial 2026
+          </Link>{" "}
+          que se irán resolviendo en directo, el{" "}
+          <Link href="/bracket" className="text-[var(--color-arena)] underline-offset-4 hover:underline">
+            bracket de eliminatorias
+          </Link>{" "}
+          desde R32 hasta la final, y los{" "}
+          <Link href="/goleadores" className="text-[var(--color-arena)] underline-offset-4 hover:underline">
+            goleadores del Mundial 2026
+          </Link>{" "}
+          actualizados con cada gol oficial.
+        </p>
       </section>
 
       {/* ───────── CÓMO FUNCIONA ───────── */}
