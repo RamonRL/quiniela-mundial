@@ -7,13 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { EmptyState } from "@/components/shell/empty-state";
 import { PageHeader } from "@/components/shell/page-header";
-import { Lock, Swords, Trophy } from "lucide-react";
+import { Swords, Trophy } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth/guards";
 import { currentLeagueId } from "@/lib/leagues";
 import { formatDateTime } from "@/lib/utils";
 import { getBracketStatus } from "@/lib/bracket-state";
 import { BracketTree, type BracketMatch } from "@/components/bracket/bracket-tree";
-import { BracketSlotHighlighter } from "@/components/bracket/bracket-slot-highlighter";
 import { KO_FEEDS, R32_SLOTS, formatSlotSource } from "@/lib/bracket-format";
 import { BreadcrumbLD } from "@/components/seo/jsonld";
 import { BrandCTA } from "@/components/seo/brand-cta";
@@ -176,19 +175,7 @@ export default async function BracketPage() {
         }
       />
 
-      {isPreview ? (
-        <>
-          <div className="flex items-start gap-3 rounded-xl border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_4%,var(--color-surface))] p-4">
-            <Lock className="mt-0.5 size-4 shrink-0 text-[var(--color-arena)]" />
-            <p className="font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)]">
-              Simula posiciones para ver dónde caería cada selección.
-            </p>
-          </div>
-          <BracketSlotHighlighter />
-        </>
-      ) : (
-        <Legend />
-      )}
+      {isPreview ? null : <Legend />}
 
       {/* Desktop tree — la anchura extra ya viene del wrapper de la
           página, así que aquí basta con mostrar/ocultar por breakpoint. */}
