@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { BrandWordmark } from "@/components/brand/brand-wordmark";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -90,14 +91,7 @@ export function Sidebar({
               />
             ) : (
               // Expandido: logo horizontal "Quiniela Mundial".
-              <Image
-                src="/hlogo.png"
-                alt="Quiniela Mundial"
-                width={1919}
-                height={660}
-                priority
-                className="h-12 w-auto"
-              />
+              <BrandWordmark priority className="h-12 w-auto" />
             )}
           </Link>
           <button

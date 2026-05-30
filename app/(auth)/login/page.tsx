@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { BrandWordmark } from "@/components/brand/brand-wordmark";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = {
@@ -68,14 +69,7 @@ export default async function LoginPage({
               aria-label="Volver al inicio"
               className="block transition-opacity hover:opacity-80"
             >
-              <Image
-                src="/hlogo.png"
-                alt="Quiniela Mundial"
-                width={1919}
-                height={660}
-                priority
-                className="h-12 w-auto sm:h-14"
-              />
+              <BrandWordmark priority className="h-12 w-auto sm:h-14" />
             </Link>
           </div>
 

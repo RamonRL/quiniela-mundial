@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { BrandWordmark } from "@/components/brand/brand-wordmark";
 import { UserMenu } from "./user-menu";
 import { LeagueSwitcher } from "./league-switcher";
 import type { Membership } from "@/lib/leagues";
@@ -38,14 +38,7 @@ export function AppHeader({
           aria-label="Quiniela Mundial"
           className="block transition-opacity hover:opacity-80 lg:hidden"
         >
-          <Image
-            src="/hlogo.png"
-            alt="Quiniela Mundial"
-            width={1919}
-            height={660}
-            priority
-            className="h-9 w-auto"
-          />
+          <BrandWordmark priority className="h-9 w-auto" />
         </Link>
       </div>
       <div className="flex flex-1 justify-center lg:flex-initial">

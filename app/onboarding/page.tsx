@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/guards";
+import { BrandWordmark } from "@/components/brand/brand-wordmark";
 import { OnboardingFlow } from "./onboarding-flow";
 
 export const metadata = { title: "Bienvenido" } satisfies Metadata;
@@ -84,14 +85,7 @@ export default async function OnboardingPage({
           {/* Quiniela Mundial */}
           <div className="flex w-full items-center justify-between gap-4 sm:w-auto sm:order-1">
             <Link href="/dashboard" className="block" aria-label="Quiniela Mundial">
-              <Image
-                src="/hlogo.png"
-                alt="Quiniela Mundial"
-                width={1919}
-                height={660}
-                priority
-                className="h-12 w-auto sm:h-14"
-              />
+              <BrandWordmark priority className="h-12 w-auto sm:h-14" />
             </Link>
             {/* Dashboard link inline en mobile (a la derecha del logo) */}
             {!fresh ? (
