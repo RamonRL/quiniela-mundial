@@ -14,12 +14,12 @@ import { findVenueByMatchVenue, VENUES } from "@/lib/seo/venues";
 export const revalidate = 3600;
 
 export const metadata = {
-  title: "Sedes",
+  title: { absolute: "Sedes del Mundial 2026 — los 16 estadios oficiales · Quiniela Mundial" },
   description:
-    "Las 16 sedes oficiales del Mundial 2026 en Estados Unidos, Canadá y México. Estadios, ciudades y partidos asignados.",
+    "Las 16 sedes oficiales del Mundial 2026 en USA, Canadá y México: estadios, ciudades y partidos asignados. La final en Nueva York/Nueva Jersey; la inauguración en el Estadio Azteca.",
   alternates: { canonical: "/sedes" },
   openGraph: {
-    title: "Sedes · Mundial 2026",
+    title: "Sedes del Mundial 2026 · Quiniela Mundial",
     description:
       "Las 16 sedes del Mundial 2026 repartidas entre Estados Unidos, Canadá y México.",
     url: "/sedes",
@@ -50,8 +50,8 @@ export default async function VenuesPage() {
       />
       <PageHeader
         eyebrow="Mundial 2026"
-        title="Las 16 sedes"
-        description="Once estadios en Estados Unidos, tres en México y dos en Canadá. La final, en Nueva York-NJ. La inauguración, en Ciudad de México."
+        title="Las 16 sedes del Mundial 2026"
+        description="Once estadios en Estados Unidos, tres en México y dos en Canadá. La final, en Nueva York/Nueva Jersey. La inauguración, en el Estadio Azteca."
       />
 
       {/* Recorremos VENUES (catálogo curado de las 16 sedes oficiales) en

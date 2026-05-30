@@ -13,12 +13,12 @@ import { BreadcrumbLD } from "@/components/seo/jsonld";
 export const revalidate = 60;
 
 export const metadata = {
-  title: "Grupos",
+  title: { absolute: "Grupos del Mundial 2026 — las 48 selecciones · Quiniela Mundial" },
   description:
-    "Los 12 grupos del Mundial 2026 con las 48 selecciones clasificadas. Top 2 + 8 mejores terceros pasan a R32.",
+    "Los 12 grupos del Mundial 2026 con las 48 selecciones clasificadas. Top 2 + los 8 mejores terceros pasan a la fase de R32.",
   alternates: { canonical: "/grupos" },
   openGraph: {
-    title: "Grupos · Mundial 2026",
+    title: "Grupos del Mundial 2026 · Quiniela Mundial",
     description: "Las 48 selecciones del Mundial 2026 distribuidas en 12 grupos.",
     url: "/grupos",
   },
@@ -53,8 +53,8 @@ export default async function GroupsPage() {
       />
       <PageHeader
         eyebrow="Fase de grupos"
-        title="12 grupos"
-        description="Los 12 grupos del torneo. Top 2 + los 8 mejores 3os pasan a R32."
+        title="Los 12 grupos del Mundial 2026"
+        description="Las 48 selecciones del Mundial 2026 repartidas en 12 grupos de 4. Top 2 + los 8 mejores terceros pasan a R32 (dieciseisavos)."
       />
       {allGroups.length === 0 ? (
         <EmptyState

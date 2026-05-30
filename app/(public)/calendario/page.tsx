@@ -12,12 +12,15 @@ import { CalendarFilters, type ActiveFilter } from "./calendar-filters";
 import { BreadcrumbLD, SportsEventLD } from "@/components/seo/jsonld";
 
 export const metadata = {
-  title: "Calendario",
+  // `absolute` evita que el template global apile "· Quiniela Mundial 2026"
+  // y nos deje un title de SERP demasiado largo. Aquí controlamos
+  // exactamente lo que ve Google.
+  title: { absolute: "Calendario del Mundial 2026 — todos los partidos · Quiniela Mundial" },
   description:
-    "Los 104 partidos del Mundial 2026 en Estados Unidos, Canadá y México. Filtros por grupo y por ronda. Horarios, estadios y resultados oficiales.",
+    "Calendario completo del Mundial 2026: los 104 partidos en USA, México y Canadá, fase de grupos, octavos, cuartos, semifinales y final. Horarios, estadios y resultados.",
   alternates: { canonical: "/calendario" },
   openGraph: {
-    title: "Calendario · Mundial 2026",
+    title: "Calendario del Mundial 2026 · Quiniela Mundial",
     description: "Los 104 partidos del Mundial 2026: fase de grupos, octavos, cuartos, semifinales y final.",
     url: "/calendario",
   },
@@ -143,10 +146,10 @@ export default async function CalendarPage({
               </p>
             </div>
             <h1 className="font-display text-5xl leading-[0.92] tracking-tight sm:text-6xl">
-              Calendario
+              Calendario del Mundial 2026
             </h1>
             <p className="max-w-2xl font-editorial text-base italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-lg">
-              104 partidos. 39 días.
+              Los 104 partidos del Mundial 2026, del 11 de junio al 19 de julio, en USA, México y Canadá.
             </p>
           </div>
           <div className="order-1 hidden flex-col items-center gap-1.5 sm:order-2 sm:col-start-2 sm:flex sm:pb-2">

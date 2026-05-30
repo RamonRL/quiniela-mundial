@@ -18,12 +18,12 @@ import { KO_FEEDS, R32_SLOTS, formatSlotSource } from "@/lib/bracket-format";
 import { BreadcrumbLD } from "@/components/seo/jsonld";
 
 export const metadata = {
-  title: "Bracket",
+  title: { absolute: "Bracket del Mundial 2026 — eliminatorias R32 a final · Quiniela Mundial" },
   description:
-    "El bracket FIFA del Mundial 2026: dieciseisavos, octavos, cuartos, semifinales y final. Cuadro de eliminación directa con 32 selecciones.",
+    "Bracket FIFA del Mundial 2026: dieciseisavos, octavos, cuartos, semifinales y final. Cuadro de eliminación directa con 32 selecciones.",
   alternates: { canonical: "/bracket" },
   openGraph: {
-    title: "Bracket · Mundial 2026",
+    title: "Bracket del Mundial 2026 · Quiniela Mundial",
     description:
       "Cuadro de la fase eliminatoria del Mundial 2026 con las 32 selecciones que avanzan desde grupos.",
     url: "/bracket",
@@ -89,7 +89,7 @@ export default async function BracketPage() {
       <div className="space-y-6">
         <PageHeader
           eyebrow="Eliminación directa"
-          title="Bracket del torneo"
+          title="Bracket del Mundial 2026"
           description="Pendiente de cargar."
         />
         <EmptyState
@@ -150,7 +150,7 @@ export default async function BracketPage() {
       />
       <PageHeader
         eyebrow="Eliminación directa"
-        title="Bracket del torneo"
+        title="Bracket del Mundial 2026"
         description={
           isPreview
             ? "Vista previa del cuadro FIFA. Los slots se llenan al cerrar grupos."
