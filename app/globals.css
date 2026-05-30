@@ -260,6 +260,42 @@
     background: var(--stripe);
   }
 
+  /* Slider horizontal: en móvil el scrollbar desaparece (touch-scroll
+     limpio); en >= lg aparece una barra discreta para que se vea claro
+     que hay más contenido a la derecha. Usado en el slider de grupos
+     del dashboard, por ejemplo. */
+  .scroll-x-only-on-pc {
+    scrollbar-width: none; /* Firefox móvil */
+    -ms-overflow-style: none; /* IE/old Edge */
+  }
+  .scroll-x-only-on-pc::-webkit-scrollbar {
+    display: none;
+  }
+  @media (min-width: 1024px) {
+    .scroll-x-only-on-pc {
+      scrollbar-width: thin;
+      scrollbar-color: var(--color-arena) transparent;
+    }
+    .scroll-x-only-on-pc::-webkit-scrollbar {
+      display: block;
+      height: 8px;
+    }
+    .scroll-x-only-on-pc::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .scroll-x-only-on-pc::-webkit-scrollbar-thumb {
+      background-color: color-mix(
+        in oklch,
+        var(--color-arena) 55%,
+        transparent
+      );
+      border-radius: 999px;
+    }
+    .scroll-x-only-on-pc::-webkit-scrollbar-thumb:hover {
+      background-color: var(--color-arena);
+    }
+  }
+
   /* Marquee — for "MUNDIAL FIFA 2026" tickers */
   @keyframes marquee {
     from { transform: translateX(0); }
