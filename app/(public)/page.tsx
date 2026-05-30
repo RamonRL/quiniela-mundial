@@ -880,7 +880,7 @@ export default async function HomePage() {
           <div className="flex items-center gap-3">
             <Image
               src="/qm-mark.png"
-              alt="Quiniela Mundial 2026"
+              alt="Quiniela Mundial"
               width={940}
               height={973}
               className="size-10 object-contain"

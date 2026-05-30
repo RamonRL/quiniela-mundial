@@ -128,7 +128,10 @@ export default async function TeamsPage() {
         </div>
       )}
 
-      <BrandCTA hint="Elige al campeón del Mundial 2026 y a las 32 selecciones que pasan de la fase de grupos." />
+      <BrandCTA
+        brandVariant="bare"
+        hint="Elige al campeón y a las 32 selecciones que pasan de la fase de grupos."
+      />
     </div>
   );
 }

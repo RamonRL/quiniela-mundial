@@ -5,16 +5,30 @@ import { ArrowRight } from "lucide-react";
  * Bloque de cierre que coloco al final de cada página vertical pública
  * (/calendario, /grupos, /bracket, /goleadores, /equipos, /sedes).
  *
- * Función SEO específica: cada instancia es un link interno hacia la home
- * cuyo anchor text es exactamente **"Quiniela Mundial 2026"** (el trigrama
- * que queremos rankear). Con esto la home recibe 6 votos internos con el
- * anchor exacto — la señal de internal-linking más fuerte para empujar
- * esa query en concreto.
+ * Función SEO: cada instancia es un link interno hacia la home con un
+ * anchor text que apunta a la marca. La mitad de las verticales usan el
+ * trigrama exacto "Quiniela Mundial 2026" (empuja la query con año) y la
+ * otra mitad usa solo "Quiniela Mundial" (no penaliza la query bigrama y
+ * mantiene diversidad de anchor text para que Google no lea el internal
+ * linking como manipulado).
  *
  * El copy invita a actuar (crear quiniela) y se ve coherente con el
  * resto del producto; no es un bloque-keyword artificial.
  */
-export function BrandCTA({ hint }: { hint?: string }) {
+export function BrandCTA({
+  hint,
+  /**
+   * `withYear` (default): anchor "Quiniela Mundial 2026" — empuja la
+   * query con año.
+   * `bare`: anchor "Quiniela Mundial" — mantiene visibilidad de la
+   * marca a secas para la query sin año.
+   */
+  brandVariant = "withYear",
+}: {
+  hint?: string;
+  brandVariant?: "withYear" | "bare";
+}) {
+  const brandText = brandVariant === "withYear" ? "Quiniela Mundial 2026" : "Quiniela Mundial";
   return (
     <aside className="rounded-2xl border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface))] p-6 text-center sm:p-8">
       <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
@@ -26,7 +40,7 @@ export function BrandCTA({ hint }: { hint?: string }) {
           href="/"
           className="text-[var(--color-arena)] underline-offset-4 hover:underline"
         >
-          Quiniela Mundial 2026
+          {brandText}
         </Link>
       </p>
       {hint ? (

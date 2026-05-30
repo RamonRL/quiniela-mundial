@@ -315,7 +315,10 @@ export default async function BracketPage() {
         </section>
       )}
 
-      <BrandCTA hint="Arma tu cuadro completo del Mundial 2026 — de R32 a la final — antes del primer pitido el 11 de junio." />
+      <BrandCTA
+        brandVariant="bare"
+        hint="Arma tu cuadro completo — de R32 a la final — antes del primer pitido el 11 de junio."
+      />
     </div>
   );
 }

@@ -153,7 +153,10 @@ export default async function GroupsPage() {
         </div>
       )}
 
-      <BrandCTA hint="Predice las 4 posiciones de cada grupo del Mundial 2026 antes de que arranque el torneo el 11 de junio." />
+      <BrandCTA
+        brandVariant="bare"
+        hint="Predice las 4 posiciones de cada grupo antes de que arranque el torneo el 11 de junio."
+      />
     </div>
   );
 }
