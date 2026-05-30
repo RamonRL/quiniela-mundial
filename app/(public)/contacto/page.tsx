@@ -115,12 +115,22 @@ export default function ContactoPage() {
               />
             </div>
             <div className="-ml-6 size-24 overflow-hidden rounded-full border-2 border-[var(--color-arena)]/40 bg-[var(--color-surface)] shadow-[var(--shadow-elev-2)]">
+              {/* Mark con variante por tema: blanco en .dark, negro en claro
+                  (mismo patrón que <BrandWordmark>, decidido por CSS sin
+                  hook de cliente para no parpadear en hidratación). */}
               <Image
                 src="/qm-mark.png"
                 alt="Quiniela Mundial"
                 width={940}
                 height={973}
-                className="h-full w-full object-cover"
+                className="hidden h-full w-full object-cover dark:block"
+              />
+              <Image
+                src="/qm-mark-light.png"
+                alt="Quiniela Mundial"
+                width={940}
+                height={973}
+                className="block h-full w-full object-cover dark:hidden"
               />
             </div>
           </div>
