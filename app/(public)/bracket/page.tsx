@@ -7,23 +7,23 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { EmptyState } from "@/components/shell/empty-state";
 import { PageHeader } from "@/components/shell/page-header";
-import { Lock, Swords, Trophy } from "lucide-react";
+import { Swords, Trophy } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth/guards";
 import { currentLeagueId } from "@/lib/leagues";
 import { formatDateTime } from "@/lib/utils";
 import { getBracketStatus } from "@/lib/bracket-state";
 import { BracketTree, type BracketMatch } from "@/components/bracket/bracket-tree";
-import { BracketSlotHighlighter } from "@/components/bracket/bracket-slot-highlighter";
 import { KO_FEEDS, R32_SLOTS, formatSlotSource } from "@/lib/bracket-format";
 import { BreadcrumbLD } from "@/components/seo/jsonld";
+import { BrandCTA } from "@/components/seo/brand-cta";
 
 export const metadata = {
-  title: "Bracket",
+  title: { absolute: "Bracket del Mundial 2026 — eliminatorias R32 a final · Quiniela Mundial" },
   description:
-    "El bracket FIFA del Mundial 2026: dieciseisavos, octavos, cuartos, semifinales y final. Cuadro de eliminación directa con 32 selecciones.",
+    "Bracket FIFA del Mundial 2026: dieciseisavos, octavos, cuartos, semifinales y final. Cuadro de eliminación directa con 32 selecciones.",
   alternates: { canonical: "/bracket" },
   openGraph: {
-    title: "Bracket · Mundial 2026",
+    title: "Bracket del Mundial 2026 · Quiniela Mundial",
     description:
       "Cuadro de la fase eliminatoria del Mundial 2026 con las 32 selecciones que avanzan desde grupos.",
     url: "/bracket",
@@ -89,7 +89,7 @@ export default async function BracketPage() {
       <div className="space-y-6">
         <PageHeader
           eyebrow="Eliminación directa"
-          title="Bracket del torneo"
+          title="Bracket del Mundial 2026"
           description="Pendiente de cargar."
         />
         <EmptyState
@@ -150,7 +150,7 @@ export default async function BracketPage() {
       />
       <PageHeader
         eyebrow="Eliminación directa"
-        title="Bracket del torneo"
+        title="Bracket del Mundial 2026"
         description={
           isPreview
             ? "Vista previa del cuadro FIFA. Los slots se llenan al cerrar grupos."
@@ -175,19 +175,7 @@ export default async function BracketPage() {
         }
       />
 
-      {isPreview ? (
-        <>
-          <div className="flex items-start gap-3 rounded-xl border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_4%,var(--color-surface))] p-4">
-            <Lock className="mt-0.5 size-4 shrink-0 text-[var(--color-arena)]" />
-            <p className="font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)]">
-              Simula posiciones para ver dónde caería cada selección.
-            </p>
-          </div>
-          <BracketSlotHighlighter />
-        </>
-      ) : (
-        <Legend />
-      )}
+      {isPreview ? null : <Legend />}
 
       {/* Desktop tree — la anchura extra ya viene del wrapper de la
           página, así que aquí basta con mostrar/ocultar por breakpoint. */}
@@ -326,6 +314,11 @@ export default async function BracketPage() {
           </Link>
         </section>
       )}
+
+      <BrandCTA
+        brandVariant="bare"
+        hint="Arma tu cuadro completo — de R32 a la final — antes del primer pitido el 11 de junio."
+      />
     </div>
   );
 }

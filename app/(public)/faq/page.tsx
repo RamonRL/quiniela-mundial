@@ -30,6 +30,10 @@ const SECTIONS: { title: string; faqs: Faq[] }[] = [
     title: "Cómo funciona la quiniela",
     faqs: [
       {
+        q: "¿Es lo mismo una quiniela del Mundial que una porra, un prode, una polla o un pool?",
+        a: "Sí, son nombres distintos para lo mismo según el país: porra en España, prode en Argentina y Uruguay, polla en Colombia y Venezuela, pool en EE. UU. y bolón en algunas zonas. Todas son lo que ofrecemos aquí: una quiniela del Mundial 2026 donde tú y tu grupo predecís los resultados (marcador, goleadores, posiciones, bracket) y vais sumando puntos. Si tu liga prefiere llamarla porra, prode, polla o pool, la app funciona exactamente igual.",
+      },
+      {
         q: "¿Cómo funciona Quiniela Mundial 2026?",
         a: "Te unes a una quiniela (la pública o una privada con código de 4 dígitos), predices las posiciones de los 12 grupos, el bracket completo, los goleadores, los marcadores partido a partido y otras predicciones especiales. Vas sumando puntos según aciertes. Hay ranking general y por liga, en directo durante el torneo.",
       },

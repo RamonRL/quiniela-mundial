@@ -47,10 +47,23 @@ export function OrganizationLD() {
         "@context": "https://schema.org",
         "@type": "Organization",
         name: "Quiniela Mundial",
+        // alternateName + sameAs refuerzan la entidad ante Google. El
+        // bigrama+año explícito es el ancla que Google asocia a la query
+        // "quiniela mundial 2026"; sameAs vincula la marca con sus redes
+        // y empuja la creación de Knowledge Graph.
+        alternateName: [
+          "Quiniela Mundial 2026",
+          "Quiniela del Mundial 2026",
+        ],
         url: SITE_URL,
         logo: `${SITE_URL}/qm-mark.png`,
         description:
-          "Quiniela del Mundial 2026 entre amigos. Predicciones, calendario y resultados.",
+          "Quiniela Mundial 2026: la quiniela del Mundial 2026 para amigos, equipos y empresas. Predicciones colaborativas, calendario, grupos y bracket FIFA.",
+        sameAs: [
+          "https://instagram.com/quinimundial",
+          "https://tiktok.com/@quinielamundial",
+          "https://x.com/QMundial2026",
+        ],
       }}
     />
   );

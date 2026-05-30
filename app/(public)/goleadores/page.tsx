@@ -7,6 +7,7 @@ import { TeamFlag } from "@/components/brand/team-flag";
 import { EmptyState } from "@/components/shell/empty-state";
 import { PageHeader } from "@/components/shell/page-header";
 import { BreadcrumbLD } from "@/components/seo/jsonld";
+import { BrandCTA } from "@/components/seo/brand-cta";
 
 // Goleadores cambia solo cuando un partido finaliza con goles. ISR a 60s
 // es indistinguible de tiempo real para el usuario y elimina el hit a
@@ -14,12 +15,12 @@ import { BreadcrumbLD } from "@/components/seo/jsonld";
 export const revalidate = 60;
 
 export const metadata = {
-  title: "Goleadores",
+  title: { absolute: "Goleadores del Mundial 2026 — Bota de Oro en vivo · Quiniela Mundial" },
   description:
-    "Tabla de goleadores del Mundial 2026. La Bota de Oro: jugadores con más goles del torneo, ordenados por fase y selección.",
+    "Tabla de goleadores del Mundial 2026: la Bota de Oro en directo, jugadores con más goles del torneo, ordenados por fase y selección.",
   alternates: { canonical: "/goleadores" },
   openGraph: {
-    title: "Goleadores · Mundial 2026",
+    title: "Goleadores del Mundial 2026 · Quiniela Mundial",
     description: "Bota de Oro y tabla de máximos goleadores del Mundial 2026.",
     url: "/goleadores",
   },
@@ -63,8 +64,8 @@ export default async function ScorersPage() {
       />
       <PageHeader
         eyebrow="Bota de Oro"
-        title="Goleadores del torneo"
-        description="Top en directo."
+        title="Goleadores del Mundial 2026"
+        description="Top de máximos artilleros del Mundial 2026 en directo. La Bota de Oro la gana quien acabe el torneo con más goles."
       />
       {rows.length === 0 ? (
         <EmptyState
@@ -165,6 +166,8 @@ export default async function ScorersPage() {
           </section>
         </>
       )}
+
+      <BrandCTA hint="Predice quién se llevará la Bota de Oro del Mundial 2026 y suma puntos por cada gol acertado partido a partido." />
     </div>
   );
 }

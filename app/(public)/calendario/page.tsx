@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { TeamFlag } from "@/components/brand/team-flag";
 import { CalendarDays, Clock, MapPin } from "lucide-react";
@@ -10,14 +9,18 @@ import { EmptyState } from "@/components/shell/empty-state";
 import { formatDateTime } from "@/lib/utils";
 import { CalendarFilters, type ActiveFilter } from "./calendar-filters";
 import { BreadcrumbLD, SportsEventLD } from "@/components/seo/jsonld";
+import { BrandCTA } from "@/components/seo/brand-cta";
 
 export const metadata = {
-  title: "Calendario",
+  // `absolute` evita que el template global apile "· Quiniela Mundial 2026"
+  // y nos deje un title de SERP demasiado largo. Aquí controlamos
+  // exactamente lo que ve Google.
+  title: { absolute: "Calendario del Mundial 2026 — todos los partidos · Quiniela Mundial" },
   description:
-    "Los 104 partidos del Mundial 2026 en Estados Unidos, Canadá y México. Filtros por grupo y por ronda. Horarios, estadios y resultados oficiales.",
+    "Calendario completo del Mundial 2026: los 104 partidos en USA, México y Canadá, fase de grupos, octavos, cuartos, semifinales y final. Horarios, estadios y resultados.",
   alternates: { canonical: "/calendario" },
   openGraph: {
-    title: "Calendario · Mundial 2026",
+    title: "Calendario del Mundial 2026 · Quiniela Mundial",
     description: "Los 104 partidos del Mundial 2026: fase de grupos, octavos, cuartos, semifinales y final.",
     url: "/calendario",
   },
@@ -132,37 +135,19 @@ export default async function CalendarPage({
         ]}
       />
       <header className="relative border-b border-[var(--color-border)] pb-8">
-        {/* Mobile: stack FWC mark + title block.
-            Desktop: 3-col grid → title izq, FWC centrado, hueco derecho. */}
-        <div className="flex flex-col items-center gap-6 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:items-end sm:gap-5">
-          <div className="order-2 w-full space-y-3 sm:order-1 sm:col-start-1">
-            <div className="flex items-center gap-3">
-              <span className="h-px w-10 bg-[var(--color-arena)]" />
-              <p className="text-[0.65rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                Mundial 2026
-              </p>
-            </div>
-            <h1 className="font-display text-5xl leading-[0.92] tracking-tight sm:text-6xl">
-              Calendario
-            </h1>
-            <p className="max-w-2xl font-editorial text-base italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-lg">
-              104 partidos. 39 días.
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <span className="h-px w-10 bg-[var(--color-arena)]" />
+            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
+              Mundial 2026
             </p>
           </div>
-          <div className="order-1 hidden flex-col items-center gap-1.5 sm:order-2 sm:col-start-2 sm:flex sm:pb-2">
-            <Image
-              src="/fwc26.png"
-              alt="FIFA World Cup 26"
-              width={1500}
-              height={1500}
-              priority
-              className="h-14 w-auto sm:h-16"
-            />
-            <p className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)] sm:text-[0.6rem]">
-              Copa Mundial de la FIFA 2026
-            </p>
-          </div>
-          <div className="hidden sm:block sm:col-start-3" />
+          <h1 className="font-display text-5xl leading-[0.92] tracking-tight sm:text-6xl">
+            Calendario del Mundial 2026
+          </h1>
+          <p className="max-w-2xl font-editorial text-base italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-lg">
+            Los 104 partidos del Mundial 2026, del 11 de junio al 19 de julio, en USA, México y Canadá.
+          </p>
         </div>
         <span
           aria-hidden
@@ -250,6 +235,8 @@ export default async function CalendarPage({
           })}
         </div>
       )}
+
+      <BrandCTA hint="Sigue los 104 partidos del Mundial 2026 dentro de tu liga, con marcador exacto y goleador." />
     </div>
   );
 }

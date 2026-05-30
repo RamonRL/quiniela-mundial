@@ -7,18 +7,19 @@ import { TeamFlag } from "@/components/brand/team-flag";
 import { PageHeader } from "@/components/shell/page-header";
 import { EmptyState } from "@/components/shell/empty-state";
 import { BreadcrumbLD } from "@/components/seo/jsonld";
+import { BrandCTA } from "@/components/seo/brand-cta";
 
 // Listado de selecciones — el set de equipos cambia rarísimo, cachear 1 h
 // es seguro y libera Postgres del tráfico de visitantes/Googlebot.
 export const revalidate = 3600;
 
 export const metadata = {
-  title: "Selecciones",
+  title: { absolute: "Selecciones del Mundial 2026 — las 48 clasificadas · Quiniela Mundial" },
   description:
-    "Las 48 selecciones del Mundial 2026 organizadas por grupo. Banderas, cupos y enlace al detalle de cada combinado nacional.",
+    "Las 48 selecciones del Mundial 2026 organizadas por grupo: banderas, cupos y detalle de cada combinado. Primera edición ampliada con CONCACAF, UEFA, CONMEBOL, AFC, CAF y OFC.",
   alternates: { canonical: "/equipos" },
   openGraph: {
-    title: "Selecciones · Mundial 2026",
+    title: "Selecciones del Mundial 2026 · Quiniela Mundial",
     description:
       "Las 48 selecciones del Mundial 2026 — primera edición ampliada con CONCACAF, UEFA, CONMEBOL, AFC, CAF y OFC.",
     url: "/equipos",
@@ -57,7 +58,7 @@ export default async function TeamsPage() {
       />
       <PageHeader
         eyebrow="Mundial 2026"
-        title="48 selecciones"
+        title="Las 48 selecciones del Mundial 2026"
         description="Primera edición ampliada del Mundial. 48 selecciones repartidas en 12 grupos, con representantes de las 6 confederaciones."
       />
 
@@ -126,6 +127,11 @@ export default async function TeamsPage() {
           })}
         </div>
       )}
+
+      <BrandCTA
+        brandVariant="bare"
+        hint="Elige al campeón y a las 32 selecciones que pasan de la fase de grupos."
+      />
     </div>
   );
 }
