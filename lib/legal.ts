@@ -21,11 +21,11 @@ export const LEGAL_OWNER = {
   province: "Barcelona",
   country: "España",
   email: "admin@quinielamundial.es",
-  /** Handles públicos de las redes que SÍ están activas (Instagram
-   * quedó suspendida y no se menciona). */
+  /** Handles públicos de las redes activas. */
   social: {
     tiktok: { handle: "@quinielamundial", url: "https://tiktok.com/@quinielamundial" },
     x: { handle: "@QMundial2026", url: "https://x.com/QMundial2026" },
+    instagram: { handle: "@quinimundial", url: "https://instagram.com/quinimundial" },
   },
 } as const;
 

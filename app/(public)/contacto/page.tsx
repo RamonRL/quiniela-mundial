@@ -4,7 +4,7 @@ import { Briefcase, Bug, Lightbulb, Mail, MessageSquare } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
 import { PageHeader } from "@/components/shell/page-header";
 import { BreadcrumbLD } from "@/components/seo/jsonld";
-import { TikTokIcon, XIcon } from "@/components/icons/social";
+import { InstagramIcon, TikTokIcon, XIcon } from "@/components/icons/social";
 import { CommercialLeadForm } from "@/components/leagues/commercial-lead-form";
 
 // Contacto es estático: cacheamos generosamente (24 h).
@@ -37,6 +37,12 @@ type Social = {
 };
 
 const SOCIALS: Social[] = [
+  {
+    label: "Instagram",
+    href: "https://instagram.com/quinimundial",
+    handle: "@quinimundial",
+    Icon: InstagramIcon,
+  },
   {
     label: "TikTok",
     href: "https://tiktok.com/@quinielamundial",
