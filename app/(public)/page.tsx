@@ -814,13 +814,73 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* ───────── SOBRE LA MARCA · refuerzo de trigrama para SEO ─────────
+          Bloque final dedicado al producto-marca (no al torneo). Repite
+          "Quiniela Mundial 2026" varias veces de forma natural — contenido
+          que Google asocia a la query exacta de marca + año. Va antes
+          del footer porque es donde el patrón "About" tradicional vive. */}
+      <section className="space-y-4 border-t border-[var(--color-border)] pt-12">
+        <header className="space-y-2">
+          <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
+            Sobre Quiniela Mundial 2026
+          </p>
+          <h2 className="font-display text-3xl tracking-tight sm:text-4xl">
+            La quiniela colaborativa del Mundial 2026
+          </h2>
+        </header>
+        <div className="grid gap-5 sm:grid-cols-2">
+          <p className="font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base">
+            <strong className="font-semibold not-italic text-[var(--color-foreground)]">
+              Quiniela Mundial 2026
+            </strong>{" "}
+            es la plataforma para jugar la quiniela del Mundial 2026 con tu
+            grupo. Eliges si compites con la comunidad en la Quiniela Pública o
+            si creas una privada con tus amigos, tu equipo o toda tu empresa.
+            Predices marcadores, goleadores, posiciones de grupo, bracket y un
+            puñado de preguntas especiales — todo en la misma app, sin Excel ni
+            grupos de WhatsApp llenos de capturas.
+          </p>
+          <p className="font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base">
+            Hecho para hispanohablantes a ambos lados del Atlántico, Quiniela
+            Mundial 2026 va igual de bien si lo tuyo es la{" "}
+            <em className="not-italic font-medium">porra</em> con los amigos en
+            España, el <em className="not-italic font-medium">prode</em> de la
+            oficina en Buenos Aires, la{" "}
+            <em className="not-italic font-medium">polla</em> de la familia en
+            Bogotá o el <em className="not-italic font-medium">pool</em> de
+            compañeros en Miami. El producto es uno, el nombre lo eliges tú —
+            la experiencia colaborativa y la mecánica de puntos, idéntica.
+          </p>
+        </div>
+        <p className="font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base">
+          Crear una quiniela en{" "}
+          <Link
+            href="/login?next=%2Fonboarding"
+            className="text-[var(--color-arena)] underline-offset-4 hover:underline"
+          >
+            Quiniela Mundial 2026
+          </Link>{" "}
+          es gratis hasta 20 miembros. Para empresas, comunidades o eventos con
+          grupos grandes hay{" "}
+          <Link
+            href="/precios"
+            className="text-[var(--color-arena)] underline-offset-4 hover:underline"
+          >
+            Pases Mundial 2026
+          </Link>{" "}
+          desde 19 € (pago único, sin suscripción) que escalan la liga hasta
+          50, 100 o 250 miembros con logo corporativo, anuncio fijado y export
+          CSV.
+        </p>
+      </section>
+
       {/* ───────── FOOTER LINKS ───────── */}
       <footer className="border-t border-[var(--color-border)] pt-8 pb-12">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Image
               src="/qm-mark.png"
-              alt="Quiniela Mundial"
+              alt="Quiniela Mundial 2026"
               width={940}
               height={973}
               className="size-10 object-contain"

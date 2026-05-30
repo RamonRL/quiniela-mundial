@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/shell/empty-state";
 import { PageHeader } from "@/components/shell/page-header";
 import { ArrowUpRight, Users } from "lucide-react";
 import { BreadcrumbLD } from "@/components/seo/jsonld";
+import { BrandCTA } from "@/components/seo/brand-cta";
 
 // Clasificación de grupos: cambia cuando finaliza un partido. ISR a 60s
 // la mantiene fresca sin pegar a Postgres en cada navegación.
@@ -151,6 +152,8 @@ export default async function GroupsPage() {
           })}
         </div>
       )}
+
+      <BrandCTA hint="Predice las 4 posiciones de cada grupo del Mundial 2026 antes de que arranque el torneo el 11 de junio." />
     </div>
   );
 }

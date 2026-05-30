@@ -7,6 +7,7 @@ import { TeamFlag } from "@/components/brand/team-flag";
 import { PageHeader } from "@/components/shell/page-header";
 import { EmptyState } from "@/components/shell/empty-state";
 import { BreadcrumbLD } from "@/components/seo/jsonld";
+import { BrandCTA } from "@/components/seo/brand-cta";
 
 // Listado de selecciones — el set de equipos cambia rarísimo, cachear 1 h
 // es seguro y libera Postgres del tráfico de visitantes/Googlebot.
@@ -126,6 +127,8 @@ export default async function TeamsPage() {
           })}
         </div>
       )}
+
+      <BrandCTA hint="Elige al campeón del Mundial 2026 y a las 32 selecciones que pasan de la fase de grupos." />
     </div>
   );
 }

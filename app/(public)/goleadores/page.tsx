@@ -7,6 +7,7 @@ import { TeamFlag } from "@/components/brand/team-flag";
 import { EmptyState } from "@/components/shell/empty-state";
 import { PageHeader } from "@/components/shell/page-header";
 import { BreadcrumbLD } from "@/components/seo/jsonld";
+import { BrandCTA } from "@/components/seo/brand-cta";
 
 // Goleadores cambia solo cuando un partido finaliza con goles. ISR a 60s
 // es indistinguible de tiempo real para el usuario y elimina el hit a
@@ -165,6 +166,8 @@ export default async function ScorersPage() {
           </section>
         </>
       )}
+
+      <BrandCTA hint="Predice quién se llevará la Bota de Oro del Mundial 2026 y suma puntos por cada gol acertado partido a partido." />
     </div>
   );
 }

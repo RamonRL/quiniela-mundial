@@ -10,6 +10,7 @@ import { EmptyState } from "@/components/shell/empty-state";
 import { formatDateTime } from "@/lib/utils";
 import { CalendarFilters, type ActiveFilter } from "./calendar-filters";
 import { BreadcrumbLD, SportsEventLD } from "@/components/seo/jsonld";
+import { BrandCTA } from "@/components/seo/brand-cta";
 
 export const metadata = {
   // `absolute` evita que el template global apile "· Quiniela Mundial 2026"
@@ -253,6 +254,8 @@ export default async function CalendarPage({
           })}
         </div>
       )}
+
+      <BrandCTA hint="Sigue los 104 partidos del Mundial 2026 dentro de tu liga, con marcador exacto y goleador." />
     </div>
   );
 }

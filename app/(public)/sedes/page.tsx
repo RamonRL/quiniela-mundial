@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/shell/page-header";
 import { EmptyState } from "@/components/shell/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { BreadcrumbLD } from "@/components/seo/jsonld";
+import { BrandCTA } from "@/components/seo/brand-cta";
 import { findVenueByMatchVenue, VENUES } from "@/lib/seo/venues";
 
 // Sedes son contenido estático del torneo — cachear 1 hora reduce a casi
@@ -107,6 +108,8 @@ export default async function VenuesPage() {
           })}
         </div>
       )}
+
+      <BrandCTA hint="Sigue los partidos en cada una de las 16 sedes del Mundial 2026 desde tu liga." />
     </div>
   );
 }

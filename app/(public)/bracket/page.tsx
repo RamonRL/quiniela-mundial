@@ -16,6 +16,7 @@ import { BracketTree, type BracketMatch } from "@/components/bracket/bracket-tre
 import { BracketSlotHighlighter } from "@/components/bracket/bracket-slot-highlighter";
 import { KO_FEEDS, R32_SLOTS, formatSlotSource } from "@/lib/bracket-format";
 import { BreadcrumbLD } from "@/components/seo/jsonld";
+import { BrandCTA } from "@/components/seo/brand-cta";
 
 export const metadata = {
   title: { absolute: "Bracket del Mundial 2026 — eliminatorias R32 a final · Quiniela Mundial" },
@@ -326,6 +327,8 @@ export default async function BracketPage() {
           </Link>
         </section>
       )}
+
+      <BrandCTA hint="Arma tu cuadro completo del Mundial 2026 — de R32 a la final — antes del primer pitido el 11 de junio." />
     </div>
   );
 }
