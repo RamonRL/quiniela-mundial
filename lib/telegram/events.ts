@@ -38,14 +38,27 @@ export async function notifyNewPrivateLeague(args: {
   name: string;
   joinCode: string | null;
   creatorEmail: string;
+  /** Modo de predicción elegido al crear (etiqueta legible). */
+  modeLabel?: string;
+  /** Plan elegido en el alta (etiqueta legible, p. ej. "Free" o "Pase Empresa"). */
+  planLabel?: string;
 }): Promise<void> {
   const code = args.joinCode ? ` · 🔢 <code>${escapeHTML(args.joinCode)}</code>` : "";
+  const meta = [
+    args.modeLabel ? `🎮 ${escapeHTML(args.modeLabel)}` : null,
+    args.planLabel ? `💳 ${escapeHTML(args.planLabel)}` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
   const text = [
     "🏆 <b>Nueva quiniela privada</b>",
     `🏷 <b>${escapeHTML(args.name)}</b>${code}`,
+    meta || null,
     `👤 <code>${escapeHTML(args.creatorEmail)}</code>`,
     `<a href="${SITE_URL}/admin/ligas/${args.id}">Ver en admin</a>`,
-  ].join("\n");
+  ]
+    .filter(Boolean)
+    .join("\n");
   await sendTelegramMessage(text);
 }
 

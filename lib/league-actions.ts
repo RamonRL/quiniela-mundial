@@ -26,6 +26,8 @@ import {
   isPremiumTier,
   joinLeagueByInviteToken,
 } from "@/lib/leagues";
+import { TIER_LABEL } from "@/lib/league-tiers";
+import { PREDICTION_MODE_META } from "@/lib/prediction-modes";
 import { presetUrlById, DEFAULT_PRESET_LOGO_URL } from "@/lib/league-logos";
 
 export type LeagueFormState = { ok: boolean; error?: string; message?: string };
@@ -161,6 +163,8 @@ export async function createLeague(
       name: created.name,
       joinCode: created.joinCode,
       creatorEmail: me.email,
+      modeLabel: PREDICTION_MODE_META[parsed.data.mode].label,
+      planLabel: TIER_LABEL[created.tier],
     }),
   );
 

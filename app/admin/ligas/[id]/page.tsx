@@ -127,6 +127,15 @@ export default async function AdminLeagueDetailPage({
           value={(league.tier ?? "free").toString()}
           textValue
         />
+        <StatTile
+          label="Modo"
+          value={
+            { completo: "Completo", marcador: "Marcador", solo_ganador: "Solo Ganador" }[
+              league.predictionMode
+            ] ?? league.predictionMode
+          }
+          textValue
+        />
         {league.joinCode ? (
           <StatTile label="Código" value={league.joinCode} textValue />
         ) : null}

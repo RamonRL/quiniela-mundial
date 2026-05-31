@@ -28,6 +28,15 @@ export const TIER_MEMBER_LIMIT: Record<LeagueTier, number | null> = {
   enterprise: null, // sin tope numérico, negociado
 };
 
+/** Etiqueta legible de cada plan/tier (para admin, Telegram, etc.). */
+export const TIER_LABEL: Record<LeagueTier, string> = {
+  free: "Free",
+  "team-50": "Pase Equipo",
+  "team-100": "Pase Empresa",
+  "team-250": "Pase Empresa Plus",
+  enterprise: "Enterprise",
+};
+
 export function isPremiumTier(
   tier: LeagueTier | string | null | undefined,
 ): boolean {

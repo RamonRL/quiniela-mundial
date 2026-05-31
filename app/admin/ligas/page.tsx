@@ -26,6 +26,7 @@ export default async function AdminLeaguesPage() {
       isPublic: leagues.isPublic,
       logoUrl: leagues.logoUrl,
       tier: leagues.tier,
+      predictionMode: leagues.predictionMode,
       memberLimit: leagues.memberLimit,
       createdAt: leagues.createdAt,
       createdBy: leagues.createdBy,
@@ -98,6 +99,7 @@ export default async function AdminLeaguesPage() {
     isPublic: l.isPublic,
     logoUrl: l.logoUrl,
     tier: l.tier,
+    predictionMode: l.predictionMode,
     memberLimit: l.memberLimit,
     createdAt: l.createdAt.toISOString(),
     creator:

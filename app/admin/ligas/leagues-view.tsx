@@ -51,6 +51,7 @@ export type LeagueRow = {
   isPublic: boolean;
   logoUrl: string | null;
   tier: string;
+  predictionMode: string;
   memberLimit: number | null;
   /** ISO string */
   createdAt: string;
@@ -68,17 +69,16 @@ export function LeaguesView({ leagues }: { leagues: LeagueRow[] }) {
   const [pageSize, setPageSize] = useState<PageSize>(10);
   const [page, setPage] = useState(1);
 
-  // La pública siempre va primero, fuera de la paginación. El resto se
-  // pagina por createdAt desc (ya viene ordenado del server: más recientes
-  // arriba).
-  const publicLeague = useMemo(() => leagues.find((l) => l.isPublic) ?? null, [leagues]);
+  // Las públicas (las 3, una por modo) van primero, fuera de la paginación.
+  // El resto se pagina por createdAt desc (ya viene ordenado del server).
+  const publicLeagues = useMemo(() => leagues.filter((l) => l.isPublic), [leagues]);
   const privateLeagues = useMemo(() => leagues.filter((l) => !l.isPublic), [leagues]);
 
   const totalPages = Math.max(1, Math.ceil(privateLeagues.length / pageSize));
   const safePage = Math.min(page, totalPages);
   const start = (safePage - 1) * pageSize;
   const pagedPrivate = privateLeagues.slice(start, start + pageSize);
-  const visible = publicLeague ? [publicLeague, ...pagedPrivate] : pagedPrivate;
+  const visible = [...publicLeagues, ...pagedPrivate];
 
   const onPageSize = (v: string) => {
     setPageSize(Number(v) as PageSize);
@@ -130,7 +130,7 @@ export function LeaguesView({ leagues }: { leagues: LeagueRow[] }) {
           />
 
           <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-            {privateLeagues.length} privadas · 1 pública
+            {privateLeagues.length} privadas · {publicLeagues.length} públicas
           </span>
         </div>
       </div>
@@ -200,6 +200,20 @@ function TierBadge({ tier, isPublic }: { tier: string; isPublic: boolean }) {
       )}
     >
       {label}
+    </Badge>
+  );
+}
+
+const MODE_LABEL: Record<string, string> = {
+  completo: "Completo",
+  marcador: "Marcador",
+  solo_ganador: "Solo Ganador",
+};
+
+function ModeBadge({ mode }: { mode: string }) {
+  return (
+    <Badge variant="outline" className="text-[0.55rem]">
+      {MODE_LABEL[mode] ?? mode}
     </Badge>
   );
 }
@@ -323,6 +337,7 @@ function LeagueCard({ league }: { league: LeagueRow }) {
               </Badge>
             )}
             <TierBadge tier={league.tier} isPublic={league.isPublic} />
+            <ModeBadge mode={league.predictionMode} />
             <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
               {league.slug}
             </span>
@@ -388,6 +403,7 @@ function LeagueListTable({ leagues }: { leagues: LeagueRow[] }) {
             <TableHead>Nombre</TableHead>
             <TableHead className="w-24">Tipo</TableHead>
             <TableHead className="w-24">Plan</TableHead>
+            <TableHead className="w-28">Modo</TableHead>
             <TableHead className="w-24">Código</TableHead>
             <TableHead>Creador</TableHead>
             <TableHead className="w-24 text-right">Miembros</TableHead>
@@ -439,6 +455,9 @@ function LeagueListTable({ leagues }: { leagues: LeagueRow[] }) {
               </TableCell>
               <TableCell>
                 <TierBadge tier={l.tier} isPublic={l.isPublic} />
+              </TableCell>
+              <TableCell>
+                <ModeBadge mode={l.predictionMode} />
               </TableCell>
               <TableCell>
                 {l.joinCode ? (
