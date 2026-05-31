@@ -768,7 +768,7 @@ function PlanColumn({
         </span>
       ) : null}
 
-      <div className="space-y-1">
+      <div className="space-y-1.5">
         <p className="font-display text-lg tracking-tight">{plan.name}</p>
         <div className="flex items-baseline gap-1.5">
           <span className="font-display tabular text-2xl tracking-tight text-[var(--color-arena)]">
@@ -780,7 +780,9 @@ function PlanColumn({
             </span>
           ) : null}
         </div>
-        <p className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+        {/* Nº de miembros — destacado: es el dato que más se compara. */}
+        <p className="inline-flex items-center gap-1.5 rounded-md bg-[color-mix(in_oklch,var(--color-arena)_10%,transparent)] px-2 py-1 font-display text-sm tracking-tight text-[var(--color-foreground)]">
+          <Users className="size-3.5 text-[var(--color-arena)]" />
           {plan.members}
         </p>
       </div>
@@ -789,14 +791,18 @@ function PlanColumn({
         {plan.audience}
       </p>
 
-      <ul className="space-y-1.5 border-t border-[var(--color-border)] pt-3">
-        {plan.features.map((f) => (
-          <li key={f} className="flex items-start gap-1.5 text-xs leading-snug">
-            <Check className="mt-0.5 size-3 shrink-0 text-[var(--color-arena)]" />
-            <span>{f}</span>
-          </li>
-        ))}
-      </ul>
+      {/* En Estándar omitimos la lista de features para no recargar la
+          tarjeta — el resto de planes sí la muestra. */}
+      {plan.key !== "free" && plan.features.length > 0 ? (
+        <ul className="space-y-1.5 border-t border-[var(--color-border)] pt-3">
+          {plan.features.map((f) => (
+            <li key={f} className="flex items-start gap-1.5 text-xs leading-snug">
+              <Check className="mt-0.5 size-3 shrink-0 text-[var(--color-arena)]" />
+              <span>{f}</span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
 
       {plan.key === "free" ? (
         <p className="mt-auto pt-1 font-mono text-[0.5rem] uppercase leading-relaxed tracking-[0.14em] text-[var(--color-muted-foreground)]">
