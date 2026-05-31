@@ -5,16 +5,22 @@ import Image from "next/image";
 import { useMemo, useState } from "react";
 import {
   ArrowRight,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  ChevronsUpDown,
+  ChevronUp,
   LayoutGrid,
   List as ListIcon,
+  Search,
   Users,
+  X,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -64,29 +70,220 @@ type Mode = "cards" | "list";
 const PAGE_SIZES = [10, 25, 50] as const;
 type PageSize = (typeof PAGE_SIZES)[number];
 
+export type SortKey =
+  | "name"
+  | "type"
+  | "plan"
+  | "mode"
+  | "code"
+  | "creator"
+  | "members"
+  | "created";
+type SortDir = "asc" | "desc";
+type SortState = { key: SortKey | null; dir: SortDir };
+
+// Orden lógico (no alfabético) de planes y modos para que el sort por
+// columna respete la jerarquía Free → Enterprise y Completo → Solo Ganador.
+const TIER_ORDER: Record<string, number> = {
+  free: 0,
+  "team-50": 1,
+  "team-100": 2,
+  "team-250": 3,
+  enterprise: 4,
+};
+const MODE_ORDER: Record<string, number> = {
+  completo: 0,
+  marcador: 1,
+  solo_ganador: 2,
+};
+
+const PLAN_FILTERS = [
+  { v: "all", l: "Todos los planes" },
+  { v: "free", l: "Free" },
+  { v: "team-50", l: "Pase 50" },
+  { v: "team-100", l: "Pase 100" },
+  { v: "team-250", l: "Pase 250" },
+  { v: "enterprise", l: "Enterprise" },
+] as const;
+const MODE_FILTERS = [
+  { v: "all", l: "Todos los modos" },
+  { v: "completo", l: "Completo" },
+  { v: "marcador", l: "Marcador" },
+  { v: "solo_ganador", l: "Solo Ganador" },
+] as const;
+const TYPE_FILTERS = [
+  { v: "all", l: "Todos los tipos" },
+  { v: "public", l: "Públicas" },
+  { v: "private", l: "Privadas" },
+] as const;
+
+function creatorName(l: LeagueRow): string {
+  if (!l.creator) return "￿"; // "Sistema" al final en orden alfabético
+  return (l.creator.nickname || l.creator.email).toLowerCase();
+}
+
 export function LeaguesView({ leagues }: { leagues: LeagueRow[] }) {
   const [mode, setMode] = useState<Mode>("cards");
   const [pageSize, setPageSize] = useState<PageSize>(10);
   const [page, setPage] = useState(1);
 
-  // Las públicas (las 3, una por modo) van primero, fuera de la paginación.
-  // El resto se pagina por createdAt desc (ya viene ordenado del server).
-  const publicLeagues = useMemo(() => leagues.filter((l) => l.isPublic), [leagues]);
-  const privateLeagues = useMemo(() => leagues.filter((l) => !l.isPublic), [leagues]);
+  // Filtros.
+  const [q, setQ] = useState("");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [planFilter, setPlanFilter] = useState<string>("all");
+  const [modeFilter, setModeFilter] = useState<string>("all");
 
-  const totalPages = Math.max(1, Math.ceil(privateLeagues.length / pageSize));
+  // Orden por columna. `key: null` → orden por defecto del server
+  // (públicas primero, luego createdAt desc).
+  const [sort, setSort] = useState<SortState>({ key: null, dir: "asc" });
+
+  const filtered = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    return leagues.filter((l) => {
+      if (typeFilter === "public" && !l.isPublic) return false;
+      if (typeFilter === "private" && l.isPublic) return false;
+      if (planFilter !== "all" && l.tier !== planFilter) return false;
+      if (modeFilter !== "all" && l.predictionMode !== modeFilter) return false;
+      if (needle) {
+        const hay =
+          l.name.toLowerCase().includes(needle) ||
+          l.slug.toLowerCase().includes(needle) ||
+          (l.joinCode?.toLowerCase().includes(needle) ?? false) ||
+          (l.creator?.email.toLowerCase().includes(needle) ?? false) ||
+          (l.creator?.nickname?.toLowerCase().includes(needle) ?? false);
+        if (!hay) return false;
+      }
+      return true;
+    });
+  }, [leagues, q, typeFilter, planFilter, modeFilter]);
+
+  const sorted = useMemo(() => {
+    if (sort.key == null) return filtered; // orden del server intacto
+    const factor = sort.dir === "asc" ? 1 : -1;
+    const key = sort.key;
+    const cmp = (a: LeagueRow, b: LeagueRow): number => {
+      switch (key) {
+        case "name":
+          return a.name.localeCompare(b.name, "es");
+        case "type":
+          return (a.isPublic ? 0 : 1) - (b.isPublic ? 0 : 1);
+        case "plan":
+          return (TIER_ORDER[a.tier] ?? 99) - (TIER_ORDER[b.tier] ?? 99);
+        case "mode":
+          return (
+            (MODE_ORDER[a.predictionMode] ?? 99) -
+            (MODE_ORDER[b.predictionMode] ?? 99)
+          );
+        case "code":
+          return (a.joinCode ?? "").localeCompare(b.joinCode ?? "", "es");
+        case "creator":
+          return creatorName(a).localeCompare(creatorName(b), "es");
+        case "members":
+          return a.members - b.members;
+        case "created":
+          return (
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          );
+      }
+    };
+    // Copia + tie-break estable por nombre para que filas iguales no salten.
+    return [...filtered].sort((a, b) => {
+      const r = cmp(a, b);
+      return (r !== 0 ? r : a.name.localeCompare(b.name, "es")) * factor;
+    });
+  }, [filtered, sort]);
+
+  const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
   const safePage = Math.min(page, totalPages);
   const start = (safePage - 1) * pageSize;
-  const pagedPrivate = privateLeagues.slice(start, start + pageSize);
-  const visible = [...publicLeagues, ...pagedPrivate];
+  const visible = sorted.slice(start, start + pageSize);
+
+  const publicCount = filtered.filter((l) => l.isPublic).length;
+  const privateCount = filtered.length - publicCount;
 
   const onPageSize = (v: string) => {
     setPageSize(Number(v) as PageSize);
     setPage(1);
   };
 
+  // Cambiar de columna empieza en asc (desc para métricas, donde lo natural
+  // es "mayor primero"); volver a clicar la misma alterna la dirección.
+  const onSort = (key: SortKey) => {
+    setPage(1);
+    setSort((prev) => {
+      if (prev.key === key) {
+        return { key, dir: prev.dir === "asc" ? "desc" : "asc" };
+      }
+      const defaultDesc = key === "members" || key === "created";
+      return { key, dir: defaultDesc ? "desc" : "asc" };
+    });
+  };
+
+  const onFilter = (setter: (v: string) => void) => (v: string) => {
+    setter(v);
+    setPage(1);
+  };
+
+  const filtersActive =
+    q.trim() !== "" ||
+    typeFilter !== "all" ||
+    planFilter !== "all" ||
+    modeFilter !== "all";
+
+  const clearFilters = () => {
+    setQ("");
+    setTypeFilter("all");
+    setPlanFilter("all");
+    setModeFilter("all");
+    setPage(1);
+  };
+
   return (
     <div className="space-y-4">
+      {/* ─── Toolbar: filtros ─── */}
+      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
+        <div className="relative min-w-[12rem] flex-1">
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-[var(--color-muted-foreground)]" />
+          <Input
+            value={q}
+            onChange={(e) => {
+              setQ(e.target.value);
+              setPage(1);
+            }}
+            placeholder="Buscar nombre, código, creador…"
+            className="h-8 pl-8 text-sm"
+          />
+        </div>
+        <FilterSelect
+          value={typeFilter}
+          onChange={onFilter(setTypeFilter)}
+          options={TYPE_FILTERS}
+          width="w-[8.5rem]"
+        />
+        <FilterSelect
+          value={planFilter}
+          onChange={onFilter(setPlanFilter)}
+          options={PLAN_FILTERS}
+          width="w-[9.5rem]"
+        />
+        <FilterSelect
+          value={modeFilter}
+          onChange={onFilter(setModeFilter)}
+          options={MODE_FILTERS}
+          width="w-[9.5rem]"
+        />
+        {filtersActive ? (
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="inline-flex h-8 items-center gap-1 rounded-md border border-[var(--color-border)] px-2.5 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)] transition hover:border-[var(--color-arena)]/50 hover:text-[var(--color-foreground)]"
+          >
+            <X className="size-3" />
+            Limpiar
+          </button>
+        ) : null}
+      </div>
+
       {/* ─── Toolbar: toggle de vista + paginación ─── */}
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
         <div className="inline-flex items-center gap-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-2)] p-0.5">
@@ -130,22 +327,55 @@ export function LeaguesView({ leagues }: { leagues: LeagueRow[] }) {
           />
 
           <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-            {privateLeagues.length} privadas · {publicLeagues.length} públicas
+            {privateCount} privadas · {publicCount} públicas
           </span>
         </div>
       </div>
 
       {/* ─── Vista activa ─── */}
-      {mode === "cards" ? (
+      {visible.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface)] p-10 text-center">
+          <p className="font-mono text-[0.65rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+            Ninguna liga coincide con los filtros
+          </p>
+        </div>
+      ) : mode === "cards" ? (
         <div className="grid gap-4 sm:grid-cols-2">
           {visible.map((l) => (
             <LeagueCard key={l.id} league={l} />
           ))}
         </div>
       ) : (
-        <LeagueListTable leagues={visible} />
+        <LeagueListTable leagues={visible} sort={sort} onSort={onSort} />
       )}
     </div>
+  );
+}
+
+function FilterSelect({
+  value,
+  onChange,
+  options,
+  width,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: readonly { v: string; l: string }[];
+  width: string;
+}) {
+  return (
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger className={cn("h-8 text-sm", width)}>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {options.map((o) => (
+          <SelectItem key={o.v} value={o.v}>
+            {o.l}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }
 
@@ -184,6 +414,7 @@ const TIER_LABEL: Record<string, string> = {
   "team-50": "Pase 50",
   "team-100": "Pase 100",
   "team-250": "Pase 250",
+  enterprise: "Enterprise",
 };
 
 function TierBadge({ tier, isPublic }: { tier: string; isPublic: boolean }) {
@@ -394,19 +625,90 @@ function LeagueCard({ league }: { league: LeagueRow }) {
 
 // ──────────────────────── Vista lista ────────────────────────
 
-function LeagueListTable({ leagues }: { leagues: LeagueRow[] }) {
+function SortableHead({
+  sortKey,
+  sort,
+  onSort,
+  children,
+  className,
+  align = "left",
+}: {
+  sortKey: SortKey;
+  sort: SortState;
+  onSort: (key: SortKey) => void;
+  children: React.ReactNode;
+  className?: string;
+  align?: "left" | "right";
+}) {
+  const active = sort.key === sortKey;
+  return (
+    <TableHead className={className}>
+      <button
+        type="button"
+        onClick={() => onSort(sortKey)}
+        className={cn(
+          "group inline-flex items-center gap-1 select-none transition hover:text-[var(--color-foreground)]",
+          align === "right" && "w-full justify-end",
+          active && "text-[var(--color-arena)]",
+        )}
+        aria-label={`Ordenar por ${typeof children === "string" ? children : sortKey}`}
+      >
+        {children}
+        {active ? (
+          sort.dir === "asc" ? (
+            <ChevronUp className="size-3" />
+          ) : (
+            <ChevronDown className="size-3" />
+          )
+        ) : (
+          <ChevronsUpDown className="size-3 opacity-30 transition-opacity group-hover:opacity-70" />
+        )}
+      </button>
+    </TableHead>
+  );
+}
+
+function LeagueListTable({
+  leagues,
+  sort,
+  onSort,
+}: {
+  leagues: LeagueRow[];
+  sort: SortState;
+  onSort: (key: SortKey) => void;
+}) {
   return (
     <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Nombre</TableHead>
-            <TableHead className="w-24">Tipo</TableHead>
-            <TableHead className="w-24">Plan</TableHead>
-            <TableHead className="w-28">Modo</TableHead>
-            <TableHead className="w-24">Código</TableHead>
-            <TableHead>Creador</TableHead>
-            <TableHead className="w-24 text-right">Miembros</TableHead>
+            <SortableHead sortKey="name" sort={sort} onSort={onSort}>
+              Nombre
+            </SortableHead>
+            <SortableHead sortKey="type" sort={sort} onSort={onSort} className="w-24">
+              Tipo
+            </SortableHead>
+            <SortableHead sortKey="plan" sort={sort} onSort={onSort} className="w-24">
+              Plan
+            </SortableHead>
+            <SortableHead sortKey="mode" sort={sort} onSort={onSort} className="w-28">
+              Modo
+            </SortableHead>
+            <SortableHead sortKey="code" sort={sort} onSort={onSort} className="w-24">
+              Código
+            </SortableHead>
+            <SortableHead sortKey="creator" sort={sort} onSort={onSort}>
+              Creador
+            </SortableHead>
+            <SortableHead
+              sortKey="members"
+              sort={sort}
+              onSort={onSort}
+              className="w-24"
+              align="right"
+            >
+              Miembros
+            </SortableHead>
             <TableHead className="w-16 text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
