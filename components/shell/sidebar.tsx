@@ -5,7 +5,7 @@ import { BrandWordmark } from "@/components/brand/brand-wordmark";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { ChevronsLeft, ChevronsRight, Globe2 } from "lucide-react";
+import { ChevronsLeft, ChevronsRight, Globe2, LogOut, Settings, UserCog } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ADMIN_NAV, buildNavItems, type NavItem } from "./nav-data";
 
@@ -115,6 +115,9 @@ export function Sidebar({
             collapsed ? "space-y-2 px-2 py-4" : "space-y-7 px-3 py-5",
           )}
         >
+          {isAuthenticated ? (
+            <AccountQuickLinks activeHref={activeHref} collapsed={collapsed} />
+          ) : null}
           <NavGroup
             title="Torneo"
             items={main}
@@ -327,6 +330,79 @@ function VisitorCTA({
       >
         {ctaLabel}
       </Link>
+    </div>
+  );
+}
+
+/**
+ * Mini-bloque "Cuenta" justo encima de TORNEO en el sidebar de escritorio
+ * con tres accesos directos al estilo dropdown del avatar (Perfil, Ajustes,
+ * Cerrar sesión). Tipografía más pequeña que NavGroup para que se sienta
+ * secundario al menú de torneo, y el item de cerrar sesión va como POST a
+ * /logout (es lo que espera el handler).
+ */
+function AccountQuickLinks({
+  activeHref,
+  collapsed,
+}: {
+  activeHref: string | null;
+  collapsed: boolean;
+}) {
+  const items = [
+    { href: "/perfil", label: "Perfil", icon: UserCog },
+    { href: "/ajustes", label: "Ajustes", icon: Settings },
+  ] as const;
+
+  return (
+    <div className={collapsed ? "space-y-1" : "space-y-0.5 border-b border-[var(--color-border)] pb-3"}>
+      {items.map((item) => {
+        const active = item.href === activeHref;
+        const Icon = item.icon;
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            title={collapsed ? item.label : undefined}
+            aria-label={collapsed ? item.label : undefined}
+            className={cn(
+              "group relative flex items-center transition",
+              collapsed
+                ? cn(
+                    "mx-auto size-9 justify-center rounded-md",
+                    active
+                      ? "bg-[color-mix(in_oklch,var(--color-arena)_12%,transparent)] text-[var(--color-foreground)] ring-1 ring-[var(--color-arena)]/40"
+                      : "text-[var(--color-muted-foreground)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-foreground)]",
+                  )
+                : cn(
+                    "gap-2.5 rounded-md px-3 py-1.5 text-xs",
+                    active
+                      ? "bg-[color-mix(in_oklch,var(--color-arena)_8%,transparent)] font-semibold text-[var(--color-foreground)]"
+                      : "text-[var(--color-muted-foreground)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-foreground)]",
+                  ),
+            )}
+          >
+            <Icon className={cn("size-4", active ? "text-[var(--color-arena)]" : "")} />
+            {!collapsed ? <span>{item.label}</span> : null}
+          </Link>
+        );
+      })}
+      {/* Cerrar sesión: POST a /logout (igual que el user-menu del header). */}
+      <form action="/logout" method="post" className={collapsed ? "" : "block"}>
+        <button
+          type="submit"
+          title={collapsed ? "Cerrar sesión" : undefined}
+          aria-label={collapsed ? "Cerrar sesión" : undefined}
+          className={cn(
+            "flex w-full items-center transition",
+            collapsed
+              ? "mx-auto size-9 justify-center rounded-md text-[var(--color-muted-foreground)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-danger)]"
+              : "gap-2.5 rounded-md px-3 py-1.5 text-xs text-[var(--color-muted-foreground)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-danger)]",
+          )}
+        >
+          <LogOut className="size-4" />
+          {!collapsed ? <span>Cerrar sesión</span> : null}
+        </button>
+      </form>
     </div>
   );
 }

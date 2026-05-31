@@ -112,6 +112,8 @@ export function buildNavItems(myId: string, opts: BuildOptions = {}): NavItem[] 
       requiresAuth: true,
     });
   }
+  // Orden de Comunidad: Ranking → Chat → Minijuegos → Comparar (Comparar
+  // solo si la liga activa es privada).
   all.push({
     href: "/ranking",
     label: "Ranking",
@@ -120,18 +122,6 @@ export function buildNavItems(myId: string, opts: BuildOptions = {}): NavItem[] 
     primaryMobile: isAuthed,
     requiresAuth: true,
   });
-  // Comparar solo tiene sentido en quinielas privadas (la pública es
-  // demasiado masiva como para que comparar predicción a predicción
-  // aporte algo). Reusamos el mismo flag que filtra "Mi Quiniela".
-  if (opts.showMyLeague) {
-    all.push({
-      href: "/comparar",
-      label: "Comparar",
-      icon: Trophy,
-      group: "social",
-      requiresAuth: true,
-    });
-  }
   all.push({
     href: "/chat",
     label: "Chat",
@@ -147,6 +137,18 @@ export function buildNavItems(myId: string, opts: BuildOptions = {}): NavItem[] 
     icon: Gamepad2,
     group: "social",
   });
+  // Comparar solo tiene sentido en quinielas privadas (la pública es
+  // demasiado masiva como para que comparar predicción a predicción
+  // aporte algo). Reusamos el mismo flag que filtra "Mi Quiniela".
+  if (opts.showMyLeague) {
+    all.push({
+      href: "/comparar",
+      label: "Comparar",
+      icon: Trophy,
+      group: "social",
+      requiresAuth: true,
+    });
+  }
   // Selecciones y Sedes son páginas SEO orientadas a visitantes (alta
   // intención de búsqueda: "selecciones mundial 2026", "estadios mundial").
   // El logueado tiene atajos directos desde /equipos/[code] y /partido/[id],
