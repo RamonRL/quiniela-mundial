@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Crown, Goal, ListChecks, Sparkles, Swords, Target, Users } from "lucide-react";
+import { ArrowRight, Crown, Goal, ListChecks, Sparkles, Swords, Target, Trophy, Users } from "lucide-react";
 import { BreadcrumbLD } from "@/components/seo/jsonld";
 import { PageHeader } from "@/components/shell/page-header";
 import { ScoringBox, type ScoringSection } from "@/components/brand/scoring-box";
@@ -10,10 +10,19 @@ import {
   GROUPS_SCORING,
   MATCH_FOOTNOTE,
   MATCH_SCORING,
+  MATCH_SCORING_MARCADOR,
+  MATCH_SCORING_SOLO_GANADOR,
   SPECIALS_FOOTNOTE,
   SPECIALS_SCORING,
   TOP_SCORER_SCORING,
 } from "@/lib/scoring/copy";
+import {
+  PREDICTION_MODES,
+  PREDICTION_MODE_META,
+  isPredictionMode,
+  type PredictionMode,
+} from "@/lib/prediction-modes";
+import { cn } from "@/lib/utils";
 
 export const metadata = {
   title: "Cómo se puntúa · Las 6 categorías",
@@ -39,7 +48,8 @@ type Category = {
   maxLine?: string;
 };
 
-const CATEGORIES: Category[] = [
+// Categorías del modo completo (las 6 de siempre).
+const COMPLETO_CATEGORIES: Category[] = [
   {
     id: "grupos",
     icon: <Users className="size-5" />,
@@ -118,7 +128,49 @@ const CATEGORIES: Category[] = [
   },
 ];
 
-export default function PuntuacionPage() {
+// Modos marcador y solo_ganador: una sola categoría (predicción de partido).
+const MARCADOR_CATEGORIES: Category[] = [
+  {
+    id: "marcadores",
+    icon: <ListChecks className="size-5" />,
+    cat: "01",
+    title: "Marcador partido a partido",
+    tagline:
+      "Predices el marcador exacto de cada partido. En eliminatoria, un empate implica penaltis y eliges quién pasa. Sin grupos, bracket ni goleadores.",
+    sections: MATCH_SCORING_MARCADOR,
+    maxLine: "Marcador exacto 5 · ganador 2 · extras de eliminatoria.",
+  },
+];
+
+const SOLO_GANADOR_CATEGORIES: Category[] = [
+  {
+    id: "ganador",
+    icon: <Trophy className="size-5" />,
+    cat: "01",
+    title: "Ganador del partido",
+    tagline:
+      "Solo predices quién gana cada partido (o empate). En eliminatoria, si predices empate eliges también quién pasa en penaltis. Lo más rápido de rellenar.",
+    sections: MATCH_SCORING_SOLO_GANADOR,
+    maxLine: "3 pts por acierto · +2 en KO por acertar el ganador de la tanda.",
+  },
+];
+
+const CATEGORIES_BY_MODE: Record<PredictionMode, Category[]> = {
+  completo: COMPLETO_CATEGORIES,
+  marcador: MARCADOR_CATEGORIES,
+  solo_ganador: SOLO_GANADOR_CATEGORIES,
+};
+
+export default async function PuntuacionPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ modo?: string }>;
+}) {
+  const sp = (await searchParams) ?? {};
+  const mode: PredictionMode = isPredictionMode(sp.modo ?? "") ? (sp.modo as PredictionMode) : "completo";
+  const categories = CATEGORIES_BY_MODE[mode];
+  const showJumpGrid = mode === "completo";
+
   return (
     <div className="space-y-12">
       <BreadcrumbLD
@@ -131,13 +183,36 @@ export default function PuntuacionPage() {
       <PageHeader
         eyebrow="Reglas del juego"
         title="Cómo se puntúa"
-        description="Seis categorías, una rúbrica clara para cada una. Acertar más implica leer mejor el torneo — y todas las predicciones suman a un único ranking."
+        description="Cada modo de quiniela tiene su rúbrica. Acertar más implica leer mejor el torneo."
       />
 
-      {/* Resumen visual de las 6 categorías */}
+      {/* Selector de modo */}
+      <nav className="flex gap-1 overflow-x-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-1">
+        {PREDICTION_MODES.map((m) => {
+          const active = m === mode;
+          return (
+            <Link
+              key={m}
+              href={`/puntuacion?modo=${m}`}
+              scroll={false}
+              className={cn(
+                "inline-flex shrink-0 items-center rounded-md px-3 py-1.5 text-xs font-medium transition",
+                active
+                  ? "bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]"
+                  : "text-[var(--color-muted-foreground)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-foreground)]",
+              )}
+            >
+              {PREDICTION_MODE_META[m].label}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Resumen visual (solo modo completo, con sus 6 categorías) */}
+      {showJumpGrid ? (
       <section>
         <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {CATEGORIES.map((c) => (
+          {categories.map((c) => (
             <li key={c.id}>
               <Link
                 href={`#${c.id}`}
@@ -160,10 +235,11 @@ export default function PuntuacionPage() {
           ))}
         </ul>
       </section>
+      ) : null}
 
-      {/* Categorías una a una */}
+      {/* Categorías una a una (del modo activo) */}
       <div className="space-y-10">
-        {CATEGORIES.map((c) => (
+        {categories.map((c) => (
           <CategoryBlock key={c.id} category={c} />
         ))}
       </div>

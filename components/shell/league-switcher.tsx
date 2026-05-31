@@ -94,7 +94,7 @@ export function LeagueSwitcher({
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link
-            href="/onboarding"
+            href="/onboarding?step=root"
             className="flex w-full items-center gap-2 text-[var(--color-arena)]"
           >
             <Plus className="size-3.5" />

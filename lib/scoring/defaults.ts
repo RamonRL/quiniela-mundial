@@ -43,6 +43,17 @@ export const DEFAULT_SCORING_RULES = {
   // Categoría 5 — Goleador por partido
   match_scorer: { points: 4, description: "Tu jugador marca en el partido" },
   match_first_scorer_bonus: { points: 2, description: "Bonus si tu jugador anota el primer gol" },
+
+  // Modo "Solo Ganador" — solo aplica en ligas de ese modo.
+  solo_winner_correct: {
+    points: 3,
+    description: "Solo Ganador: aciertas el ganador (o empate→pens en eliminatoria)",
+  },
+  solo_winner_pens_bonus: {
+    points: 2,
+    description:
+      "Solo Ganador: bonus por, habiendo predicho empate, acertar quién gana la tanda de penaltis",
+  },
 } as const;
 
 export type ScoringRuleKey = keyof typeof DEFAULT_SCORING_RULES;

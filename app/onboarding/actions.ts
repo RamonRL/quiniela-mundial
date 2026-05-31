@@ -6,7 +6,11 @@ import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { leagueMemberships, profiles } from "@/lib/db/schema";
 import { requireUser } from "@/lib/auth/guards";
-import { getPublicLeague, isMemberOf } from "@/lib/leagues";
+import {
+  getPublicLeagueByMode,
+  isMemberOf,
+  isPredictionMode,
+} from "@/lib/leagues";
 import { uploadImage } from "@/lib/storage";
 
 export type SaveInitialProfileState = { ok: boolean; error?: string };
@@ -51,16 +55,19 @@ export async function saveInitialProfile(
 }
 
 /**
- * Onboarding: el usuario elige "Quiniela Pública" como liga activa.
- * La membresía pública es implícita y siempre está, así que aquí basta
- * con asegurar la fila por si alguna migración hueco la dejó fuera, y
- * setear `profiles.leagueId` a la pública.
+ * El usuario se une (o reactiva) a una de las 3 quinielas públicas, elegida
+ * por su modo de predicción, y la deja como liga activa. Entrar a una
+ * pública es ahora explícito (ya no se auto-inscribe a nadie). Un usuario
+ * puede estar en las 3 públicas a la vez si quiere.
  */
-export async function chooseActivePublic() {
+export async function joinPublicByMode(modeRaw: string) {
   const me = await requireUser();
-  const pub = await getPublicLeague();
+  if (!isPredictionMode(modeRaw)) {
+    throw new Error(`Modo de quiniela pública inválido: ${modeRaw}`);
+  }
+  const pub = await getPublicLeagueByMode(modeRaw);
   if (!pub) {
-    throw new Error("La liga pública no existe en la BD.");
+    throw new Error(`La quiniela pública de modo ${modeRaw} no existe en la BD.`);
   }
   const already = await isMemberOf(me.id, pub.id);
   if (!already) {

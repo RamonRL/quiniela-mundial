@@ -1,18 +1,24 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/guards";
 import { BrandWordmark } from "@/components/brand/brand-wordmark";
 import { OnboardingFlow } from "./onboarding-flow";
 
 export const metadata = { title: "Bienvenido" } satisfies Metadata;
 
-type Step = "perfil" | "root" | "privada-elegir" | "privada-crear" | "privada-unirse";
+type Step =
+  | "perfil"
+  | "root"
+  | "publica-elegir"
+  | "privada-elegir"
+  | "privada-crear"
+  | "privada-unirse";
 
 const VALID_STEPS: Step[] = [
   "perfil",
   "root",
+  "publica-elegir",
   "privada-elegir",
   "privada-crear",
   "privada-unirse",
@@ -42,9 +48,10 @@ export default async function OnboardingPage({
     step = "perfil";
   } else if (step === "perfil") {
     step = fresh ? "root" : "privada-elegir";
-  } else if (!fresh && step === "root") {
-    redirect("/onboarding?step=privada-elegir");
   }
+  // El "root" (Pública / Privada) es accesible también para usuarios que ya
+  // tienen liga: desde el switcher "Unirse o crear" pueden entrar a una
+  // pública de otro modo o crear/unirse a una privada.
 
   const kickoff = new Date(KICKOFF);
   const days = Math.max(

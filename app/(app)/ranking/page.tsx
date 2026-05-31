@@ -1,14 +1,15 @@
 import Link from "next/link";
-import { Award, Crown, ListOrdered, Medal } from "lucide-react";
+import { redirect } from "next/navigation";
+import { Award, Crown, Globe2, ListOrdered, Medal } from "lucide-react";
 import { eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { leagueDepartments } from "@/lib/db/schema";
+import { leagueDepartments, leagues } from "@/lib/db/schema";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/shell/empty-state";
 import { PageHeader } from "@/components/shell/page-header";
 import { requireUser } from "@/lib/auth/guards";
-import { currentLeagueId } from "@/lib/leagues";
+import { currentLeagueId, PREDICTION_MODES, PREDICTION_MODE_META } from "@/lib/leagues";
 import { loadLeaderboard, type LeaderboardEntry } from "@/lib/leaderboard";
 import { RankingTabs } from "./ranking-tabs";
 import { initials } from "@/lib/utils";
@@ -18,6 +19,16 @@ export const metadata = { title: "Ranking" };
 export default async function RankingPage() {
   const me = await requireUser();
   const leagueId = (await currentLeagueId(me))!;
+  // Las quinielas públicas no tienen ranking propio: redirigimos al ranking
+  // global del modo de esa pública.
+  const [activeLeague] = await db
+    .select({ isPublic: leagues.isPublic, predictionMode: leagues.predictionMode })
+    .from(leagues)
+    .where(eq(leagues.id, leagueId))
+    .limit(1);
+  if (activeLeague?.isPublic) {
+    redirect(`/ranking/global/${activeLeague.predictionMode}`);
+  }
   // Si la liga tiene ≥1 departamento creado, exponemos los tabs
   // "Individuales / Departamentos" en la cabecera. Si no hay
   // departamentos (o liga pública / free), no se muestra nada — el
@@ -67,6 +78,23 @@ export default async function RankingPage() {
       />
 
       {hasDepartments ? <RankingTabs active="individual" /> : null}
+
+      {/* Accesos directos a los rankings globales por modo. */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+          Rankings globales:
+        </span>
+        {PREDICTION_MODES.map((m) => (
+          <Link
+            key={m}
+            href={`/ranking/global/${m}`}
+            className="inline-flex items-center gap-1.5 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-2.5 py-1 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-foreground)] transition hover:border-[var(--color-arena)]/40 hover:text-[var(--color-arena)]"
+          >
+            <Globe2 className="size-3" />
+            {PREDICTION_MODE_META[m].label}
+          </Link>
+        ))}
+      </div>
 
       {allZero ? (
         <div className="rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface)]/60 px-4 py-3 text-center font-editorial text-xs italic text-[var(--color-muted-foreground)]">

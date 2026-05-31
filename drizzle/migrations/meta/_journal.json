@@ -141,6 +141,13 @@
       "when": 1780141598346,
       "tag": "0019_low_luke_cage",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1780222439192,
+      "tag": "0020_many_gamora",
+      "breakpoints": true
     }
   ]
 }

@@ -240,7 +240,7 @@ export function MyLeaguesSection({
           La pública es permanente. Las privadas, libres.
         </p>
         <Button asChild variant="outline" size="sm">
-          <Link href="/onboarding?step=privada-elegir">
+          <Link href="/onboarding?step=root">
             <Plus className="size-3.5" />
             Unirse o crear
           </Link>
