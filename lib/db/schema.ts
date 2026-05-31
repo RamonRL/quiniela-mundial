@@ -804,3 +804,44 @@ export const backupRuns = pgTable(
   },
   (t) => [index("backup_runs_kind_finished_idx").on(t.kind, t.finishedAt)],
 );
+
+// ───────────────────────── patch notes (novedades de la app) ─────────────────────────
+
+/**
+ * Tipo de nota — pinta el badge a color en el tablón:
+ *  - feature      → algo nuevo en la web
+ *  - fix          → bug arreglado
+ *  - improvement  → mejora sobre algo ya existente
+ *  - note         → comunicación general (mantenimiento, aviso…)
+ */
+export const patchNoteType = pgEnum("patch_note_type", [
+  "feature",
+  "fix",
+  "improvement",
+  "note",
+]);
+
+/**
+ * Tablón de novedades de Quiniela Mundial. El admin va publicando notas
+ * sobre actualizaciones, features nuevos, bugs arreglados y mejoras. Las
+ * últimas N publicadas aparecen en el dashboard del usuario. CRUD desde
+ * /admin/notas.
+ */
+export const patchNotes = pgTable(
+  "patch_notes",
+  {
+    id: serial("id").primaryKey(),
+    type: patchNoteType("type").notNull().default("note"),
+    title: text("title").notNull(),
+    body: text("body").notNull(),
+    /** Null = borrador (no se muestra en el dashboard). */
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("patch_notes_published_idx").on(t.publishedAt)],
+);

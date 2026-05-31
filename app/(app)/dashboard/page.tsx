@@ -32,6 +32,8 @@ import { loadOpenMatchdays, type OpenMatchdayEntry } from "@/lib/deadlines";
 import { getBracketStatus } from "@/lib/bracket-state";
 import { ProgressHub, type ProgressHubProps } from "@/components/dashboard/progress-hub";
 import { UpcomingRoundsStrip } from "@/components/dashboard/upcoming-rounds-strip";
+import { GroupStandingsSlider } from "@/components/dashboard/group-standings-slider";
+import { PatchNotesBoard } from "@/components/dashboard/patch-notes-board";
 import {
   countLeagueMembers,
   loadLeaderboard,
@@ -677,6 +679,14 @@ export default async function DashboardPage() {
       </section>
       ) : null}
 
+      {/* Slider preview de los 12 grupos (banderas + puntos). Server
+          component, scroll horizontal con barra solo en PC y touch en
+          móvil. Aparece siempre — pre-torneo muestra el sorteo (todo 0
+          pts), durante el torneo muestra cómo van. */}
+      <Suspense fallback={null}>
+        <GroupStandingsSlider />
+      </Suspense>
+
       {/* Activity feed — streamed via Suspense (su query no bloquea el
           shell del dashboard). Solo aparece si el usuario tiene puntos. */}
       {myPoints > 0 ? (
@@ -935,6 +945,13 @@ export default async function DashboardPage() {
           ) : null}
         </div>
       </section>
+
+      {/* Tablón de novedades de la app — patch notes que el admin va
+          publicando (features, fixes, mejoras). Si no hay nada publicado
+          el componente renderiza null y no añade ruido. */}
+      <Suspense fallback={null}>
+        <PatchNotesBoard />
+      </Suspense>
 
       {/* Mundial al día — últimas 2 noticias, streamed para no bloquear
           el critical path del dashboard. */}
