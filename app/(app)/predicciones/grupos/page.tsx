@@ -7,7 +7,7 @@ import { EmptyState } from "@/components/shell/empty-state";
 import { ScoringBox } from "@/components/brand/scoring-box";
 import { Users } from "lucide-react";
 import { requireUser } from "@/lib/auth/guards";
-import { currentLeagueId } from "@/lib/leagues";
+import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
 import { formatDateTime } from "@/lib/utils";
 import { GROUPS_FOOTNOTE, GROUPS_SCORING } from "@/lib/scoring/copy";
 import { InteractiveModeBanner } from "@/components/predictions/interactive-mode-banner";
@@ -22,6 +22,10 @@ const KICKOFF = new Date(
 export default async function PredictGroupsPage() {
   const me = await requireUser();
   const leagueId = (await currentLeagueId(me))!;
+  // Solo el modo "completo" tiene pre-torneo. Marcador / Solo Ganador no
+  // predicen grupos: cortamos el acceso directo por URL.
+  const mode = (await getLeagueModes([leagueId])).get(leagueId) ?? "completo";
+  if (mode !== "completo") redirect("/predicciones");
   const [allGroups, allTeams, myPreds] = await Promise.all([
     db.select().from(groups).orderBy(asc(groups.code)),
     db.select().from(teams).orderBy(asc(teams.name)),

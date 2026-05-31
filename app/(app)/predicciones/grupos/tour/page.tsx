@@ -3,7 +3,7 @@ import { and, asc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { groups, predGroupRanking, teams } from "@/lib/db/schema";
 import { requireUser } from "@/lib/auth/guards";
-import { currentLeagueId } from "@/lib/leagues";
+import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
 import { GroupsTourClient } from "./tour-client";
 
 export const metadata = { title: "Modo interactivo · Grupos" };
@@ -18,6 +18,9 @@ export default async function GroupsTourPage(props: {
 }) {
   const me = await requireUser();
   const leagueId = (await currentLeagueId(me))!;
+  // Solo "completo" predice grupos. Marcador / Solo Ganador → fuera.
+  const mode = (await getLeagueModes([leagueId])).get(leagueId) ?? "completo";
+  if (mode !== "completo") redirect("/predicciones");
 
   // Si la deadline pasó, el tour deja de tener sentido — al full-page que sí
   // muestra modo solo lectura.

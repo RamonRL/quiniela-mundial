@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { matches, predBracketSlot, teams } from "@/lib/db/schema";
@@ -8,7 +9,7 @@ import { PageHeader } from "@/components/shell/page-header";
 import { ScoringBox } from "@/components/brand/scoring-box";
 import { Button } from "@/components/ui/button";
 import { requireUser } from "@/lib/auth/guards";
-import { currentLeagueId } from "@/lib/leagues";
+import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
 import { formatDateTime } from "@/lib/utils";
 import { getBracketStatus, getQualifiedTeamIds } from "@/lib/bracket-state";
 import { BRACKET_FOOTNOTE, BRACKET_SCORING } from "@/lib/scoring/copy";
@@ -23,6 +24,11 @@ export default async function PredictBracketPage({
   searchParams: Promise<{ preview?: string }>;
 }) {
   const me = await requireUser();
+  // Solo "completo" tiene bracket. Marcador / Solo Ganador → fuera.
+  const guardLeagueId = (await currentLeagueId(me))!;
+  const guardMode =
+    (await getLeagueModes([guardLeagueId])).get(guardLeagueId) ?? "completo";
+  if (guardMode !== "completo") redirect("/predicciones");
   const status = await getBracketStatus();
   const params = await searchParams;
   const previewRequested = params.preview === "1" && me.role === "admin";

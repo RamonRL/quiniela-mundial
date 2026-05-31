@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { and, asc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { groups, players, predTournamentTopScorer, teams } from "@/lib/db/schema";
@@ -6,7 +7,7 @@ import { EmptyState } from "@/components/shell/empty-state";
 import { PageHeader } from "@/components/shell/page-header";
 import { ScoringBox } from "@/components/brand/scoring-box";
 import { requireUser } from "@/lib/auth/guards";
-import { currentLeagueId } from "@/lib/leagues";
+import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
 import { formatDateTime } from "@/lib/utils";
 import { TOP_SCORER_SCORING } from "@/lib/scoring/copy";
 import { TopScorerForm } from "./top-scorer-form";
@@ -20,6 +21,9 @@ const KICKOFF = new Date(
 export default async function PredictTopScorerPage() {
   const me = await requireUser();
   const leagueId = (await currentLeagueId(me))!;
+  // Solo "completo" predice goleador. Marcador / Solo Ganador → fuera.
+  const mode = (await getLeagueModes([leagueId])).get(leagueId) ?? "completo";
+  if (mode !== "completo") redirect("/predicciones");
   const [allPlayers, allTeams, allGroups, mine] = await Promise.all([
     db.select().from(players).orderBy(asc(players.name)),
     db.select().from(teams),

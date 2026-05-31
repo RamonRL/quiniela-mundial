@@ -23,7 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { RealtimeRefresher } from "@/components/realtime/realtime-refresher";
 import { requireUser } from "@/lib/auth/guards";
 import { TutorialAutoStart } from "@/components/tutorial/auto-start";
-import { currentLeagueId } from "@/lib/leagues";
+import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
 import { formatDateTime } from "@/lib/utils";
 import { ActivityFeedCard } from "./activity-feed-card";
 import { DashboardNewsStrip } from "./news-strip";
@@ -104,6 +104,11 @@ function safe<T>(
 export default async function DashboardPage() {
   const me = await requireUser();
   const leagueId = (await currentLeagueId(me))!;
+  // Modo de la liga activa. Marcador / Solo Ganador NO tienen pre-torneo
+  // (grupos, bota, especiales) ni bracket: solo se predicen partidos. El
+  // "puesto de mando" se simplifica para que no aparezcan esas categorías.
+  const mode = (await getLeagueModes([leagueId])).get(leagueId) ?? "completo";
+  const onlyMatches = mode !== "completo";
   // TZ del usuario para horarios de partidos; null → fallback Spain TZ.
   const userTz = me.timezone ?? undefined;
   const kickoff = new Date(KICKOFF);
@@ -234,7 +239,7 @@ export default async function DashboardPage() {
     // Reusa la misma función cacheada que alimenta al deadline banner del
     // layout. React.cache() dedupe la query: cero round-trips extra.
     safe(
-      tournamentStarted
+      tournamentStarted || onlyMatches
         ? loadOpenMatchdays(me.id, leagueId)
         : Promise.resolve([] as OpenMatchdayEntry[]),
       [] as OpenMatchdayEntry[],
@@ -373,32 +378,37 @@ export default async function DashboardPage() {
   // Compute live progress-hub props.
   const bracketFilled = bracketFilledRow[0]?.c ?? 0;
   const BRACKET_TOTAL_SLOTS = 32; // r16(16) + qf(8) + sf(4) + final(2 + champ 1) + third(1)
-  const progressHubProps: ProgressHubProps = !tournamentStarted
-    ? {
-        phase: "pre",
-        nickname: me.nickname,
-        groupsFilled,
-        groupsTotal,
-        topScorerDone,
-        specialsFilled: mySpecials,
-        specialsTotal: totalSpecials,
-      }
-    : buildRunningHubProps({
-        openMatchdays,
-        bracket:
-          bracketStatus.state === "open" || bracketStatus.state === "closed"
-            ? {
-                state: bracketStatus.state,
-                closesAt: bracketStatus.closesAt
-                  ? new Date(bracketStatus.closesAt).toISOString()
-                  : null,
-                filled: bracketFilled,
-                total: BRACKET_TOTAL_SLOTS,
-              }
-            : undefined,
-        preTorneoComplete,
-        preTorneoTotal,
-      });
+  // En modos Marcador / Solo Ganador no hay donut de pre-torneo: se muestra
+  // siempre el hub "running" (próxima jornada a predecir), sin bracket ni
+  // enlace a picks pre-torneo, aunque el torneo no haya arrancado.
+  const progressHubProps: ProgressHubProps =
+    !tournamentStarted && !onlyMatches
+      ? {
+          phase: "pre",
+          nickname: me.nickname,
+          groupsFilled,
+          groupsTotal,
+          topScorerDone,
+          specialsFilled: mySpecials,
+          specialsTotal: totalSpecials,
+        }
+      : buildRunningHubProps({
+          openMatchdays,
+          bracket:
+            !onlyMatches &&
+            (bracketStatus.state === "open" || bracketStatus.state === "closed")
+              ? {
+                  state: bracketStatus.state,
+                  closesAt: bracketStatus.closesAt
+                    ? new Date(bracketStatus.closesAt).toISOString()
+                    : null,
+                  filled: bracketFilled,
+                  total: BRACKET_TOTAL_SLOTS,
+                }
+              : undefined,
+          preTorneoComplete: onlyMatches ? 0 : preTorneoComplete,
+          preTorneoTotal: onlyMatches ? 0 : preTorneoTotal,
+        });
 
   return (
     <div className="space-y-10">
@@ -650,7 +660,7 @@ export default async function DashboardPage() {
             Puesto de mando
           </p>
           <h2 className="font-display text-2xl tracking-tight sm:text-3xl">
-            {tournamentStarted
+            {tournamentStarted || onlyMatches
               ? "Tu próxima jugada"
               : "Lo que te falta por predecir"}
           </h2>

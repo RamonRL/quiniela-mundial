@@ -3,7 +3,7 @@ import { and, asc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { players, predSpecial, specialPredictions, teams } from "@/lib/db/schema";
 import { requireUser } from "@/lib/auth/guards";
-import { currentLeagueId } from "@/lib/leagues";
+import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
 import { isSpecialAnswered, type SpecialType } from "../types";
 import { SpecialsTourClient } from "./tour-client";
 
@@ -15,6 +15,9 @@ export default async function SpecialsTourPage(props: {
 }) {
   const me = await requireUser();
   const leagueId = (await currentLeagueId(me))!;
+  // Solo "completo" tiene especiales. Marcador / Solo Ganador → fuera.
+  const mode = (await getLeagueModes([leagueId])).get(leagueId) ?? "completo";
+  if (mode !== "completo") redirect("/predicciones");
 
   const [specials, mine, allPlayers, allTeams] = await Promise.all([
     db.select().from(specialPredictions).orderBy(asc(specialPredictions.orderIndex)),

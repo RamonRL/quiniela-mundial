@@ -6,7 +6,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { predSpecial, specialPredictions } from "@/lib/db/schema";
 import { requireUser } from "@/lib/auth/guards";
-import { currentLeagueId } from "@/lib/leagues";
+import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
 import { runAction } from "@/lib/actions/guard";
 
 export type FormState = { ok: boolean; error?: string };
@@ -60,6 +60,10 @@ export async function saveSpecialPredictions(
   const leagueId = await currentLeagueId(me);
   if (leagueId == null) {
     return { ok: false, error: "Sin liga activa." };
+  }
+  const mode = (await getLeagueModes([leagueId])).get(leagueId) ?? "completo";
+  if (mode !== "completo") {
+    return { ok: false, error: "Esta quiniela no tiene predicciones especiales." };
   }
 
   return runAction(
