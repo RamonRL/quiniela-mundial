@@ -642,11 +642,24 @@ export default async function DashboardPage() {
           centerpiece visual (donut + satellites pre-torneo · countdown
           en torneo) y, debajo, el slider de próximas rondas para
           predecir resultados. El tutorial los ilumina juntos como una
-          sola "base de operaciones" del usuario. */}
-      <div data-tutorial-id="progress-hub" className="space-y-10">
-        <ProgressHub {...progressHubProps} />
-        <UpcomingRoundsStrip userId={me.id} leagueId={leagueId} />
-      </div>
+          sola "base de operaciones" del usuario. La cabecera adapta el
+          H2 según si el torneo ya empezó o no. */}
+      <section data-tutorial-id="progress-hub" className="space-y-6">
+        <header className="space-y-1">
+          <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
+            Puesto de mando
+          </p>
+          <h2 className="font-display text-2xl tracking-tight sm:text-3xl">
+            {tournamentStarted
+              ? "Tu próxima jugada"
+              : "Lo que te falta por predecir"}
+          </h2>
+        </header>
+        <div className="space-y-10">
+          <ProgressHub {...progressHubProps} />
+          <UpcomingRoundsStrip userId={me.id} leagueId={leagueId} />
+        </div>
+      </section>
 
       {/* Scoreboard stats — solo en-torneo (pre-torneo todo es 0/--). */}
       {tournamentStarted ? (
