@@ -79,6 +79,13 @@ type Prediction = {
   willGoToPens: boolean;
   winnerTeamId: number | null;
   scorerPlayerId: number | null;
+  /**
+   * Solo Ganador: marca si el usuario eligió 1/X/2 en este partido. Sin
+   * esto, un empate (codificado 0-0) sería indistinguible del estado inicial
+   * sin elegir — y el servidor guardaría empates fantasma. El server lo
+   * respeta solo en modo solo_ganador (en completo/marcador siempre guarda).
+   */
+  picked: boolean;
 };
 
 export function MatchdayPredictionForm({
@@ -107,6 +114,8 @@ export function MatchdayPredictionForm({
       willGoToPens: m.existing?.willGoToPens ?? false,
       winnerTeamId: m.existing?.winnerTeamId ?? null,
       scorerPlayerId: m.existingScorerPlayerId,
+      // Ya elegido si venía una predicción guardada.
+      picked: m.existing != null,
     })),
   );
   const [state, action, pending] = useActionState(saveMatchdayPredictions, initial);
@@ -347,11 +356,14 @@ function TeamSide({ team }: { team: TeamLite | null }) {
   );
 }
 
+type Outcome = "home" | "draw" | "away";
+
 /**
- * Selector 1X2 del modo Solo Ganador. Codifica la elección en el marcador
- * canónico (local 1-0 · empate 0-0 · visitante 0-1). En eliminatoria, el
- * empate significa "va a penaltis" y se despliega un sub-selector de quién
- * gana la tanda (→ winnerTeamId).
+ * Selector 1·X·2 del modo Solo Ganador — la quiniela clásica. Codifica la
+ * elección en el marcador canónico (local 1-0 · empate 0-0 · visitante 0-1)
+ * y marca `picked` para distinguir un empate elegido del 0-0 inicial. En
+ * eliminatoria el empate significa "va a penaltis" y despliega el
+ * sub-selector de quién gana la tanda (→ winnerTeamId).
  */
 function WinnerSelector({
   m,
@@ -366,51 +378,69 @@ function WinnerSelector({
   disabled: boolean;
   onPick: (patch: Partial<Prediction>) => void;
 }) {
-  const outcome: "home" | "draw" | "away" =
+  const outcome: Outcome =
     p.homeScore > p.awayScore ? "home" : p.homeScore < p.awayScore ? "away" : "draw";
-  // Una predicción "tocada" solo si hay marcador o pens — para no pintar
-  // "empate" por defecto (0-0) como si ya fuese una elección del usuario.
-  const touched =
-    p.homeScore !== 0 || p.awayScore !== 0 || p.willGoToPens || p.winnerTeamId != null;
+  // Sin `picked` no hay elección: el 0-0 inicial no debe pintarse como empate.
+  const sel: Outcome | null = p.picked ? outcome : null;
 
-  const pick = (o: "home" | "draw" | "away") => {
-    if (o === "home") onPick({ homeScore: 1, awayScore: 0, willGoToPens: false, winnerTeamId: isKnockout ? m.home?.id ?? null : null });
-    else if (o === "away") onPick({ homeScore: 0, awayScore: 1, willGoToPens: false, winnerTeamId: isKnockout ? m.away?.id ?? null : null });
-    else onPick({ homeScore: 0, awayScore: 0, willGoToPens: isKnockout, winnerTeamId: null });
+  const pick = (o: Outcome) => {
+    if (o === "home")
+      onPick({ picked: true, homeScore: 1, awayScore: 0, willGoToPens: false, winnerTeamId: isKnockout ? m.home?.id ?? null : null });
+    else if (o === "away")
+      onPick({ picked: true, homeScore: 0, awayScore: 1, willGoToPens: false, winnerTeamId: isKnockout ? m.away?.id ?? null : null });
+    else
+      onPick({ picked: true, homeScore: 0, awayScore: 0, willGoToPens: isKnockout, winnerTeamId: null });
   };
 
-  const opts: { key: "home" | "draw" | "away"; label: string }[] = [
-    { key: "home", label: m.home?.code ?? "Local" },
-    { key: "draw", label: isKnockout ? "Empate → pens" : "Empate" },
-    { key: "away", label: m.away?.code ?? "Visitante" },
-  ];
-
   return (
-    <div className="space-y-2">
-      <div className="grid grid-cols-3 gap-1.5">
-        {opts.map((o) => {
-          const active = touched && outcome === o.key;
-          return (
-            <button
-              key={o.key}
-              type="button"
-              disabled={disabled}
-              onClick={() => pick(o.key)}
-              className={cn(
-                "rounded-md border px-2 py-2.5 text-xs font-medium transition disabled:opacity-50",
-                active
-                  ? "border-[var(--color-arena)] bg-[color-mix(in_oklch,var(--color-arena)_12%,transparent)] text-[var(--color-foreground)]"
-                  : "border-[var(--color-border)] bg-[var(--color-surface-2)] text-[var(--color-muted-foreground)] hover:border-[var(--color-arena)]/40",
-              )}
-            >
-              {o.label}
-            </button>
-          );
-        })}
+    <div className="space-y-3">
+      {/* Cartel del enfrentamiento — el ganador previsto se ilumina, el otro
+          se apaga; el empate deja a ambos a la par. */}
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+        <TeamPole
+          team={m.home}
+          align="start"
+          state={sel == null ? "idle" : sel === "home" ? "win" : sel === "draw" ? "tie" : "lose"}
+        />
+        <PickGlyph sel={sel} />
+        <TeamPole
+          team={m.away}
+          align="end"
+          state={sel == null ? "idle" : sel === "away" ? "win" : sel === "draw" ? "tie" : "lose"}
+        />
       </div>
-      {isKnockout && touched && outcome === "draw" ? (
-        <div className="space-y-1 rounded-md bg-[var(--color-surface-2)] p-2">
-          <Label className="text-xs">¿Quién gana en penaltis?</Label>
+
+      {/* 1·X·2 — el corazón de la quiniela */}
+      <div className="grid grid-cols-3 gap-1.5">
+        <PickCell
+          digit="1"
+          sub={`Gana ${m.home?.code ?? "Local"}`}
+          active={sel === "home"}
+          disabled={disabled}
+          onClick={() => pick("home")}
+        />
+        <PickCell
+          digit="X"
+          sub={isKnockout ? "Empate · pen." : "Empate"}
+          active={sel === "draw"}
+          disabled={disabled}
+          onClick={() => pick("draw")}
+        />
+        <PickCell
+          digit="2"
+          sub={`Gana ${m.away?.code ?? "Visit."}`}
+          active={sel === "away"}
+          disabled={disabled}
+          onClick={() => pick("away")}
+        />
+      </div>
+
+      {/* Eliminatoria + empate → quién pasa en la tanda de penaltis */}
+      {isKnockout && sel === "draw" ? (
+        <div className="rise-in space-y-2 rounded-lg border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface-2))] p-2.5">
+          <p className="font-mono text-[0.55rem] uppercase tracking-[0.2em] text-[var(--color-arena)]">
+            ¿Quién pasa en penaltis? <span className="text-[var(--color-muted-foreground)]">+2</span>
+          </p>
           <div className="grid grid-cols-2 gap-1.5">
             {[m.home, m.away].map((team) =>
               team ? (
@@ -418,21 +448,129 @@ function WinnerSelector({
                   key={team.id}
                   type="button"
                   disabled={disabled}
-                  onClick={() => onPick({ winnerTeamId: team.id })}
+                  onClick={() => onPick({ picked: true, winnerTeamId: team.id })}
                   className={cn(
-                    "rounded-md border px-2 py-2 text-xs font-medium transition disabled:opacity-50",
+                    "flex items-center justify-center gap-1.5 rounded-md border px-2 py-2 text-xs font-medium transition disabled:opacity-50",
                     p.winnerTeamId === team.id
-                      ? "border-[var(--color-arena)] bg-[color-mix(in_oklch,var(--color-arena)_12%,transparent)] text-[var(--color-foreground)]"
+                      ? "border-[var(--color-arena)] bg-[color-mix(in_oklch,var(--color-arena)_14%,transparent)] text-[var(--color-foreground)]"
                       : "border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-muted-foreground)] hover:border-[var(--color-arena)]/40",
                   )}
                 >
-                  {team.name}
+                  <TeamFlag code={team.code} size={16} />
+                  <span className="truncate">{team.name}</span>
                 </button>
               ) : null,
             )}
           </div>
         </div>
       ) : null}
+
+      {/* Pista de puntuación */}
+      <p className="text-center font-mono text-[0.55rem] uppercase tracking-[0.2em] text-[var(--color-muted-foreground)]">
+        Acierto +3{isKnockout ? " · penaltis +2" : ""}
+      </p>
     </div>
+  );
+}
+
+/** Lado del cartel: bandera + nombre, con estados ganador / empate / perdedor. */
+function TeamPole({
+  team,
+  align,
+  state,
+}: {
+  team: TeamLite | null;
+  align: "start" | "end";
+  state: "idle" | "win" | "tie" | "lose";
+}) {
+  return (
+    <div
+      className={cn(
+        "flex min-w-0 items-center gap-2 transition-all duration-200",
+        align === "end" && "flex-row-reverse text-right",
+        state === "lose" && "opacity-35 saturate-50",
+      )}
+    >
+      <span
+        className={cn(
+          "shrink-0 rounded-full transition-all duration-200",
+          state === "win" &&
+            "ring-2 ring-[var(--color-arena)] ring-offset-2 ring-offset-[var(--color-surface)]",
+        )}
+      >
+        <TeamFlag code={team?.code} size={30} />
+      </span>
+      <span
+        className={cn(
+          "truncate font-display text-sm tracking-tight transition-colors",
+          state === "win"
+            ? "text-[var(--color-arena)]"
+            : "text-[var(--color-foreground)]",
+        )}
+      >
+        {team?.name ?? "—"}
+      </span>
+    </div>
+  );
+}
+
+/** Insignia central que refleja la elección: 1 / X / 2, o un punto si nada. */
+function PickGlyph({ sel }: { sel: Outcome | null }) {
+  const glyph = sel === "home" ? "1" : sel === "away" ? "2" : sel === "draw" ? "X" : "·";
+  return (
+    <span
+      className={cn(
+        "grid size-7 shrink-0 place-items-center rounded-md font-display text-base leading-none transition-all duration-200",
+        sel == null
+          ? "border border-dashed border-[var(--color-border)] text-[var(--color-muted-foreground)]"
+          : "bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]",
+      )}
+      aria-hidden
+    >
+      {glyph}
+    </span>
+  );
+}
+
+/** Celda 1 / X / 2 — dígito grande + etiqueta. Estado activo con acento. */
+function PickCell({
+  digit,
+  sub,
+  active,
+  disabled,
+  onClick,
+}: {
+  digit: string;
+  sub: string;
+  active: boolean;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "group relative flex flex-col items-center gap-0.5 overflow-hidden rounded-lg border px-1 py-2.5 transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50",
+        active
+          ? "-translate-y-0.5 border-[var(--color-arena)] bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]"
+          : "border-[var(--color-border)] bg-[var(--color-surface-2)] text-[var(--color-muted-foreground)] hover:-translate-y-0.5 hover:border-[var(--color-arena)]/50 hover:text-[var(--color-foreground)]",
+      )}
+    >
+      {active ? (
+        <span
+          aria-hidden
+          className="halftone pointer-events-none absolute inset-0 opacity-[0.12]"
+        />
+      ) : null}
+      <span className="relative font-display text-2xl leading-none tracking-tight">
+        {digit}
+      </span>
+      <span className="relative max-w-full truncate font-mono text-[0.5rem] uppercase tracking-[0.16em]">
+        {sub}
+      </span>
+    </button>
   );
 }

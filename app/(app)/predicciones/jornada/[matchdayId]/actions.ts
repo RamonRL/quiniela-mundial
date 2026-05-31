@@ -12,7 +12,7 @@ import {
   predMatchScorer,
 } from "@/lib/db/schema";
 import { requireUser } from "@/lib/auth/guards";
-import { currentLeagueId } from "@/lib/leagues";
+import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
 import { getMatchdayState, isMatchClosed, type Stage } from "@/lib/matchday-state";
 import { runAction } from "@/lib/actions/guard";
 
@@ -34,6 +34,9 @@ const schema = z.object({
         willGoToPens: z.coerce.boolean().default(false),
         winnerTeamId: z.coerce.number().int().optional().nullable(),
         scorerPlayerId: z.coerce.number().int().optional().nullable(),
+        // Solo Ganador: ¿el usuario eligió 1/X/2? En completo/marcador no se
+        // envía y por defecto es true (se guardan todos los marcadores).
+        picked: z.coerce.boolean().optional().default(true),
       }),
     )
     .min(1),
@@ -142,12 +145,18 @@ export async function saveMatchdayPredictions(
   if (leagueId == null) {
     return { ok: false, error: "Sin liga activa." };
   }
+  // En Solo Ganador, un partido sin elegir queda como 0-0 (que codifica
+  // "empate"); por eso NO lo guardamos a menos que el usuario lo haya
+  // marcado. En completo/marcador `picked` llega como true y se guarda todo.
+  const mode = (await getLeagueModes([leagueId])).get(leagueId) ?? "completo";
+  const onlyPicked = mode === "solo_ganador";
 
   return runAction(
     { action: "saveMatchdayPredictions", userId: me.id, leagueId },
     async () => {
       await db.transaction(async (tx) => {
         for (const p of openPredictions) {
+          if (onlyPicked && !p.picked) continue;
           await tx
             .insert(predMatchResult)
             .values({
