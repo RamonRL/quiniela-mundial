@@ -112,7 +112,9 @@ export function Sidebar({
         <nav
           className={cn(
             "flex-1 overflow-y-auto",
-            collapsed ? "space-y-2 px-2 py-4" : "space-y-7 px-3 py-5",
+            collapsed
+              ? "sidebar-scroll-hidden space-y-2 px-2 py-4"
+              : "sidebar-scroll-hover space-y-7 px-3 py-5",
           )}
         >
           {isAuthenticated ? (
@@ -335,11 +337,14 @@ function VisitorCTA({
 }
 
 /**
- * Mini-bloque "Cuenta" justo encima de TORNEO en el sidebar de escritorio
- * con tres accesos directos al estilo dropdown del avatar (Perfil, Ajustes,
- * Cerrar sesión). Tipografía más pequeña que NavGroup para que se sienta
- * secundario al menú de torneo, y el item de cerrar sesión va como POST a
- * /logout (es lo que espera el handler).
+ * Mini-bloque "Cuenta" encima de TORNEO en el sidebar de escritorio.
+ *
+ * Tres accesos en una sola fila (Perfil, Ajustes, Cerrar sesión) con
+ * el icono arriba y la etiqueta debajo, en mini-cards apiladas. El
+ * tercero es un POST a /logout (el handler del proyecto espera POST).
+ *
+ * Cuando el sidebar está colapsado el bloque NO se muestra — los tres
+ * accesos siguen disponibles desde el avatar del header.
  */
 function AccountQuickLinks({
   activeHref,
@@ -348,61 +353,57 @@ function AccountQuickLinks({
   activeHref: string | null;
   collapsed: boolean;
 }) {
-  const items = [
+  if (collapsed) return null;
+
+  const links = [
     { href: "/perfil", label: "Perfil", icon: UserCog },
     { href: "/ajustes", label: "Ajustes", icon: Settings },
   ] as const;
 
+  const cellBase =
+    "flex flex-col items-center justify-center gap-1 rounded-md px-1 py-2 text-center transition";
+  const cellLabel =
+    "text-[0.6rem] font-medium leading-tight tracking-tight";
+
   return (
-    <div className={collapsed ? "space-y-1" : "space-y-0.5 border-b border-[var(--color-border)] pb-3"}>
-      {items.map((item) => {
-        const active = item.href === activeHref;
-        const Icon = item.icon;
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            title={collapsed ? item.label : undefined}
-            aria-label={collapsed ? item.label : undefined}
+    <div className="border-b border-[var(--color-border)] pb-3">
+      <div className="grid grid-cols-3 gap-1">
+        {links.map(({ href, label, icon: Icon }) => {
+          const active = href === activeHref;
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={cn(
+                cellBase,
+                active
+                  ? "bg-[color-mix(in_oklch,var(--color-arena)_8%,transparent)] text-[var(--color-foreground)]"
+                  : "text-[var(--color-muted-foreground)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-foreground)]",
+              )}
+            >
+              <Icon
+                className={cn(
+                  "size-4",
+                  active ? "text-[var(--color-arena)]" : "",
+                )}
+              />
+              <span className={cellLabel}>{label}</span>
+            </Link>
+          );
+        })}
+        <form action="/logout" method="post" className="contents">
+          <button
+            type="submit"
             className={cn(
-              "group relative flex items-center transition",
-              collapsed
-                ? cn(
-                    "mx-auto size-9 justify-center rounded-md",
-                    active
-                      ? "bg-[color-mix(in_oklch,var(--color-arena)_12%,transparent)] text-[var(--color-foreground)] ring-1 ring-[var(--color-arena)]/40"
-                      : "text-[var(--color-muted-foreground)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-foreground)]",
-                  )
-                : cn(
-                    "gap-2.5 rounded-md px-3 py-1.5 text-xs",
-                    active
-                      ? "bg-[color-mix(in_oklch,var(--color-arena)_8%,transparent)] font-semibold text-[var(--color-foreground)]"
-                      : "text-[var(--color-muted-foreground)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-foreground)]",
-                  ),
+              cellBase,
+              "text-[var(--color-muted-foreground)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-danger)]",
             )}
           >
-            <Icon className={cn("size-4", active ? "text-[var(--color-arena)]" : "")} />
-            {!collapsed ? <span>{item.label}</span> : null}
-          </Link>
-        );
-      })}
-      {/* Cerrar sesión: POST a /logout (igual que el user-menu del header). */}
-      <form action="/logout" method="post" className={collapsed ? "" : "block"}>
-        <button
-          type="submit"
-          title={collapsed ? "Cerrar sesión" : undefined}
-          aria-label={collapsed ? "Cerrar sesión" : undefined}
-          className={cn(
-            "flex w-full items-center transition",
-            collapsed
-              ? "mx-auto size-9 justify-center rounded-md text-[var(--color-muted-foreground)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-danger)]"
-              : "gap-2.5 rounded-md px-3 py-1.5 text-xs text-[var(--color-muted-foreground)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-danger)]",
-          )}
-        >
-          <LogOut className="size-4" />
-          {!collapsed ? <span>Cerrar sesión</span> : null}
-        </button>
-      </form>
+            <LogOut className="size-4" />
+            <span className={cellLabel}>Cerrar sesión</span>
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

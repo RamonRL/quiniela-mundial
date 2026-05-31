@@ -260,6 +260,48 @@
     background: var(--stripe);
   }
 
+  /* Scroll del sidebar de escritorio. Por defecto la barra es invisible
+     (transparente); al pasar el ratón sobre el menú aparece en arena con
+     un fade-in rápido, y al salir desaparece tras ~1,5s. Usado solo cuando
+     el sidebar está EXPANDIDO — en modo colapsado va `.sidebar-scroll-hidden`. */
+  .sidebar-scroll-hover {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 0.4s ease-out 1.5s;
+  }
+  .sidebar-scroll-hover:hover {
+    scrollbar-color: color-mix(in oklch, var(--color-arena) 55%, transparent)
+      transparent;
+    transition: scrollbar-color 0.15s ease-out 0s;
+  }
+  .sidebar-scroll-hover::-webkit-scrollbar {
+    width: 6px;
+  }
+  .sidebar-scroll-hover::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .sidebar-scroll-hover::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: 999px;
+    transition: background-color 0.4s ease-out 1.5s;
+  }
+  .sidebar-scroll-hover:hover::-webkit-scrollbar-thumb {
+    background-color: color-mix(in oklch, var(--color-arena) 55%, transparent);
+    transition: background-color 0.15s ease-out 0s;
+  }
+  .sidebar-scroll-hover:hover::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-arena);
+  }
+
+  /* Scrollbar siempre oculto — usado en el sidebar colapsado para que
+     no aparezca ni siquiera en hover. */
+  .sidebar-scroll-hidden {
+    scrollbar-width: none;
+  }
+  .sidebar-scroll-hidden::-webkit-scrollbar {
+    display: none;
+  }
+
   /* Slider horizontal: en móvil el scrollbar desaparece (touch-scroll
      limpio); en >= lg aparece una barra discreta para que se vea claro
      que hay más contenido a la derecha. Usado en el slider de grupos
