@@ -11,7 +11,7 @@ import {
   teams,
 } from "@/lib/db/schema";
 import { requireUser } from "@/lib/auth/guards";
-import { currentLeagueId } from "@/lib/leagues";
+import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
 import { getMatchdayState, isMatchClosed, type Stage } from "@/lib/matchday-state";
 import { MatchdayTourClient } from "./tour-client";
 
@@ -24,6 +24,8 @@ export default async function MatchdayTourPage(props: {
 }) {
   const me = await requireUser();
   const leagueId = (await currentLeagueId(me))!;
+  const mode = (await getLeagueModes([leagueId])).get(leagueId) ?? "completo";
+  const showScorer = mode === "completo";
   const params = await props.params;
   const matchdayId = parseInt(params.matchdayId, 10);
   if (!Number.isFinite(matchdayId)) notFound();
@@ -66,7 +68,7 @@ export default async function MatchdayTourPage(props: {
     teamIds.length > 0
       ? db.select().from(teams).where(inArray(teams.id, teamIds))
       : [],
-    teamIds.length > 0
+    showScorer && teamIds.length > 0
       ? db
           .select()
           .from(players)
@@ -88,7 +90,7 @@ export default async function MatchdayTourPage(props: {
             ),
           )
       : [],
-    matchIds.length > 0
+    showScorer && matchIds.length > 0
       ? db
           .select()
           .from(predMatchScorer)
@@ -166,11 +168,16 @@ export default async function MatchdayTourPage(props: {
     };
   });
 
-  // Primer match no predicho (sin row en predMatchResult Y sin scorer).
+  // Primer match no predicho — donde se reanuda el paso a paso. En completo
+  // hace falta marcador Y goleador; en marcador / solo_ganador basta con que
+  // exista la predicción de resultado.
   let firstUnpredicted = -1;
   matchItems.forEach((m, idx) => {
     if (firstUnpredicted !== -1) return;
-    if (!m.existing || m.existingScorerPlayerId == null) {
+    const pending = showScorer
+      ? !m.existing || m.existingScorerPlayerId == null
+      : !m.existing;
+    if (pending) {
       firstUnpredicted = idx;
     }
   });
@@ -189,6 +196,7 @@ export default async function MatchdayTourPage(props: {
       matches={matchItems}
       initialStep={initialStep}
       allCompleteOnEntry={allComplete}
+      mode={mode}
     />
   );
 }

@@ -7,11 +7,13 @@ import { Calendar, MapPin } from "lucide-react";
 import { TeamFlag } from "@/components/brand/team-flag";
 import { ScoreStepper } from "@/components/forms/score-stepper";
 import { PointsHint, type PointsHintItem } from "@/components/predictions/points-hint";
+import { WinnerPicker } from "@/components/predictions/winner-picker";
 import {
   InteractiveTourShell,
   flashSavedToast,
 } from "@/components/predictions/interactive-tour-shell";
 import { formatDateTime } from "@/lib/utils";
+import type { PredictionMode } from "@/lib/prediction-modes";
 import { ScorerPicker, type PlayerCardData } from "./scorer-picker";
 import { endMatchdayTour, saveMatchPrediction } from "./actions";
 
@@ -51,6 +53,8 @@ type LocalPrediction = {
   willGoToPens: boolean;
   winnerTeamId: number | null;
   scorerPlayerId: number | null;
+  /** Solo Ganador: ¿ya eligió 1/X/2? Distingue el empate del 0-0 inicial. */
+  picked: boolean;
 };
 
 export function MatchdayTourClient({
@@ -59,13 +63,18 @@ export function MatchdayTourClient({
   matches,
   initialStep,
   allCompleteOnEntry,
+  mode,
 }: {
   matchdayId: number;
   matchdayName: string;
   matches: MatchItem[];
   initialStep: number;
   allCompleteOnEntry: boolean;
+  mode: PredictionMode;
 }) {
+  const soloGanador = mode === "solo_ganador";
+  const showScorer = mode === "completo";
+
   const router = useRouter();
   const [step, setStep] = useState(initialStep);
   const [direction, setDirection] = useState<"left" | "right">("right");
@@ -78,6 +87,7 @@ export function MatchdayTourClient({
         willGoToPens: m.existing?.willGoToPens ?? false,
         winnerTeamId: m.existing?.winnerTeamId ?? null,
         scorerPlayerId: m.existingScorerPlayerId,
+        picked: m.existing != null,
       };
     }
     return out;
@@ -117,10 +127,18 @@ export function MatchdayTourClient({
   async function persistCurrent(): Promise<boolean> {
     const p = preds[current.id];
     if (!p) return false;
-    if (p.scorerPlayerId == null) {
+    // Goleador obligatorio en completo (acertarlo solo suma, nunca penaliza).
+    if (showScorer && p.scorerPlayerId == null) {
       toast.warning("Selecciona un goleador.", {
         description:
           "Aunque tu marcador sea 0-0, acertarlo te da +4 puntos extra. Nunca penaliza.",
+      });
+      return false;
+    }
+    // Solo Ganador: hay que elegir 1/X/2 (el 0-0 sin elegir no se guarda).
+    if (soloGanador && !p.picked) {
+      toast.warning("Elige un resultado.", {
+        description: "Pulsa 1 (local), X (empate) o 2 (visitante) para continuar.",
       });
       return false;
     }
@@ -130,7 +148,7 @@ export function MatchdayTourClient({
       awayScore: p.awayScore,
       willGoToPens: p.willGoToPens,
       winnerTeamId: p.winnerTeamId,
-      scorerPlayerId: p.scorerPlayerId,
+      scorerPlayerId: showScorer ? p.scorerPlayerId : null,
     });
     if (!res.ok) {
       toast.error(res.error ?? "No se pudo guardar.");
@@ -166,21 +184,53 @@ export function MatchdayTourClient({
   }
 
   const isKnockout = current.stage !== "group";
+  const stageEyebrow = current.groupCode
+    ? `Grupo ${current.groupCode}`
+    : STAGE_LABEL[current.stage];
 
-  // Tabla de puntuación de este partido. En grupos: marcador + goleador.
-  // En knockout: añadimos los bonuses específicos de eliminatoria.
-  const pointsHintItems: PointsHintItem[] = [
-    { points: 5, label: "Marcador exacto" },
-    { points: 2, label: "Aciertas ganador (o empate) sin el marcador exacto" },
-    { points: 4, label: "Tu goleador marca un gol" },
-    { points: 2, prefix: "+", label: "Bonus si además es el primer gol del partido", bonus: true },
-  ];
-  if (isKnockout) {
+  // Tabla de puntuación de este partido, según el modo.
+  const pointsHintItems: PointsHintItem[] = [];
+  if (mode === "solo_ganador") {
+    pointsHintItems.push({ points: 3, label: "Aciertas el ganador (o el empate)" });
+    if (isKnockout) {
+      pointsHintItems.push({
+        points: 2,
+        prefix: "+",
+        label: "Empate: aciertas quién pasa en penaltis",
+        bonus: true,
+      });
+    }
+  } else {
     pointsHintItems.push(
-      { points: 3, prefix: "+", label: "Bonus si aciertas el clasificado a la siguiente ronda", bonus: true },
-      { points: 2, prefix: "+", label: "Bonus si predices que va a penaltis y ocurre", bonus: true },
+      { points: 5, label: "Marcador exacto" },
+      { points: 2, label: "Aciertas ganador (o empate) sin el marcador exacto" },
     );
+    if (mode === "completo") {
+      pointsHintItems.push(
+        { points: 4, label: "Tu goleador marca un gol" },
+        { points: 2, prefix: "+", label: "Bonus si además es el primer gol del partido", bonus: true },
+      );
+    }
+    if (isKnockout) {
+      pointsHintItems.push(
+        { points: 3, prefix: "+", label: "Bonus si aciertas el clasificado a la siguiente ronda", bonus: true },
+        { points: 2, prefix: "+", label: "Bonus si predices que va a penaltis y ocurre", bonus: true },
+      );
+    }
   }
+
+  const hintFootnote =
+    mode === "solo_ganador"
+      ? isKnockout
+        ? "Hasta 5 pts en este partido de eliminatoria."
+        : "Hasta 3 pts en este partido de la fase de grupos."
+      : mode === "marcador"
+        ? isKnockout
+          ? "Hasta 10 pts en este partido de eliminatoria."
+          : "Hasta 5 pts en este partido de la fase de grupos."
+        : isKnockout
+          ? "Hasta 16 pts en este partido de eliminatoria."
+          : "Hasta 11 pts en este partido de la fase de grupos.";
 
   return (
     <InteractiveTourShell
@@ -194,135 +244,174 @@ export function MatchdayTourClient({
       pending={pending}
     >
       <div className="space-y-6">
-        <header className="text-center">
-          <p className="font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-arena)]">
-            {current.groupCode ? `Grupo ${current.groupCode}` : STAGE_LABEL[current.stage]}
-          </p>
-          <div className="mt-3 flex items-center justify-center gap-3 text-lg sm:text-xl">
-            {current.home ? (
-              <span className="flex items-center gap-2">
-                <TeamFlag code={current.home.code} size={32} />
-                <span className="font-display tracking-tight">{current.home.name}</span>
-              </span>
-            ) : null}
-            <span className="font-mono text-xs uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-              vs
-            </span>
-            {current.away ? (
-              <span className="flex items-center gap-2">
-                <span className="font-display tracking-tight">{current.away.name}</span>
-                <TeamFlag code={current.away.code} size={32} />
-              </span>
-            ) : null}
-          </div>
-          <div className="mt-2 flex items-center justify-center gap-3 font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-            <span className="inline-flex items-center gap-1.5">
-              <Calendar className="size-3" />
-              {formatDateTime(current.scheduledAt, {
-                day: "2-digit",
-                month: "short",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </span>
-            {current.venue ? (
-              <span className="inline-flex items-center gap-1.5">
-                <MapPin className="size-3" />
-                {current.venue}
-              </span>
-            ) : null}
-          </div>
-        </header>
+        {soloGanador ? (
+          /* ── Solo Ganador: la quiniela 1·X·2 a pantalla completa ── */
+          <>
+            <header className="text-center">
+              <p className="font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-arena)]">
+                {stageEyebrow}
+              </p>
+              <div className="mt-2 flex items-center justify-center gap-3 font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+                <span className="inline-flex items-center gap-1.5">
+                  <Calendar className="size-3" />
+                  {formatDateTime(current.scheduledAt, {
+                    day: "2-digit",
+                    month: "short",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+                {current.venue ? (
+                  <span className="inline-flex items-center gap-1.5">
+                    <MapPin className="size-3" />
+                    {current.venue}
+                  </span>
+                ) : null}
+              </div>
+            </header>
 
-        {/* Marcador */}
-        <section className="flex items-center justify-center gap-6">
-          <div className="flex flex-col items-center gap-2">
-            <p className="font-mono text-[0.55rem] uppercase tracking-[0.2em] text-[var(--color-muted-foreground)]">
-              {current.home?.code ?? "—"}
-            </p>
-            <ScoreStepper
-              value={currentPred.homeScore}
-              onChange={(v) => updateCurrent({ homeScore: v })}
-              ariaLabel={`Goles ${current.home?.name ?? "local"}`}
-            />
-          </div>
-          <span className="font-display text-3xl text-[var(--color-muted-foreground)]">—</span>
-          <div className="flex flex-col items-center gap-2">
-            <p className="font-mono text-[0.55rem] uppercase tracking-[0.2em] text-[var(--color-muted-foreground)]">
-              {current.away?.code ?? "—"}
-            </p>
-            <ScoreStepper
-              value={currentPred.awayScore}
-              onChange={(v) => updateCurrent({ awayScore: v })}
-              ariaLabel={`Goles ${current.away?.name ?? "visitante"}`}
-            />
-          </div>
-        </section>
-
-        <PointsHint
-          items={pointsHintItems}
-          footnote={
-            isKnockout
-              ? "Hasta 16 pts en este partido de eliminatoria."
-              : "Hasta 11 pts en este partido de la fase de grupos."
-          }
-        />
-
-        {/* Penaltis (solo KO) */}
-        {isKnockout ? (
-          <section className="flex items-center justify-center gap-3 text-sm">
-            <label className="inline-flex items-center gap-2">
-              <input
-                type="checkbox"
-                className="size-4 accent-[var(--color-arena)]"
-                checked={currentPred.willGoToPens}
-                onChange={(e) => updateCurrent({ willGoToPens: e.target.checked })}
+            <div className="mx-auto w-full max-w-md">
+              <WinnerPicker
+                home={current.home}
+                away={current.away}
+                value={currentPred}
+                isKnockout={isKnockout}
+                variant="tour"
+                onChange={(patch) => updateCurrent(patch)}
               />
-              Se va a penaltis
-            </label>
-            {currentPred.willGoToPens && current.home && current.away ? (
-              <select
-                value={currentPred.winnerTeamId ?? ""}
-                onChange={(e) =>
-                  updateCurrent({
-                    winnerTeamId: e.target.value ? Number(e.target.value) : null,
-                  })
-                }
-                className="h-9 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-2 text-sm"
-              >
-                <option value="">Clasificado por penaltis…</option>
-                <option value={current.home.id}>{current.home.name}</option>
-                <option value={current.away.id}>{current.away.name}</option>
-              </select>
-            ) : null}
-          </section>
-        ) : null}
+            </div>
 
-        {/* Goleador */}
-        <section className="space-y-3 border-t border-[var(--color-border)] pt-5">
-          <div className="text-center">
-            <p className="font-mono text-[0.6rem] uppercase tracking-[0.22em] text-[var(--color-muted-foreground)]">
-              Goleador del partido
-            </p>
-            <p className="mt-1 font-editorial text-xs italic text-[var(--color-muted-foreground)]">
-              Acertar +4 pts · Aunque marques 0-0, acertar un goleador suma extra. Nunca penaliza.
-            </p>
-          </div>
-          {current.home && current.away ? (
-            <ScorerPicker
-              home={current.home}
-              away={current.away}
-              homePlayers={current.homePlayers}
-              awayPlayers={current.awayPlayers}
-              selectedId={currentPred.scorerPlayerId}
-              onSelect={(playerId) => updateCurrent({ scorerPlayerId: playerId })}
-            />
-          ) : (
-            <p className="text-center text-sm italic text-[var(--color-muted-foreground)]">
-              Los equipos se conocerán cuando avance el bracket.
-            </p>
-          )}
-        </section>
+            <PointsHint items={pointsHintItems} footnote={hintFootnote} />
+          </>
+        ) : (
+          /* ── Completo / Marcador: marcador exacto (+ goleador en completo) ── */
+          <>
+            <header className="text-center">
+              <p className="font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-arena)]">
+                {stageEyebrow}
+              </p>
+              <div className="mt-3 flex items-center justify-center gap-3 text-lg sm:text-xl">
+                {current.home ? (
+                  <span className="flex items-center gap-2">
+                    <TeamFlag code={current.home.code} size={32} />
+                    <span className="font-display tracking-tight">{current.home.name}</span>
+                  </span>
+                ) : null}
+                <span className="font-mono text-xs uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+                  vs
+                </span>
+                {current.away ? (
+                  <span className="flex items-center gap-2">
+                    <span className="font-display tracking-tight">{current.away.name}</span>
+                    <TeamFlag code={current.away.code} size={32} />
+                  </span>
+                ) : null}
+              </div>
+              <div className="mt-2 flex items-center justify-center gap-3 font-mono text-[0.62rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+                <span className="inline-flex items-center gap-1.5">
+                  <Calendar className="size-3" />
+                  {formatDateTime(current.scheduledAt, {
+                    day: "2-digit",
+                    month: "short",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+                {current.venue ? (
+                  <span className="inline-flex items-center gap-1.5">
+                    <MapPin className="size-3" />
+                    {current.venue}
+                  </span>
+                ) : null}
+              </div>
+            </header>
+
+            {/* Marcador */}
+            <section className="flex items-center justify-center gap-6">
+              <div className="flex flex-col items-center gap-2">
+                <p className="font-mono text-[0.55rem] uppercase tracking-[0.2em] text-[var(--color-muted-foreground)]">
+                  {current.home?.code ?? "—"}
+                </p>
+                <ScoreStepper
+                  value={currentPred.homeScore}
+                  onChange={(v) => updateCurrent({ homeScore: v })}
+                  ariaLabel={`Goles ${current.home?.name ?? "local"}`}
+                />
+              </div>
+              <span className="font-display text-3xl text-[var(--color-muted-foreground)]">—</span>
+              <div className="flex flex-col items-center gap-2">
+                <p className="font-mono text-[0.55rem] uppercase tracking-[0.2em] text-[var(--color-muted-foreground)]">
+                  {current.away?.code ?? "—"}
+                </p>
+                <ScoreStepper
+                  value={currentPred.awayScore}
+                  onChange={(v) => updateCurrent({ awayScore: v })}
+                  ariaLabel={`Goles ${current.away?.name ?? "visitante"}`}
+                />
+              </div>
+            </section>
+
+            <PointsHint items={pointsHintItems} footnote={hintFootnote} />
+
+            {/* Penaltis (solo KO) */}
+            {isKnockout ? (
+              <section className="flex items-center justify-center gap-3 text-sm">
+                <label className="inline-flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    className="size-4 accent-[var(--color-arena)]"
+                    checked={currentPred.willGoToPens}
+                    onChange={(e) => updateCurrent({ willGoToPens: e.target.checked })}
+                  />
+                  Se va a penaltis
+                </label>
+                {currentPred.willGoToPens && current.home && current.away ? (
+                  <select
+                    value={currentPred.winnerTeamId ?? ""}
+                    onChange={(e) =>
+                      updateCurrent({
+                        winnerTeamId: e.target.value ? Number(e.target.value) : null,
+                      })
+                    }
+                    className="h-9 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-2 text-sm"
+                  >
+                    <option value="">Clasificado por penaltis…</option>
+                    <option value={current.home.id}>{current.home.name}</option>
+                    <option value={current.away.id}>{current.away.name}</option>
+                  </select>
+                ) : null}
+              </section>
+            ) : null}
+
+            {/* Goleador (solo completo) */}
+            {showScorer ? (
+              <section className="space-y-3 border-t border-[var(--color-border)] pt-5">
+                <div className="text-center">
+                  <p className="font-mono text-[0.6rem] uppercase tracking-[0.22em] text-[var(--color-muted-foreground)]">
+                    Goleador del partido
+                  </p>
+                  <p className="mt-1 font-editorial text-xs italic text-[var(--color-muted-foreground)]">
+                    Acertar +4 pts · Aunque marques 0-0, acertar un goleador suma extra. Nunca penaliza.
+                  </p>
+                </div>
+                {current.home && current.away ? (
+                  <ScorerPicker
+                    home={current.home}
+                    away={current.away}
+                    homePlayers={current.homePlayers}
+                    awayPlayers={current.awayPlayers}
+                    selectedId={currentPred.scorerPlayerId}
+                    onSelect={(playerId) => updateCurrent({ scorerPlayerId: playerId })}
+                  />
+                ) : (
+                  <p className="text-center text-sm italic text-[var(--color-muted-foreground)]">
+                    Los equipos se conocerán cuando avance el bracket.
+                  </p>
+                )}
+              </section>
+            ) : null}
+          </>
+        )}
       </div>
     </InteractiveTourShell>
   );

@@ -19,8 +19,9 @@ import {
 } from "@/components/ui/select";
 import { SavePredictionButton } from "@/components/predictions/save-prediction-button";
 import { SaveOverlay } from "@/components/predictions/save-overlay";
+import { WinnerPicker } from "@/components/predictions/winner-picker";
 import { usePredictionSaveToast } from "@/lib/predictions/use-save-toast";
-import { formatDateTime, cn } from "@/lib/utils";
+import { formatDateTime } from "@/lib/utils";
 import type { PredictionMode } from "@/lib/prediction-modes";
 import { saveMatchdayPredictions, type FormState } from "./actions";
 
@@ -196,12 +197,14 @@ export function MatchdayPredictionForm({
               </CardHeader>
               <CardContent className="space-y-2.5 p-4 pt-0">
                 {soloGanador ? (
-                  <WinnerSelector
-                    m={m}
-                    p={p}
+                  <WinnerPicker
+                    home={m.home}
+                    away={m.away}
+                    value={p}
                     isKnockout={isKnockout}
                     disabled={inputsDisabled}
-                    onPick={(patch) => update(m.id, patch)}
+                    variant="card"
+                    onChange={(patch) => update(m.id, patch)}
                   />
                 ) : (
                 <>
@@ -356,221 +359,3 @@ function TeamSide({ team }: { team: TeamLite | null }) {
   );
 }
 
-type Outcome = "home" | "draw" | "away";
-
-/**
- * Selector 1·X·2 del modo Solo Ganador — la quiniela clásica. Codifica la
- * elección en el marcador canónico (local 1-0 · empate 0-0 · visitante 0-1)
- * y marca `picked` para distinguir un empate elegido del 0-0 inicial. En
- * eliminatoria el empate significa "va a penaltis" y despliega el
- * sub-selector de quién gana la tanda (→ winnerTeamId).
- */
-function WinnerSelector({
-  m,
-  p,
-  isKnockout,
-  disabled,
-  onPick,
-}: {
-  m: MatchInput;
-  p: Prediction;
-  isKnockout: boolean;
-  disabled: boolean;
-  onPick: (patch: Partial<Prediction>) => void;
-}) {
-  const outcome: Outcome =
-    p.homeScore > p.awayScore ? "home" : p.homeScore < p.awayScore ? "away" : "draw";
-  // Sin `picked` no hay elección: el 0-0 inicial no debe pintarse como empate.
-  const sel: Outcome | null = p.picked ? outcome : null;
-
-  const pick = (o: Outcome) => {
-    if (o === "home")
-      onPick({ picked: true, homeScore: 1, awayScore: 0, willGoToPens: false, winnerTeamId: isKnockout ? m.home?.id ?? null : null });
-    else if (o === "away")
-      onPick({ picked: true, homeScore: 0, awayScore: 1, willGoToPens: false, winnerTeamId: isKnockout ? m.away?.id ?? null : null });
-    else
-      onPick({ picked: true, homeScore: 0, awayScore: 0, willGoToPens: isKnockout, winnerTeamId: null });
-  };
-
-  return (
-    <div className="space-y-3">
-      {/* Cartel del enfrentamiento — el ganador previsto se ilumina, el otro
-          se apaga; el empate deja a ambos a la par. */}
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-        <TeamPole
-          team={m.home}
-          align="start"
-          state={sel == null ? "idle" : sel === "home" ? "win" : sel === "draw" ? "tie" : "lose"}
-        />
-        <PickGlyph sel={sel} />
-        <TeamPole
-          team={m.away}
-          align="end"
-          state={sel == null ? "idle" : sel === "away" ? "win" : sel === "draw" ? "tie" : "lose"}
-        />
-      </div>
-
-      {/* 1·X·2 — el corazón de la quiniela */}
-      <div className="grid grid-cols-3 gap-1.5">
-        <PickCell
-          digit="1"
-          sub={`Gana ${m.home?.code ?? "Local"}`}
-          active={sel === "home"}
-          disabled={disabled}
-          onClick={() => pick("home")}
-        />
-        <PickCell
-          digit="X"
-          sub={isKnockout ? "Empate · pen." : "Empate"}
-          active={sel === "draw"}
-          disabled={disabled}
-          onClick={() => pick("draw")}
-        />
-        <PickCell
-          digit="2"
-          sub={`Gana ${m.away?.code ?? "Visit."}`}
-          active={sel === "away"}
-          disabled={disabled}
-          onClick={() => pick("away")}
-        />
-      </div>
-
-      {/* Eliminatoria + empate → quién pasa en la tanda de penaltis */}
-      {isKnockout && sel === "draw" ? (
-        <div className="rise-in space-y-2 rounded-lg border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface-2))] p-2.5">
-          <p className="font-mono text-[0.55rem] uppercase tracking-[0.2em] text-[var(--color-arena)]">
-            ¿Quién pasa en penaltis? <span className="text-[var(--color-muted-foreground)]">+2</span>
-          </p>
-          <div className="grid grid-cols-2 gap-1.5">
-            {[m.home, m.away].map((team) =>
-              team ? (
-                <button
-                  key={team.id}
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => onPick({ picked: true, winnerTeamId: team.id })}
-                  className={cn(
-                    "flex items-center justify-center gap-1.5 rounded-md border px-2 py-2 text-xs font-medium transition disabled:opacity-50",
-                    p.winnerTeamId === team.id
-                      ? "border-[var(--color-arena)] bg-[color-mix(in_oklch,var(--color-arena)_14%,transparent)] text-[var(--color-foreground)]"
-                      : "border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-muted-foreground)] hover:border-[var(--color-arena)]/40",
-                  )}
-                >
-                  <TeamFlag code={team.code} size={16} />
-                  <span className="truncate">{team.name}</span>
-                </button>
-              ) : null,
-            )}
-          </div>
-        </div>
-      ) : null}
-
-      {/* Pista de puntuación */}
-      <p className="text-center font-mono text-[0.55rem] uppercase tracking-[0.2em] text-[var(--color-muted-foreground)]">
-        Acierto +3{isKnockout ? " · penaltis +2" : ""}
-      </p>
-    </div>
-  );
-}
-
-/** Lado del cartel: bandera + nombre, con estados ganador / empate / perdedor. */
-function TeamPole({
-  team,
-  align,
-  state,
-}: {
-  team: TeamLite | null;
-  align: "start" | "end";
-  state: "idle" | "win" | "tie" | "lose";
-}) {
-  return (
-    <div
-      className={cn(
-        "flex min-w-0 items-center gap-2 transition-all duration-200",
-        align === "end" && "flex-row-reverse text-right",
-        state === "lose" && "opacity-35 saturate-50",
-      )}
-    >
-      <span
-        className={cn(
-          "shrink-0 rounded-full transition-all duration-200",
-          state === "win" &&
-            "ring-2 ring-[var(--color-arena)] ring-offset-2 ring-offset-[var(--color-surface)]",
-        )}
-      >
-        <TeamFlag code={team?.code} size={30} />
-      </span>
-      <span
-        className={cn(
-          "truncate font-display text-sm tracking-tight transition-colors",
-          state === "win"
-            ? "text-[var(--color-arena)]"
-            : "text-[var(--color-foreground)]",
-        )}
-      >
-        {team?.name ?? "—"}
-      </span>
-    </div>
-  );
-}
-
-/** Insignia central que refleja la elección: 1 / X / 2, o un punto si nada. */
-function PickGlyph({ sel }: { sel: Outcome | null }) {
-  const glyph = sel === "home" ? "1" : sel === "away" ? "2" : sel === "draw" ? "X" : "·";
-  return (
-    <span
-      className={cn(
-        "grid size-7 shrink-0 place-items-center rounded-md font-display text-base leading-none transition-all duration-200",
-        sel == null
-          ? "border border-dashed border-[var(--color-border)] text-[var(--color-muted-foreground)]"
-          : "bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]",
-      )}
-      aria-hidden
-    >
-      {glyph}
-    </span>
-  );
-}
-
-/** Celda 1 / X / 2 — dígito grande + etiqueta. Estado activo con acento. */
-function PickCell({
-  digit,
-  sub,
-  active,
-  disabled,
-  onClick,
-}: {
-  digit: string;
-  sub: string;
-  active: boolean;
-  disabled: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        "group relative flex flex-col items-center gap-0.5 overflow-hidden rounded-lg border px-1 py-2.5 transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50",
-        active
-          ? "-translate-y-0.5 border-[var(--color-arena)] bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]"
-          : "border-[var(--color-border)] bg-[var(--color-surface-2)] text-[var(--color-muted-foreground)] hover:-translate-y-0.5 hover:border-[var(--color-arena)]/50 hover:text-[var(--color-foreground)]",
-      )}
-    >
-      {active ? (
-        <span
-          aria-hidden
-          className="halftone pointer-events-none absolute inset-0 opacity-[0.12]"
-        />
-      ) : null}
-      <span className="relative font-display text-2xl leading-none tracking-tight">
-        {digit}
-      </span>
-      <span className="relative max-w-full truncate font-mono text-[0.5rem] uppercase tracking-[0.16em]">
-        {sub}
-      </span>
-    </button>
-  );
-}

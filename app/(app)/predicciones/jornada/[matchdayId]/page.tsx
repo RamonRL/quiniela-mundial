@@ -148,17 +148,20 @@ export default async function PredictMatchdayPage({
 
   const open = status.state === "open";
 
-  // Modo paso a paso por defecto (solo modo completo) mientras quede algún
-  // partido abierto sin marcador + goleador. Los partidos ya empezados
-  // (closed) no cuentan. En marcador/solo_ganador el tour aún no aplica:
-  // se usa el formulario full mode-aware de abajo.
-  if (open && mode === "completo") {
+  // Modo paso a paso por defecto en los 3 modos mientras quede algún partido
+  // abierto sin predecir. Los partidos ya empezados (closed) no cuentan. En
+  // completo "pendiente" es sin marcador o sin goleador; en marcador /
+  // solo_ganador basta con que falte la predicción de resultado.
+  if (open) {
     const nowD = new Date();
     const anyOpenPending = matchRows.some((m) => {
       if (isMatchClosed(m, nowD)) return false;
       const result = resultByMatch.get(m.id);
-      const scorer = scorerByMatch.get(m.id);
-      return !result || !scorer;
+      if (mode === "completo") {
+        const scorer = scorerByMatch.get(m.id);
+        return !result || !scorer;
+      }
+      return !result;
     });
     if (anyOpenPending) {
       redirect(`/predicciones/jornada/${matchdayId}/tour`);
@@ -178,11 +181,17 @@ export default async function PredictMatchdayPage({
         title={day.name}
         description={
           open
-            ? `Cierra el ${formatDateTime(day.predictionDeadlineAt, { timeZone: userTz })}. Marcador y goleador en una sola jugada.`
+            ? `Cierra el ${formatDateTime(day.predictionDeadlineAt, { timeZone: userTz })}. ${
+                mode === "solo_ganador"
+                  ? "Elige el ganador (o empate) de cada partido."
+                  : mode === "marcador"
+                    ? "Marcador exacto de cada partido."
+                    : "Marcador y goleador en una sola jugada."
+              }`
             : `Cierre pasado: ${formatDateTime(day.predictionDeadlineAt, { timeZone: userTz })}.`
         }
       />
-      {open && mode === "completo" ? (
+      {open ? (
         <InteractiveModeBanner
           href={`/predicciones/jornada/${day.id}/tour`}
           hint="Repasa partido a partido."

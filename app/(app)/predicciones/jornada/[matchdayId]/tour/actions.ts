@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import {
@@ -25,7 +25,9 @@ const schema = z.object({
   awayScore: z.coerce.number().int().min(0).max(40),
   willGoToPens: z.coerce.boolean().default(false),
   winnerTeamId: z.coerce.number().int().nullable().optional(),
-  scorerPlayerId: z.coerce.number().int(),
+  // Goleador: obligatorio solo en modo completo. En marcador / solo_ganador
+  // no existe, así que el cliente lo manda null.
+  scorerPlayerId: z.coerce.number().int().nullable().optional(),
 });
 
 /**
@@ -75,15 +77,18 @@ export async function saveMatchPrediction(
     }
   }
 
-  // Goleador: debe pertenecer a uno de los dos equipos del partido.
-  const [scorer] = await db
-    .select({ id: players.id, teamId: players.teamId })
-    .from(players)
-    .where(eq(players.id, parsed.data.scorerPlayerId))
-    .limit(1);
-  if (!scorer) return { ok: false, error: "Goleador no encontrado." };
-  if (scorer.teamId !== m.homeTeamId && scorer.teamId !== m.awayTeamId) {
-    return { ok: false, error: "Ese jugador no juega este partido." };
+  // Goleador (solo modo completo): si viene, debe jugar en este partido.
+  const scorerPlayerId = parsed.data.scorerPlayerId ?? null;
+  if (scorerPlayerId != null) {
+    const [scorer] = await db
+      .select({ id: players.id, teamId: players.teamId })
+      .from(players)
+      .where(eq(players.id, scorerPlayerId))
+      .limit(1);
+    if (!scorer) return { ok: false, error: "Goleador no encontrado." };
+    if (scorer.teamId !== m.homeTeamId && scorer.teamId !== m.awayTeamId) {
+      return { ok: false, error: "Ese jugador no juega este partido." };
+    }
   }
 
   const leagueId = await currentLeagueId(me);
@@ -122,22 +127,36 @@ export async function saveMatchPrediction(
             },
           });
 
-        await tx
-          .insert(predMatchScorer)
-          .values({
-            userId: me.id,
-            leagueId,
-            matchId: parsed.data.matchId,
-            playerId: parsed.data.scorerPlayerId,
-            submittedAt: new Date(),
-          })
-          .onConflictDoUpdate({
-            target: [predMatchScorer.userId, predMatchScorer.leagueId, predMatchScorer.matchId],
-            set: {
-              playerId: parsed.data.scorerPlayerId,
+        if (scorerPlayerId != null) {
+          await tx
+            .insert(predMatchScorer)
+            .values({
+              userId: me.id,
+              leagueId,
+              matchId: parsed.data.matchId,
+              playerId: scorerPlayerId,
               submittedAt: new Date(),
-            },
-          });
+            })
+            .onConflictDoUpdate({
+              target: [predMatchScorer.userId, predMatchScorer.leagueId, predMatchScorer.matchId],
+              set: {
+                playerId: scorerPlayerId,
+                submittedAt: new Date(),
+              },
+            });
+        } else {
+          // Sin goleador (marcador / solo_ganador): limpiamos cualquier pick
+          // previo por si la liga cambió de modo o venía de un import.
+          await tx
+            .delete(predMatchScorer)
+            .where(
+              and(
+                eq(predMatchScorer.userId, me.id),
+                eq(predMatchScorer.leagueId, leagueId),
+                eq(predMatchScorer.matchId, parsed.data.matchId),
+              ),
+            );
+        }
       });
 
       return { ok: true };
