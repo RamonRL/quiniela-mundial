@@ -1198,17 +1198,35 @@ function buildRunningHubProps({
     closesAtMs: number;
   };
   const candidates: Candidate[] = [];
-  for (const m of openMatchdayItems) {
+  // Recorremos las entradas crudas (no `openMatchdayItems`) para acceder a
+  // `nextMissingAt`: en modo compacto (Marcador / Solo Ganador) la deadline
+  // destacada es el kickoff del próximo partido SIN predecir, no el próximo
+  // kickoff de la jornada.
+  for (const m of openMatchdays) {
+    if (compact) {
+      // Solo jornadas con algún partido upcoming sin predecir.
+      if (m.missing <= 0 || !m.nextMissingAt) continue;
+      candidates.push({
+        kind: "matchday",
+        label: m.name,
+        href: `/predicciones/jornada/${m.id}`,
+        closesAt: m.nextMissingAt.toISOString(),
+        missing: m.missing,
+        total: m.total,
+        closesAtMs: m.nextMissingAt.getTime(),
+      });
+      continue;
+    }
     const missing = m.total - m.filled;
     if (missing > 0) {
       candidates.push({
         kind: "matchday",
-        label: m.label,
+        label: m.name,
         href: `/predicciones/jornada/${m.id}`,
-        closesAt: m.closesAt,
+        closesAt: m.nextDeadlineAt.toISOString(),
         missing,
         total: m.total,
-        closesAtMs: new Date(m.closesAt).getTime(),
+        closesAtMs: m.nextDeadlineAt.getTime(),
       });
     }
   }

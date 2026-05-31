@@ -11,7 +11,7 @@ import {
   predTournamentTopScorer,
   specialPredictions,
 } from "@/lib/db/schema";
-import { isMemberOf } from "@/lib/leagues";
+import { getLeagueModes, isMemberOf } from "@/lib/leagues";
 import { getBracketStatus } from "@/lib/bracket-state";
 
 const KICKOFF = new Date(
@@ -23,6 +23,7 @@ export type LeagueWithPicks = {
   name: string;
   isPublic: boolean;
   totalPicks: number;
+  predictionMode: string;
 };
 
 /**
@@ -234,11 +235,17 @@ export async function findLeaguesWithPicks(
   byLeague.delete(excludeLeagueId);
   if (byLeague.size === 0) return [];
 
-  // Hidratar nombres + isPublic.
+  // Hidratar nombres + isPublic + modo (el modo lo usa el banner para no
+  // ofrecer copiar entre quinielas de modos distintos).
   const ids = [...byLeague.keys()];
   const { leagues } = await import("@/lib/db/schema");
   const rows = await db
-    .select({ id: leagues.id, name: leagues.name, isPublic: leagues.isPublic })
+    .select({
+      id: leagues.id,
+      name: leagues.name,
+      isPublic: leagues.isPublic,
+      predictionMode: leagues.predictionMode,
+    })
     .from(leagues)
     .where(or(...ids.map((id) => eq(leagues.id, id)))!);
   return rows
@@ -246,6 +253,7 @@ export async function findLeaguesWithPicks(
       id: r.id,
       name: r.name,
       isPublic: r.isPublic,
+      predictionMode: r.predictionMode,
       totalPicks: byLeague.get(r.id) ?? 0,
     }))
     .sort((a, b) => b.totalPicks - a.totalPicks);
@@ -281,6 +289,19 @@ export async function importPredictionsBetweenLeagues(args: {
   ]);
   if (!sourceMember) throw new Error("No eres miembro de la liga origen.");
   if (!targetMember) throw new Error("No eres miembro de la liga destino.");
+
+  // Solo se copia entre quinielas del MISMO modo. Distintos modos guardan
+  // cosas distintas (p.ej. el marcador 1-0 de Solo Ganador es una codificación
+  // de "gana local", no un marcador exacto), así que copiar entre modos
+  // produciría predicciones incorrectas.
+  const modes = await getLeagueModes([sourceLeagueId, targetLeagueId]);
+  const sourceMode = modes.get(sourceLeagueId);
+  const targetMode = modes.get(targetLeagueId);
+  if (sourceMode !== targetMode) {
+    throw new Error(
+      "Solo se pueden copiar predicciones entre quinielas del mismo modo de juego.",
+    );
+  }
 
   const tournamentStarted = KICKOFF.getTime() <= Date.now();
 

@@ -159,9 +159,9 @@ export default async function PrediccionesHub() {
         }
       />
 
-      {!onlyMatches ? (
-        <ImportPredictionsBanner userId={me.id} activeLeagueId={leagueId} />
-      ) : null}
+      {/* El banner decide solo si hay un origen válido (otra quiniela del
+          mismo modo con más picks); por eso ya no se filtra por modo aquí. */}
+      <ImportPredictionsBanner userId={me.id} activeLeagueId={leagueId} />
 
       {/* SECTION 1 — Pre-torneo (solo en modo completo) */}
       {!onlyMatches ? (

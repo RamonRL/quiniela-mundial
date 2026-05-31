@@ -38,6 +38,13 @@ export type OpenMatchdayEntry = {
   openMatches: number;
   /** De `openMatches`, los que el usuario aún no ha predicho. */
   missing: number;
+  /**
+   * Kickoff del partido MÁS INMEDIATO que el usuario aún no ha predicho
+   * (de los upcoming). `null` si ya los tiene todos. Es la deadline real
+   * "lo siguiente que tienes que predecir", a diferencia de
+   * `nextDeadlineAt` (próximo kickoff de la jornada, predicho o no).
+   */
+  nextMissingAt: Date | null;
 };
 
 /**
@@ -155,6 +162,7 @@ async function loadOpenMatchdaysUnsafe(
         matchdayId: matches.matchdayId,
         filled: sql<number>`count(*) filter (where ${predMatchResult.matchId} is not null)::int`,
         missing: sql<number>`count(*) filter (where ${matches.scheduledAt} > now() and ${predMatchResult.matchId} is null)::int`,
+        nextMissingAt: sql<string | null>`min(${matches.scheduledAt}) filter (where ${matches.scheduledAt} > now() and ${predMatchResult.matchId} is null)`,
       })
       .from(matches)
       .leftJoin(
@@ -172,7 +180,11 @@ async function loadOpenMatchdaysUnsafe(
           new Map(
             rows.map((r) => [
               r.matchdayId ?? 0,
-              { filled: r.filled ?? 0, missing: r.missing ?? 0 },
+              {
+                filled: r.filled ?? 0,
+                missing: r.missing ?? 0,
+                nextMissingAt: r.nextMissingAt ? new Date(r.nextMissingAt) : null,
+              },
             ]),
           ),
       ),
@@ -193,6 +205,7 @@ async function loadOpenMatchdaysUnsafe(
       filled: user?.filled ?? 0,
       openMatches,
       missing: user?.missing ?? openMatches,
+      nextMissingAt: user?.nextMissingAt ?? null,
     });
   }
   out.sort((a, b) => a.nextDeadlineAt.getTime() - b.nextDeadlineAt.getTime());

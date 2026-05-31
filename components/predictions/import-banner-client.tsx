@@ -44,15 +44,15 @@ export function ImportBannerClient({ sources }: { sources: LeagueWithPicks[] }) 
           </div>
           <div className="space-y-1">
             <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-              Quiniela vacía
+              Copiar predicciones
             </p>
             <h2 className="font-display text-xl tracking-tight sm:text-2xl">
-              Importa tus predicciones de otra quiniela
+              Rellena tus picks desde otra quiniela
             </h2>
             <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-              Copiamos todas tus picks (grupos, bracket, marcadores, goleadores,
-              especiales y bota de oro) de golpe. Las picks que ya estén pasadas
-              de fecha se respetan, no se machacan.
+              Copiamos de golpe las picks que te faltan desde otra de tus
+              quinielas del mismo modo. Solo rellenamos huecos: nunca machacamos
+              lo que ya tengas ni las picks pasadas de fecha.
             </p>
           </div>
         </div>

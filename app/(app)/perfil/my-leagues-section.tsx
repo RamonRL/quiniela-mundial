@@ -107,13 +107,18 @@ export function MyLeaguesSection({
         {memberships.map((m) => {
           const isActive = m.id === activeLeagueId;
           const thisCount = pickCountByLeagueId[m.id] ?? 0;
-          // Otras ligas del usuario donde tiene MÁS predicciones que en esta —
-          // son las únicas elegibles como origen para copiar hacia aquí. La
-          // restricción "más → menos" es explícita por petición: nada de copiar
-          // al revés y perder progreso (aunque internamente solo rellenemos
-          // huecos, mostrar la opción confundiría).
+          // Otras ligas del usuario, del MISMO modo de juego, donde tiene MÁS
+          // predicciones que en esta — son las únicas elegibles como origen
+          // para copiar hacia aquí. Dos restricciones:
+          //  · mismo modo: copiar entre modos distintos guardaría picks
+          //    incorrectas (el 1-0 de Solo Ganador no es un marcador exacto).
+          //  · más → menos: copiamos solo para rellenar huecos; al revés no
+          //    aportaría nada y confundiría.
           const eligibleSources = memberships.filter(
-            (s) => s.id !== m.id && (pickCountByLeagueId[s.id] ?? 0) > thisCount,
+            (s) =>
+              s.id !== m.id &&
+              s.predictionMode === m.predictionMode &&
+              (pickCountByLeagueId[s.id] ?? 0) > thisCount,
           );
           return (
             <li

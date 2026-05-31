@@ -229,7 +229,7 @@ function RunningHub({
 
   return (
     <section className="rise-in space-y-4">
-      {nextDeadline && !compact ? (
+      {nextDeadline ? (
         <div data-tutorial-id="progress-hub-mobile">
           <NextDeadlineCard
             label={nextDeadline.label}
@@ -241,13 +241,15 @@ function RunningHub({
         </div>
       ) : null}
 
-      {/* Satellites: other open matchdays + bracket. En modo compacto este
-          grid es el ancla móvil del tutorial (la tarjeta de próximo cierre,
-          que normalmente la lleva, está oculta). */}
+      {/* Satellites: other open matchdays + bracket. En modo compacto, si no
+          hay tarjeta de próximo cierre (que normalmente lleva el ancla móvil
+          del tutorial), este grid hace de ancla para no perder el spotlight. */}
       {openMatchdays.length > 0 || bracket ? (
         <div
           className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
-          data-tutorial-id={compact ? "progress-hub-mobile" : undefined}
+          data-tutorial-id={
+            compact && !nextDeadline ? "progress-hub-mobile" : undefined
+          }
         >
           {openMatchdays.map((m) => {
             const filled = m.filled;
