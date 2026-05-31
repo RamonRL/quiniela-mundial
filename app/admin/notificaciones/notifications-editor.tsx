@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Bell, BellOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { TELEGRAM_EVENTS, type TelegramEventKey } from "@/lib/telegram/settings";
+import { TELEGRAM_EVENTS, type TelegramEventKey } from "@/lib/telegram/event-keys";
 import {
   saveTelegramNotificationSettings,
   type FormState,
