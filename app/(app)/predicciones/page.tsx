@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   ArrowUpRight,
+  Calculator,
   CheckCircle2,
   Circle,
   Lock,
@@ -140,7 +141,18 @@ export default async function PrediccionesHub() {
         eyebrow="Tus apuestas"
         title="Predicciones"
         description="Tus apuestas. Privadas hasta cada cierre."
-        actions={<TutorialReplayButton />}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href="/puntuacion"
+              className="inline-flex h-9 items-center gap-2 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-foreground)] transition hover:border-[var(--color-arena)]/40 hover:text-[var(--color-arena)]"
+            >
+              <Calculator className="size-3.5" />
+              Cómo se puntúa
+            </Link>
+            <TutorialReplayButton />
+          </div>
+        }
       />
 
       <ImportPredictionsBanner userId={me.id} activeLeagueId={leagueId} />
