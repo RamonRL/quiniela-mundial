@@ -19,6 +19,7 @@ import {
   scoreGroupPrediction,
   scoreMatchResultPrediction,
   scoreMatchScorerPrediction,
+  scoreSoloGanadorPrediction,
   scoreSpecialPrediction,
   scoreTopScorerPrediction,
   type BracketStageKey,
@@ -27,6 +28,12 @@ import {
   type ScoringRules,
 } from "./index";
 import { DEFAULT_SCORING_RULES } from "./defaults";
+import { getLeagueModes } from "@/lib/leagues";
+
+/** Modos de un conjunto de ligas (dedup). Default completo si falta. */
+async function modesFor(leagueIds: number[]) {
+  return getLeagueModes([...new Set(leagueIds)]);
+}
 
 // Tras la migración multi-liga, todas las predicciones y entradas del ledger
 // están scopeadas por leagueId. Las funciones recompute* iteran cada
@@ -119,24 +126,47 @@ export async function recomputeMatchScoringForAllUsers(matchId: number) {
     })),
   };
 
-  // Result predictions — un row por (user, league, match).
+  // Result predictions — un row por (user, league, match). El scoring del
+  // resultado depende del MODO de la liga:
+  //   - completo/marcador → mismas reglas de match-result (exacto/ganador/KO).
+  //   - solo_ganador → solo el signo (solo_winner / solo_winner_pens).
   const resultPreds = await db
     .select()
     .from(predMatchResult)
     .where(eq(predMatchResult.matchId, matchId));
+  const resultModes = await modesFor(resultPreds.map((p) => p.leagueId));
 
   for (const p of resultPreds) {
-    const fresh = scoreMatchResultPrediction({
-      match: outcome,
-      prediction: {
-        matchId: p.matchId,
-        homeScore: p.homeScore,
-        awayScore: p.awayScore,
-        willGoToPens: p.willGoToPens,
-        winnerTeamId: p.winnerTeamId ?? null,
-      },
-      rules,
-    });
+    const mode = resultModes.get(p.leagueId) ?? "completo";
+    const prediction = {
+      matchId: p.matchId,
+      homeScore: p.homeScore,
+      awayScore: p.awayScore,
+      willGoToPens: p.willGoToPens,
+      winnerTeamId: p.winnerTeamId ?? null,
+    };
+
+    if (mode === "solo_ganador") {
+      const fresh = scoreSoloGanadorPrediction({ match: outcome, prediction, rules });
+      await replaceLedgerEntries({
+        userId: p.userId,
+        leagueId: p.leagueId,
+        source: "solo_winner",
+        sourceKeys: [`match:${matchId}:solo_winner`],
+        fresh: fresh.filter((e) => e.source === "solo_winner"),
+      });
+      await replaceLedgerEntries({
+        userId: p.userId,
+        leagueId: p.leagueId,
+        source: "solo_winner_pens",
+        sourceKeys: [`match:${matchId}:solo_winner_pens`],
+        fresh: fresh.filter((e) => e.source === "solo_winner_pens"),
+      });
+      continue;
+    }
+
+    // completo + marcador
+    const fresh = scoreMatchResultPrediction({ match: outcome, prediction, rules });
     const sourceKeys = [
       `match:${matchId}:exact`,
       `match:${matchId}:outcome`,
@@ -161,13 +191,17 @@ export async function recomputeMatchScoringForAllUsers(matchId: number) {
     }
   }
 
-  // Scorer predictions — un row por (user, league, match).
+  // Scorer predictions — solo aplican en modo completo. (En marcador y
+  // solo_ganador el UI no expone goleador; el modo es inmutable, así que
+  // saltamos defensivamente las ligas no-completo.)
   const scorerPreds = await db
     .select()
     .from(predMatchScorer)
     .where(eq(predMatchScorer.matchId, matchId));
+  const scorerModes = await modesFor(scorerPreds.map((p) => p.leagueId));
 
   for (const p of scorerPreds) {
+    if ((scorerModes.get(p.leagueId) ?? "completo") !== "completo") continue;
     const fresh = scoreMatchScorerPrediction({
       match: outcome,
       prediction: { matchId: p.matchId, playerId: p.playerId },
@@ -251,8 +285,11 @@ export async function recomputeGroupScoringForAllUsers(groupId: number) {
     .select()
     .from(predGroupRanking)
     .where(eq(predGroupRanking.groupId, groupId));
+  // Grupos solo puntúan en ligas de modo completo.
+  const modes = await modesFor(preds.map((p) => p.leagueId));
 
   for (const p of preds) {
+    if ((modes.get(p.leagueId) ?? "completo") !== "completo") continue;
     const fresh = scoreGroupPrediction({
       groupId,
       prediction: {
@@ -303,10 +340,14 @@ export async function recomputeBracketStageForAllUsers(
     .from(predBracketSlot)
     .where(eq(predBracketSlot.stage, mapBracketStageToMatchStage(stageKey)));
 
+  // Bracket solo puntúa en ligas de modo completo.
+  const bracketModes = await modesFor(preds.map((p) => p.leagueId));
+
   // Agrupar predicciones por (user, league).
   const byUserLeague = new Map<string, { userId: string; leagueId: number; teams: number[] }>();
   for (const p of preds) {
     if (!p.predictedTeamId) continue;
+    if ((bracketModes.get(p.leagueId) ?? "completo") !== "completo") continue;
     const key = `${p.userId}:${p.leagueId}`;
     const existing = byUserLeague.get(key);
     if (existing) {
@@ -363,8 +404,11 @@ function mapBracketStageToMatchStage(stage: BracketStageKey) {
 export async function recomputeTopScorerForAllUsers(topScorerRanking: number[]) {
   const rules = await loadScoringRules();
   const preds = await db.select().from(predTournamentTopScorer);
+  // Bota de oro solo puntúa en ligas de modo completo.
+  const modes = await modesFor(preds.map((p) => p.leagueId));
 
   for (const p of preds) {
+    if ((modes.get(p.leagueId) ?? "completo") !== "completo") continue;
     const fresh = scoreTopScorerPrediction({
       predictedPlayerId: p.playerId,
       topScorerRanking,
@@ -395,8 +439,11 @@ export async function recomputeSpecialPredictionForAllUsers(specialId: number) {
     .select()
     .from(predSpecial)
     .where(eq(predSpecial.specialId, specialId));
+  // Especiales solo puntúan en ligas de modo completo.
+  const modes = await modesFor(preds.map((p) => p.leagueId));
 
   for (const p of preds) {
+    if ((modes.get(p.leagueId) ?? "completo") !== "completo") continue;
     const fresh = scoreSpecialPrediction({
       special: {
         id: def.id,

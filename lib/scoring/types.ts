@@ -19,7 +19,9 @@ export type LedgerEntry = {
     | "knockout_score_90"
     | "match_scorer"
     | "match_first_scorer"
-    | "special_prediction";
+    | "special_prediction"
+    | "solo_winner"
+    | "solo_winner_pens";
   /** Stable string used together with `userId` to upsert ledger rows idempotently. */
   sourceKey: string;
   sourceRef: Record<string, unknown>;
