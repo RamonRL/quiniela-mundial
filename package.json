@@ -40,6 +40,7 @@
     "db:backup-storage": "tsx --env-file-if-exists=.env.local --env-file-if-exists=.env scripts/backup-storage.ts",
     "db:audit-points": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/audit-points.ts",
     "db:migrate-public-membership": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/migrate-public-membership.ts",
+    "db:restore-public-membership": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/restore-public-membership.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
