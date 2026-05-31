@@ -31,7 +31,30 @@ function escapeXml(s: string): string {
 export async function GET() {
   const all = await listPublishedSlugsForSitemap();
   const cutoff = Date.now() - TWO_DAYS_MS;
-  const fresh = all.filter((a) => a.publishedAt && a.publishedAt.getTime() >= cutoff);
+  const published = all.filter((a) => a.publishedAt != null);
+  let fresh = published.filter((a) => a.publishedAt!.getTime() >= cutoff);
+
+  // Google rechaza un news-sitemap con <urlset> vacío ("Falta la etiqueta
+  // XML obligatoria · Etiqueta: url" en Search Console). Si no hay nada
+  // publicado en las últimas 48 h pero hay artículos antiguos, caemos al
+  // top-N más reciente para que el sitemap siempre lleve al menos un
+  // <url>. Google News los ignora para "Top stories" por estar fuera de
+  // ventana, pero el sitemap pasa la validación y no se marca como roto.
+  if (fresh.length === 0 && published.length > 0) {
+    fresh = published
+      .sort((a, b) => b.publishedAt!.getTime() - a.publishedAt!.getTime())
+      .slice(0, 3);
+  }
+
+  // Sin ningún artículo publicado en BD: devolvemos 404 en lugar de un
+  // sitemap vacío — no tiene sentido anunciar a Google News una sección
+  // que aún no existe.
+  if (fresh.length === 0) {
+    return new Response("Not Found", {
+      status: 404,
+      headers: { "Cache-Control": "public, max-age=60, s-maxage=60" },
+    });
+  }
 
   const entries = fresh
     .map((a) => {
