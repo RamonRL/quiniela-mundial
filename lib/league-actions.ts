@@ -1,6 +1,5 @@
 "use server";
 
-import { randomUUID } from "node:crypto";
 import { cookies } from "next/headers";
 import { after } from "next/server";
 import { redirect } from "next/navigation";
@@ -20,29 +19,24 @@ import {
   PRIVATE_LEAGUES_PER_USER_LIMIT,
   canJoinLeague,
   countPrivateMemberships,
-  generateUniqueJoinCode,
+  createLeagueRecord,
   getPublicLeague,
   isMemberOf,
   isPremiumTier,
   joinLeagueByInviteToken,
 } from "@/lib/leagues";
 import { TIER_LABEL } from "@/lib/league-tiers";
-import { PREDICTION_MODE_META } from "@/lib/prediction-modes";
+import { PREDICTION_MODE_META, type PredictionMode } from "@/lib/prediction-modes";
 import { presetUrlById, DEFAULT_PRESET_LOGO_URL } from "@/lib/league-logos";
+import {
+  getPaddleClient,
+  isPaidTier,
+  paddlePriceIdForTier,
+  type PaidTierId,
+} from "@/lib/paddle";
+import { createPaidLeagueFromTransaction } from "@/lib/paddle-upgrade";
 
 export type LeagueFormState = { ok: boolean; error?: string; message?: string };
-
-function slugify(input: string): string {
-  return (
-    input
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[̀-ͯ]/g, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, 40) || "liga"
-  );
-}
 
 const PRIVATE_LIMIT_ERROR = `Tienes ${PRIVATE_LEAGUES_PER_USER_LIMIT} quinielas privadas. Para unirte a una nueva, abandona alguna desde tu perfil.`;
 
@@ -99,21 +93,6 @@ export async function createLeague(
     return { ok: false, error: PRIVATE_LIMIT_ERROR };
   }
 
-  // Slug único: si choca, sufijo aleatorio.
-  const baseSlug = slugify(parsed.data.name);
-  let slug = baseSlug;
-  for (let i = 0; i < 5; i++) {
-    const [clash] = await db
-      .select({ id: leagues.id })
-      .from(leagues)
-      .where(eq(leagues.slug, slug))
-      .limit(1);
-    if (!clash) break;
-    slug = `${baseSlug}-${randomUUID().slice(0, 4)}`;
-  }
-  const inviteToken = randomUUID().replace(/-/g, "");
-  const joinCode = await generateUniqueJoinCode();
-
   // Las ligas nuevas arrancan en tier Free con límite 20. El usuario elige
   // un logo de la galería preset desde el onboarding (los Pases Mundial
   // 2026 desbloquean logo corporativo custom — se sube desde /mi-quiniela
@@ -123,37 +102,20 @@ export async function createLeague(
     typeof presetId === "string" ? presetUrlById(presetId) : null;
   const initialLogoUrl = presetUrl ?? DEFAULT_PRESET_LOGO_URL;
 
-  const [created] = await db
-    .insert(leagues)
-    .values({
-      slug,
-      name: parsed.data.name,
-      inviteToken,
-      joinCode,
-      isPublic: false,
-      createdBy: me.id,
-      logoUrl: initialLogoUrl,
-      tier: "free",
-      memberLimit: MEMBER_LIMIT_FREE,
-      predictionMode: parsed.data.mode,
-    })
-    .returning();
-
-  // Auto-inscribir al creador y ponerla como activa.
-  await db
-    .insert(leagueMemberships)
-    .values({ userId: me.id, leagueId: created.id })
-    .onConflictDoNothing();
-  await db
-    .update(profiles)
-    .set({ leagueId: created.id })
-    .where(eq(profiles.id, me.id));
+  const created = await createLeagueRecord({
+    userId: me.id,
+    name: parsed.data.name,
+    mode: parsed.data.mode,
+    logoUrl: initialLogoUrl,
+    tier: "free",
+    memberLimit: MEMBER_LIMIT_FREE,
+  });
 
   if (me.role === "admin") {
     await logAdminAction({
       adminId: me.id,
       action: "league.create",
-      payload: { id: created.id, slug },
+      payload: { id: created.id, slug: created.slug },
     });
   }
 
@@ -821,4 +783,168 @@ export async function updateCommercialLead(
   });
   revalidatePath("/admin/leads");
   return { ok: true, message: "Lead actualizado." };
+}
+
+// ──────────────── Flujo "pagar antes de crear" (planes de pago) ────────────────
+
+const PAID_MODE_VALUES = ["completo", "marcador", "solo_ganador"] as const;
+
+const startPaidSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(2, "El nombre debe tener al menos 2 caracteres.")
+    .max(NAME_MAX, `El nombre no puede pasar de ${NAME_MAX} caracteres.`),
+  mode: z.enum(PAID_MODE_VALUES).default("completo"),
+  logoPresetId: z.string().nullable().optional(),
+  tier: z.enum(["team-50", "team-100", "team-250"]),
+});
+
+export type StartPaidCheckoutResult =
+  | { ok: true; transactionId: string }
+  | { ok: false; error: string };
+
+/**
+ * Crea una transaction de Paddle para un plan de pago SIN crear todavía la
+ * liga: los datos de la liga viajan en `customData` y la liga se materializa
+ * al confirmarse el pago (vía `finalizePaidLeague` o el webhook). Valida el
+ * tope de privadas (admins exentos) ANTES de cobrar.
+ */
+export async function startPaidLeagueCheckout(input: {
+  name: string;
+  mode: string;
+  logoPresetId: string | null;
+  tier: string;
+}): Promise<StartPaidCheckoutResult> {
+  const me = await requireUser();
+  const parsed = startPaidSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+  }
+
+  const privateCount = await countPrivateMemberships(me.id);
+  if (me.role !== "admin" && privateCount >= PRIVATE_LEAGUES_PER_USER_LIMIT) {
+    return { ok: false, error: PRIVATE_LIMIT_ERROR };
+  }
+
+  const paddle = getPaddleClient();
+  const priceId = paddlePriceIdForTier(parsed.data.tier);
+  if (!paddle || !priceId) {
+    return {
+      ok: false,
+      error:
+        "El pago no está disponible ahora mismo. Crea la quiniela en Estándar y amplíala luego desde Mi Quiniela.",
+    };
+  }
+
+  const logoUrl =
+    (parsed.data.logoPresetId ? presetUrlById(parsed.data.logoPresetId) : null) ??
+    DEFAULT_PRESET_LOGO_URL;
+
+  try {
+    const tx = await paddle.transactions.create({
+      items: [{ priceId, quantity: 1 }],
+      customData: {
+        create_league: "1",
+        tier: parsed.data.tier,
+        user_id: me.id,
+        user_email: me.email,
+        league_name: parsed.data.name,
+        league_mode: parsed.data.mode,
+        league_logo: logoUrl,
+      },
+    });
+    if (!tx.id) return { ok: false, error: "No se pudo iniciar el pago." };
+    return { ok: true, transactionId: tx.id };
+  } catch (err) {
+    console.error("[paddle] startPaidLeagueCheckout failed", err);
+    return { ok: false, error: "No se pudo iniciar el pago. Inténtalo de nuevo." };
+  }
+}
+
+export type FinalizePaidLeagueResult =
+  | {
+      ok: true;
+      league: { name: string; joinCode: string | null; inviteToken: string };
+    }
+  | { ok: false; error: string };
+
+/**
+ * Tras `checkout.completed` en el overlay, el cliente llama aquí con la
+ * transactionId. Verificamos contra Paddle que el pago está confirmado y que
+ * la transaction es de ESTE usuario, y creamos la liga ya pagada (idempotente
+ * vía `paidTxId`; el webhook es el respaldo).
+ */
+export async function finalizePaidLeague(
+  transactionId: string,
+): Promise<FinalizePaidLeagueResult> {
+  const me = await requireUser();
+  if (!transactionId) return { ok: false, error: "Transacción inválida." };
+
+  const paddle = getPaddleClient();
+  if (!paddle) return { ok: false, error: "Pago no disponible." };
+
+  let tx;
+  try {
+    tx = await paddle.transactions.get(transactionId);
+  } catch (err) {
+    console.error("[paddle] finalizePaidLeague get failed", err);
+    return { ok: false, error: "No se pudo verificar el pago." };
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const t = tx as any;
+  const status: string = t.status ?? "";
+  if (status !== "completed" && status !== "paid") {
+    return { ok: false, error: "El pago aún no está confirmado." };
+  }
+  const cd: Record<string, string> = t.customData ?? {};
+  if (cd.create_league !== "1" || cd.user_id !== me.id) {
+    return { ok: false, error: "Esta transacción no corresponde a tu cuenta." };
+  }
+  if (!isPaidTier(cd.tier ?? "")) {
+    return { ok: false, error: "Plan inválido." };
+  }
+  const tier = cd.tier as PaidTierId;
+  const mode = (
+    (PAID_MODE_VALUES as readonly string[]).includes(cd.league_mode ?? "")
+      ? cd.league_mode
+      : "completo"
+  ) as PredictionMode;
+  const subtotalMinor = Number(t.details?.totals?.subtotal ?? 0) || 0;
+  const paidAmountEur = Math.round(subtotalMinor / 100);
+
+  const res = await createPaidLeagueFromTransaction({
+    txId: transactionId,
+    userId: me.id,
+    tier,
+    name: cd.league_name?.slice(0, NAME_MAX) || "Mi quiniela",
+    mode,
+    logoUrl: cd.league_logo || DEFAULT_PRESET_LOGO_URL,
+    paidAmountEur,
+  });
+
+  if (res.created) {
+    after(() =>
+      notifyNewPrivateLeague({
+        id: res.leagueId,
+        name: res.leagueName,
+        joinCode: res.joinCode,
+        creatorEmail: me.email,
+        modeLabel: PREDICTION_MODE_META[mode].label,
+        planLabel: TIER_LABEL[tier],
+      }),
+    );
+  }
+
+  revalidatePath("/admin/ligas");
+  revalidatePath("/", "layout");
+  return {
+    ok: true,
+    league: {
+      name: res.leagueName,
+      joinCode: res.joinCode,
+      inviteToken: res.inviteToken,
+    },
+  };
 }

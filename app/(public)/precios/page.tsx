@@ -34,6 +34,8 @@ type Plan = {
   paidTierId?: PaidTierId;
   name: string;
   price: string;
+  /** Precio "regular" tachado (marco de descuento, display-only). */
+  regularPrice?: string;
   priceNote: string;
   members: string;
   highlight?: boolean;
@@ -45,8 +47,8 @@ type Plan = {
 const PLANS: Plan[] = [
   {
     id: "free",
-    name: "Free",
-    price: "0 €",
+    name: "Estándar",
+    price: "Gratis",
     priceNote: "Para siempre",
     members: "Hasta 20 miembros",
     ctaLabel: "Crear gratis",
@@ -57,8 +59,10 @@ const PLANS: Plan[] = [
     paidTierId: "team-50",
     name: "Pase Equipo",
     price: "19 €",
+    regularPrice: "29 €",
     priceNote: "Pase Mundial 2026 · pago único",
     members: "Hasta 50 miembros",
+    highlight: true,
     ctaLabel: "Comprar",
   },
   {
@@ -66,9 +70,9 @@ const PLANS: Plan[] = [
     paidTierId: "team-100",
     name: "Pase Empresa",
     price: "49 €",
+    regularPrice: "69 €",
     priceNote: "Pase Mundial 2026 · pago único",
     members: "Hasta 100 miembros",
-    highlight: true,
     ctaLabel: "Comprar",
   },
   {
@@ -76,6 +80,7 @@ const PLANS: Plan[] = [
     paidTierId: "team-250",
     name: "Pase Empresa Plus",
     price: "99 €",
+    regularPrice: "149 €",
     priceNote: "Pase Mundial 2026 · pago único",
     members: "Hasta 250 miembros",
     ctaLabel: "Comprar",
@@ -160,7 +165,7 @@ export default function PreciosPage() {
       <PageHeader
         eyebrow="Planes"
         title="Quinielas para empresas y grupos grandes"
-        description="La versión Free aguanta hasta 20 miembros. Para empresas, comunidades y eventos con más gente, los Pases Mundial 2026 escalan la liga a 50, 100 o 250 personas con extras pensados para uso profesional."
+        description="La versión Estándar aguanta hasta 20 miembros gratis. Para empresas, comunidades y eventos con más gente, los Pases Mundial 2026 escalan la liga a 50, 100 o 250 personas con extras pensados para uso profesional."
       />
 
       <BuyerLeagueBanner />
@@ -178,15 +183,23 @@ export default function PreciosPage() {
           >
             {plan.highlight ? (
               <span className="absolute right-4 top-4 rounded-full bg-[var(--color-arena)] px-2.5 py-1 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-white">
-                Recomendado
+                Más popular
               </span>
             ) : null}
             <header className="space-y-1">
               <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
                 {plan.name}
               </p>
-              <p className="font-display text-4xl tracking-tight">{plan.price}</p>
+              <div className="flex items-baseline gap-2">
+                <p className="font-display text-4xl tracking-tight">{plan.price}</p>
+                {plan.regularPrice ? (
+                  <span className="font-display text-xl tracking-tight text-[var(--color-muted-foreground)] line-through decoration-[var(--color-arena)]/70">
+                    {plan.regularPrice}
+                  </span>
+                ) : null}
+              </div>
               <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
+                {plan.regularPrice ? "Oferta de lanzamiento · " : ""}
                 {plan.priceNote}
               </p>
             </header>

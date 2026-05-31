@@ -43,6 +43,17 @@ export const TIER_AMOUNT_EUR: Record<PaidTierId, number> = {
   "team-250": 99,
 };
 
+/**
+ * Precio "regular" (tachado) para enmarcar el precio actual como descuento.
+ * Display-only: lo que se cobra de verdad es `TIER_AMOUNT_EUR`. Estos eran
+ * los precios antes de la rebaja de lanzamiento.
+ */
+export const TIER_REGULAR_PRICE_EUR: Record<PaidTierId, number> = {
+  "team-50": 29,
+  "team-100": 69,
+  "team-250": 149,
+};
+
 export function isPaidTier(value: string): value is PaidTierId {
   return (PAID_TIERS as readonly string[]).includes(value);
 }

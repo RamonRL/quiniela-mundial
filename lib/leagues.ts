@@ -1,8 +1,10 @@
+import { randomUUID } from "node:crypto";
 import { and, asc, eq, inArray, sql, type SQL } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { leagueMemberships, leagues, profiles } from "@/lib/db/schema";
 import type { CurrentUser } from "@/lib/auth/guards";
 import type { PredictionMode } from "@/lib/prediction-modes";
+import type { LeagueTier } from "@/lib/league-tiers";
 
 export const PENDING_INVITE_COOKIE = "pending_league_token";
 export const PUBLIC_LEAGUE_SLUG = "liga-principal";
@@ -313,4 +315,102 @@ export async function generateUniqueJoinCode(): Promise<string> {
     if (!exists) return code;
   }
   throw new Error("No se pudo generar un código único tras 50 intentos.");
+}
+
+function slugifyLeagueName(input: string): string {
+  return (
+    input
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 40) || "liga"
+  );
+}
+
+export type CreatedLeagueRecord = {
+  id: number;
+  name: string;
+  slug: string;
+  joinCode: string | null;
+  inviteToken: string;
+  logoUrl: string | null;
+  tier: LeagueTier;
+};
+
+/**
+ * Núcleo de creación de una liga privada: slug único, invite token, joinCode,
+ * inserción, auto-inscripción del creador y fijarla como liga activa. NO
+ * valida límites, ni notifica, ni revalida — eso lo hace cada caller
+ * (`createLeague` para Free, `createPaidLeagueFromTransaction` tras pago).
+ *
+ * Si `paid` viene, la liga nace ya con el tier comprado y se sella con el
+ * `paidTxId` (clave de idempotencia del flujo "pagar antes de crear").
+ */
+export async function createLeagueRecord(opts: {
+  userId: string;
+  name: string;
+  mode: PredictionMode;
+  logoUrl: string;
+  tier: LeagueTier;
+  memberLimit: number | null;
+  paid?: { txId: string; amountEur: number };
+}): Promise<CreatedLeagueRecord> {
+  const baseSlug = slugifyLeagueName(opts.name);
+  let slug = baseSlug;
+  for (let i = 0; i < 5; i++) {
+    const [clash] = await db
+      .select({ id: leagues.id })
+      .from(leagues)
+      .where(eq(leagues.slug, slug))
+      .limit(1);
+    if (!clash) break;
+    slug = `${baseSlug}-${randomUUID().slice(0, 4)}`;
+  }
+  const inviteToken = randomUUID().replace(/-/g, "");
+  const joinCode = await generateUniqueJoinCode();
+
+  const [created] = await db
+    .insert(leagues)
+    .values({
+      slug,
+      name: opts.name,
+      inviteToken,
+      joinCode,
+      isPublic: false,
+      createdBy: opts.userId,
+      logoUrl: opts.logoUrl,
+      tier: opts.tier,
+      memberLimit: opts.memberLimit,
+      predictionMode: opts.mode,
+      ...(opts.paid
+        ? {
+            paidTxId: opts.paid.txId,
+            paidAt: new Date(),
+            paidAmountEur: opts.paid.amountEur,
+            paidVia: "paddle",
+          }
+        : {}),
+    })
+    .returning();
+
+  await db
+    .insert(leagueMemberships)
+    .values({ userId: opts.userId, leagueId: created.id })
+    .onConflictDoNothing();
+  await db
+    .update(profiles)
+    .set({ leagueId: created.id })
+    .where(eq(profiles.id, opts.userId));
+
+  return {
+    id: created.id,
+    name: created.name,
+    slug: created.slug,
+    joinCode: created.joinCode,
+    inviteToken: created.inviteToken,
+    logoUrl: created.logoUrl,
+    tier: created.tier as LeagueTier,
+  };
 }

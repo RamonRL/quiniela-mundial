@@ -10,7 +10,12 @@ import {
   paddleWebhookSecret,
   tierFromPaddlePriceId,
 } from "@/lib/paddle";
-import { autoUpgradeLeagueFromPaddleTransaction } from "@/lib/paddle-upgrade";
+import {
+  autoUpgradeLeagueFromPaddleTransaction,
+  createPaidLeagueFromTransaction,
+} from "@/lib/paddle-upgrade";
+import { DEFAULT_PRESET_LOGO_URL } from "@/lib/league-logos";
+import type { PredictionMode } from "@/lib/prediction-modes";
 import { notifyPaddleOrder } from "@/lib/telegram/events";
 
 export const dynamic = "force-dynamic";
@@ -110,28 +115,74 @@ export async function POST(request: Request) {
     Number(tx.details?.totals?.subtotal ?? totalMinor ?? 0) || 0;
   const paidAmountEur = Math.round(subtotalMinor / 100);
 
-  let upgradeResult: Awaited<
-    ReturnType<typeof autoUpgradeLeagueFromPaddleTransaction>
-  > | null = null;
+  // Flujo "pagar antes de crear": el customData trae la spec de la liga y
+  // aún no existe. La creamos (idempotente vía paidTxId) como respaldo de
+  // `finalizePaidLeague` del cliente.
+  const createLeagueFlow = customData?.create_league === "1";
 
-  if (tier && customerEmail) {
-    upgradeResult = await autoUpgradeLeagueFromPaddleTransaction({
-      leagueCode,
-      customerEmail,
-      tier,
-      paidAmountEur,
-      transactionId: txId,
-    });
+  let autoActivation:
+    | { leagueId: number; leagueName: string; resolvedBy: "league_code" | "email" | "created" }
+    | null = null;
+  let upgradeNote: string;
+
+  if (createLeagueFlow && tier && customData?.user_id) {
+    const mode = (
+      ["completo", "marcador", "solo_ganador"].includes(customData.league_mode ?? "")
+        ? customData.league_mode
+        : "completo"
+    ) as PredictionMode;
+    try {
+      const created = await createPaidLeagueFromTransaction({
+        txId,
+        userId: customData.user_id,
+        tier,
+        name: (customData.league_name ?? "Mi quiniela").slice(0, 25),
+        mode,
+        logoUrl: customData.league_logo || DEFAULT_PRESET_LOGO_URL,
+        paidAmountEur,
+      });
+      autoActivation = {
+        leagueId: created.leagueId,
+        leagueName: created.leagueName,
+        resolvedBy: "created",
+      };
+      upgradeNote = created.created
+        ? `Liga creada por pago (tier ${tier}, id ${created.leagueId} "${created.leagueName}")`
+        : `Liga ya existente para esta tx (id ${created.leagueId}) — sin duplicar`;
+    } catch (err) {
+      console.error("[paddle/webhook] createPaidLeagueFromTransaction falló", err);
+      upgradeNote = "Pago de creación de liga recibido pero la creación falló. Revisar manualmente.";
+    }
+  } else {
+    let upgradeResult: Awaited<
+      ReturnType<typeof autoUpgradeLeagueFromPaddleTransaction>
+    > | null = null;
+    if (tier && customerEmail) {
+      upgradeResult = await autoUpgradeLeagueFromPaddleTransaction({
+        leagueCode,
+        customerEmail,
+        tier,
+        paidAmountEur,
+        transactionId: txId,
+      });
+    }
+    if (upgradeResult?.ok === true) {
+      autoActivation = {
+        leagueId: upgradeResult.leagueId,
+        leagueName: upgradeResult.leagueName,
+        resolvedBy: upgradeResult.resolvedBy,
+      };
+      upgradeNote = `Auto upgrade a tier ${tier} (liga ${upgradeResult.leagueId} "${upgradeResult.leagueName}", via ${upgradeResult.resolvedBy})`;
+    } else if (upgradeResult && upgradeResult.ok === false) {
+      upgradeNote = `Auto-upgrade no aplicado: ${upgradeResult.reason}. Revisar manualmente.`;
+    } else if (!tier) {
+      upgradeNote = "Tier no reconocido por priceId. Revisar manualmente.";
+    } else {
+      upgradeNote = "Faltan datos para auto-upgrade. Revisar manualmente.";
+    }
   }
 
-  const autoOk = upgradeResult?.ok === true ? upgradeResult : null;
-  const upgradeNote = autoOk
-    ? `Auto upgrade a tier ${tier} (liga ${autoOk.leagueId} "${autoOk.leagueName}", via ${autoOk.resolvedBy})`
-    : upgradeResult && upgradeResult.ok === false
-      ? `Auto-upgrade no aplicado: ${upgradeResult.reason}. Revisar manualmente.`
-      : !tier
-        ? "Tier no reconocido por priceId. Revisar manualmente."
-        : "Faltan datos para auto-upgrade. Revisar manualmente.";
+  const autoOk = autoActivation;
   const leadNotes = `${upgradeNote} · Tx: ${orderTag} · Total: ${amountFormatted}.`;
 
   console.log(

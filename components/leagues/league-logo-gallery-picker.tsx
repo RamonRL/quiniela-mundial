@@ -10,6 +10,9 @@ type Props = {
   initialLogoUrl: string | null;
   /** Nombre del input oculto que viajará en el FormData. */
   inputName?: string;
+  /** Notifica el id de preset elegido (para flujos que necesitan el valor
+   * en el estado del padre, no solo en el FormData). */
+  onChange?: (presetId: string | null) => void;
 };
 
 /**
@@ -24,10 +27,16 @@ type Props = {
 export function LeagueLogoGalleryPicker({
   initialLogoUrl,
   inputName = "logoPresetId",
+  onChange,
 }: Props) {
   const initialId =
     PRESET_LEAGUE_LOGOS.find((p) => p.url === initialLogoUrl)?.id ?? null;
   const [selectedId, setSelectedId] = useState<string | null>(initialId);
+
+  function select(id: string) {
+    setSelectedId(id);
+    onChange?.(id);
+  }
 
   return (
     <div className="flex flex-wrap gap-2">
@@ -38,7 +47,7 @@ export function LeagueLogoGalleryPicker({
           <button
             key={preset.id}
             type="button"
-            onClick={() => setSelectedId(preset.id)}
+            onClick={() => select(preset.id)}
             aria-label={`Elegir logo ${preset.name}`}
             aria-pressed={isSelected}
             className={`group relative size-11 overflow-hidden rounded-full border transition-all sm:size-12 ${

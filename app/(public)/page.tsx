@@ -53,7 +53,7 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: "¿Hay planes para empresas y grupos grandes?",
-    a: "Sí. La versión Free aguanta hasta 20 miembros por quiniela. Para empresas, comunidades o eventos con más gente hay Pases Mundial 2026 que escalan la liga a 50, 100 o 250 miembros. Pago único por torneo, vía PayPal previo contacto. Detalles en /precios.",
+    a: "Sí. La versión Estándar aguanta hasta 20 miembros por quiniela, gratis. Para empresas, comunidades o eventos con más gente hay Pases Mundial 2026 que escalan la liga a 50, 100 o 250 miembros. Pago único por torneo. Detalles en /precios.",
   },
   {
     q: "¿Hay app para iPhone y Android?",
@@ -424,19 +424,22 @@ export default async function HomePage() {
           <div className="grid gap-3 sm:grid-cols-3">
             <TierTeaser
               priceEur={19}
+              regularEur={29}
               label="Pase Equipo"
               members="Hasta 50 miembros"
               perPerson="0,38 €/persona"
-            />
-            <TierTeaser
-              priceEur={49}
-              label="Pase Empresa"
-              members="Hasta 100 miembros"
-              perPerson="0,49 €/persona"
               highlight
             />
             <TierTeaser
+              priceEur={49}
+              regularEur={69}
+              label="Pase Empresa"
+              members="Hasta 100 miembros"
+              perPerson="0,49 €/persona"
+            />
+            <TierTeaser
               priceEur={99}
+              regularEur={149}
               label="Empresa Plus"
               members="Hasta 250 miembros"
               perPerson="0,40 €/persona"
@@ -924,12 +927,14 @@ export default async function HomePage() {
 
 function TierTeaser({
   priceEur,
+  regularEur,
   label,
   members,
   perPerson,
   highlight,
 }: {
   priceEur: number;
+  regularEur?: number;
   label: string;
   members: string;
   perPerson: string;
@@ -945,15 +950,22 @@ function TierTeaser({
     >
       {highlight ? (
         <span className="absolute right-3 top-3 rounded-full bg-[var(--color-arena)] px-2 py-0.5 font-mono text-[0.5rem] uppercase tracking-[0.18em] text-white">
-          Más elegido
+          Más popular
         </span>
       ) : null}
       <p className="font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
         {label}
       </p>
-      <p className="mt-1 font-display tabular text-4xl tracking-tight text-[var(--color-arena)] glow-arena">
-        {priceEur} €
-      </p>
+      <div className="mt-1 flex items-baseline gap-2">
+        <p className="font-display tabular text-4xl tracking-tight text-[var(--color-arena)] glow-arena">
+          {priceEur} €
+        </p>
+        {regularEur ? (
+          <span className="font-display tabular text-lg tracking-tight text-[var(--color-muted-foreground)] line-through decoration-[var(--color-arena)]/70">
+            {regularEur} €
+          </span>
+        ) : null}
+      </div>
       <p className="mt-1 font-display text-base tracking-tight">{members}</p>
       <p className="mt-1 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
         ≈ {perPerson}

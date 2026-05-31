@@ -173,6 +173,10 @@ export const leagues = pgTable(
     paidAt: timestamp("paid_at", { withTimezone: true }),
     paidAmountEur: integer("paid_amount_eur"),
     paidVia: text("paid_via"),
+    // Idempotencia del flujo "pagar antes de crear": id de la transaction de
+    // Paddle que creó/pagó esta liga. Único — evita duplicar si el webhook y
+    // el finalize del cliente coinciden tras un pago. NULL en ligas gratis.
+    paidTxId: text("paid_tx_id").unique(),
     // Anuncio fijado del owner — banner en /mi-quiniela. Premium-only.
     announcement: text("announcement"),
   },

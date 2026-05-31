@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { requireUser } from "@/lib/auth/guards";
+import { paddleClientToken, paddlePublicEnv } from "@/lib/paddle";
 import { BrandWordmark } from "@/components/brand/brand-wordmark";
 import { OnboardingFlow } from "./onboarding-flow";
 
@@ -154,6 +155,7 @@ export default async function OnboardingPage({
             userNickname={me.nickname}
             userEmail={me.email}
             userAvatarUrl={me.avatarUrl}
+            paddle={{ token: paddleClientToken(), env: paddlePublicEnv() }}
           />
         </div>
       </div>

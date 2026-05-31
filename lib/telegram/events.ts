@@ -156,7 +156,7 @@ export async function notifyPaddleOrder(args: {
   autoActivation?: {
     leagueId: number;
     leagueName: string;
-    resolvedBy: "league_code" | "email";
+    resolvedBy: "league_code" | "email" | "created";
   };
 }): Promise<void> {
   if (!(await isTelegramEventEnabled("paddle.order"))) return;
@@ -175,7 +175,9 @@ export async function notifyPaddleOrder(args: {
     const via =
       args.autoActivation.resolvedBy === "league_code"
         ? "código en checkout"
-        : "email del comprador";
+        : args.autoActivation.resolvedBy === "created"
+          ? "creada al pagar"
+          : "email del comprador";
     lines.push(
       `🏆 <b>${escapeHTML(args.autoActivation.leagueName)}</b> (${via})`,
       `<a href="${SITE_URL}/admin/ligas/${args.autoActivation.leagueId}">Ver liga</a>`,

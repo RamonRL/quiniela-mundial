@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
@@ -10,20 +10,26 @@ import {
   Check,
   Copy,
   Globe,
+  Loader2,
   Lock,
   Plus,
+  ShieldCheck,
   Sparkles,
   Users,
 } from "lucide-react";
+import { initializePaddle, type Paddle } from "@paddle/paddle-js";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { initials } from "@/lib/utils";
+import { initials, cn } from "@/lib/utils";
 import { formatBytes } from "@/lib/client-image";
 import { AvatarCropDialog } from "@/components/profile/avatar-crop-dialog";
 import { LeagueLogoGalleryPicker } from "@/components/leagues/league-logo-gallery-picker";
+import { CommercialLeadForm } from "@/components/leagues/commercial-lead-form";
 import {
   createLeague,
+  finalizePaidLeague,
+  startPaidLeagueCheckout,
   joinLeagueByCode,
   type CreateLeagueResult,
   type LeagueFormState,
@@ -33,6 +39,7 @@ import {
   PREDICTION_MODE_META,
   type PredictionMode,
 } from "@/lib/prediction-modes";
+import { ONBOARDING_PLANS, type PlanKey } from "@/lib/plans";
 import {
   joinPublicByMode,
   saveInitialAvatar,
@@ -53,26 +60,7 @@ const initialCreate: CreateLeagueResult = { ok: false };
 const initialJoin: LeagueFormState = { ok: false };
 const initialProfile: SaveInitialProfileState = { ok: false };
 
-type PlanKey = "free" | "team-50" | "team-100" | "team-250" | "enterprise";
-
-// Planes mostrados en el paso de elección tras crear la liga. La liga se
-// crea SIEMPRE como Free; elegir un plan de pago lleva al checkout (el
-// webhook sube el tier al confirmar). Enterprise se negocia por contacto.
-const PLAN_OPTIONS: {
-  key: PlanKey;
-  name: string;
-  price: string;
-  members: string;
-  blurb: string;
-}[] = [
-  { key: "free", name: "Free", price: "0 €", members: "Hasta 20 miembros", blurb: "Para tu grupo de amigos. Gratis para siempre." },
-  { key: "team-50", name: "Pase Equipo", price: "19 €", members: "Hasta 50 miembros", blurb: "Equipos y peñas. Pago único del torneo." },
-  { key: "team-100", name: "Pase Empresa", price: "49 €", members: "Hasta 100 miembros", blurb: "Empresas medianas. Logo, departamentos y export CSV." },
-  { key: "team-250", name: "Pase Empresa Plus", price: "99 €", members: "Hasta 250 miembros", blurb: "Grandes organizaciones. Todo incluido." },
-  { key: "enterprise", name: "Enterprise", price: "A medida", members: "Sin tope", blurb: "Más de 250 o necesidades especiales. Hablamos." },
-];
-
-const PAID_PLAN_KEYS: PlanKey[] = ["team-50", "team-100", "team-250"];
+type PaddleConfig = { token: string | null; env: "sandbox" | "production" };
 
 export function OnboardingFlow({
   step,
@@ -80,12 +68,14 @@ export function OnboardingFlow({
   userNickname,
   userEmail,
   userAvatarUrl,
+  paddle,
 }: {
   step: Step;
   fresh: boolean;
   userNickname: string | null;
   userEmail: string;
   userAvatarUrl: string | null;
+  paddle: PaddleConfig;
 }) {
   const router = useRouter();
   // Si el usuario llegó al onboarding desde el gateway de compra (p. ej.
@@ -224,7 +214,7 @@ export function OnboardingFlow({
     return (
       <div className="space-y-10">
         <BackButton href="/onboarding?step=privada-elegir" />
-        <CreateLeagueForm fresh={fresh} />
+        <CreateLeagueForm fresh={fresh} paddle={paddle} />
       </div>
     );
   }
@@ -330,32 +320,46 @@ function ChoiceCard({
 
 // ──────────────────────── Crear ────────────────────────
 
-function CreateLeagueForm({ fresh }: { fresh: boolean }) {
-  const [state, action, pending] = useActionState(createLeague, initialCreate);
+type CreatedLeague = { name: string; joinCode: string | null; inviteToken: string };
+
+/**
+ * Crear quiniela en dos fases (mismo componente cliente):
+ *  1. nombre + modo + logo (NO se crea aún la liga),
+ *  2. elegir plan → Estándar/Enterprise crean al instante (gratis); un plan
+ *     de pago abre el checkout de Paddle en overlay y la liga solo se crea
+ *     cuando el pago se confirma.
+ */
+function CreateLeagueForm({
+  fresh,
+  paddle,
+}: {
+  fresh: boolean;
+  paddle: PaddleConfig;
+}) {
+  const [phase, setPhase] = useState<"form" | "plan">("form");
   const [nameValue, setNameValue] = useState("");
   const [mode, setMode] = useState<PredictionMode>("completo");
-  const [selectedPlan, setSelectedPlan] = useState<PlanKey>("free");
-  const [planConfirmed, setPlanConfirmed] = useState(false);
+  const [logoPresetId, setLogoPresetId] = useState<string | null>(null);
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [created, setCreated] = useState<CreatedLeague | null>(null);
+  const [createdPlan, setCreatedPlan] = useState<PlanKey>("free");
 
-  if (state.ok && state.league) {
-    // La liga ya está creada (Free). Antes del código + invite link, el
-    // usuario elige plan. Free continúa; un plan de pago se completa desde
-    // la pantalla del código con un CTA al checkout.
-    if (!planConfirmed) {
-      return (
-        <PlanStep
-          selected={selectedPlan}
-          onSelect={setSelectedPlan}
-          onContinue={() => setPlanConfirmed(true)}
-        />
-      );
-    }
+  if (created) {
+    return <CreatedSuccess league={created} plan={createdPlan} />;
+  }
+
+  if (phase === "plan") {
     return (
-      <CreatedSuccess
-        name={state.league.name}
-        joinCode={state.league.joinCode}
-        inviteToken={state.league.inviteToken}
-        selectedPlan={selectedPlan}
+      <PlanStep
+        name={nameValue.trim()}
+        mode={mode}
+        logoPresetId={logoPresetId}
+        paddle={paddle}
+        onBack={() => setPhase("form")}
+        onCreated={(league, plan) => {
+          setCreatedPlan(plan);
+          setCreated(league);
+        }}
       />
     );
   }
@@ -372,7 +376,19 @@ function CreateLeagueForm({ fresh }: { fresh: boolean }) {
         </p>
       </header>
 
-      <form action={action} className="space-y-6">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          const trimmed = nameValue.trim();
+          if (trimmed.length < 2) {
+            setNameError("El nombre debe tener al menos 2 caracteres.");
+            return;
+          }
+          setNameError(null);
+          setPhase("plan");
+        }}
+        className="space-y-6"
+      >
         <FloatingField
           name="name"
           label="Nombre de la quiniela · máx 25 caracteres"
@@ -386,7 +402,6 @@ function CreateLeagueForm({ fresh }: { fresh: boolean }) {
           onChange={(e) => setNameValue(e.target.value)}
         />
 
-        <input type="hidden" name="mode" value={mode} />
         <div className="space-y-2">
           <p className="font-mono text-[0.6rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
             Modo de predicción
@@ -421,21 +436,16 @@ function CreateLeagueForm({ fresh }: { fresh: boolean }) {
           <p className="font-mono text-[0.6rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
             Logo
           </p>
-          <LeagueLogoGalleryPicker initialLogoUrl={null} />
+          <LeagueLogoGalleryPicker initialLogoUrl={null} onChange={setLogoPresetId} />
         </div>
 
-        {state.error ? (
-          <p className="text-sm text-[var(--color-danger)]">{state.error}</p>
+        {nameError ? (
+          <p className="text-sm text-[var(--color-danger)]">{nameError}</p>
         ) : null}
 
         <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center">
-          <Button
-            type="submit"
-            size="lg"
-            className="h-14 px-8 text-base sm:flex-1"
-            disabled={pending}
-          >
-            {pending ? "Creando…" : "Crear quiniela"}
+          <Button type="submit" size="lg" className="h-14 px-8 text-base sm:flex-1">
+            Continuar
             <ArrowRight />
           </Button>
           {!fresh ? (
@@ -447,6 +457,60 @@ function CreateLeagueForm({ fresh }: { fresh: boolean }) {
       </form>
     </div>
   );
+}
+
+/**
+ * Carga Paddle.js una vez y expone `open(transactionId, callbacks)` para abrir
+ * el overlay sobre la pantalla actual. `checkout.completed` dispara
+ * `onCompleted`; `checkout.closed` dispara `onClosed` (cerró sin pagar).
+ */
+function useInlineCheckout(config: PaddleConfig) {
+  const [paddle, setPaddle] = useState<Paddle | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const onCompletedRef = useRef<(() => void) | null>(null);
+  const onClosedRef = useRef<(() => void) | null>(null);
+  const initRef = useRef(false);
+
+  useEffect(() => {
+    if (!config.token || initRef.current) return;
+    initRef.current = true;
+    initializePaddle({
+      environment: config.env,
+      token: config.token,
+      eventCallback: (event) => {
+        if (event?.name === "checkout.completed") {
+          onCompletedRef.current?.();
+        } else if (event?.name === "checkout.closed") {
+          onClosedRef.current?.();
+        }
+      },
+    })
+      .then((instance) => {
+        if (instance) setPaddle(instance);
+      })
+      .catch((err: unknown) => {
+        setError(err instanceof Error ? err.message : "No se pudo cargar el pago.");
+      });
+  }, [config.token, config.env]);
+
+  function open(
+    transactionId: string,
+    cbs: { onCompleted: () => void; onClosed: () => void },
+  ): boolean {
+    onCompletedRef.current = cbs.onCompleted;
+    onClosedRef.current = cbs.onClosed;
+    if (!paddle) {
+      setError("El pago aún se está cargando. Prueba de nuevo en un segundo.");
+      return false;
+    }
+    paddle.Checkout.open({
+      transactionId,
+      settings: { displayMode: "overlay", theme: "dark", locale: "es" },
+    });
+    return true;
+  }
+
+  return { open, ready: !!paddle, error };
 }
 
 function FloatingField({
@@ -503,91 +567,273 @@ function FloatingField({
 }
 
 /**
- * Paso de elección de plan, entre crear la liga y ver el código. La liga ya
- * existe como Free; aquí el usuario elige (Free por defecto). El plan de pago
- * se materializa después, desde la pantalla del código.
+ * Paso de elección de plan. La liga AÚN no existe: Estándar/Enterprise la
+ * crean gratis al instante; un plan de pago abre el checkout de Paddle en
+ * overlay y la liga solo se materializa cuando el pago se confirma.
  */
 function PlanStep({
-  selected,
-  onSelect,
-  onContinue,
+  name,
+  mode,
+  logoPresetId,
+  paddle,
+  onBack,
+  onCreated,
 }: {
-  selected: PlanKey;
-  onSelect: (p: PlanKey) => void;
-  onContinue: () => void;
+  name: string;
+  mode: PredictionMode;
+  logoPresetId: string | null;
+  paddle: PaddleConfig;
+  onBack: () => void;
+  onCreated: (league: CreatedLeague, plan: PlanKey) => void;
 }) {
+  const [selected, setSelected] = useState<PlanKey>("free");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [paying, setPaying] = useState(false);
+  const checkout = useInlineCheckout(paddle);
+
+  const selectedPlan = ONBOARDING_PLANS.find((p) => p.key === selected)!;
+
+  // Crea la liga gratis (Estándar o Enterprise) vía la server action clásica.
+  async function createFree(plan: PlanKey) {
+    const fd = new FormData();
+    fd.set("name", name);
+    fd.set("mode", mode);
+    if (logoPresetId) fd.set("logoPresetId", logoPresetId);
+    const res = await createLeague(initialCreate, fd);
+    if (res.ok && res.league) {
+      onCreated(
+        {
+          name: res.league.name,
+          joinCode: res.league.joinCode,
+          inviteToken: res.league.inviteToken,
+        },
+        plan,
+      );
+    } else {
+      setError(res.error ?? "No se pudo crear la quiniela.");
+      setBusy(false);
+    }
+  }
+
+  // Tras el pago: verifica con Paddle y crea la liga. Reintenta unas veces por
+  // si la transaction aún no figura como completada; el webhook es el respaldo.
+  async function finalizeWithRetry(txId: string, attempt = 0): Promise<void> {
+    const res = await finalizePaidLeague(txId);
+    if (res.ok) {
+      onCreated(res.league, selected);
+      return;
+    }
+    if (attempt < 4) {
+      await new Promise((r) => setTimeout(r, 1500));
+      return finalizeWithRetry(txId, attempt + 1);
+    }
+    toast.success("Pago recibido. Estamos creando tu quiniela…");
+    window.location.href = "/dashboard";
+  }
+
+  async function onContinue() {
+    setError(null);
+    setBusy(true);
+    if (selected === "free" || selected === "enterprise") {
+      await createFree(selected);
+      return;
+    }
+    // Plan de pago → checkout en overlay; la liga se crea al confirmar el pago.
+    const res = await startPaidLeagueCheckout({
+      name,
+      mode,
+      logoPresetId,
+      tier: selected,
+    });
+    if (!res.ok) {
+      setError(res.error);
+      setBusy(false);
+      return;
+    }
+    setPaying(true);
+    const opened = checkout.open(res.transactionId, {
+      onCompleted: () => {
+        setPaying(false);
+        void finalizeWithRetry(res.transactionId);
+      },
+      onClosed: () => {
+        setPaying(false);
+        setBusy(false);
+      },
+    });
+    if (!opened) {
+      setError(checkout.error ?? "No se pudo abrir la ventana de pago.");
+      setPaying(false);
+      setBusy(false);
+    }
+  }
+
+  const ctaLabel =
+    selected === "free"
+      ? "Crear quiniela gratis"
+      : selected === "enterprise"
+        ? "Continuar"
+        : `Pagar ${selectedPlan.priceLabel} y crear`;
+
   return (
     <div className="space-y-8">
-      <Eyebrow>Elige plan</Eyebrow>
+      <div className="flex items-center justify-between gap-3">
+        <Eyebrow>Elige plan</Eyebrow>
+        <button
+          type="button"
+          onClick={onBack}
+          disabled={busy}
+          className="inline-flex items-center gap-1.5 font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)] transition hover:text-[var(--color-foreground)] disabled:opacity-50"
+        >
+          <ArrowLeft className="size-3.5" /> Volver
+        </button>
+      </div>
       <header className="space-y-3">
         <h1 className="font-display text-4xl tracking-tight sm:text-5xl">
           El plan de tu quiniela
         </h1>
         <p className="font-editorial text-lg italic text-[var(--color-muted-foreground)]">
-          Empieza gratis; sube de plan cuando quieras. Tu liga ya está creada.
+          Empieza gratis o elige un Pase; el pago se hace aquí mismo.
         </p>
       </header>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {PLAN_OPTIONS.map((plan) => {
-          const active = selected === plan.key;
-          return (
-            <button
-              key={plan.key}
-              type="button"
-              onClick={() => onSelect(plan.key)}
-              aria-pressed={active}
-              className={`flex flex-col gap-1 rounded-xl border p-4 text-left transition ${
-                active
-                  ? "border-[var(--color-arena)] bg-[color-mix(in_oklch,var(--color-arena)_7%,var(--color-surface))] shadow-[var(--shadow-arena)]"
-                  : "border-[var(--color-border)] bg-[var(--color-surface)] hover:border-[var(--color-arena)]/40"
-              }`}
-            >
-              <div className="flex items-baseline justify-between gap-2">
-                <p className="font-display text-lg tracking-tight">{plan.name}</p>
-                <span className="font-display tabular text-base text-[var(--color-arena)]">
-                  {plan.price}
-                </span>
-              </div>
-              <p className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-                {plan.members}
-              </p>
-              <p className="mt-1 text-xs leading-snug text-[var(--color-muted-foreground)]">
-                {plan.blurb}
-              </p>
-            </button>
-          );
-        })}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        {ONBOARDING_PLANS.map((plan) => (
+          <PlanColumn
+            key={plan.key}
+            plan={plan}
+            active={selected === plan.key}
+            onSelect={() => !busy && setSelected(plan.key)}
+          />
+        ))}
       </div>
 
+      {error ? <p className="text-sm text-[var(--color-danger)]">{error}</p> : null}
+
       <div className="flex flex-wrap items-center gap-3 pt-1">
-        <Button size="lg" onClick={onContinue} className="h-14 px-8 text-base sm:flex-1">
-          Continuar <ArrowRight />
+        <Button
+          size="lg"
+          onClick={onContinue}
+          disabled={busy}
+          className="h-14 px-8 text-base sm:flex-1"
+        >
+          {paying ? (
+            <>
+              <Loader2 className="size-4 animate-spin" /> Pago en marcha…
+            </>
+          ) : busy ? (
+            "Creando…"
+          ) : (
+            <>
+              {ctaLabel} <ArrowRight />
+            </>
+          )}
         </Button>
-        <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)] sm:max-w-[18rem]">
-          El plan de pago lo completas en el siguiente paso, sin perder tu liga.
-        </p>
+        {selected !== "free" && selected !== "enterprise" ? (
+          <p className="inline-flex items-center gap-1.5 font-editorial text-xs italic text-[var(--color-muted-foreground)] sm:max-w-[18rem]">
+            <ShieldCheck className="size-3.5 text-[var(--color-arena)]" />
+            Pago seguro con Paddle. Si no pagas, no se crea la liga.
+          </p>
+        ) : null}
       </div>
     </div>
   );
 }
 
-function CreatedSuccess({
-  name,
-  joinCode,
-  inviteToken,
-  selectedPlan = "free",
+function PlanColumn({
+  plan,
+  active,
+  onSelect,
 }: {
-  name: string;
-  joinCode: string | null;
-  inviteToken: string;
-  selectedPlan?: PlanKey;
+  plan: (typeof ONBOARDING_PLANS)[number];
+  active: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-pressed={active}
+      className={cn(
+        "relative flex h-full flex-col gap-3 rounded-2xl border p-4 text-left transition",
+        active
+          ? "border-[var(--color-arena)] bg-[color-mix(in_oklch,var(--color-arena)_8%,var(--color-surface))] shadow-[var(--shadow-arena)]"
+          : "border-[var(--color-border)] bg-[var(--color-surface)] hover:border-[var(--color-arena)]/40",
+      )}
+    >
+      {plan.popular ? (
+        <span className="absolute -top-2 right-3 rounded-full bg-[var(--color-arena)] px-2 py-0.5 font-mono text-[0.5rem] uppercase tracking-[0.18em] text-white shadow-[var(--shadow-arena)]">
+          Más popular
+        </span>
+      ) : null}
+
+      <div className="space-y-1">
+        <p className="font-display text-lg tracking-tight">{plan.name}</p>
+        <div className="flex items-baseline gap-1.5">
+          <span className="font-display tabular text-2xl tracking-tight text-[var(--color-arena)]">
+            {plan.priceLabel}
+          </span>
+          {plan.regularPriceLabel ? (
+            <span className="font-display tabular text-sm tracking-tight text-[var(--color-muted-foreground)] line-through decoration-[var(--color-arena)]/70">
+              {plan.regularPriceLabel}
+            </span>
+          ) : null}
+        </div>
+        <p className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+          {plan.members}
+        </p>
+      </div>
+
+      <p className="font-editorial text-xs italic leading-snug text-[var(--color-muted-foreground)]">
+        {plan.audience}
+      </p>
+
+      <ul className="space-y-1.5 border-t border-[var(--color-border)] pt-3">
+        {plan.features.map((f) => (
+          <li key={f} className="flex items-start gap-1.5 text-xs leading-snug">
+            <Check className="mt-0.5 size-3 shrink-0 text-[var(--color-arena)]" />
+            <span>{f}</span>
+          </li>
+        ))}
+      </ul>
+
+      {plan.key === "free" ? (
+        <p className="mt-auto pt-1 font-mono text-[0.5rem] uppercase leading-relaxed tracking-[0.14em] text-[var(--color-muted-foreground)]">
+          Podrás ampliar el tope más tarde desde «Mi Quiniela».
+        </p>
+      ) : null}
+
+      <span
+        className={cn(
+          "mt-auto inline-flex items-center gap-1.5 font-mono text-[0.55rem] uppercase tracking-[0.2em]",
+          active ? "text-[var(--color-arena)]" : "text-[var(--color-muted-foreground)]",
+        )}
+      >
+        {active ? (
+          <>
+            <Check className="size-3" /> Seleccionado
+          </>
+        ) : (
+          "Elegir"
+        )}
+      </span>
+    </button>
+  );
+}
+
+function CreatedSuccess({
+  league,
+  plan,
+}: {
+  league: CreatedLeague;
+  plan: PlanKey;
 }) {
   const router = useRouter();
-  // Si veníamos del gateway de compra, terminamos volviendo allí en vez de a
-  // /dashboard — así el usuario completa la compra del tier sin tener que
-  // navegar manualmente.
-  const nextParam = useSearchParams().get("next");
+  const { name, joinCode, inviteToken } = league;
+  const isEnterprise = plan === "enterprise";
+  const isPaid = plan === "team-50" || plan === "team-100" || plan === "team-250";
+  const planMeta = ONBOARDING_PLANS.find((p) => p.key === plan);
   const inviteUrl =
     typeof window !== "undefined"
       ? `${window.location.origin}/invite/${inviteToken}`
@@ -597,7 +843,7 @@ function CreatedSuccess({
       <div className="flex items-center gap-3">
         <Sparkles className="size-4 text-[var(--color-arena)]" />
         <p className="font-mono text-[0.65rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-arena)]">
-          Liga creada
+          {isPaid ? `Liga creada · ${planMeta?.name}` : "Liga creada"}
         </p>
       </div>
       <header className="space-y-4">
@@ -605,7 +851,9 @@ function CreatedSuccess({
           {name}
         </h1>
         <p className="font-editorial text-lg italic text-[var(--color-muted-foreground)]">
-          Comparte el código y a por ello.
+          {isPaid
+            ? "Pago confirmado y tope ampliado. Comparte el código y a por ello."
+            : "Comparte el código y a por ello."}
         </p>
       </header>
 
@@ -637,47 +885,31 @@ function CreatedSuccess({
         </div>
       </div>
 
-      {PAID_PLAN_KEYS.includes(selectedPlan) && joinCode ? (
-        <div className="flex flex-col gap-3 rounded-2xl border border-[var(--color-arena)]/50 bg-[color-mix(in_oklch,var(--color-arena)_6%,var(--color-surface))] p-5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
+      {isEnterprise ? (
+        <div className="space-y-4 rounded-2xl border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface))] p-5 sm:p-6">
+          <div className="space-y-1">
             <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-              Plan seleccionado · {PLAN_OPTIONS.find((p) => p.key === selectedPlan)?.name}
-            </p>
-            <p className="mt-1 font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-              Completa el pago para subir el tope de tu liga. Mientras, ya
-              puedes usarla en plan Free.
-            </p>
-          </div>
-          <Button asChild size="lg" className="shrink-0">
-            <Link href={`/api/checkout/${selectedPlan}?league=${joinCode}`}>
-              Completar pago <ArrowRight />
-            </Link>
-          </Button>
-        </div>
-      ) : selectedPlan === "enterprise" ? (
-        <div className="flex flex-col gap-3 rounded-2xl border border-[var(--color-border-strong)] bg-[var(--color-surface)] p-5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
               Plan Enterprise
             </p>
-            <p className="mt-1 font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-              Para más de 250 miembros lo ajustamos contigo. Tu liga ya está
-              activa en Free mientras tanto.
+            <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
+              Tu liga ya está activa en Estándar. Cuéntanos las necesidades de
+              tu organización y te preparamos el plan a medida (sin tope de
+              miembros).
             </p>
           </div>
-          <Button asChild variant="outline" size="lg" className="shrink-0">
-            <Link href="/contacto">Hablar con ventas <ArrowRight /></Link>
-          </Button>
+          <CommercialLeadForm
+            defaultMessagePlaceholder="Nº de empleados, fechas, datos de facturación, lo que necesites…"
+          />
         </div>
       ) : null}
 
       <div className="flex flex-wrap items-center gap-4 pt-2">
         <Button
           size="lg"
-          onClick={() => router.push(nextParam ?? "/dashboard")}
+          onClick={() => router.push("/dashboard")}
           className="h-14 px-8 text-base sm:flex-1"
         >
-          {nextParam ? "Continuar a pagar" : "Ir al dashboard"} <ArrowRight />
+          Ir al dashboard <ArrowRight />
         </Button>
         <Link
           href="/onboarding?step=privada-elegir"

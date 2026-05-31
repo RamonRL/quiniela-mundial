@@ -2,6 +2,9 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { auditLog, leagues, profiles } from "@/lib/db/schema";
 import { TIER_MEMBER_LIMIT, type LeagueTier } from "@/lib/league-tiers";
+import { createLeagueRecord } from "@/lib/leagues";
+import type { PaidTierId } from "@/lib/paddle";
+import type { PredictionMode } from "@/lib/prediction-modes";
 
 /**
  * Auto-upgrade de una liga privada a partir de una transaction
@@ -123,4 +126,93 @@ export async function autoUpgradeLeagueFromPaddleTransaction(
     leagueName: target.name,
     resolvedBy,
   };
+}
+
+export type CreatePaidLeagueResult = {
+  leagueId: number;
+  leagueName: string;
+  joinCode: string | null;
+  inviteToken: string;
+  /** false si ya existía (idempotencia): el caller no debe re-notificar. */
+  created: boolean;
+};
+
+/**
+ * Crea una liga privada YA pagada a partir de una transaction completada de
+ * Paddle (flujo "pagar antes de crear"). Idempotente vía `leagues.paidTxId`:
+ * si el webhook y el `finalizePaidLeague` del cliente coinciden, solo se crea
+ * una vez. Lo invocan ambos.
+ */
+export async function createPaidLeagueFromTransaction(opts: {
+  txId: string;
+  userId: string;
+  tier: PaidTierId;
+  name: string;
+  mode: PredictionMode;
+  logoUrl: string;
+  paidAmountEur: number;
+}): Promise<CreatePaidLeagueResult> {
+  const existing = await findLeagueByTxId(opts.txId);
+  if (existing) return { ...existing, created: false };
+
+  const memberLimit = TIER_MEMBER_LIMIT[opts.tier];
+  let rec;
+  try {
+    rec = await createLeagueRecord({
+      userId: opts.userId,
+      name: opts.name,
+      mode: opts.mode,
+      logoUrl: opts.logoUrl,
+      tier: opts.tier,
+      memberLimit,
+      paid: { txId: opts.txId, amountEur: opts.paidAmountEur },
+    });
+  } catch (err) {
+    // Carrera: el otro camino insertó con el mismo paidTxId (UNIQUE) entre
+    // el SELECT de arriba y este INSERT. Reconsultamos y devolvemos esa liga.
+    const raced = await findLeagueByTxId(opts.txId);
+    if (raced) return { ...raced, created: false };
+    throw err;
+  }
+
+  await db.insert(auditLog).values({
+    adminId: null,
+    action: "league.create.paid",
+    payloadJson: {
+      leagueId: rec.id,
+      tier: opts.tier,
+      memberLimit,
+      paidAmountEur: opts.paidAmountEur,
+      paidVia: "paddle",
+      transactionId: opts.txId,
+      userId: opts.userId,
+    },
+  });
+
+  return {
+    leagueId: rec.id,
+    leagueName: rec.name,
+    joinCode: rec.joinCode,
+    inviteToken: rec.inviteToken,
+    created: true,
+  };
+}
+
+async function findLeagueByTxId(txId: string): Promise<{
+  leagueId: number;
+  leagueName: string;
+  joinCode: string | null;
+  inviteToken: string;
+} | null> {
+  const [row] = await db
+    .select({
+      leagueId: leagues.id,
+      leagueName: leagues.name,
+      joinCode: leagues.joinCode,
+      inviteToken: leagues.inviteToken,
+    })
+    .from(leagues)
+    .where(eq(leagues.paidTxId, txId))
+    .limit(1);
+  return row ?? null;
 }
