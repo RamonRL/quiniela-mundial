@@ -17,11 +17,12 @@ import { PageHeader } from "@/components/shell/page-header";
 import { ScoringBox } from "@/components/brand/scoring-box";
 import { Lock } from "lucide-react";
 import { requireUser } from "@/lib/auth/guards";
-import { currentLeagueId } from "@/lib/leagues";
+import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
+import { MATCH_SCORING_BY_MODE } from "@/lib/scoring/copy";
 import { formatDateTime } from "@/lib/utils";
 import { getMatchdayState, isMatchClosed, type Stage } from "@/lib/matchday-state";
 import { EmptyState } from "@/components/shell/empty-state";
-import { MATCH_FOOTNOTE, MATCH_SCORING } from "@/lib/scoring/copy";
+import { MATCH_FOOTNOTE } from "@/lib/scoring/copy";
 import { InteractiveModeBanner } from "@/components/predictions/interactive-mode-banner";
 import { MatchdayPredictionForm } from "./matchday-form";
 
@@ -33,6 +34,7 @@ export default async function PredictMatchdayPage({
   const me = await requireUser();
   const leagueId = (await currentLeagueId(me))!;
   const userTz = me.timezone ?? undefined;
+  const mode = (await getLeagueModes([leagueId])).get(leagueId) ?? "completo";
   const { matchdayId: idParam } = await params;
   const matchdayId = Number(idParam);
   if (!Number.isFinite(matchdayId)) notFound();
@@ -146,12 +148,11 @@ export default async function PredictMatchdayPage({
 
   const open = status.state === "open";
 
-  // Modo paso a paso por defecto mientras quede algún partido abierto sin
-  // marcador + goleador. Los partidos ya empezados (closed) no cuentan —
-  // alguien que entre tarde a la quiniela arranca el tour por el más
-  // próximo abierto. Cuando todo lo predecible está predicho, se queda en
-  // el modo full con banner para volver al interactivo.
-  if (open) {
+  // Modo paso a paso por defecto (solo modo completo) mientras quede algún
+  // partido abierto sin marcador + goleador. Los partidos ya empezados
+  // (closed) no cuentan. En marcador/solo_ganador el tour aún no aplica:
+  // se usa el formulario full mode-aware de abajo.
+  if (open && mode === "completo") {
     const nowD = new Date();
     const anyOpenPending = matchRows.some((m) => {
       if (isMatchClosed(m, nowD)) return false;
@@ -181,16 +182,17 @@ export default async function PredictMatchdayPage({
             : `Cierre pasado: ${formatDateTime(day.predictionDeadlineAt, { timeZone: userTz })}.`
         }
       />
-      {open ? (
+      {open && mode === "completo" ? (
         <InteractiveModeBanner
           href={`/predicciones/jornada/${day.id}/tour`}
           hint="Repasa partido a partido."
         />
       ) : null}
-      <ScoringBox sections={MATCH_SCORING} footnote={MATCH_FOOTNOTE} />
+      <ScoringBox sections={MATCH_SCORING_BY_MODE[mode]} footnote={MATCH_FOOTNOTE} />
       <MatchdayPredictionForm
         matchdayId={day.id}
         open={open}
+        mode={mode}
         matches={matchRows.map((m) => {
           const homeId = m.homeTeamId;
           const awayId = m.awayTeamId;

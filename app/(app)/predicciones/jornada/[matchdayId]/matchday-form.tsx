@@ -20,7 +20,8 @@ import {
 import { SavePredictionButton } from "@/components/predictions/save-prediction-button";
 import { SaveOverlay } from "@/components/predictions/save-overlay";
 import { usePredictionSaveToast } from "@/lib/predictions/use-save-toast";
-import { formatDateTime } from "@/lib/utils";
+import { formatDateTime, cn } from "@/lib/utils";
+import type { PredictionMode } from "@/lib/prediction-modes";
 import { saveMatchdayPredictions, type FormState } from "./actions";
 
 const initial: FormState = { ok: false };
@@ -84,6 +85,7 @@ export function MatchdayPredictionForm({
   matchdayId,
   matches,
   open,
+  mode = "completo",
 }: {
   matchdayId: number;
   matches: MatchInput[];
@@ -91,7 +93,12 @@ export function MatchdayPredictionForm({
    *  `true` = al menos un partido sigue upcoming. La granularidad real está
    *  por partido — cada uno se cierra a su kickoff. */
   open: boolean;
+  /** Modo de la liga: completo (marcador+goleador), marcador (sin goleador),
+   *  solo_ganador (solo 1X2 / quién pasa). */
+  mode?: PredictionMode;
 }) {
+  const soloGanador = mode === "solo_ganador";
+  const showScorer = mode === "completo";
   const [predictions, setPredictions] = useState<Prediction[]>(
     matches.map((m) => ({
       matchId: m.id,
@@ -106,7 +113,11 @@ export function MatchdayPredictionForm({
 
   usePredictionSaveToast(state, {
     successTitle: "Jornada guardada",
-    successDescription: "Marcadores y goleadores anotados para esta jornada.",
+    successDescription: soloGanador
+      ? "Ganadores anotados para esta jornada."
+      : showScorer
+        ? "Marcadores y goleadores anotados para esta jornada."
+        : "Marcadores anotados para esta jornada.",
   });
 
   function update(matchId: number, patch: Partial<Prediction>) {
@@ -175,6 +186,16 @@ export function MatchdayPredictionForm({
                 </div>
               </CardHeader>
               <CardContent className="space-y-2.5 p-4 pt-0">
+                {soloGanador ? (
+                  <WinnerSelector
+                    m={m}
+                    p={p}
+                    isKnockout={isKnockout}
+                    disabled={inputsDisabled}
+                    onPick={(patch) => update(m.id, patch)}
+                  />
+                ) : (
+                <>
                 <div className="flex items-center justify-between gap-3">
                   <TeamSide team={m.home} />
                   <ScoreStepper
@@ -235,6 +256,7 @@ export function MatchdayPredictionForm({
                   </div>
                 ) : null}
 
+                {showScorer ? (
                 <div className="space-y-1.5 border-t border-dashed border-[var(--color-border)] pt-3">
                   <Label className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
                     Goleador del partido <span className="text-[var(--color-arena)]">+4 / +6</span>
@@ -290,6 +312,9 @@ export function MatchdayPredictionForm({
                     </p>
                   )}
                 </div>
+                ) : null}
+                </>
+                )}
               </CardContent>
             </Card>
           );
@@ -318,6 +343,96 @@ function TeamSide({ team }: { team: TeamLite | null }) {
     <div className="flex min-w-0 items-center gap-2">
       <TeamFlag code={team?.code} size={28} />
       <span className="truncate text-sm font-medium">{team?.name ?? "—"}</span>
+    </div>
+  );
+}
+
+/**
+ * Selector 1X2 del modo Solo Ganador. Codifica la elección en el marcador
+ * canónico (local 1-0 · empate 0-0 · visitante 0-1). En eliminatoria, el
+ * empate significa "va a penaltis" y se despliega un sub-selector de quién
+ * gana la tanda (→ winnerTeamId).
+ */
+function WinnerSelector({
+  m,
+  p,
+  isKnockout,
+  disabled,
+  onPick,
+}: {
+  m: MatchInput;
+  p: Prediction;
+  isKnockout: boolean;
+  disabled: boolean;
+  onPick: (patch: Partial<Prediction>) => void;
+}) {
+  const outcome: "home" | "draw" | "away" =
+    p.homeScore > p.awayScore ? "home" : p.homeScore < p.awayScore ? "away" : "draw";
+  // Una predicción "tocada" solo si hay marcador o pens — para no pintar
+  // "empate" por defecto (0-0) como si ya fuese una elección del usuario.
+  const touched =
+    p.homeScore !== 0 || p.awayScore !== 0 || p.willGoToPens || p.winnerTeamId != null;
+
+  const pick = (o: "home" | "draw" | "away") => {
+    if (o === "home") onPick({ homeScore: 1, awayScore: 0, willGoToPens: false, winnerTeamId: isKnockout ? m.home?.id ?? null : null });
+    else if (o === "away") onPick({ homeScore: 0, awayScore: 1, willGoToPens: false, winnerTeamId: isKnockout ? m.away?.id ?? null : null });
+    else onPick({ homeScore: 0, awayScore: 0, willGoToPens: isKnockout, winnerTeamId: null });
+  };
+
+  const opts: { key: "home" | "draw" | "away"; label: string }[] = [
+    { key: "home", label: m.home?.code ?? "Local" },
+    { key: "draw", label: isKnockout ? "Empate → pens" : "Empate" },
+    { key: "away", label: m.away?.code ?? "Visitante" },
+  ];
+
+  return (
+    <div className="space-y-2">
+      <div className="grid grid-cols-3 gap-1.5">
+        {opts.map((o) => {
+          const active = touched && outcome === o.key;
+          return (
+            <button
+              key={o.key}
+              type="button"
+              disabled={disabled}
+              onClick={() => pick(o.key)}
+              className={cn(
+                "rounded-md border px-2 py-2.5 text-xs font-medium transition disabled:opacity-50",
+                active
+                  ? "border-[var(--color-arena)] bg-[color-mix(in_oklch,var(--color-arena)_12%,transparent)] text-[var(--color-foreground)]"
+                  : "border-[var(--color-border)] bg-[var(--color-surface-2)] text-[var(--color-muted-foreground)] hover:border-[var(--color-arena)]/40",
+              )}
+            >
+              {o.label}
+            </button>
+          );
+        })}
+      </div>
+      {isKnockout && touched && outcome === "draw" ? (
+        <div className="space-y-1 rounded-md bg-[var(--color-surface-2)] p-2">
+          <Label className="text-xs">¿Quién gana en penaltis?</Label>
+          <div className="grid grid-cols-2 gap-1.5">
+            {[m.home, m.away].map((team) =>
+              team ? (
+                <button
+                  key={team.id}
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => onPick({ winnerTeamId: team.id })}
+                  className={cn(
+                    "rounded-md border px-2 py-2 text-xs font-medium transition disabled:opacity-50",
+                    p.winnerTeamId === team.id
+                      ? "border-[var(--color-arena)] bg-[color-mix(in_oklch,var(--color-arena)_12%,transparent)] text-[var(--color-foreground)]"
+                      : "border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-muted-foreground)] hover:border-[var(--color-arena)]/40",
+                  )}
+                >
+                  {team.name}
+                </button>
+              ) : null,
+            )}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

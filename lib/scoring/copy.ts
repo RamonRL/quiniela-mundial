@@ -68,6 +68,52 @@ export const MATCH_SCORING: ScoringSection[] = [
 ];
 export const MATCH_FOOTNOTE = "En grupos: hasta 11 pts. En knockout: hasta 16 pts por partido.";
 
+// ───────────── Copy de partido por modo de liga ─────────────
+
+/** Modo Marcador: solo marcador, sin la sección de goleador. */
+export const MATCH_SCORING_MARCADOR: ScoringSection[] = [
+  {
+    heading: "Marcador",
+    rules: [
+      { points: 5, label: "Marcador exacto (90' o 120' en eliminatoria)" },
+      { points: 2, label: "Aciertas el ganador (o el empate) sin marcador exacto" },
+    ],
+  },
+  {
+    heading: "Solo en eliminatoria",
+    rules: [
+      { points: 3, prefix: "+", label: "Aciertas el clasificado (quién pasa)", bonus: true },
+      { points: 2, prefix: "+", label: "Predices empate→penaltis y ocurre", bonus: true },
+    ],
+  },
+];
+
+/** Modo Solo Ganador: solo el 1X2 / quién pasa. */
+export const MATCH_SCORING_SOLO_GANADOR: ScoringSection[] = [
+  {
+    heading: "Ganador del partido",
+    rules: [
+      { points: 3, label: "Aciertas el ganador (o el empate→penaltis en eliminatoria)" },
+      {
+        points: 2,
+        prefix: "+",
+        label: "Eliminatoria: si predices empate y aciertas quién gana la tanda",
+        bonus: true,
+      },
+    ],
+  },
+];
+
+/** Mapa modo → secciones de copy para la página de jornada y /puntuacion. */
+export const MATCH_SCORING_BY_MODE: Record<
+  "completo" | "marcador" | "solo_ganador",
+  ScoringSection[]
+> = {
+  completo: MATCH_SCORING,
+  marcador: MATCH_SCORING_MARCADOR,
+  solo_ganador: MATCH_SCORING_SOLO_GANADOR,
+};
+
 export const SPECIALS_SCORING: ScoringSection[] = [
   {
     rules: [

@@ -24,7 +24,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/shell/page-header";
 import { requireUser } from "@/lib/auth/guards";
-import { currentLeagueId } from "@/lib/leagues";
+import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
 import { formatDateTime } from "@/lib/utils";
 import { computeMatchdayStates, type Stage } from "@/lib/matchday-state";
 import { getBracketStatus } from "@/lib/bracket-state";
@@ -41,6 +41,10 @@ export default async function PrediccionesHub() {
   const me = await requireUser();
   const now = new Date();
   const leagueId = (await currentLeagueId(me))!;
+  // Modo de la liga activa. Marcador y Solo Ganador solo predicen partidos:
+  // ocultan Pre-torneo (grupos/bota/especiales) y Eliminatoria (bracket).
+  const mode = (await getLeagueModes([leagueId])).get(leagueId) ?? "completo";
+  const onlyMatches = mode !== "completo";
 
   const [
     [{ groupPredCount }],
@@ -144,7 +148,7 @@ export default async function PrediccionesHub() {
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <Link
-              href="/puntuacion"
+              href={`/puntuacion?modo=${mode}`}
               className="inline-flex h-9 items-center gap-2 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-foreground)] transition hover:border-[var(--color-arena)]/40 hover:text-[var(--color-arena)]"
             >
               <Calculator className="size-3.5" />
@@ -155,9 +159,12 @@ export default async function PrediccionesHub() {
         }
       />
 
-      <ImportPredictionsBanner userId={me.id} activeLeagueId={leagueId} />
+      {!onlyMatches ? (
+        <ImportPredictionsBanner userId={me.id} activeLeagueId={leagueId} />
+      ) : null}
 
-      {/* SECTION 1 — Pre-torneo */}
+      {/* SECTION 1 — Pre-torneo (solo en modo completo) */}
+      {!onlyMatches ? (
       <Section
         index="I"
         title="Pre-torneo"
@@ -223,12 +230,19 @@ export default async function PrediccionesHub() {
           />
         </div>
       </Section>
+      ) : null}
 
-      {/* SECTION 2 — Por jornada */}
+      {/* SECTION 2 — Por jornada (en todos los modos) */}
       <Section
-        index="II"
+        index={onlyMatches ? "I" : "II"}
         title="Jornada a jornada"
-        subtitle="Marcador y goleador del partido en una sola jugada"
+        subtitle={
+          mode === "solo_ganador"
+            ? "Solo el ganador (o empate) de cada partido"
+            : mode === "marcador"
+              ? "Marcador exacto de cada partido"
+              : "Marcador y goleador del partido en una sola jugada"
+        }
         dataTutorialId="cat-jornadas"
         dataTutorialIdMobile="cat-jornadas-mobile"
         meta={
@@ -268,7 +282,8 @@ export default async function PrediccionesHub() {
         )}
       </Section>
 
-      {/* SECTION 3 — Eliminatoria */}
+      {/* SECTION 3 — Eliminatoria (solo en modo completo) */}
+      {!onlyMatches ? (
       <Section
         index="III"
         title="Eliminatoria"
@@ -289,6 +304,7 @@ export default async function PrediccionesHub() {
       >
         <BracketCard status={bracketStatus.state} closesAt={bracketStatus.closesAt} />
       </Section>
+      ) : null}
     </div>
   );
 }
