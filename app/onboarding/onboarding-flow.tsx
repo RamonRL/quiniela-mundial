@@ -29,12 +29,23 @@ import {
   type LeagueFormState,
 } from "@/lib/league-actions";
 import {
-  chooseActivePublic,
+  PREDICTION_MODES,
+  PREDICTION_MODE_META,
+  type PredictionMode,
+} from "@/lib/prediction-modes";
+import {
+  joinPublicByMode,
   saveInitialProfile,
   type SaveInitialProfileState,
 } from "./actions";
 
-type Step = "perfil" | "root" | "privada-elegir" | "privada-crear" | "privada-unirse";
+type Step =
+  | "perfil"
+  | "root"
+  | "publica-elegir"
+  | "privada-elegir"
+  | "privada-crear"
+  | "privada-unirse";
 
 const initialCreate: CreateLeagueResult = { ok: false };
 const initialJoin: LeagueFormState = { ok: false };
@@ -69,6 +80,7 @@ export function OnboardingFlow({
   if (step === "root") {
     return (
       <div className="space-y-10">
+        {!fresh ? <BackButton href="/dashboard" /> : null}
         <Eyebrow>Onboarding</Eyebrow>
         <header className="space-y-4">
           <h1 className="font-display text-5xl tracking-tight sm:text-6xl xl:text-7xl">
@@ -83,12 +95,12 @@ export function OnboardingFlow({
           <ChoiceCard
             icon={<Globe className="size-6" />}
             label="Quiniela Pública"
-            description="Donde compite todo el mundo."
+            description="Donde compite todo el mundo. Elige el modo."
             primary
-            onClick={async () => {
-              await chooseActivePublic();
+            onClick={() => {
+              router.push(`/onboarding?step=publica-elegir${nextQuery}`);
             }}
-            actionLabel="Entrar"
+            actionLabel="Continuar"
           />
           <ChoiceCard
             icon={<Lock className="size-6" />}
@@ -99,6 +111,41 @@ export function OnboardingFlow({
             }}
             actionLabel="Continuar"
           />
+        </div>
+      </div>
+    );
+  }
+
+  if (step === "publica-elegir") {
+    return (
+      <div className="space-y-10">
+        <BackButton href={`/onboarding?step=root${nextQuery}`} />
+        <Eyebrow>Quiniela pública</Eyebrow>
+        <header className="space-y-4">
+          <h1 className="font-display text-4xl tracking-tight sm:text-5xl xl:text-6xl">
+            Elige el modo de juego
+          </h1>
+          <p className="font-editorial text-lg italic leading-relaxed text-[var(--color-muted-foreground)]">
+            Tres quinielas públicas, una por modo. Puedes entrar a las que quieras.
+          </p>
+        </header>
+        <div className="grid gap-4 sm:grid-cols-3">
+          {PREDICTION_MODES.map((m) => {
+            const meta = PREDICTION_MODE_META[m];
+            return (
+              <ChoiceCard
+                key={m}
+                icon={<Globe className="size-6" />}
+                label={meta.label}
+                description={meta.description}
+                primary={m === "completo"}
+                onClick={async () => {
+                  await joinPublicByMode(m);
+                }}
+                actionLabel="Entrar"
+              />
+            );
+          })}
         </div>
       </div>
     );
@@ -253,6 +300,7 @@ function ChoiceCard({
 function CreateLeagueForm({ fresh }: { fresh: boolean }) {
   const [state, action, pending] = useActionState(createLeague, initialCreate);
   const [nameValue, setNameValue] = useState("");
+  const [mode, setMode] = useState<PredictionMode>("completo");
 
   if (state.ok && state.league) {
     return (
@@ -289,6 +337,37 @@ function CreateLeagueForm({ fresh }: { fresh: boolean }) {
           value={nameValue}
           onChange={(e) => setNameValue(e.target.value)}
         />
+
+        <input type="hidden" name="mode" value={mode} />
+        <div className="space-y-2">
+          <p className="font-mono text-[0.6rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
+            Modo de predicción
+          </p>
+          <div className="grid gap-2 sm:grid-cols-3">
+            {PREDICTION_MODES.map((m) => {
+              const meta = PREDICTION_MODE_META[m];
+              const active = mode === m;
+              return (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setMode(m)}
+                  aria-pressed={active}
+                  className={`rounded-xl border p-3 text-left transition ${
+                    active
+                      ? "border-[var(--color-arena)] bg-[color-mix(in_oklch,var(--color-arena)_7%,var(--color-surface))] shadow-[var(--shadow-arena)]"
+                      : "border-[var(--color-border)] bg-[var(--color-surface)] hover:border-[var(--color-arena)]/40"
+                  }`}
+                >
+                  <p className="font-display text-base tracking-tight">{meta.label}</p>
+                  <p className="mt-1 text-xs leading-snug text-[var(--color-muted-foreground)]">
+                    {meta.description}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         <div className="space-y-2">
           <p className="font-mono text-[0.6rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">

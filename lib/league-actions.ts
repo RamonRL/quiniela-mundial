@@ -58,6 +58,7 @@ const createSchema = z.object({
     .trim()
     .min(2, "El nombre debe tener al menos 2 caracteres.")
     .max(NAME_MAX, `El nombre no puede pasar de ${NAME_MAX} caracteres.`),
+  mode: z.enum(["completo", "marcador", "solo_ganador"]).default("completo"),
 });
 
 export type CreateLeagueResult = LeagueFormState & {
@@ -83,6 +84,7 @@ export async function createLeague(
   const me = await requireUser();
   const parsed = createSchema.safeParse({
     name: formData.get("name") ?? "",
+    mode: formData.get("mode") ?? "completo",
   });
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
@@ -129,6 +131,7 @@ export async function createLeague(
       logoUrl: initialLogoUrl,
       tier: "free",
       memberLimit: MEMBER_LIMIT_FREE,
+      predictionMode: parsed.data.mode,
     })
     .returning();
 

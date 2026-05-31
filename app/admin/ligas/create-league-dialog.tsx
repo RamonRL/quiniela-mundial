@@ -15,12 +15,21 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { createLeague, type CreateLeagueResult } from "@/lib/league-actions";
+import { PREDICTION_MODE_META } from "@/lib/prediction-modes";
 
 const initial: CreateLeagueResult = { ok: false };
 
 export function CreateLeagueDialog() {
   const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState("completo");
   const [state, action, pending] = useActionState(createLeague, initial);
   if (state.ok && state.league && open) {
     toast.success(
@@ -57,6 +66,26 @@ export function CreateLeagueDialog() {
               maxLength={25}
               placeholder="QUINIELA MUNDIAL 2026"
             />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="mode">Modo de predicción</Label>
+            <input type="hidden" name="mode" value={mode} />
+            <Select value={mode} onValueChange={setMode}>
+              <SelectTrigger id="mode">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="completo">
+                  {PREDICTION_MODE_META.completo.label} — {PREDICTION_MODE_META.completo.tagline}
+                </SelectItem>
+                <SelectItem value="marcador">
+                  {PREDICTION_MODE_META.marcador.label} — {PREDICTION_MODE_META.marcador.tagline}
+                </SelectItem>
+                <SelectItem value="solo_ganador">
+                  {PREDICTION_MODE_META.solo_ganador.label} — {PREDICTION_MODE_META.solo_ganador.tagline}
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           {state.error ? (
             <p className="text-sm text-[var(--color-danger)]">{state.error}</p>
