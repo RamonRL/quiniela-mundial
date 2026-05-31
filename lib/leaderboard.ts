@@ -9,6 +9,7 @@ import {
   matches,
 } from "@/lib/db/schema";
 import { compareForRanking } from "@/lib/scoring/tiebreaker";
+import type { PredictionMode } from "@/lib/prediction-modes";
 
 /**
  * TTL del leaderboard cacheado a nivel de liga. Suficientemente corto para
@@ -32,6 +33,76 @@ export type LeaderboardEntry = {
   knockoutPoints: number;
   championCorrect: boolean;
 };
+
+type GlobalRow = {
+  userId: string;
+  email: string;
+  nickname: string | null;
+  avatarUrl: string | null;
+  totalPoints: number;
+  exactScoresCount: number;
+};
+
+/**
+ * Ranking GLOBAL por modo de predicción. Las quinielas públicas no tienen
+ * ranking propio: quien juega en cualquier liga de un modo (pública o
+ * privada) compite aquí. La puntuación de cada usuario es la de su MEJOR
+ * liga de ese modo (no la suma) — DISTINCT ON elige por usuario la liga con
+ * más puntos (desempate por marcadores exactos), y luego ordenamos el
+ * conjunto por esa mejor puntuación.
+ *
+ * Cacheado 30s por modo. Devuelve [] si falla (defensivo, como el de liga).
+ */
+export async function loadGlobalLeaderboard(
+  mode: PredictionMode,
+): Promise<GlobalRow[]> {
+  const cached = unstable_cache(
+    () => loadGlobalLeaderboardRaw(mode),
+    ["global-leaderboard", mode],
+    { revalidate: LEADERBOARD_CACHE_SECONDS, tags: ["leaderboard", `global-leaderboard:${mode}`] },
+  );
+  return cached();
+}
+
+async function loadGlobalLeaderboardRaw(mode: PredictionMode): Promise<GlobalRow[]> {
+  try {
+    const rows = await db.execute<GlobalRow>(sql`
+      WITH per_league AS (
+        SELECT
+          lm.user_id                                                                   AS "userId",
+          coalesce(sum(pl.points), 0)::int                                             AS "leaguePoints",
+          count(*) filter (
+            where pl.source in ('match_exact_score','knockout_score_90')
+          )::int                                                                       AS "exact"
+        FROM league_memberships lm
+        JOIN leagues l ON l.id = lm.league_id AND l.prediction_mode = ${mode}
+        LEFT JOIN points_ledger pl
+          ON pl.user_id = lm.user_id AND pl.league_id = lm.league_id
+        GROUP BY lm.user_id, lm.league_id
+      ),
+      best AS (
+        SELECT DISTINCT ON ("userId")
+          "userId", "leaguePoints" AS "totalPoints", "exact" AS "exactScoresCount"
+        FROM per_league
+        ORDER BY "userId", "leaguePoints" DESC, "exact" DESC
+      )
+      SELECT
+        b."userId"            AS "userId",
+        p.email               AS "email",
+        p.nickname            AS "nickname",
+        p.avatar_url          AS "avatarUrl",
+        b."totalPoints"       AS "totalPoints",
+        b."exactScoresCount"  AS "exactScoresCount"
+      FROM best b
+      JOIN profiles p ON p.id = b."userId"
+      ORDER BY b."totalPoints" DESC, b."exactScoresCount" DESC, p.created_at ASC
+    `);
+    return rows as GlobalRow[];
+  } catch (err) {
+    console.error("loadGlobalLeaderboard failed:", err);
+    return [];
+  }
+}
 
 /**
  * Leaderboard agregado en UNA sola query usando el query builder de Drizzle.
