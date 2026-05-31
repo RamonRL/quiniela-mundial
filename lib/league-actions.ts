@@ -92,8 +92,10 @@ export async function createLeague(
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
   }
 
+  // Los admins no tienen tope de quinielas privadas (gestionan/demuestran
+  // muchas ligas). El resto sigue limitado a PRIVATE_LEAGUES_PER_USER_LIMIT.
   const privateCount = await countPrivateMemberships(me.id);
-  if (privateCount >= PRIVATE_LEAGUES_PER_USER_LIMIT) {
+  if (me.role !== "admin" && privateCount >= PRIVATE_LEAGUES_PER_USER_LIMIT) {
     return { ok: false, error: PRIVATE_LIMIT_ERROR };
   }
 
@@ -224,8 +226,9 @@ export async function joinLeagueByCode(
     redirect("/dashboard");
   }
 
+  // Admins exentos del tope de privadas (ver createLeague).
   const privateCount = await countPrivateMemberships(me.id);
-  if (privateCount >= PRIVATE_LEAGUES_PER_USER_LIMIT) {
+  if (me.role !== "admin" && privateCount >= PRIVATE_LEAGUES_PER_USER_LIMIT) {
     return { ok: false, error: PRIVATE_LIMIT_ERROR };
   }
 

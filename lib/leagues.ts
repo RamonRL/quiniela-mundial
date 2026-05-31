@@ -258,13 +258,23 @@ export async function joinLeagueByInviteToken(
     return { ok: true, leagueId: league.id, alreadyMember: true };
   }
 
+  // Admins exentos del tope de privadas (gestionan/demuestran muchas ligas).
+  // Solo consultamos el rol cuando ya se alcanzó el límite, para no añadir
+  // una query al camino feliz.
   const privateCount = await countPrivateMemberships(userId);
   if (privateCount >= PRIVATE_LEAGUES_PER_USER_LIMIT) {
-    return {
-      ok: false,
-      reason: "private_limit_reached",
-      leagueName: league.name,
-    };
+    const [prof] = await db
+      .select({ role: profiles.role })
+      .from(profiles)
+      .where(eq(profiles.id, userId))
+      .limit(1);
+    if (prof?.role !== "admin") {
+      return {
+        ok: false,
+        reason: "private_limit_reached",
+        leagueName: league.name,
+      };
+    }
   }
 
   const cap = await canJoinLeague(league.id);

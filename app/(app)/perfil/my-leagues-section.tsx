@@ -28,7 +28,8 @@ export function MyLeaguesSection({
   memberships: Membership[];
   activeLeagueId: number | null;
   privateCount: number;
-  privateLimit: number;
+  /** Tope de privadas, o `null` para cuentas sin límite (admins). */
+  privateLimit: number | null;
   /** Total de picks (suma de las 6 tablas pred_*) por liga del usuario. */
   pickCountByLeagueId: Record<number, number>;
 }) {
@@ -98,7 +99,7 @@ export function MyLeaguesSection({
           <span className="font-display text-base text-[var(--color-arena)]">
             {privateCount}
           </span>
-          /{privateLimit} privadas
+          {privateLimit == null ? " privadas · sin límite" : `/${privateLimit} privadas`}
         </p>
       </header>
 

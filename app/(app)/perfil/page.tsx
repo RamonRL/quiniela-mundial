@@ -80,7 +80,7 @@ export default async function ProfilePage() {
         memberships={memberships}
         activeLeagueId={me.leagueId}
         privateCount={privateCount}
-        privateLimit={PRIVATE_LEAGUES_PER_USER_LIMIT}
+        privateLimit={me.role === "admin" ? null : PRIVATE_LEAGUES_PER_USER_LIMIT}
         pickCountByLeagueId={pickCountByLeagueId}
       />
     </div>
