@@ -408,6 +408,7 @@ export default async function DashboardPage() {
               : undefined,
           preTorneoComplete: onlyMatches ? 0 : preTorneoComplete,
           preTorneoTotal: onlyMatches ? 0 : preTorneoTotal,
+          compact: onlyMatches,
         });
 
   return (
@@ -667,7 +668,11 @@ export default async function DashboardPage() {
         </header>
         <div className="space-y-10">
           <ProgressHub {...progressHubProps} />
-          <UpcomingRoundsStrip userId={me.id} leagueId={leagueId} />
+          {/* En Marcador / Solo Ganador el grid del puesto de mando ya
+              lista las jornadas; el strip de "próximas rondas" duplicaría. */}
+          {onlyMatches ? null : (
+            <UpcomingRoundsStrip userId={me.id} leagueId={leagueId} />
+          )}
         </div>
       </section>
 
@@ -1150,8 +1155,10 @@ function buildRunningHubProps({
   bracket,
   preTorneoComplete,
   preTorneoTotal,
+  compact = false,
 }: {
   openMatchdays: OpenMatchdayEntry[];
+  compact?: boolean;
   bracket?: {
     state: "open" | "closed";
     closesAt: string | null;
@@ -1238,5 +1245,6 @@ function buildRunningHubProps({
     bracket: bracket && bracket.state === "open" ? bracket : undefined,
     preTorneoComplete,
     preTorneoTotal,
+    compact,
   };
 }

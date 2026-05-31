@@ -49,6 +49,12 @@ export type ProgressHubProps =
       bracket?: BracketSummary;
       preTorneoComplete: number;
       preTorneoTotal: number;
+      /**
+       * Modos Marcador / Solo Ganador: vista reducida. Sin la tarjeta de
+       * "próximo cierre" destacado (que duplicaba la jornada ya listada
+       * abajo) y sin badges "Empieza aquí" en las tarjetas.
+       */
+      compact?: boolean;
     };
 
 export function ProgressHub(props: ProgressHubProps) {
@@ -189,6 +195,7 @@ function RunningHub({
   bracket,
   preTorneoComplete,
   preTorneoTotal,
+  compact = false,
 }: Extract<ProgressHubProps, { phase: "running" }>) {
   const hasNothing = !nextDeadline && openMatchdays.length === 0 && !bracket;
 
@@ -222,7 +229,7 @@ function RunningHub({
 
   return (
     <section className="rise-in space-y-4">
-      {nextDeadline ? (
+      {nextDeadline && !compact ? (
         <div data-tutorial-id="progress-hub-mobile">
           <NextDeadlineCard
             label={nextDeadline.label}
@@ -234,9 +241,14 @@ function RunningHub({
         </div>
       ) : null}
 
-      {/* Satellites: other open matchdays + bracket */}
+      {/* Satellites: other open matchdays + bracket. En modo compacto este
+          grid es el ancla móvil del tutorial (la tarjeta de próximo cierre,
+          que normalmente la lleva, está oculta). */}
       {openMatchdays.length > 0 || bracket ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div
+          className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
+          data-tutorial-id={compact ? "progress-hub-mobile" : undefined}
+        >
           {openMatchdays.map((m) => {
             const filled = m.filled;
             const total = m.total;
@@ -257,7 +269,7 @@ function RunningHub({
                 hintText={`Cierre ${formatShort(m.closesAt)}`}
                 fraction={{ done: filled, total }}
                 cta={status === "complete" ? "Revisar" : "Predecir"}
-                badge={status === "not-started" ? "start" : null}
+                badge={!compact && status === "not-started" ? "start" : null}
               />
             );
           })}

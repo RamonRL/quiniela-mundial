@@ -10,7 +10,11 @@ import {
   useState,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { TUTORIAL_STEPS, type TutorialStep } from "@/lib/tutorial/steps";
+import {
+  getTutorialSteps,
+  type TutorialMode,
+  type TutorialStep,
+} from "@/lib/tutorial/steps";
 import { markTutorialCompleted } from "@/lib/tutorial/actions";
 import { TutorialOverlay } from "./tutorial-overlay";
 import { TutorialCard } from "./tutorial-card";
@@ -61,7 +65,14 @@ const SAFE_BOTTOM_OFFSET = 96;
  * El provider acepta children y renderiza la UI del tutorial encima
  * (portal-less — confiamos en z-[120] para quedar por encima del shell).
  */
-export function TutorialProvider({ children }: { children: React.ReactNode }) {
+export function TutorialProvider({
+  children,
+  mode,
+}: {
+  children: React.ReactNode;
+  /** Modo de la liga activa — decide qué variante del tutorial se muestra. */
+  mode?: TutorialMode | string | null;
+}) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -72,8 +83,11 @@ export function TutorialProvider({ children }: { children: React.ReactNode }) {
   const [isMobile, setIsMobile] = useState(false);
   const completedRef = useRef(false);
 
-  const step: TutorialStep | null = isOpen ? TUTORIAL_STEPS[stepIndex] ?? null : null;
-  const totalSteps = TUTORIAL_STEPS.length;
+  // Pasos según el modo de la liga activa (Completo / Marcador / Solo Ganador).
+  const steps = useMemo(() => getTutorialSteps(mode), [mode]);
+
+  const step: TutorialStep | null = isOpen ? steps[stepIndex] ?? null : null;
+  const totalSteps = steps.length;
 
   // Detección de móvil + reactividad ante cambio de viewport.
   useEffect(() => {
@@ -216,19 +230,19 @@ export function TutorialProvider({ children }: { children: React.ReactNode }) {
 
   const next = useCallback(() => {
     setStepIndex((current) => {
-      const cur = TUTORIAL_STEPS[current];
+      const cur = steps[current];
       if (cur?.navigateTo) {
         router.push(cur.navigateTo);
       }
       const nextIdx = current + 1;
-      if (nextIdx >= TUTORIAL_STEPS.length) {
+      if (nextIdx >= steps.length) {
         // El último paso usa CTA, no llamamos a next desde ahí — pero
         // por seguridad cerramos.
         return current;
       }
       return nextIdx;
     });
-  }, [router]);
+  }, [router, steps]);
 
   const back = useCallback(() => {
     setStepIndex((current) => Math.max(0, current - 1));

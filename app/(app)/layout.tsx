@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/guards";
 import {
   currentLeagueId,
+  getLeagueModes,
   getMembershipsForUser,
   type Membership,
 } from "@/lib/leagues";
@@ -71,8 +72,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const activeMembership = memberships.find((m) => m.id === currentView);
   const showMyLeague = activeMembership ? !activeMembership.isPublic : false;
   const activeLeagueId = currentView ?? me.leagueId!;
+  // Modo de la liga activa → decide qué variante del tutorial se dispara
+  // (Completo / Marcador / Solo Ganador), tanto en el primer login como en
+  // los replays desde "Mis predicciones".
+  const activeMode =
+    (await getLeagueModes([activeLeagueId])).get(activeLeagueId) ?? "completo";
   return (
-    <TutorialProvider>
+    <TutorialProvider mode={activeMode}>
       <div className="flex min-h-dvh">
         <Sidebar
           isAdmin={isAdmin}
