@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronRight } from "lucide-react";
 import { asc } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { groups, groupStandings, teams } from "@/lib/db/schema";
@@ -70,13 +70,16 @@ export async function GroupStandingsSlider() {
         aria-label="Preview de los 12 grupos del Mundial 2026"
       >
         {cards.map(({ group, teams: teamsInGroup }) => (
-          <article
+          <Link
             key={group.id}
-            className="flex w-[15rem] flex-none snap-start flex-col rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
+            href={`/grupos/${group.code}`}
+            aria-label={`Ver el Grupo ${group.code} del Mundial 2026`}
+            className="group flex w-[15rem] flex-none snap-start flex-col rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 transition hover:-translate-y-0.5 hover:border-[var(--color-arena)]/50 hover:shadow-[var(--shadow-elev-2)]"
           >
             <header className="flex items-baseline justify-between border-b border-dashed border-[var(--color-border)] pb-2">
-              <p className="font-display tabular text-lg tracking-tight">
+              <p className="flex items-center gap-1 font-display tabular text-lg tracking-tight">
                 Grupo {group.code}
+                <ChevronRight className="size-3.5 text-[var(--color-muted-foreground)] opacity-0 transition group-hover:translate-x-0.5 group-hover:text-[var(--color-arena)] group-hover:opacity-100" />
               </p>
               <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
                 Pts
@@ -110,7 +113,7 @@ export async function GroupStandingsSlider() {
                 );
               })}
             </ul>
-          </article>
+          </Link>
         ))}
       </div>
     </section>
