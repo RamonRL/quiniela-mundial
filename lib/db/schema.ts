@@ -640,6 +640,17 @@ export const scoringRules = pgTable("scoring_rules", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+/**
+ * Ajustes globales clave→JSON. KV genérico para flags de configuración que
+ * no merecen tabla propia (p. ej. qué eventos se notifican a Telegram). El
+ * caller decide la forma del `valueJson` por clave.
+ */
+export const appSettings = pgTable("app_settings", {
+  key: text("key").primaryKey(),
+  valueJson: jsonb("value_json").notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const pointsLedger = pgTable(
   "points_ledger",
   {

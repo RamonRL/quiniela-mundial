@@ -14,6 +14,7 @@
  */
 
 import { escapeHTML, sendTelegramMessage } from "./notify";
+import { isTelegramEventEnabled } from "./settings";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://quinielamundial.es";
@@ -23,6 +24,7 @@ export async function notifyNewUser(args: {
   countryCode: string | null;
   role: "user" | "admin";
 }): Promise<void> {
+  if (!(await isTelegramEventEnabled("user.new"))) return;
   const country = args.countryCode ? ` · 🌍 ${escapeHTML(args.countryCode)}` : "";
   const adminTag = args.role === "admin" ? " · 🛡 <b>ADMIN</b>" : "";
   const text = [
@@ -43,6 +45,7 @@ export async function notifyNewPrivateLeague(args: {
   /** Plan elegido en el alta (etiqueta legible, p. ej. "Free" o "Pase Empresa"). */
   planLabel?: string;
 }): Promise<void> {
+  if (!(await isTelegramEventEnabled("league.new"))) return;
   const code = args.joinCode ? ` · 🔢 <code>${escapeHTML(args.joinCode)}</code>` : "";
   const meta = [
     args.modeLabel ? `🎮 ${escapeHTML(args.modeLabel)}` : null,
@@ -74,6 +77,7 @@ export async function notifyMatchResult(args: {
   homeScorePen: number | null;
   awayScorePen: number | null;
 }): Promise<void> {
+  if (!(await isTelegramEventEnabled("match.result"))) return;
   const pens =
     args.wentToPens && args.homeScorePen != null && args.awayScorePen != null
       ? ` <i>(pen ${args.homeScorePen}-${args.awayScorePen})</i>`
@@ -96,6 +100,7 @@ export async function notifyNewChatMessage(args: {
   authorNickname: string | null;
   body: string;
 }): Promise<void> {
+  if (!(await isTelegramEventEnabled("chat.message"))) return;
   const author = args.authorNickname ?? args.authorEmail;
   const preview =
     args.body.length > 240 ? `${args.body.slice(0, 240)}…` : args.body;
@@ -122,6 +127,7 @@ export async function notifyNewCommercialLead(args: {
   expectedMembers: number | null;
   message: string | null;
 }): Promise<void> {
+  if (!(await isTelegramEventEnabled("lead.new"))) return;
   const company = args.company ? ` · 🏢 ${escapeHTML(args.company)}` : "";
   const members =
     args.expectedMembers != null ? ` · 👥 ${args.expectedMembers}` : "";
@@ -153,6 +159,7 @@ export async function notifyPaddleOrder(args: {
     resolvedBy: "league_code" | "email";
   };
 }): Promise<void> {
+  if (!(await isTelegramEventEnabled("paddle.order"))) return;
   const headline = args.autoActivation
     ? "✅ <b>Pase activado automáticamente · Paddle</b>"
     : "💸 <b>Pago recibido · Paddle</b>";
@@ -189,6 +196,7 @@ export async function notifyServerError(args: {
   route?: string | null;
   userId?: string | null;
 }): Promise<void> {
+  if (!(await isTelegramEventEnabled("server.error"))) return;
   const route = args.route ? `📍 <code>${escapeHTML(args.route)}</code>\n` : "";
   const user = args.userId ? `👤 <code>${escapeHTML(args.userId)}</code>\n` : "";
   // Limitamos el cuerpo a 800 chars — Telegram corta a 4096 y queremos
