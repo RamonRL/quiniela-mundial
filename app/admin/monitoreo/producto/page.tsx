@@ -1,8 +1,20 @@
 import Link from "next/link";
-import { Crown, TrendingUp, Trophy, Users } from "lucide-react";
-import { sql } from "drizzle-orm";
+import { ClipboardList, Crown, TrendingUp, Trophy, Users } from "lucide-react";
+import { asc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { profiles } from "@/lib/db/schema";
+import {
+  leagueMemberships,
+  leagues as leaguesTable,
+  matches,
+  predBracketSlot,
+  predGroupRanking,
+  predMatchResult,
+  predMatchScorer,
+  predSpecial,
+  predTournamentTopScorer,
+  profiles,
+  specialPredictions,
+} from "@/lib/db/schema";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -14,8 +26,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { requireAdmin } from "@/lib/auth/guards";
-import { initials } from "@/lib/utils";
+import { inLeagueFilter } from "@/lib/leagues";
+import { cn, initials } from "@/lib/utils";
 import { PointsDistributionChart } from "../charts";
+import { LeagueProgressSelector } from "./league-progress-selector";
 
 export const metadata = { title: "Producto · Monitoreo" };
 export const dynamic = "force-dynamic";
@@ -61,8 +75,47 @@ function bucketLabel(min: number, max: number | null) {
   return `${min}-${max}`;
 }
 
-export default async function MonitoringProductoPage() {
+// ───────────────── Configuración por sección de predicciones ─────────────────
+//
+// Totales fijos de la edición (Grupos = 12; Bracket = R32 16 + R16 8 + QF 4 +
+// SF 2 + Final 1 + Tercer puesto 1 = 32; Bota de Oro = 1). Marcadores y
+// goleadores se atan al count vivo de `matches`. Especiales al count vivo de
+// `special_predictions`. Así el % refleja exactamente lo que el user puede
+// llegar a predecir hoy.
+const TOTALS_FIXED = {
+  groups: 12,
+  bracket: 32,
+  topScorer: 1,
+} as const;
+
+const PREDICTION_SECTIONS = [
+  { key: "groups", label: "Grupos" },
+  { key: "matchResults", label: "Marcadores" },
+  { key: "matchScorers", label: "Goleadores" },
+  { key: "bracket", label: "Bracket" },
+  { key: "topScorer", label: "Bota" },
+  { key: "specials", label: "Especiales" },
+] as const;
+
+type SectionKey = (typeof PREDICTION_SECTIONS)[number]["key"];
+
+function pctClass(pct: number): string {
+  if (pct >= 90) return "text-[var(--color-success)] font-semibold";
+  if (pct >= 50) return "text-[var(--color-arena)]";
+  if (pct > 0) return "text-[var(--color-foreground)]";
+  return "text-[var(--color-muted-foreground)]/50";
+}
+
+export default async function MonitoringProductoPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ league?: string }>;
+}) {
   await requireAdmin();
+  const params = (await searchParams) ?? {};
+  const leagueParam = params.league ? Number(params.league) : NaN;
+  const explicitLeagueId =
+    Number.isFinite(leagueParam) && leagueParam > 0 ? leagueParam : null;
 
   // Cumplimiento por categoría: cuántos usuarios distintos tienen al menos
   // una predicción de cada tipo, vs total de usuarios.
@@ -163,6 +216,176 @@ export default async function MonitoringProductoPage() {
     { key: "Goleadores", count: preds.matchScorerUsers },
   ];
 
+  // ───────────────── Predicciones por liga (sección "Predicciones por liga") ─────────────────
+  //
+  // Cargamos TODAS las ligas para el selector (con conteo de miembros) y, si
+  // hay una seleccionada en `?league=`, los datos detallados para la tabla.
+  // Si no hay seleccionada, pre-elegimos la primera disponible para que la
+  // sección siempre muestre algo útil al aterrizar en /producto.
+  const leagueOptions = await db
+    .select({
+      id: leaguesTable.id,
+      name: leaguesTable.name,
+      isPublic: leaguesTable.isPublic,
+      members: sql<number>`count(${leagueMemberships.userId})::int`,
+    })
+    .from(leaguesTable)
+    .leftJoin(leagueMemberships, eq(leagueMemberships.leagueId, leaguesTable.id))
+    .groupBy(leaguesTable.id, leaguesTable.name, leaguesTable.isPublic, leaguesTable.createdAt)
+    .orderBy(asc(leaguesTable.isPublic), asc(leaguesTable.createdAt));
+
+  // is_public ASC: la pública (false<true? en Postgres false<true) salimos por
+  // booleano; en realidad queremos la pública PRIMERO. Postgres ordena false<true,
+  // así que las privadas (isPublic=false) saldrían antes. Reordenamos en JS para
+  // poner la pública arriba — más natural para el admin que la quiere mirar.
+  leagueOptions.sort((a, b) => {
+    if (a.isPublic !== b.isPublic) return a.isPublic ? -1 : 1;
+    return a.name.localeCompare(b.name);
+  });
+
+  const effectiveLeagueId = explicitLeagueId ?? leagueOptions[0]?.id ?? null;
+  const selectedLeague = effectiveLeagueId
+    ? leagueOptions.find((l) => l.id === effectiveLeagueId) ?? null
+    : null;
+
+  type UserProgress = {
+    userId: string;
+    email: string;
+    nickname: string | null;
+    avatarUrl: string | null;
+    made: Record<SectionKey, number>;
+    totals: Record<SectionKey, number>;
+    totalMade: number;
+    totalAll: number;
+    globalPct: number;
+  };
+
+  let userProgress: UserProgress[] = [];
+  let sectionTotals: Record<SectionKey, number> | null = null;
+
+  if (effectiveLeagueId) {
+    const memberFilter = inLeagueFilter(effectiveLeagueId);
+    if (memberFilter) {
+      const [[{ c: matchesTotal }], [{ c: specialsTotal }], members] = await Promise.all([
+        db.select({ c: sql<number>`count(*)::int` }).from(matches),
+        db.select({ c: sql<number>`count(*)::int` }).from(specialPredictions),
+        db
+          .select({
+            id: profiles.id,
+            email: profiles.email,
+            nickname: profiles.nickname,
+            avatarUrl: profiles.avatarUrl,
+          })
+          .from(profiles)
+          .where(memberFilter),
+      ]);
+
+      sectionTotals = {
+        groups: TOTALS_FIXED.groups,
+        matchResults: matchesTotal,
+        matchScorers: matchesTotal,
+        bracket: TOTALS_FIXED.bracket,
+        topScorer: TOTALS_FIXED.topScorer,
+        specials: specialsTotal,
+      };
+
+      // Seis GROUP BY userId, uno por categoría, scoped a esta liga. En
+      // paralelo. Para una liga grande (1000+ users) cada uno son < 20ms.
+      const [
+        groupRows,
+        matchResRows,
+        matchScrRows,
+        bracketRows,
+        topScrRows,
+        specialRows,
+      ] = await Promise.all([
+        db
+          .select({ userId: predGroupRanking.userId, c: sql<number>`count(*)::int` })
+          .from(predGroupRanking)
+          .where(eq(predGroupRanking.leagueId, effectiveLeagueId))
+          .groupBy(predGroupRanking.userId),
+        db
+          .select({ userId: predMatchResult.userId, c: sql<number>`count(*)::int` })
+          .from(predMatchResult)
+          .where(eq(predMatchResult.leagueId, effectiveLeagueId))
+          .groupBy(predMatchResult.userId),
+        db
+          .select({ userId: predMatchScorer.userId, c: sql<number>`count(*)::int` })
+          .from(predMatchScorer)
+          .where(eq(predMatchScorer.leagueId, effectiveLeagueId))
+          .groupBy(predMatchScorer.userId),
+        db
+          .select({ userId: predBracketSlot.userId, c: sql<number>`count(*)::int` })
+          .from(predBracketSlot)
+          .where(eq(predBracketSlot.leagueId, effectiveLeagueId))
+          .groupBy(predBracketSlot.userId),
+        db
+          .select({ userId: predTournamentTopScorer.userId, c: sql<number>`count(*)::int` })
+          .from(predTournamentTopScorer)
+          .where(eq(predTournamentTopScorer.leagueId, effectiveLeagueId))
+          .groupBy(predTournamentTopScorer.userId),
+        db
+          .select({ userId: predSpecial.userId, c: sql<number>`count(*)::int` })
+          .from(predSpecial)
+          .where(eq(predSpecial.leagueId, effectiveLeagueId))
+          .groupBy(predSpecial.userId),
+      ]);
+
+      const idx = (rows: { userId: string; c: number }[]) =>
+        new Map(rows.map((r) => [r.userId, r.c]));
+      const ix = {
+        groups: idx(groupRows),
+        matchResults: idx(matchResRows),
+        matchScorers: idx(matchScrRows),
+        bracket: idx(bracketRows),
+        topScorer: idx(topScrRows),
+        specials: idx(specialRows),
+      } as const;
+
+      const totalAll =
+        sectionTotals.groups +
+        sectionTotals.matchResults +
+        sectionTotals.matchScorers +
+        sectionTotals.bracket +
+        sectionTotals.topScorer +
+        sectionTotals.specials;
+
+      userProgress = members.map((m) => {
+        const made: Record<SectionKey, number> = {
+          groups: ix.groups.get(m.id) ?? 0,
+          matchResults: ix.matchResults.get(m.id) ?? 0,
+          matchScorers: ix.matchScorers.get(m.id) ?? 0,
+          bracket: ix.bracket.get(m.id) ?? 0,
+          topScorer: ix.topScorer.get(m.id) ?? 0,
+          specials: ix.specials.get(m.id) ?? 0,
+        };
+        const totalMade =
+          made.groups +
+          made.matchResults +
+          made.matchScorers +
+          made.bracket +
+          made.topScorer +
+          made.specials;
+        return {
+          userId: m.id,
+          email: m.email,
+          nickname: m.nickname,
+          avatarUrl: m.avatarUrl,
+          made,
+          totals: sectionTotals!,
+          totalMade,
+          totalAll,
+          globalPct: totalAll > 0 ? (totalMade / totalAll) * 100 : 0,
+        };
+      });
+
+      userProgress.sort((a, b) => {
+        if (a.globalPct !== b.globalPct) return b.globalPct - a.globalPct;
+        return (a.nickname ?? a.email).localeCompare(b.nickname ?? b.email);
+      });
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* ───────── Cumplimiento de predicciones ───────── */}
@@ -200,6 +423,141 @@ export default async function MonitoringProductoPage() {
             );
           })}
         </ul>
+      </section>
+
+      {/* ───────── Predicciones por liga ─────────
+          Selector + tabla con el % completado por usuario, ordenada
+          desc. Cubre tanto la pública como las privadas para que el
+          admin pueda decidir si la pública aporta o si conviene
+          desactivarla. */}
+      <section
+        id="predicciones-por-liga"
+        className="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]"
+      >
+        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-border)] bg-[var(--color-surface-2)] px-4 py-3">
+          <div className="flex items-center gap-2 text-[var(--color-muted-foreground)]">
+            <ClipboardList className="size-4" />
+            <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em]">
+              Predicciones por liga · % completado por usuario
+            </p>
+          </div>
+          <LeagueProgressSelector
+            leagues={leagueOptions}
+            currentLeagueId={effectiveLeagueId}
+          />
+        </header>
+
+        {!selectedLeague || sectionTotals == null ? (
+          <div className="p-8 text-center font-editorial text-sm italic text-[var(--color-muted-foreground)]">
+            Elige una liga arriba para ver el detalle por usuario.
+          </div>
+        ) : userProgress.length === 0 ? (
+          <div className="p-8 text-center font-editorial text-sm italic text-[var(--color-muted-foreground)]">
+            La liga{" "}
+            <strong className="not-italic font-semibold text-[var(--color-foreground)]">
+              {selectedLeague.name}
+            </strong>{" "}
+            no tiene miembros.
+          </div>
+        ) : (
+          <>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-dashed border-[var(--color-border)] px-4 py-3">
+              <p className="font-display text-base tracking-tight">
+                {selectedLeague.name}
+                <span className="ml-2 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+                  {selectedLeague.isPublic ? "pública" : "privada"} · {selectedLeague.members} miembros
+                </span>
+              </p>
+              <p className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+                Total predecible: {sectionTotals.groups + sectionTotals.matchResults + sectionTotals.matchScorers + sectionTotals.bracket + sectionTotals.topScorer + sectionTotals.specials} picks
+              </p>
+            </div>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Usuario</TableHead>
+                    <TableHead className="w-44 text-right">Global</TableHead>
+                    {PREDICTION_SECTIONS.map((s) => (
+                      <TableHead
+                        key={s.key}
+                        className="w-24 text-right"
+                        title={`${sectionTotals![s.key as SectionKey]} predicciones posibles`}
+                      >
+                        {s.label}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {userProgress.map((row) => {
+                    const display = row.nickname || row.email.split("@")[0];
+                    return (
+                      <TableRow key={row.userId}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="size-8 border border-[var(--color-border)]">
+                              {row.avatarUrl ? (
+                                <AvatarImage src={row.avatarUrl} alt="" />
+                              ) : null}
+                              <AvatarFallback className="text-[0.6rem]">
+                                {initials(display)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-medium">{display}</p>
+                              <p className="truncate font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+                                {row.email}
+                              </p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right align-middle">
+                          <div className="flex items-center justify-end gap-2">
+                            <div className="h-1.5 w-20 overflow-hidden rounded-full bg-[var(--color-surface-2)]">
+                              <div
+                                className="h-full rounded-full bg-[var(--color-arena)]"
+                                style={{ width: `${Math.max(row.globalPct > 0 ? 2 : 0, row.globalPct)}%` }}
+                              />
+                            </div>
+                            <span
+                              className={cn(
+                                "w-10 text-right font-display tabular text-base",
+                                pctClass(row.globalPct),
+                              )}
+                            >
+                              {row.globalPct.toFixed(0)}%
+                            </span>
+                          </div>
+                          <p className="font-mono text-[0.55rem] tabular text-[var(--color-muted-foreground)]">
+                            {row.totalMade}/{row.totalAll}
+                          </p>
+                        </TableCell>
+                        {PREDICTION_SECTIONS.map((s) => {
+                          const made = row.made[s.key as SectionKey];
+                          const total = sectionTotals![s.key as SectionKey];
+                          const pct = total > 0 ? (made / total) * 100 : 0;
+                          return (
+                            <TableCell
+                              key={s.key}
+                              className={cn(
+                                "text-right font-mono text-xs tabular",
+                                pctClass(pct),
+                              )}
+                              title={`${made}/${total}`}
+                            >
+                              {total === 0 ? "—" : `${pct.toFixed(0)}%`}
+                            </TableCell>
+                          );
+                        })}
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          </>
+        )}
       </section>
 
       {/* ───────── Distribución de puntos ───────── */}
