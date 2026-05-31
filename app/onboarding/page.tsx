@@ -9,6 +9,7 @@ export const metadata = { title: "Bienvenido" } satisfies Metadata;
 
 type Step =
   | "perfil"
+  | "foto"
   | "root"
   | "publica-elegir"
   | "privada-elegir"
@@ -17,6 +18,7 @@ type Step =
 
 const VALID_STEPS: Step[] = [
   "perfil",
+  "foto",
   "root",
   "publica-elegir",
   "privada-elegir",

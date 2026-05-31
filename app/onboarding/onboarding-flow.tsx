@@ -35,12 +35,14 @@ import {
 } from "@/lib/prediction-modes";
 import {
   joinPublicByMode,
-  saveInitialProfile,
+  saveInitialAvatar,
+  saveInitialNickname,
   type SaveInitialProfileState,
 } from "./actions";
 
 type Step =
   | "perfil"
+  | "foto"
   | "root"
   | "publica-elegir"
   | "privada-elegir"
@@ -92,10 +94,20 @@ export function OnboardingFlow({
   // todos los pasos para que no se pierda entre `router.push`.
   const nextParam = useSearchParams().get("next");
   const nextQuery = nextParam ? `&next=${encodeURIComponent(nextParam)}` : "";
-  void userNickname;
 
   if (step === "perfil") {
-    return <ProfileStep email={userEmail} avatarUrl={userAvatarUrl} />;
+    return <NicknameStep email={userEmail} nextValue={nextParam} />;
+  }
+
+  if (step === "foto") {
+    return (
+      <PhotoStep
+        nickname={userNickname ?? userEmail.split("@")[0]}
+        avatarUrl={userAvatarUrl}
+        nextValue={nextParam}
+        skipHref={`/onboarding${nextParam ? `?next=${encodeURIComponent(nextParam)}` : ""}`}
+      />
+    );
   }
 
   if (step === "root") {
@@ -837,22 +849,110 @@ function JoinLeagueForm() {
  */
 const MAX_RAW_INPUT_BYTES = 20 * 1024 * 1024;
 
-function ProfileStep({
+
+/**
+ * Paso 1 del perfil: SOLO el apodo. Separado de la foto a propósito —
+ * cuando ambos vivían en la misma pantalla, casi nadie subía foto. Aquí
+ * el único foco es el nombre; al continuar se pasa al paso de la foto.
+ */
+function NicknameStep({
   email,
-  avatarUrl,
+  nextValue,
 }: {
   email: string;
-  avatarUrl: string | null;
+  nextValue: string | null;
 }) {
-  const [state, action, pending] = useActionState(saveInitialProfile, initialProfile);
+  const [state, action, pending] = useActionState(
+    saveInitialNickname,
+    initialProfile,
+  );
   const defaultNickname = email.split("@")[0];
   const [nicknameValue, setNicknameValue] = useState(defaultNickname);
+
+  return (
+    <div className="space-y-10">
+      <Eyebrow>Tu perfil · paso 1 de 2</Eyebrow>
+      <header className="space-y-4">
+        <h1 className="font-display text-5xl tracking-tight sm:text-6xl xl:text-7xl">
+          ¿Cómo te llamamos?
+        </h1>
+        <p className="font-editorial text-lg italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-xl">
+          Esto es lo que verán los demás en el ranking y el chat. Lo puedes
+          cambiar luego.
+        </p>
+      </header>
+
+      <form action={action} className="space-y-10">
+        {nextValue ? <input type="hidden" name="next" value={nextValue} /> : null}
+        <label className="group block space-y-2">
+          <span className="block font-mono text-[0.6rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-muted-foreground)] transition-colors group-focus-within:text-[var(--color-arena)]">
+            Apodo · máx 40 caracteres
+          </span>
+          <input
+            type="text"
+            name="nickname"
+            value={nicknameValue}
+            onChange={(e) => setNicknameValue(e.target.value)}
+            onFocus={(e) => e.target.select()}
+            maxLength={40}
+            autoComplete="off"
+            autoFocus
+            className="w-full border-0 border-b-2 border-[var(--color-border)] bg-transparent px-0 pb-3 pt-1 font-display text-3xl tracking-tight text-[var(--color-foreground)] outline-none transition-colors placeholder:text-[var(--color-muted-foreground)]/50 focus:border-[var(--color-arena)] sm:text-4xl"
+          />
+          <span className="block font-editorial text-xs italic text-[var(--color-muted-foreground)]">
+            Por defecto, la primera parte de tu email ({email}).
+          </span>
+        </label>
+
+        {state.error ? (
+          <p className="text-sm text-[var(--color-danger)]">{state.error}</p>
+        ) : null}
+
+        <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center">
+          <Button
+            type="submit"
+            size="lg"
+            className="h-14 px-8 text-base sm:flex-1"
+            disabled={pending}
+          >
+            {pending ? "Guardando…" : "Continuar"}
+            <ArrowRight />
+          </Button>
+          <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)] sm:max-w-[18rem]">
+            Después, una foto (opcional).
+          </p>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+/**
+ * Paso 2 del perfil: la FOTO (opcional). Pantalla propia para que la gente
+ * la vea como un paso real y no se la salte sin querer. Tiene su propio
+ * botón "Saltar" que va directo al chooser de liga sin subir nada.
+ */
+function PhotoStep({
+  nickname,
+  avatarUrl,
+  nextValue,
+  skipHref,
+}: {
+  nickname: string;
+  avatarUrl: string | null;
+  nextValue: string | null;
+  skipHref: string;
+}) {
+  const [state, action, pending] = useActionState(
+    saveInitialAvatar,
+    initialProfile,
+  );
   const [preview, setPreview] = useState<string | null>(avatarUrl);
   const [error, setError] = useState<string | null>(null);
   const [cropSource, setCropSource] = useState<string | null>(null);
   const [cropOpen, setCropOpen] = useState(false);
+  const [hasFile, setHasFile] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const display = nicknameValue.trim() || defaultNickname;
 
   function pickFile(file: File) {
     setError(null);
@@ -881,33 +981,32 @@ function ProfileStep({
   }
 
   function onCropConfirm(file: File) {
-    // El crop devuelve un JPEG 800×800 listo. Lo metemos en el <input
-    // type="file"> vía DataTransfer para que se envíe con el form al
-    // pulsar "Continuar" — el onboarding mantiene su submit atómico.
     if (fileInputRef.current) {
       const dt = new DataTransfer();
       dt.items.add(file);
       fileInputRef.current.files = dt.files;
     }
     setPreview(URL.createObjectURL(file));
+    setHasFile(true);
     closeCrop();
   }
 
   return (
     <div className="space-y-10">
-      <Eyebrow>Tu perfil</Eyebrow>
+      <Eyebrow>Tu perfil · paso 2 de 2</Eyebrow>
       <header className="space-y-4">
         <h1 className="font-display text-5xl tracking-tight sm:text-6xl xl:text-7xl">
-          ¿Cómo te llamamos?
+          Ponle cara, {nickname}.
         </h1>
         <p className="font-editorial text-lg italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-xl">
-          Esto es lo que verán los demás en el ranking y el chat. Lo puedes
-          cambiar luego.
+          Una foto hace tu quiniela más tuya — y te reconocen en el ranking y el
+          chat. Es opcional: puedes añadirla ahora o más tarde desde tu perfil.
         </p>
       </header>
 
       <form action={action} className="space-y-10">
-        <div className="grid items-start gap-8 sm:grid-cols-[auto_1fr] sm:gap-10">
+        {nextValue ? <input type="hidden" name="next" value={nextValue} /> : null}
+        <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-center sm:gap-10">
           {/* Avatar dropzone */}
           <button
             type="button"
@@ -922,12 +1021,12 @@ function ProfileStep({
               if (file) pickFile(file);
             }}
             aria-label="Subir avatar"
-            className="group relative mx-auto size-32 shrink-0 sm:mx-0 sm:size-36"
+            className="group relative size-40 shrink-0"
           >
-            <Avatar className="size-32 border-2 border-[var(--color-border-strong)] shadow-[var(--shadow-elev-1)] transition-all group-hover:border-[var(--color-arena)] group-hover:shadow-[var(--shadow-arena)] sm:size-36">
-              {preview ? <AvatarImage src={preview} alt={display} /> : null}
-              <AvatarFallback className="font-display text-4xl tracking-tight">
-                {initials(display)}
+            <Avatar className="size-40 border-2 border-[var(--color-border-strong)] shadow-[var(--shadow-elev-1)] transition-all group-hover:border-[var(--color-arena)] group-hover:shadow-[var(--shadow-arena)]">
+              {preview ? <AvatarImage src={preview} alt={nickname} /> : null}
+              <AvatarFallback className="font-display text-5xl tracking-tight">
+                {initials(nickname)}
               </AvatarFallback>
             </Avatar>
             <span
@@ -937,48 +1036,20 @@ function ProfileStep({
               <span className="flex flex-col items-center gap-1 text-white">
                 <Camera className="size-6" />
                 <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em]">
-                  Subir
+                  {hasFile ? "Cambiar" : "Subir"}
                 </span>
               </span>
             </span>
-            <span className="absolute -bottom-1 -right-1 flex size-9 items-center justify-center rounded-full bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)] ring-4 ring-[var(--color-bg)]">
+            <span className="absolute -bottom-1 -right-1 flex size-10 items-center justify-center rounded-full bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)] ring-4 ring-[var(--color-bg)]">
               <Camera className="size-4" />
             </span>
           </button>
 
-          {/* Apodo + email */}
-          <div className="space-y-6">
-            <label className="group block space-y-2">
-              <span className="block font-mono text-[0.6rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-muted-foreground)] transition-colors group-focus-within:text-[var(--color-arena)]">
-                Apodo · máx 40 caracteres
-              </span>
-              <input
-                type="text"
-                name="nickname"
-                value={nicknameValue}
-                onChange={(e) => setNicknameValue(e.target.value)}
-                onFocus={(e) => e.target.select()}
-                maxLength={40}
-                autoComplete="off"
-                autoFocus
-                className="w-full border-0 border-b-2 border-[var(--color-border)] bg-transparent px-0 pb-3 pt-1 font-display text-3xl tracking-tight text-[var(--color-foreground)] outline-none transition-colors placeholder:text-[var(--color-muted-foreground)]/50 focus:border-[var(--color-arena)] sm:text-4xl"
-              />
-              <span className="block font-editorial text-xs italic text-[var(--color-muted-foreground)]">
-                Por defecto, la primera parte de tu email.
-              </span>
-            </label>
-
-            <div className="space-y-1">
-              <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                Email
-              </p>
-              <p className="font-mono text-sm text-[var(--color-foreground)]">{email}</p>
-            </div>
-
-            <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
+          <div className="space-y-2 text-center sm:text-left">
+            <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
               Pulsa o arrastra una imagen sobre el avatar.{" "}
               <span className="font-mono not-italic uppercase tracking-[0.18em]">
-                PNG/JPG · opcional
+                PNG/JPG
               </span>
             </p>
             {error ? (
@@ -1011,12 +1082,18 @@ function ProfileStep({
             className="h-14 px-8 text-base sm:flex-1"
             disabled={pending}
           >
-            {pending ? "Guardando…" : "Continuar"}
+            {pending ? "Guardando…" : hasFile ? "Guardar y continuar" : "Continuar"}
             <ArrowRight />
           </Button>
-          <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)] sm:max-w-[18rem]">
-            Después eliges tu quiniela.
-          </p>
+          <Button
+            asChild
+            type="button"
+            variant="ghost"
+            size="lg"
+            className="h-14 px-6 text-base text-[var(--color-muted-foreground)]"
+          >
+            <Link href={skipHref}>Saltar por ahora</Link>
+          </Button>
         </div>
       </form>
 

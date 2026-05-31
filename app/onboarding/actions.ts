@@ -21,37 +21,60 @@ export type SaveInitialProfileState = { ok: boolean; error?: string };
 // fallback si un cliente raro saltase la compresión.
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
 
+/** Propaga `?next=` a través de los redirects del onboarding. */
+function withNext(path: string, next: string | null): string {
+  if (!next) return path;
+  const sep = path.includes("?") ? "&" : "?";
+  return `${path}${sep}next=${encodeURIComponent(next)}`;
+}
+
 /**
- * Onboarding paso "perfil": primer login. Guardamos apodo (por defecto la
- * primera parte del email) y, opcionalmente, avatar. Tras esto el usuario
- * pasa al chooser de liga.
+ * Onboarding, paso 1 del perfil (primer login): solo el apodo. Por defecto,
+ * la primera parte del email. Tras guardarlo, pasamos al paso 2 (la foto),
+ * que es opcional — separarlos evita que la gente se olvide de la foto.
  */
-export async function saveInitialProfile(
+export async function saveInitialNickname(
   _prev: SaveInitialProfileState,
   formData: FormData,
 ): Promise<SaveInitialProfileState> {
   const me = await requireUser();
+  const next = (formData.get("next") ?? "").toString() || null;
 
   const raw = (formData.get("nickname") ?? "").toString().trim();
   const nickname = raw.length > 0 ? raw.slice(0, 40) : me.email.split("@")[0];
 
-  const update: Record<string, unknown> = { nickname };
+  await db.update(profiles).set({ nickname }).where(eq(profiles.id, me.id));
+  revalidatePath("/", "layout");
+  redirect(withNext("/onboarding?step=foto", next));
+}
+
+/**
+ * Onboarding, paso 2 del perfil: la foto (opcional). Si llega un archivo lo
+ * subimos; si no, no toca nada. En ambos casos seguimos al chooser de liga.
+ * El botón "Saltar" del cliente navega directo sin llamar a esta acción.
+ */
+export async function saveInitialAvatar(
+  _prev: SaveInitialProfileState,
+  formData: FormData,
+): Promise<SaveInitialProfileState> {
+  const me = await requireUser();
+  const next = (formData.get("next") ?? "").toString() || null;
 
   const avatar = formData.get("avatar");
   if (avatar instanceof File && avatar.size > 0) {
     if (avatar.size > MAX_AVATAR_BYTES) {
       return { ok: false, error: "La imagen es demasiado grande." };
     }
-    update.avatarUrl = await uploadImage({
+    const avatarUrl = await uploadImage({
       kind: "avatar",
       path: `${me.id}.png`,
       file: avatar,
     });
+    await db.update(profiles).set({ avatarUrl }).where(eq(profiles.id, me.id));
+    revalidatePath("/", "layout");
   }
 
-  await db.update(profiles).set(update).where(eq(profiles.id, me.id));
-  revalidatePath("/", "layout");
-  redirect("/onboarding");
+  redirect(withNext("/onboarding", next));
 }
 
 /**
