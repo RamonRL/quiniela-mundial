@@ -6,7 +6,7 @@ import { and, eq, ne } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { leagueMemberships, leagues, profiles } from "@/lib/db/schema";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { PENDING_INVITE_COOKIE, getPublicLeague } from "@/lib/leagues";
+import { PENDING_INVITE_COOKIE } from "@/lib/leagues";
 import { notifyNewUser } from "@/lib/telegram/events";
 import { isAdminEmail } from "./admins";
 
@@ -75,11 +75,11 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
     // Primer login. Liga activa:
     //   - Si hay invite cookie válida → liga del invite (skipea onboarding).
     //   - Si no → NULL → el guard del layout redirige a /onboarding para
-    //     que el usuario elija pública o privada.
-    // Memberships: la pública es IMPLÍCITA y PERMANENTE — la insertamos
-    // siempre. Si llega por invite, también la privada del invite.
+    //     que el usuario elija una quiniela (pública —de un modo— o privada).
+    // Ya NO auto-inscribimos a la pública: entrar a cualquiera de las 3
+    // públicas es ahora explícito. Solo inscribimos la privada del invite,
+    // si llega por uno.
     const inviteLeagueId = await resolveInviteLeague();
-    const pub = await getPublicLeague();
     const activeLeagueId = inviteLeagueId ?? null;
     const countryCode = await detectCountryCode();
 
@@ -107,14 +107,13 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
     if (!created) return null;
 
     // Las membresías son idempotentes (onConflictDoNothing), así que es
-    // seguro intentarlas incluso si perdimos la carrera.
-    const memberships: { userId: string; leagueId: number }[] = [];
-    if (pub) memberships.push({ userId: user.id, leagueId: pub.id });
-    if (inviteLeagueId && inviteLeagueId !== pub?.id) {
-      memberships.push({ userId: user.id, leagueId: inviteLeagueId });
-    }
-    if (memberships.length > 0) {
-      await db.insert(leagueMemberships).values(memberships).onConflictDoNothing();
+    // seguro intentarlas incluso si perdimos la carrera. Solo la privada
+    // del invite (si lo hay); la pública ya no es automática.
+    if (inviteLeagueId) {
+      await db
+        .insert(leagueMemberships)
+        .values({ userId: user.id, leagueId: inviteLeagueId })
+        .onConflictDoNothing();
     }
 
     await consumeInviteCookie();

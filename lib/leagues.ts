@@ -2,6 +2,7 @@ import { and, asc, eq, inArray, sql, type SQL } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { leagueMemberships, leagues, profiles } from "@/lib/db/schema";
 import type { CurrentUser } from "@/lib/auth/guards";
+import type { PredictionMode } from "@/lib/prediction-modes";
 
 export const PENDING_INVITE_COOKIE = "pending_league_token";
 export const PUBLIC_LEAGUE_SLUG = "liga-principal";
@@ -17,7 +18,15 @@ export {
   type LeagueTier,
 } from "@/lib/league-tiers";
 
-/** Cached lookup of the public main league (Liga principal). */
+export {
+  PREDICTION_MODES,
+  PREDICTION_MODE_META,
+  PUBLIC_SLUG_BY_MODE,
+  isPredictionMode,
+  type PredictionMode,
+} from "@/lib/prediction-modes";
+
+/** Cached lookup of the public main league (modo completo). */
 let publicLeagueCache: { id: number; slug: string } | null = null;
 export async function getPublicLeague(): Promise<{ id: number; slug: string } | null> {
   if (publicLeagueCache) return publicLeagueCache;
@@ -29,6 +38,54 @@ export async function getPublicLeague(): Promise<{ id: number; slug: string } | 
   if (!row) return null;
   publicLeagueCache = row;
   return row;
+}
+
+export type PublicLeague = {
+  id: number;
+  slug: string;
+  name: string;
+  predictionMode: PredictionMode;
+};
+
+/** Las 3 quinielas públicas (una por modo), ordenadas Completo → Marcador → Ganador. */
+let publicLeaguesCache: PublicLeague[] | null = null;
+export async function getPublicLeagues(): Promise<PublicLeague[]> {
+  if (publicLeaguesCache) return publicLeaguesCache;
+  const rows = await db
+    .select({
+      id: leagues.id,
+      slug: leagues.slug,
+      name: leagues.name,
+      predictionMode: leagues.predictionMode,
+    })
+    .from(leagues)
+    .where(eq(leagues.isPublic, true));
+  const order: Record<PredictionMode, number> = { completo: 0, marcador: 1, solo_ganador: 2 };
+  const sorted = rows
+    .map((r) => ({ ...r, predictionMode: r.predictionMode as PredictionMode }))
+    .sort((a, b) => order[a.predictionMode] - order[b.predictionMode]);
+  publicLeaguesCache = sorted;
+  return sorted;
+}
+
+/** La liga pública del modo indicado, o null si aún no existe en BD. */
+export async function getPublicLeagueByMode(
+  mode: PredictionMode,
+): Promise<PublicLeague | null> {
+  const all = await getPublicLeagues();
+  return all.find((l) => l.predictionMode === mode) ?? null;
+}
+
+/** Mapa leagueId → modo de predicción, para el scoring mode-aware. */
+export async function getLeagueModes(
+  leagueIds: number[],
+): Promise<Map<number, PredictionMode>> {
+  if (leagueIds.length === 0) return new Map();
+  const rows = await db
+    .select({ id: leagues.id, predictionMode: leagues.predictionMode })
+    .from(leagues)
+    .where(inArray(leagues.id, leagueIds));
+  return new Map(rows.map((r) => [r.id, r.predictionMode as PredictionMode]));
 }
 
 /**
@@ -70,6 +127,7 @@ export type Membership = {
   joinCode: string | null;
   joinedAt: Date;
   logoUrl: string | null;
+  predictionMode: PredictionMode;
 };
 
 /**
@@ -87,16 +145,19 @@ export async function getMembershipsForUser(userId: string): Promise<Membership[
       joinCode: leagues.joinCode,
       joinedAt: leagueMemberships.joinedAt,
       logoUrl: leagues.logoUrl,
+      predictionMode: leagues.predictionMode,
     })
     .from(leagueMemberships)
     .innerJoin(leagues, eq(leagueMemberships.leagueId, leagues.id))
     .where(eq(leagueMemberships.userId, userId))
     .orderBy(asc(leagueMemberships.joinedAt));
   // Pública primero, luego por antigüedad de la membresía.
-  return rows.sort((a, b) => {
-    if (a.isPublic !== b.isPublic) return a.isPublic ? -1 : 1;
-    return a.joinedAt.getTime() - b.joinedAt.getTime();
-  });
+  return rows
+    .map((r) => ({ ...r, predictionMode: r.predictionMode as PredictionMode }))
+    .sort((a, b) => {
+      if (a.isPublic !== b.isPublic) return a.isPublic ? -1 : 1;
+      return a.joinedAt.getTime() - b.joinedAt.getTime();
+    });
 }
 
 /**

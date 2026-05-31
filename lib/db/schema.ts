@@ -108,6 +108,25 @@ export const pointsSource = pgEnum("points_source", [
   "match_scorer",
   "match_first_scorer",
   "special_prediction",
+  // Modo "Solo Ganador": acertar el 1/X/2 (grupos) o el ganador en 120' (KO).
+  "solo_winner",
+  // Modo "Solo Ganador" en KO: bonus por, habiendo predicho empate→pens,
+  // acertar quién gana la tanda.
+  "solo_winner_pens",
+]);
+
+/**
+ * Modo de predicción de una liga:
+ *  - completo: las 6 categorías (grupos, bracket, bota, especiales, marcador
+ *    y goleador por partido). Comportamiento histórico.
+ *  - marcador: solo el marcador exacto de cada partido (sin goleador ni el
+ *    resto de categorías).
+ *  - solo_ganador: solo el ganador (o empate→pens) de cada partido.
+ */
+export const predictionMode = pgEnum("prediction_mode", [
+  "completo",
+  "marcador",
+  "solo_ganador",
 ]);
 
 // ───────────────────────── identidad ─────────────────────────
@@ -146,6 +165,9 @@ export const leagues = pgTable(
     memberLimit: integer("member_limit"),
     // Plan vigente — Free de fábrica, el admin lo cambia al cobrar.
     tier: leagueTier("tier").notNull().default("free"),
+    // Modo de predicción de la liga. Se elige al crear y es inmutable.
+    // Las 3 quinielas públicas existen una por modo.
+    predictionMode: predictionMode("prediction_mode").notNull().default("completo"),
     // Trazas de la venta — el admin las rellena manualmente al confirmar
     // el pago por PayPal. paidAt indica también "última renovación".
     paidAt: timestamp("paid_at", { withTimezone: true }),

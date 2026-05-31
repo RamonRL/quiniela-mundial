@@ -39,6 +39,7 @@
     "db:telegram-chat-id": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/telegram-get-chat-id.ts",
     "db:backup-storage": "tsx --env-file-if-exists=.env.local --env-file-if-exists=.env scripts/backup-storage.ts",
     "db:audit-points": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/audit-points.ts",
+    "db:migrate-public-membership": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/migrate-public-membership.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
