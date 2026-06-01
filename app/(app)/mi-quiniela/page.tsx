@@ -16,13 +16,12 @@ import {
 } from "@/components/ui/table";
 import { PageHeader } from "@/components/shell/page-header";
 import { EmptyState } from "@/components/shell/empty-state";
-import { DeleteButton } from "@/components/admin/delete-button";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, inLeagueFilter, isPremiumTier } from "@/lib/leagues";
-import { deleteOwnLeague } from "@/lib/league-actions";
 import { formatDateTime, initials } from "@/lib/utils";
 import { InviteLinkCopy } from "@/app/admin/ligas/invite-link-copy";
 import { CodeDisplay } from "./code-display";
+import { DeleteLeagueDialog } from "./delete-league-dialog";
 import { EditLeagueDialog } from "./edit-league-dialog";
 import { KickButton, LeaveButton } from "./member-actions";
 import { AnnouncementForm } from "./announcement-form";
@@ -143,14 +142,10 @@ export default async function MyLeaguePage() {
                       isPremium,
                     }}
                   />
-                  <DeleteButton
-                    action={deleteOwnLeague}
-                    id={league.id}
-                    confirmMessage={`¿Eliminar "${league.name}"? Sus ${members.length} miembros pasarán a la Quiniela Pública. Esta acción no se puede deshacer.`}
-                    variant="outline"
-                    size="sm"
-                    label="Eliminar"
-                    className="border-[var(--color-danger)]/40 text-[var(--color-danger)] hover:bg-[var(--color-danger)]/8 hover:text-[var(--color-danger)]"
+                  <DeleteLeagueDialog
+                    leagueId={league.id}
+                    leagueName={league.name}
+                    memberCount={members.length}
                   />
                 </div>
               ) : (
