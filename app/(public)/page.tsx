@@ -26,6 +26,14 @@ import { FAQPageLD, SportsEventLD, WebSiteLD } from "@/components/seo/jsonld";
 import { AnswerText } from "@/components/faq/answer-text";
 import { NewsCard } from "@/components/news/news-card";
 import { listPublishedNews } from "@/lib/news/queries";
+import { PREDICTION_MODES, PREDICTION_MODE_META } from "@/lib/prediction-modes";
+
+// Icono por modo para la sección "Modos de juego" de la home.
+const MODE_ICON = {
+  completo: ListChecks,
+  marcador: Target,
+  solo_ganador: Swords,
+} as const;
 
 // El desvío de logueados a /dashboard vive en el middleware, no aquí
 // — así esta página no lee cookies y queda preparada para cache. Las
@@ -45,7 +53,11 @@ const KICKOFF = new Date(
 const FAQS: { q: string; a: string }[] = [
   {
     q: "¿Cómo funciona Quiniela Mundial 2026?",
-    a: "Te unes a una quiniela (la pública o una privada con código de 4 dígitos), predices las posiciones de los 12 grupos, el bracket completo, los goleadores, los marcadores partido a partido y otras predicciones especiales. Vas sumando puntos según aciertes. Hay ranking general y por liga.",
+    a: "Te unes a una quiniela (la pública o una privada con código de 4 dígitos) y predices según su modo de juego. En el modo Completo: las posiciones de los 12 grupos, el bracket completo, los goleadores, los marcadores partido a partido y predicciones especiales. En Marcador: solo el marcador exacto de cada partido. En Solo Ganador: solo quién gana cada partido. Vas sumando puntos según aciertes, con ranking general y por liga.",
+  },
+  {
+    q: "¿Qué modos de predicción hay?",
+    a: "Tres, y eliges el que quieras al crear tu quiniela (cada modo tiene además su propia quiniela pública). Completo: la experiencia entera — posiciones de grupo, bracket FIFA, Bota de Oro, especiales y marcador + goleador de cada partido. Marcador: solo el marcador exacto de cada partido, sencillo y directo. Solo Ganador: solo quién gana cada partido (o empate), la más rápida de rellenar, ideal para grupos grandes o gente con poco tiempo.",
   },
   {
     q: "¿Es gratis hacer una quiniela?",
@@ -346,7 +358,7 @@ export default async function HomePage() {
             n={2}
             icon={<ListChecks className="size-5" />}
             title="Predice"
-            text="Posiciones de los 12 grupos, bracket completo FIFA, Bota de Oro y marcadores partido a partido."
+            text="Según el modo de tu quiniela: en Completo, grupos, bracket FIFA, Bota de Oro y marcador + goleador de cada partido; en Marcador solo el marcador; en Solo Ganador solo el ganador."
           />
           <StepCard
             n={3}
@@ -360,6 +372,67 @@ export default async function HomePage() {
             title="Gana"
             text="El que mejor lea el torneo gana. Reconocimiento entre amigos, trofeo simbólico de la liga, o lo que pacten los participantes."
           />
+        </div>
+      </section>
+
+      {/* ───────── MODOS DE JUEGO ─────────
+          Tres formas de jugar según lo a fondo que quieras predecir. Cada
+          modo tiene su quiniela pública y se puede elegir al crear una
+          privada. Fuente única: PREDICTION_MODE_META. */}
+      <section className="space-y-6">
+        <header className="space-y-2">
+          <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
+            Modos de juego
+          </p>
+          <h2 className="font-display text-4xl tracking-tight sm:text-5xl">
+            Elige cuánto quieres complicarte
+          </h2>
+          <p className="max-w-3xl font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base">
+            Cada quiniela tiene un modo de predicción — del más completo al más
+            rápido. Lo eliges al crear la tuya, o entras directamente a la
+            quiniela pública de cada modo. Cada modo tiene su propio ranking.
+          </p>
+        </header>
+        <div className="grid gap-4 sm:grid-cols-3">
+          {PREDICTION_MODES.map((m) => {
+            const meta = PREDICTION_MODE_META[m];
+            const Icon = MODE_ICON[m];
+            const primary = m === "completo";
+            return (
+              <article
+                key={m}
+                className={`relative flex flex-col gap-3 overflow-hidden rounded-2xl border p-6 transition ${
+                  primary
+                    ? "border-[var(--color-arena)]/50 bg-[color-mix(in_oklch,var(--color-arena)_6%,var(--color-surface))]"
+                    : "border-[var(--color-border)] bg-[var(--color-surface)]"
+                }`}
+              >
+                {primary ? (
+                  <span className="absolute right-4 top-4 rounded-full bg-[var(--color-arena)] px-2 py-0.5 font-mono text-[0.5rem] uppercase tracking-[0.18em] text-white">
+                    El más jugado
+                  </span>
+                ) : null}
+                <div
+                  className={`grid size-11 place-items-center rounded-lg ${
+                    primary
+                      ? "bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]"
+                      : "bg-[var(--color-surface-2)] text-[var(--color-arena)]"
+                  }`}
+                >
+                  <Icon className="size-5" />
+                </div>
+                <div className="space-y-1">
+                  <p className="font-mono text-[0.55rem] uppercase tracking-[0.22em] text-[var(--color-arena)]">
+                    {meta.tagline}
+                  </p>
+                  <h3 className="font-display text-2xl tracking-tight">{meta.label}</h3>
+                </div>
+                <p className="font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)]">
+                  {meta.description}
+                </p>
+              </article>
+            );
+          })}
         </div>
       </section>
 

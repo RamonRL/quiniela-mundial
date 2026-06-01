@@ -35,7 +35,7 @@ const SECTIONS: { title: string; faqs: Faq[] }[] = [
       },
       {
         q: "¿Cómo funciona Quiniela Mundial 2026?",
-        a: "Te unes a una quiniela (la pública o una privada con código de 4 dígitos), predices las posiciones de los 12 grupos, el bracket completo, los goleadores, los marcadores partido a partido y otras predicciones especiales. Vas sumando puntos según aciertes. Hay ranking general y por liga, en directo durante el torneo.",
+        a: "Te unes a una quiniela (la pública o una privada con código de 4 dígitos) y predices según su modo de juego: Completo (posiciones de grupo, bracket, goleadores, marcadores partido a partido y especiales), Marcador (solo el marcador exacto de cada partido) o Solo Ganador (solo quién gana). Vas sumando puntos según aciertes. Hay ranking general y por liga, en directo durante el torneo.",
       },
       {
         q: "¿Es gratis hacer una quiniela?",
@@ -43,7 +43,7 @@ const SECTIONS: { title: string; faqs: Faq[] }[] = [
       },
       {
         q: "¿Tenéis planes para empresas o grupos grandes?",
-        a: "Sí. La versión Free aguanta hasta 20 miembros por quiniela. Para empresas, comunidades o eventos con más gente hay tres Pases Mundial 2026 (19 € hasta 50 miembros · 49 € hasta 100 · 99 € hasta 250) que incluyen logo corporativo custom, anuncio fijado del organizador, export CSV del ranking y soporte prioritario. Pago único por torneo. Más en /precios.",
+        a: "Sí. La versión Estándar aguanta hasta 20 miembros por quiniela, gratis. Para empresas, comunidades o eventos con más gente hay tres Pases Mundial 2026 (19 € hasta 50 miembros · 49 € hasta 100 · 99 € hasta 250) que incluyen logo corporativo custom, anuncio fijado del organizador, export CSV del ranking y soporte prioritario. Pago único por torneo. Más en /precios.",
       },
       {
         q: "¿Hay app para iPhone y Android?",
@@ -77,7 +77,7 @@ const SECTIONS: { title: string; faqs: Faq[] }[] = [
     faqs: [
       {
         q: "¿Cómo creo mi quiniela privada?",
-        a: "Tras el login te llevamos al onboarding. Eliges 'Crear quiniela', le pones nombre (máx 25 caracteres) y la app te genera un código de 4 dígitos y un enlace de invitación, ambos fijos para siempre.",
+        a: "Tras el login te llevamos al onboarding. Eliges 'Crear quiniela', le pones nombre (máx 25 caracteres), eliges el modo de predicción (Completo, Marcador o Solo Ganador) y el plan, y la app te genera un código de 4 dígitos y un enlace de invitación, ambos fijos para siempre.",
       },
       {
         q: "¿Cómo me uno a la quiniela de mis amigos?",
@@ -105,8 +105,12 @@ const SECTIONS: { title: string; faqs: Faq[] }[] = [
     title: "Predicciones y puntos",
     faqs: [
       {
-        q: "¿Cuáles son las 6 categorías de predicción?",
-        a: "Posiciones por grupo, bracket FIFA completo, goleador del torneo (Bota de Oro), marcadores partido a partido, goleador por partido y predicciones especiales (preguntas tipo '¿habrá penaltis en cuartos?').",
+        q: "¿Qué modos de predicción puedo elegir?",
+        a: "Tres, que eliges al crear tu quiniela (cada modo tiene además su propia quiniela pública y su propio ranking). Completo: la experiencia entera — posiciones por grupo, bracket FIFA, Bota de Oro, predicciones especiales y marcador + goleador de cada partido. Marcador: solo el marcador exacto de cada partido, sencillo y directo. Solo Ganador: solo quién gana cada partido (o empate), la más rápida de rellenar — ideal para grupos grandes o gente con poco tiempo. En Marcador y Solo Ganador no hay grupos, bracket, Bota de Oro ni especiales.",
+      },
+      {
+        q: "¿Cuáles son las categorías del modo Completo?",
+        a: "En el modo Completo son seis: posiciones por grupo, bracket FIFA completo, goleador del torneo (Bota de Oro), marcadores partido a partido, goleador por partido y predicciones especiales (preguntas tipo '¿habrá penaltis en cuartos?'). Los modos Marcador y Solo Ganador usan solo la predicción de cada partido.",
       },
       {
         q: "¿Hasta cuándo puedo cambiar mi predicción?",
