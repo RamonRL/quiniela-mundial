@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tweets · Novedades (modos + puntuación) · Quiniela Mundial 2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --arena: #ef5043;
+      --pitch: #16a34a;
+      --ink: #0c1410;
+      --paper: #fefcf7;
+      --muted: #8a948e;
+      --line: #25302b;
+      --card: #121a16;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0a0f0c;
+      color: var(--paper);
+      font-family: "DM Sans", sans-serif;
+      line-height: 1.5;
+      padding: 32px 20px 80px;
+    }
+    .wrap { max-width: 640px; margin: 0 auto; }
+    header.page { margin-bottom: 28px; }
+    header.page .eyebrow {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.62rem; letter-spacing: 0.28em; text-transform: uppercase;
+      color: var(--arena);
+    }
+    header.page h1 {
+      font-family: "Big Shoulders Display", sans-serif;
+      font-weight: 900; font-size: 2.2rem; line-height: 1.05; margin-top: 6px;
+    }
+    header.page p { color: var(--muted); font-size: 0.92rem; margin-top: 8px; }
+
+    .tweet {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px 20px;
+      margin-top: 22px;
+    }
+    .tweet .label {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.58rem; letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 12px;
+    }
+    .row { display: flex; gap: 12px; }
+    .avatar {
+      width: 46px; height: 46px; border-radius: 999px; flex: 0 0 auto;
+      background: var(--arena); color: #fff;
+      display: grid; place-items: center;
+      font-family: "Big Shoulders Display", sans-serif; font-weight: 900; font-size: 1.1rem;
+      box-shadow: 0 4px 14px rgba(239, 80, 67, 0.4);
+    }
+    .who { display: flex; flex-direction: column; justify-content: center; }
+    .who .name { font-weight: 700; }
+    .who .handle { color: var(--muted); font-size: 0.85rem; }
+    .body {
+      margin-top: 12px; white-space: pre-wrap; font-size: 1.02rem;
+    }
+    .body a { color: #6ea8fe; text-decoration: none; }
+    .meta {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; margin-top: 14px; padding-top: 12px;
+      border-top: 1px solid var(--line);
+    }
+    .chars {
+      font-family: "JetBrains Mono", monospace; font-size: 0.7rem; color: var(--muted);
+    }
+    .chars.over { color: var(--arena); font-weight: 700; }
+    button.copy {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase;
+      background: var(--arena); color: #fff; border: 0; border-radius: 8px;
+      padding: 8px 14px; cursor: pointer; transition: opacity .15s;
+    }
+    button.copy:hover { opacity: 0.9; }
+    .note {
+      margin-top: 28px; color: var(--muted); font-size: 0.82rem;
+      font-style: italic; border-top: 1px dashed var(--line); padding-top: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="page">
+      <p class="eyebrow">Playbook · Tweets</p>
+      <h1>Novedades: modos de predicción + nueva puntuación</h1>
+      <p>Dos borradores listos para X. Pulsa «Copiar» y pega. El contador marca en rojo si te pasas de 280.</p>
+    </header>
+
+    <!-- ───────── Tweet 1 · Modos de predicción ───────── -->
+    <article class="tweet">
+      <p class="label">Tweet 1 · Modos de predicción</p>
+      <div class="row">
+        <div class="avatar">QM</div>
+        <div class="who">
+          <span class="name">Quiniela Mundial</span>
+          <span class="handle">@quinimundial</span>
+        </div>
+      </div>
+      <div class="body" data-tweet>⚽ Ahora en Quiniela Mundial 2026 eliges CÓMO juegas tu quiniela:
+
+🏆 Completo — grupos, bracket, Bota de Oro y marcadores.
+🎯 Marcador — solo el resultado de cada partido.
+✅ Solo Ganador — solo quién gana. El más rápido de rellenar.
+
+Crea la tuya gratis 👉 https://quinielamundial.es
+#Mundial2026</div>
+      <div class="meta">
+        <span class="chars" data-chars></span>
+        <button class="copy" type="button" data-copy>Copiar</button>
+      </div>
+    </article>
+
+    <!-- ───────── Tweet 2 · Nueva puntuación ───────── -->
+    <article class="tweet">
+      <p class="label">Tweet 2 · Nuevo sistema de puntuación</p>
+      <div class="row">
+        <div class="avatar">QM</div>
+        <div class="who">
+          <span class="name">Quiniela Mundial</span>
+          <span class="handle">@quinimundial</span>
+        </div>
+      </div>
+      <div class="body" data-tweet>🔢 Hemos afinado la puntuación de Quiniela Mundial 2026:
+
+✔️ Marcador exacto, ganador, o solo los goles de un equipo… todo suma.
+⚔️ Reglas distintas en fase de grupos y en eliminatoria (con penaltis).
+
+Mira cuánto vale cada acierto 👉 https://quinielamundial.es/puntuacion
+#Mundial2026</div>
+      <div class="meta">
+        <span class="chars" data-chars></span>
+        <button class="copy" type="button" data-copy>Copiar</button>
+      </div>
+    </article>
+
+    <p class="note">
+      Links para visitar lo nuevo: la home (https://quinielamundial.es) muestra los 3 modos y
+      la página «Cómo se puntúa» (https://quinielamundial.es/puntuacion) tiene el desglose
+      completo por modo y por fase. Edita el copy a tu gusto antes de publicar.
+    </p>
+  </div>
+
+  <script>
+    // Contador de caracteres (estilo X) + botón copiar, sin dependencias.
+    document.querySelectorAll(".tweet").forEach((card) => {
+      const body = card.querySelector("[data-tweet]");
+      const charsEl = card.querySelector("[data-chars]");
+      const btn = card.querySelector("[data-copy]");
+      const text = body.textContent.replace(/ /g, " ").trim();
+      const n = [...text].length; // cuenta emojis como X (code points)
+      charsEl.textContent = n + " / 280";
+      if (n > 280) charsEl.classList.add("over");
+      btn.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(text);
+          btn.textContent = "¡Copiado!";
+          setTimeout(() => (btn.textContent = "Copiar"), 1500);
+        } catch {
+          btn.textContent = "Selecciona y copia";
+        }
+      });
+    });
+  </script>
+</body>
+</html>
