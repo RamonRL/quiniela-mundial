@@ -15,7 +15,8 @@ import {
 import { formatDateTime } from "@/lib/utils";
 import type { PredictionMode } from "@/lib/prediction-modes";
 import { ScorerPicker, type PlayerCardData } from "./scorer-picker";
-import { endMatchdayTour, saveMatchPrediction } from "./actions";
+import { saveMatchPrediction } from "./actions";
+import { saveMatchdayPredictions } from "../actions";
 
 type TeamLite = { id: number; code: string; name: string };
 type MatchItem = {
@@ -94,6 +95,9 @@ export function MatchdayTourClient({
   });
   const [pending, startTransition] = useTransition();
   const toldEntryToast = useRef(false);
+  // Guardados en vuelo (en segundo plano). Al finalizar esperamos a que
+  // terminen + un guardado masivo de respaldo, para no perder nada.
+  const pendingSaves = useRef<Set<Promise<unknown>>>(new Set());
 
   useEffect(() => {
     if (toldEntryToast.current) return;
@@ -124,63 +128,102 @@ export function MatchdayTourClient({
     }));
   }
 
-  async function persistCurrent(): Promise<boolean> {
-    const p = preds[current.id];
-    if (!p) return false;
-    // Goleador obligatorio en completo (acertarlo solo suma, nunca penaliza).
-    if (showScorer && p.scorerPlayerId == null) {
-      toast.warning("Selecciona un goleador.", {
-        description:
-          "Aunque tu marcador sea 0-0, acertarlo te da +4 puntos extra. Nunca penaliza.",
-      });
-      return false;
-    }
-    // Solo Ganador: hay que elegir 1/X/2 (el 0-0 sin elegir no se guarda).
-    if (soloGanador && !p.picked) {
-      toast.warning("Elige un resultado.", {
-        description: "Pulsa 1 (local), X (empate) o 2 (visitante) para continuar.",
-      });
-      return false;
-    }
-    const res = await saveMatchPrediction({
-      matchId: current.id,
+  // Validación 100% en cliente (instantánea). Devuelve el motivo por el que
+  // NO se puede avanzar, o null si está listo.
+  function blockReason(p: LocalPrediction | undefined): "missing" | "scorer" | "picked" | null {
+    if (!p) return "missing";
+    if (showScorer && p.scorerPlayerId == null) return "scorer";
+    if (soloGanador && !p.picked) return "picked";
+    return null;
+  }
+
+  // Guarda un partido en SEGUNDO PLANO: no bloqueamos la navegación esperando
+  // al servidor. El upsert es idempotente (usuario+liga+partido), así que
+  // reintentos o guardados solapados no duplican. Si falla, no molestamos: el
+  // guardado masivo de `flushAll` al finalizar lo recupera.
+  function queueSave(matchId: number, p: LocalPrediction) {
+    const promise = saveMatchPrediction({
+      matchId,
       homeScore: p.homeScore,
       awayScore: p.awayScore,
       willGoToPens: p.willGoToPens,
       winnerTeamId: p.winnerTeamId,
       scorerPlayerId: showScorer ? p.scorerPlayerId : null,
-    });
-    if (!res.ok) {
-      toast.error(res.error ?? "No se pudo guardar.");
-      return false;
-    }
-    flashSavedToast();
-    return true;
+    })
+      .then((res) => {
+        if (res.ok) flashSavedToast();
+      })
+      .catch(() => {})
+      .finally(() => pendingSaves.current.delete(promise));
+    pendingSaves.current.add(promise);
+  }
+
+  // Red de seguridad al terminar: espera los guardados en vuelo y persiste
+  // toda la jornada de una sola vez (idempotente) por si alguno de fondo falló.
+  async function flushAll() {
+    await Promise.allSettled([...pendingSaves.current]);
+    const fd = new FormData();
+    fd.set(
+      "payload",
+      JSON.stringify({
+        matchdayId,
+        predictions: matches.map((m) => {
+          const p = preds[m.id];
+          return {
+            matchId: m.id,
+            homeScore: p.homeScore,
+            awayScore: p.awayScore,
+            willGoToPens: p.willGoToPens,
+            winnerTeamId: p.winnerTeamId,
+            scorerPlayerId: showScorer ? p.scorerPlayerId : null,
+            picked: p.picked,
+          };
+        }),
+      }),
+    );
+    await saveMatchdayPredictions({ ok: false }, fd);
   }
 
   function onPrev() {
     if (step === 0) return;
-    startTransition(async () => {
-      const ok = await persistCurrent();
-      if (!ok) return;
-      setDirection("left");
-      setStep((s) => s - 1);
-    });
+    const p = preds[current.id];
+    // Solo guardamos si el paso ya es válido; volver atrás nunca bloquea.
+    if (!blockReason(p)) queueSave(current.id, p);
+    setDirection("left");
+    setStep((s) => s - 1);
   }
 
   function onNext() {
-    const isLast = step === matches.length - 1;
-    startTransition(async () => {
-      const ok = await persistCurrent();
-      if (!ok) return;
-      if (isLast) {
-        await endMatchdayTour(matchdayId);
+    const p = preds[current.id];
+    const reason = blockReason(p);
+    if (reason === "scorer") {
+      toast.warning("Selecciona un goleador.", {
+        description:
+          "Aunque tu marcador sea 0-0, acertarlo te da +4 puntos extra. Nunca penaliza.",
+      });
+      return;
+    }
+    if (reason === "picked") {
+      toast.warning("Elige un resultado.", {
+        description: "Pulsa 1 (local), X (empate) o 2 (visitante) para continuar.",
+      });
+      return;
+    }
+    if (reason) return;
+
+    // Guardado en segundo plano + avance INMEDIATO (sin esperar al servidor).
+    queueSave(current.id, p);
+
+    if (step === matches.length - 1) {
+      // Último paso: aquí sí esperamos a que todo quede persistido.
+      startTransition(async () => {
+        await flushAll();
         router.push("/predicciones");
-        return;
-      }
-      setDirection("right");
-      setStep((s) => s + 1);
-    });
+      });
+      return;
+    }
+    setDirection("right");
+    setStep((s) => s + 1);
   }
 
   const isKnockout = current.stage !== "group";

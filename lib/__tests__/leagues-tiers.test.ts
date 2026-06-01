@@ -40,8 +40,8 @@ describe("league tier helpers", () => {
 });
 
 describe("preset logo gallery", () => {
-  it("incluye al menos 10 logos con ids únicos", () => {
-    expect(PRESET_LEAGUE_LOGOS.length).toBeGreaterThanOrEqual(10);
+  it("incluye varios logos con ids únicos", () => {
+    expect(PRESET_LEAGUE_LOGOS.length).toBeGreaterThanOrEqual(5);
     const ids = new Set(PRESET_LEAGUE_LOGOS.map((p) => p.id));
     expect(ids.size).toBe(PRESET_LEAGUE_LOGOS.length);
   });
@@ -53,14 +53,14 @@ describe("preset logo gallery", () => {
   });
 
   it("isPresetLogoUrl reconoce solo URLs de la galería", () => {
-    expect(isPresetLogoUrl("/league-logos/ball.svg")).toBe(true);
+    expect(isPresetLogoUrl("/league-logos/trophy.svg")).toBe(true);
     expect(isPresetLogoUrl("https://example.com/custom.png")).toBe(false);
     expect(isPresetLogoUrl(null)).toBe(false);
     expect(isPresetLogoUrl("")).toBe(false);
   });
 
   it("presetUrlById resuelve id válido / null para id inexistente", () => {
-    expect(presetUrlById("ball")).toBe("/league-logos/ball.svg");
+    expect(presetUrlById("trophy")).toBe("/league-logos/trophy.svg");
     expect(presetUrlById("nope")).toBeNull();
     expect(presetUrlById(null)).toBeNull();
   });

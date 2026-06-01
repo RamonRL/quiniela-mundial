@@ -5,7 +5,6 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import {
-  matchdays,
   matches,
   players,
   predMatchResult,
@@ -13,7 +12,7 @@ import {
 } from "@/lib/db/schema";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId } from "@/lib/leagues";
-import { getMatchdayState, isMatchClosed, type Stage } from "@/lib/matchday-state";
+import { isMatchClosed } from "@/lib/matchday-state";
 import { runAction } from "@/lib/actions/guard";
 import { rateLimit } from "@/lib/ratelimit";
 
@@ -58,23 +57,11 @@ export async function saveMatchPrediction(
     .where(eq(matches.id, parsed.data.matchId))
     .limit(1);
   if (!m) return { ok: false, error: "Partido no encontrado." };
+  // El cierre relevante es por partido (su kickoff). La macro-jornada ya se
+  // validó al entrar al tour (page.tsx); recomputar su estado en CADA guardado
+  // costaba 2 agregados sobre toda la tabla `matches` y ralentizaba el "Siguiente".
   if (isMatchClosed(m)) {
     return { ok: false, error: "Este partido ya empezó." };
-  }
-
-  // Estado de la jornada (waiting / closed bloquean).
-  if (m.matchdayId != null) {
-    const [day] = await db
-      .select()
-      .from(matchdays)
-      .where(eq(matchdays.id, m.matchdayId))
-      .limit(1);
-    if (day) {
-      const status = await getMatchdayState({ id: day.id, stage: day.stage as Stage });
-      if (status.state !== "open") {
-        return { ok: false, error: status.reason ?? "Jornada cerrada." };
-      }
-    }
   }
 
   // Goleador (solo modo completo): si viene, debe jugar en este partido.
