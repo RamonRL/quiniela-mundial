@@ -87,11 +87,12 @@ export default async function OnboardingPage({
         }}
       />
 
-      <div className="relative mx-auto flex min-h-dvh w-full max-w-5xl flex-col px-6 py-8 sm:px-10 sm:py-12 lg:px-12 lg:py-16">
+      <div className="relative mx-auto flex min-h-dvh w-full max-w-5xl flex-col px-6 py-4 sm:px-10 sm:py-12 lg:px-12 lg:py-16">
         {/* Header — Quiniela Mundial · FWC26 mark · counter
             Desktop: 3 columnas en una sola fila a la misma altura.
-            Mobile: stack — primero Quiniela, luego el mark FIFA. */}
-        <header className="mb-12 flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            Mobile: solo el wordmark (el mark FIFA se oculta para no robar
+            altura — el onboarding debe caber sin scroll). */}
+        <header className="mb-6 flex flex-col items-center gap-6 sm:mb-12 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           {/* Quiniela Mundial */}
           <div className="flex w-full items-center justify-between gap-4 sm:w-auto sm:order-1">
             <Link href="/dashboard" className="block" aria-label="Quiniela Mundial">
@@ -108,8 +109,9 @@ export default async function OnboardingPage({
             ) : null}
           </div>
 
-          {/* FIFA World Cup 26 mark — centro */}
-          <div className="flex flex-col items-center gap-1.5 sm:order-2">
+          {/* FIFA World Cup 26 mark — centro. Oculto en móvil para ganar
+              altura: el onboarding debe caber en pantalla sin scroll. */}
+          <div className="hidden flex-col items-center gap-1.5 sm:order-2 sm:flex">
             <Image
               src="/fwc26.png"
               alt="FIFA World Cup 26"

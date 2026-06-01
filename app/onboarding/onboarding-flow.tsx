@@ -102,11 +102,11 @@ export function OnboardingFlow({
 
   if (step === "root") {
     return (
-      <div className="space-y-10">
+      <div className="space-y-6 sm:space-y-10">
         {!fresh ? <BackButton href="/dashboard" /> : null}
         <Eyebrow>Onboarding</Eyebrow>
         <header className="space-y-4">
-          <h1 className="font-display text-5xl tracking-tight sm:text-6xl xl:text-7xl">
+          <h1 className="font-display text-4xl tracking-tight sm:text-6xl xl:text-7xl">
             Bienvenido a Quiniela Mundial
           </h1>
           <p className="font-editorial text-lg italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-xl">
@@ -141,11 +141,11 @@ export function OnboardingFlow({
 
   if (step === "publica-elegir") {
     return (
-      <div className="space-y-10">
+      <div className="space-y-6 sm:space-y-10">
         <BackButton href={`/onboarding?step=root${nextQuery}`} />
         <Eyebrow>Quiniela pública</Eyebrow>
         <header className="space-y-4">
-          <h1 className="font-display text-4xl tracking-tight sm:text-5xl xl:text-6xl">
+          <h1 className="font-display text-3xl tracking-tight sm:text-5xl xl:text-6xl">
             Elige el modo de juego
           </h1>
           <p className="font-editorial text-lg italic leading-relaxed text-[var(--color-muted-foreground)]">
@@ -176,11 +176,11 @@ export function OnboardingFlow({
 
   if (step === "privada-elegir") {
     return (
-      <div className="space-y-10">
+      <div className="space-y-6 sm:space-y-10">
         <BackButton href={fresh ? "/onboarding" : "/dashboard"} />
         <Eyebrow>Quiniela privada</Eyebrow>
         <header className="space-y-4">
-          <h1 className="font-display text-4xl tracking-tight sm:text-5xl xl:text-6xl">
+          <h1 className="font-display text-3xl tracking-tight sm:text-5xl xl:text-6xl">
             Crear o unirte.
           </h1>
         </header>
@@ -212,7 +212,7 @@ export function OnboardingFlow({
 
   if (step === "privada-crear") {
     return (
-      <div className="space-y-10">
+      <div className="space-y-6 sm:space-y-10">
         <BackButton href="/onboarding?step=privada-elegir" />
         <CreateLeagueForm fresh={fresh} paddle={paddle} />
       </div>
@@ -220,7 +220,7 @@ export function OnboardingFlow({
   }
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-6 sm:space-y-10">
       <BackButton href="/onboarding?step=privada-elegir" />
       <JoinLeagueForm />
     </div>
@@ -279,7 +279,7 @@ function ChoiceCard({
           setPending(false);
         }
       }}
-      className={`group relative flex min-h-[18rem] flex-col items-start gap-5 overflow-hidden rounded-2xl border p-6 text-left transition-all duration-300 ease-out disabled:opacity-60 sm:p-7 lg:min-h-[22rem] lg:p-8 ${
+      className={`group relative flex min-h-0 flex-col items-start gap-3 overflow-hidden rounded-2xl border p-4 text-left transition-all duration-300 ease-out disabled:opacity-60 sm:min-h-[18rem] sm:gap-5 sm:p-7 lg:min-h-[22rem] lg:p-8 ${
         primary
           ? "border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface))] hover:-translate-y-1 hover:border-[var(--color-arena)] hover:shadow-[var(--shadow-arena)]"
           : "border-[var(--color-border)] bg-[var(--color-surface)] hover:-translate-y-1 hover:border-[var(--color-arena)]/50 hover:shadow-[var(--shadow-elev-2)]"
@@ -292,7 +292,7 @@ function ChoiceCard({
         />
       ) : null}
       <div
-        className={`relative grid size-14 place-items-center rounded-lg transition-transform group-hover:scale-110 ${
+        className={`relative grid size-11 place-items-center rounded-lg transition-transform group-hover:scale-110 sm:size-14 ${
           primary
             ? "bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]"
             : "bg-[var(--color-surface-2)] text-[var(--color-arena)]"
@@ -300,9 +300,9 @@ function ChoiceCard({
       >
         {icon}
       </div>
-      <div className="relative space-y-2">
-        <h2 className="font-display text-3xl tracking-tight sm:text-4xl">{label}</h2>
-        <p className="text-[0.95rem] leading-relaxed text-[var(--color-muted-foreground)]">
+      <div className="relative space-y-1 sm:space-y-2">
+        <h2 className="font-display text-2xl tracking-tight sm:text-4xl">{label}</h2>
+        <p className="text-sm leading-relaxed text-[var(--color-muted-foreground)] sm:text-[0.95rem]">
           {description}
         </p>
       </div>
@@ -365,10 +365,10 @@ function CreateLeagueForm({
   }
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-6 sm:space-y-10">
       <Eyebrow>Crear quiniela</Eyebrow>
       <header className="space-y-4">
-        <h1 className="font-display text-4xl tracking-tight sm:text-5xl xl:text-6xl">
+        <h1 className="font-display text-3xl tracking-tight sm:text-5xl xl:text-6xl">
           Ponle nombre.
         </h1>
         <p className="font-editorial text-lg italic text-[var(--color-muted-foreground)]">
@@ -677,7 +677,7 @@ function PlanStep({
         : `Pagar ${selectedPlan.priceLabel} y crear`;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5 sm:space-y-8">
       <div className="flex items-center justify-between gap-3">
         <Eyebrow>Elige plan</Eyebrow>
         <button
@@ -690,7 +690,7 @@ function PlanStep({
         </button>
       </div>
       <header className="space-y-3">
-        <h1 className="font-display text-4xl tracking-tight sm:text-5xl">
+        <h1 className="font-display text-3xl tracking-tight sm:text-5xl">
           El plan de tu quiniela
         </h1>
         <p className="font-editorial text-lg italic text-[var(--color-muted-foreground)]">
@@ -845,7 +845,7 @@ function CreatedSuccess({
       ? `${window.location.origin}/invite/${inviteToken}`
       : `/invite/${inviteToken}`;
   return (
-    <div className="space-y-10">
+    <div className="space-y-6 sm:space-y-10">
       <div className="flex items-center gap-3">
         <Sparkles className="size-4 text-[var(--color-arena)]" />
         <p className="font-mono text-[0.65rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-arena)]">
@@ -853,7 +853,7 @@ function CreatedSuccess({
         </p>
       </div>
       <header className="space-y-4">
-        <h1 className="font-display text-4xl tracking-tight sm:text-5xl xl:text-6xl">
+        <h1 className="font-display text-3xl tracking-tight sm:text-5xl xl:text-6xl">
           {name}
         </h1>
         <p className="font-editorial text-lg italic text-[var(--color-muted-foreground)]">
@@ -864,14 +864,14 @@ function CreatedSuccess({
       </header>
 
       <div className="space-y-6">
-        <div className="rounded-2xl border border-[var(--color-arena)]/50 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface))] p-6 sm:p-8">
+        <div className="rounded-2xl border border-[var(--color-arena)]/50 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface))] p-5 sm:p-8">
           <div className="flex items-center justify-between gap-4">
             <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
               Código de 4 dígitos
             </p>
             <CopyButton value={joinCode ?? "—"} disabled={!joinCode} />
           </div>
-          <p className="mt-3 font-display tabular text-7xl tracking-[0.2em] text-[var(--color-arena)] glow-arena sm:text-8xl xl:text-9xl">
+          <p className="mt-3 font-display tabular text-6xl tracking-[0.2em] text-[var(--color-arena)] glow-arena sm:text-8xl xl:text-9xl">
             {joinCode ?? "—"}
           </p>
         </div>
@@ -1001,10 +1001,10 @@ function JoinLeagueForm() {
   };
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-6 sm:space-y-10">
       <Eyebrow>Unirse a quiniela</Eyebrow>
       <header className="space-y-4">
-        <h1 className="font-display text-4xl tracking-tight sm:text-5xl xl:text-6xl">
+        <h1 className="font-display text-3xl tracking-tight sm:text-5xl xl:text-6xl">
           Cuatro dígitos.
         </h1>
         <p className="font-editorial text-lg italic text-[var(--color-muted-foreground)]">
@@ -1108,10 +1108,10 @@ function NicknameStep({
   const [nicknameValue, setNicknameValue] = useState(defaultNickname);
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-6 sm:space-y-10">
       <Eyebrow>Tu perfil · paso 1 de 2</Eyebrow>
       <header className="space-y-4">
-        <h1 className="font-display text-5xl tracking-tight sm:text-6xl xl:text-7xl">
+        <h1 className="font-display text-4xl tracking-tight sm:text-6xl xl:text-7xl">
           ¿Cómo te llamamos?
         </h1>
         <p className="font-editorial text-lg italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-xl">
@@ -1120,7 +1120,7 @@ function NicknameStep({
         </p>
       </header>
 
-      <form action={action} className="space-y-10">
+      <form action={action} className="space-y-6 sm:space-y-10">
         {nextValue ? <input type="hidden" name="next" value={nextValue} /> : null}
         <label className="group block space-y-2">
           <span className="block font-mono text-[0.6rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-muted-foreground)] transition-colors group-focus-within:text-[var(--color-arena)]">
@@ -1230,10 +1230,10 @@ function PhotoStep({
   }
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-6 sm:space-y-10">
       <Eyebrow>Tu perfil · paso 2 de 2</Eyebrow>
       <header className="space-y-4">
-        <h1 className="font-display text-5xl tracking-tight sm:text-6xl xl:text-7xl">
+        <h1 className="font-display text-4xl tracking-tight sm:text-6xl xl:text-7xl">
           Ponle cara, {nickname}.
         </h1>
         <p className="font-editorial text-lg italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-xl">
@@ -1242,7 +1242,7 @@ function PhotoStep({
         </p>
       </header>
 
-      <form action={action} className="space-y-10">
+      <form action={action} className="space-y-6 sm:space-y-10">
         {nextValue ? <input type="hidden" name="next" value={nextValue} /> : null}
         <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-center sm:gap-10">
           {/* Avatar dropzone */}
