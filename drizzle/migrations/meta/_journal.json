@@ -162,6 +162,13 @@
       "when": 1780267210252,
       "tag": "0022_young_vivisector",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1780277826429,
+      "tag": "0023_gigantic_thena",
+      "breakpoints": true
     }
   ]
 }

@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import { Calendar, MapPin } from "lucide-react";
 import { TeamFlag } from "@/components/brand/team-flag";
 import { ScoreStepper } from "@/components/forms/score-stepper";
-import { PointsHint, type PointsHintItem } from "@/components/predictions/points-hint";
 import { WinnerPicker } from "@/components/predictions/winner-picker";
 import {
   InteractiveTourShell,
@@ -231,49 +230,8 @@ export function MatchdayTourClient({
     ? `Grupo ${current.groupCode}`
     : STAGE_LABEL[current.stage];
 
-  // Tabla de puntuación de este partido, según el modo.
-  const pointsHintItems: PointsHintItem[] = [];
-  if (mode === "solo_ganador") {
-    pointsHintItems.push({ points: 3, label: "Aciertas el ganador (o el empate)" });
-    if (isKnockout) {
-      pointsHintItems.push({
-        points: 2,
-        prefix: "+",
-        label: "Empate: aciertas quién pasa en penaltis",
-        bonus: true,
-      });
-    }
-  } else {
-    pointsHintItems.push(
-      { points: 5, label: "Marcador exacto" },
-      { points: 2, label: "Aciertas ganador (o empate) sin el marcador exacto" },
-    );
-    if (mode === "completo") {
-      pointsHintItems.push(
-        { points: 4, label: "Tu goleador marca un gol" },
-        { points: 2, prefix: "+", label: "Bonus si además es el primer gol del partido", bonus: true },
-      );
-    }
-    if (isKnockout) {
-      pointsHintItems.push(
-        { points: 3, prefix: "+", label: "Bonus si aciertas el clasificado a la siguiente ronda", bonus: true },
-        { points: 2, prefix: "+", label: "Bonus si predices que va a penaltis y ocurre", bonus: true },
-      );
-    }
-  }
-
-  const hintFootnote =
-    mode === "solo_ganador"
-      ? isKnockout
-        ? "Hasta 5 pts en este partido de eliminatoria."
-        : "Hasta 3 pts en este partido de la fase de grupos."
-      : mode === "marcador"
-        ? isKnockout
-          ? "Hasta 10 pts en este partido de eliminatoria."
-          : "Hasta 5 pts en este partido de la fase de grupos."
-        : isKnockout
-          ? "Hasta 16 pts en este partido de eliminatoria."
-          : "Hasta 11 pts en este partido de la fase de grupos.";
+  // El paso a paso NO muestra "cuánto puntúa este paso": metía ruido. Las
+  // reglas viven fuera del tour (página de jornada y /puntuacion).
 
   return (
     <InteractiveTourShell
@@ -323,8 +281,6 @@ export function MatchdayTourClient({
                 onChange={(patch) => updateCurrent(patch)}
               />
             </div>
-
-            <PointsHint items={pointsHintItems} footnote={hintFootnote} />
           </>
         ) : (
           /* ── Completo / Marcador: marcador exacto (+ goleador en completo) ── */
@@ -393,8 +349,6 @@ export function MatchdayTourClient({
                 />
               </div>
             </section>
-
-            <PointsHint items={pointsHintItems} footnote={hintFootnote} />
 
             {/* Penaltis (solo KO) */}
             {isKnockout ? (

@@ -9,15 +9,13 @@ const sign = (a: number, b: number) => (a > b ? 1 : a < b ? -1 : 0);
  * (1/X/2), codificado canónicamente en `homeScore/awayScore` de
  * `predMatchResult` (local 1-0 · empate 0-0 · visitante 0-1). En KO, predecir
  * empate (0-0) significa "va a penaltis" y `winnerTeamId` lleva quién gana la
- * tanda.
+ * tanda. Solo se mira el SIGNO del marcador, nunca los goles concretos.
  *
- * Reglas (acordadas con el usuario):
- * - Acertar el resultado de los 120' (ganador o que hay empate→pens) →
- *   `solo_winner_correct` (3).
- * - Si predijo empate y el partido fue a pens y acierta el ganador de la
- *   tanda → bonus `solo_winner_pens_bonus` (2).
- *
- * Solo se mira el SIGNO del marcador, nunca los goles concretos.
+ * Modelo por TIERS (una sola entrada `solo_winner`):
+ *  - Grupos: 3 por acertar ganador o empate (`solo_g_correct`).
+ *  - Final: 5 si predijo empate→pens y acierta el ganador de la tanda
+ *    (`solo_ko_draw_pens`); si no, 3 por acertar ganador o empate
+ *    (`solo_ko_correct`). 0 por fallar.
  */
 export function scoreSoloGanadorPrediction(args: {
   match: MatchOutcome;
@@ -25,38 +23,33 @@ export function scoreSoloGanadorPrediction(args: {
   rules: ScoringRules;
 }): LedgerEntry[] {
   const { match, prediction, rules } = args;
-  const entries: LedgerEntry[] = [];
 
   const predSign = sign(prediction.homeScore, prediction.awayScore);
-  // En KO que va a pens, el marcador de 120' es un empate (sign 0); por eso
-  // comparar el signo del marcador real ya captura "predijo empate→pens".
   const actualSign = sign(match.homeScore, match.awayScore);
+  const correct = predSign === actualSign;
+  const ko = isKnockout(match.stage);
 
-  if (predSign === actualSign) {
-    entries.push({
+  let key: keyof ScoringRules | null = null;
+  if (ko) {
+    const pensOk =
+      predSign === 0 &&
+      match.wentToPens &&
+      prediction.winnerTeamId != null &&
+      prediction.winnerTeamId === match.winnerTeamId;
+    if (pensOk) key = "solo_ko_draw_pens"; // 5
+    else if (correct) key = "solo_ko_correct"; // 3
+  } else if (correct) {
+    key = "solo_g_correct"; // 3
+  }
+
+  if (!key) return [];
+
+  return [
+    {
       source: "solo_winner",
       sourceKey: `match:${match.matchId}:solo_winner`,
-      sourceRef: { matchId: match.matchId },
-      points: rules.solo_winner_correct.points,
-    });
-  }
-
-  // Bonus de penaltis: solo en KO, solo si predijo empate (→pens), el partido
-  // realmente fue a pens y acierta quién pasa.
-  if (
-    isKnockout(match.stage) &&
-    predSign === 0 &&
-    match.wentToPens &&
-    prediction.winnerTeamId != null &&
-    prediction.winnerTeamId === match.winnerTeamId
-  ) {
-    entries.push({
-      source: "solo_winner_pens",
-      sourceKey: `match:${match.matchId}:solo_winner_pens`,
-      sourceRef: { matchId: match.matchId, teamId: prediction.winnerTeamId },
-      points: rules.solo_winner_pens_bonus.points,
-    });
-  }
-
-  return entries;
+      sourceRef: { matchId: match.matchId, phase: ko ? "ko" : "group" },
+      points: rules[key].points,
+    },
+  ];
 }

@@ -43,76 +43,75 @@ export const TOP_SCORER_SCORING: ScoringSection[] = [
   },
 ];
 
-export const MATCH_SCORING: ScoringSection[] = [
-  {
-    heading: "Marcador",
-    rules: [
-      { points: 5, label: "Marcador exacto (en 90' o 120' en knockout)" },
-      { points: 2, label: "Aciertas el ganador (o el empate) sin marcador exacto" },
-    ],
-  },
-  {
-    heading: "Goleador del partido",
-    rules: [
-      { points: 4, label: "Tu jugador anota un gol" },
-      { points: 2, prefix: "+", label: "Bonus si además es el primer gol del partido", bonus: true },
-    ],
-  },
-  {
-    heading: "Solo en eliminatoria",
-    rules: [
-      { points: 3, prefix: "+", label: "Aciertas el clasificado a la siguiente ronda", bonus: true },
-      { points: 2, prefix: "+", label: "Predices que va a penaltis y ocurre", bonus: true },
-    ],
-  },
-];
-export const MATCH_FOOTNOTE = "En grupos: hasta 11 pts. En knockout: hasta 16 pts por partido.";
+// ───────────── Resultado del partido · por fase (Completo + Marcador) ─────────────
 
-// ───────────── Copy de partido por modo de liga ─────────────
-
-/** Modo Marcador: solo marcador, sin la sección de goleador. */
-export const MATCH_SCORING_MARCADOR: ScoringSection[] = [
-  {
-    heading: "Marcador",
-    rules: [
-      { points: 5, label: "Marcador exacto (90' o 120' en eliminatoria)" },
-      { points: 2, label: "Aciertas el ganador (o el empate) sin marcador exacto" },
-    ],
-  },
-  {
-    heading: "Solo en eliminatoria",
-    rules: [
-      { points: 3, prefix: "+", label: "Aciertas el clasificado (quién pasa)", bonus: true },
-      { points: 2, prefix: "+", label: "Predices empate→penaltis y ocurre", bonus: true },
-    ],
-  },
-];
-
-/** Modo Solo Ganador: solo el 1X2 / quién pasa. */
-export const MATCH_SCORING_SOLO_GANADOR: ScoringSection[] = [
-  {
-    heading: "Ganador del partido",
-    rules: [
-      { points: 3, label: "Aciertas el ganador (o el empate→penaltis en eliminatoria)" },
-      {
-        points: 2,
-        prefix: "+",
-        label: "Eliminatoria: si predices empate y aciertas quién gana la tanda",
-        bonus: true,
-      },
-    ],
-  },
-];
-
-/** Mapa modo → secciones de copy para la página de jornada y /puntuacion. */
-export const MATCH_SCORING_BY_MODE: Record<
-  "completo" | "marcador" | "solo_ganador",
-  ScoringSection[]
-> = {
-  completo: MATCH_SCORING,
-  marcador: MATCH_SCORING_MARCADOR,
-  solo_ganador: MATCH_SCORING_SOLO_GANADOR,
+/** Marcador · fase de grupos (tiers excluyentes). */
+export const MATCH_GROUP_SCORING: ScoringSection = {
+  heading: "Fase de grupos",
+  rules: [
+    { points: 5, label: "Marcador exacto", example: "Dices 2-0, queda 2-0" },
+    { points: 3, label: "Ganador correcto + los goles de un equipo", example: "Dices 2-0, queda 2-1" },
+    { points: 2, label: "Ganador o empate correcto, sin marcador exacto", example: "Dices 2-0, queda 3-1" },
+    { points: 1, label: "Goles de un equipo, sin acertar el ganador", example: "Dices 2-1, queda 2-3" },
+  ],
 };
+
+/** Marcador · fase final (incluye prórroga; empate = va a penaltis). */
+export const MATCH_FINAL_SCORING: ScoringSection = {
+  heading: "Fase final",
+  rules: [
+    { points: 7, label: "Empate exacto + aciertas quién pasa en penaltis", example: "Dices 1-1 y pasa MEX; 1-1 y pasa MEX en pens" },
+    { points: 5, label: "Marcador exacto (incluye prórroga)", example: "Dices 2-1, queda 2-1" },
+    { points: 4, label: "Empate (sin marcador exacto) + quién pasa en penaltis", example: "Dices 0-0 y pasa MEX; 1-1 y pasa MEX en pens" },
+    { points: 3, label: "Ganador correcto + los goles de un equipo", example: "Dices 2-1, queda 2-0" },
+    { points: 2, label: "Ganador/resultado correcto, sin marcador exacto", example: "Dices 2-1, queda 3-0" },
+    { points: 1, label: "Goles de un equipo, sin acertar el resultado", example: "Dices 2-1, queda 2-3" },
+  ],
+};
+
+/** Goleador por partido (solo modo Completo). */
+export const SCORER_SCORING: ScoringSection = {
+  rules: [
+    { points: 4, label: "Tu jugador anota un gol en el partido" },
+    { points: 2, prefix: "+", label: "Bonus si además es el primer gol del partido", bonus: true },
+  ],
+};
+
+// ───────────── Solo Ganador · por fase ─────────────
+
+export const SOLO_GROUP_SCORING: ScoringSection = {
+  heading: "Fase de grupos",
+  rules: [
+    { points: 3, label: "Aciertas el ganador o el empate", example: "Dices que gana MEX; gana MEX" },
+  ],
+};
+
+export const SOLO_FINAL_SCORING: ScoringSection = {
+  heading: "Fase final",
+  rules: [
+    { points: 5, label: "Empate + aciertas quién pasa en penaltis", example: "Dices empate y pasa MEX; pasa MEX en pens" },
+    { points: 3, label: "Aciertas ganador o empate (sin el ganador de pens)", example: "Dices que gana MEX; gana MEX" },
+  ],
+};
+
+/**
+ * Secciones de puntuación de PARTIDO para una fase concreta. Lo usa la página
+ * de jornada (según `day.stage`) y `/puntuacion`. En Completo se añade la
+ * sección de goleador.
+ */
+export function matchScoringSections(
+  mode: "completo" | "marcador" | "solo_ganador",
+  isKnockout: boolean,
+): ScoringSection[] {
+  if (mode === "solo_ganador") {
+    return [isKnockout ? SOLO_FINAL_SCORING : SOLO_GROUP_SCORING];
+  }
+  const phase = isKnockout ? MATCH_FINAL_SCORING : MATCH_GROUP_SCORING;
+  if (mode === "completo") {
+    return [phase, { heading: "Goleador del partido", rules: SCORER_SCORING.rules }];
+  }
+  return [phase];
+}
 
 export const SPECIALS_SCORING: ScoringSection[] = [
   {

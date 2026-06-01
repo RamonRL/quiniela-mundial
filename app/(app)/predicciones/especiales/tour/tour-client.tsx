@@ -7,9 +7,7 @@ import {
   InteractiveTourShell,
   flashSavedToast,
 } from "@/components/predictions/interactive-tour-shell";
-import { PointsHint } from "@/components/predictions/points-hint";
 import { formatDateTime } from "@/lib/utils";
-import { pointsHintItemsForSpecial } from "../points";
 import { SpecialField } from "../specials-form";
 import {
   isSpecialAnswered,
@@ -127,8 +125,6 @@ export function SpecialsTourClient({
             {current.question}
           </h1>
         </header>
-
-        <PointsHint items={pointsHintItemsForSpecial(current.pointsConfigJson)} />
 
         <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
           <SpecialField

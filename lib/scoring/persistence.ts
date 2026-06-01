@@ -153,42 +153,20 @@ export async function recomputeMatchScoringForAllUsers(matchId: number) {
         leagueId: p.leagueId,
         source: "solo_winner",
         sourceKeys: [`match:${matchId}:solo_winner`],
-        fresh: fresh.filter((e) => e.source === "solo_winner"),
-      });
-      await replaceLedgerEntries({
-        userId: p.userId,
-        leagueId: p.leagueId,
-        source: "solo_winner_pens",
-        sourceKeys: [`match:${matchId}:solo_winner_pens`],
-        fresh: fresh.filter((e) => e.source === "solo_winner_pens"),
+        fresh,
       });
       continue;
     }
 
-    // completo + marcador
+    // completo + marcador → una sola entrada `match_result` con el tier.
     const fresh = scoreMatchResultPrediction({ match: outcome, prediction, rules });
-    const sourceKeys = [
-      `match:${matchId}:exact`,
-      `match:${matchId}:outcome`,
-      `match:${matchId}:score90`,
-      `match:${matchId}:qualifier`,
-      `match:${matchId}:pens_bonus`,
-    ];
-    for (const source of [
-      "match_exact_score",
-      "match_outcome",
-      "knockout_score_90",
-      "knockout_qualifier",
-      "knockout_pens_bonus",
-    ] as const) {
-      await replaceLedgerEntries({
-        userId: p.userId,
-        leagueId: p.leagueId,
-        source,
-        sourceKeys: sourceKeys.filter((k) => keyBelongsToSource(k, source)),
-        fresh: fresh.filter((e) => e.source === source),
-      });
-    }
+    await replaceLedgerEntries({
+      userId: p.userId,
+      leagueId: p.leagueId,
+      source: "match_result",
+      sourceKeys: [`match:${matchId}:result`],
+      fresh,
+    });
   }
 
   // Scorer predictions — solo aplican en modo completo. (En marcador y
@@ -253,13 +231,17 @@ async function clearMatchLedger(matchId: number) {
     .where(
       and(
         inArray(pointsLedger.source, [
+          "match_result",
+          "solo_winner",
+          "match_scorer",
+          "match_first_scorer",
+          // Fuentes del modelo viejo — inertes salvo datos pre-existentes.
           "match_exact_score",
           "match_outcome",
           "knockout_score_90",
           "knockout_qualifier",
           "knockout_pens_bonus",
-          "match_scorer",
-          "match_first_scorer",
+          "solo_winner_pens",
         ]),
         sql`${pointsLedger.sourceKey} like ${prefix + "%"}`,
       ),

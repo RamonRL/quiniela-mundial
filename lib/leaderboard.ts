@@ -72,7 +72,7 @@ async function loadGlobalLeaderboardRaw(mode: PredictionMode): Promise<GlobalRow
           lm.user_id                                                                   AS "userId",
           coalesce(sum(pl.points), 0)::int                                             AS "leaguePoints",
           count(*) filter (
-            where pl.source in ('match_exact_score','knockout_score_90')
+            where pl.source = 'match_result' and pl.source_ref->>'exact' = 'true'
           )::int                                                                       AS "exact"
         FROM league_memberships lm
         JOIN leagues l ON l.id = lm.league_id AND l.prediction_mode = ${mode}
@@ -156,8 +156,8 @@ async function loadLeaderboardUnsafe(
       nickname: profiles.nickname,
       avatarUrl: profiles.avatarUrl,
       totalPoints: sql<number>`coalesce(sum(${pointsLedger.points}), 0)::int`,
-      exactScoresCount: sql<number>`count(*) filter (where ${pointsLedger.source} in ('match_exact_score','knockout_score_90'))::int`,
-      knockoutPoints: sql<number>`coalesce(sum(${pointsLedger.points}) filter (where ${pointsLedger.source} in ('bracket_slot','knockout_qualifier','knockout_pens_bonus','knockout_score_90')), 0)::int`,
+      exactScoresCount: sql<number>`count(*) filter (where ${pointsLedger.source} = 'match_result' and ${pointsLedger.sourceRef}->>'exact' = 'true')::int`,
+      knockoutPoints: sql<number>`coalesce(sum(${pointsLedger.points}) filter (where ${pointsLedger.source} = 'bracket_slot' or (${pointsLedger.source} = 'match_result' and ${pointsLedger.sourceRef}->>'phase' = 'ko')), 0)::int`,
     })
     .from(leagueMemberships)
     .innerJoin(profiles, eq(profiles.id, leagueMemberships.userId))
@@ -172,8 +172,8 @@ async function loadLeaderboardUnsafe(
     .groupBy(profiles.id, profiles.email, profiles.nickname, profiles.avatarUrl)
     .orderBy(
       desc(sql`coalesce(sum(${pointsLedger.points}), 0)`),
-      desc(sql`count(*) filter (where ${pointsLedger.source} in ('match_exact_score','knockout_score_90'))`),
-      desc(sql`coalesce(sum(${pointsLedger.points}) filter (where ${pointsLedger.source} in ('bracket_slot','knockout_qualifier','knockout_pens_bonus','knockout_score_90')), 0)`),
+      desc(sql`count(*) filter (where ${pointsLedger.source} = 'match_result' and ${pointsLedger.sourceRef}->>'exact' = 'true')`),
+      desc(sql`coalesce(sum(${pointsLedger.points}) filter (where ${pointsLedger.source} = 'bracket_slot' or (${pointsLedger.source} = 'match_result' and ${pointsLedger.sourceRef}->>'phase' = 'ko')), 0)`),
     );
 
   const championCorrectByUser = new Map<string, boolean>();
@@ -296,8 +296,8 @@ async function loadDepartmentRankingsUnsafe(
       SELECT
         user_id,
         coalesce(sum(points), 0)::int AS total_points,
-        count(*) FILTER (WHERE source IN ('match_exact_score','knockout_score_90'))::int AS exact_count,
-        coalesce(sum(points) FILTER (WHERE source IN ('bracket_slot','knockout_qualifier','knockout_pens_bonus','knockout_score_90')), 0)::int AS knockout_points
+        count(*) FILTER (WHERE source = 'match_result' AND source_ref->>'exact' = 'true')::int AS exact_count,
+        coalesce(sum(points) FILTER (WHERE source = 'bracket_slot' OR (source = 'match_result' AND source_ref->>'phase' = 'ko')), 0)::int AS knockout_points
       FROM points_ledger
       WHERE league_id = ${leagueId}
       GROUP BY user_id
@@ -450,13 +450,13 @@ async function loadChampionsRankingUnsafe(): Promise<ChampionRankingEntry[]> {
       coalesce((
         SELECT count(*)::int FROM points_ledger pl
         WHERE pl.league_id = l.id
-        AND pl.source IN ('match_exact_score','knockout_score_90')
+        AND pl.source = 'match_result' AND pl.source_ref->>'exact' = 'true'
         AND EXISTS (SELECT 1 FROM active_per_league a WHERE a.user_id = pl.user_id AND a.league_id = l.id)
       ), 0) AS exact_count,
       coalesce((
         SELECT sum(pl.points)::int FROM points_ledger pl
         WHERE pl.league_id = l.id
-        AND pl.source IN ('bracket_slot','knockout_qualifier','knockout_pens_bonus','knockout_score_90')
+        AND (pl.source = 'bracket_slot' OR (pl.source = 'match_result' AND pl.source_ref->>'phase' = 'ko'))
         AND EXISTS (SELECT 1 FROM active_per_league a WHERE a.user_id = pl.user_id AND a.league_id = l.id)
       ), 0) AS knockout_points
     FROM leagues l

@@ -17,6 +17,7 @@ export type LedgerEntry = {
     | "knockout_qualifier"
     | "knockout_pens_bonus"
     | "knockout_score_90"
+    | "match_result"
     | "match_scorer"
     | "match_first_scorer"
     | "special_prediction"

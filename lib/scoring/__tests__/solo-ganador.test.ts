@@ -84,18 +84,17 @@ describe("scoreSoloGanadorPrediction · eliminatoria", () => {
     expect(e).toHaveLength(0);
   });
 
-  it("predice empate→pens y acierta el ganador de la tanda → 3 + 2", () => {
+  it("predice empate→pens y acierta el ganador de la tanda → 5 (una entrada)", () => {
     const e = scoreSoloGanadorPrediction({
       match: koPens,
       prediction: pred(0, 0, { willGoToPens: true, winnerTeamId: 20 }),
       rules,
     });
-    const sources = e.map((x) => x.source).sort();
-    expect(sources).toEqual(["solo_winner", "solo_winner_pens"]);
-    expect(e.reduce((s, x) => s + x.points, 0)).toBe(5);
+    expect(e.map((x) => x.source)).toEqual(["solo_winner"]);
+    expect(e[0].points).toBe(5);
   });
 
-  it("predice empate→pens (acierta que va a pens) pero falla el ganador de la tanda → solo 3", () => {
+  it("predice empate→pens pero falla el ganador de la tanda → 3", () => {
     const e = scoreSoloGanadorPrediction({
       match: koPens,
       prediction: pred(0, 0, { willGoToPens: true, winnerTeamId: 10 }),

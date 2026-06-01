@@ -184,13 +184,6 @@ export function WinnerPicker({
           </div>
         </div>
       ) : null}
-
-      {/* Pista de puntuación (solo en tarjeta; el tour ya muestra PointsHint) */}
-      {variant === "card" ? (
-        <p className="text-center font-mono text-[0.55rem] uppercase tracking-[0.2em] text-[var(--color-muted-foreground)]">
-          Acierto +3{isKnockout ? " · penaltis +2" : ""}
-        </p>
-      ) : null}
     </div>
   );
 }

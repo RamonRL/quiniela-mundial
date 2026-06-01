@@ -14,15 +14,14 @@ import {
 } from "@/lib/db/schema";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shell/page-header";
-import { ScoringBox } from "@/components/brand/scoring-box";
+import { ScoringTable } from "@/components/brand/scoring-box";
 import { Lock } from "lucide-react";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
-import { MATCH_SCORING_BY_MODE } from "@/lib/scoring/copy";
+import { matchScoringSections } from "@/lib/scoring/copy";
 import { formatDateTime } from "@/lib/utils";
 import { getMatchdayState, isMatchClosed, type Stage } from "@/lib/matchday-state";
 import { EmptyState } from "@/components/shell/empty-state";
-import { MATCH_FOOTNOTE } from "@/lib/scoring/copy";
 import { InteractiveModeBanner } from "@/components/predictions/interactive-mode-banner";
 import { MatchdayPredictionForm } from "./matchday-form";
 
@@ -197,7 +196,9 @@ export default async function PredictMatchdayPage({
           hint="Repasa partido a partido."
         />
       ) : null}
-      <ScoringBox sections={MATCH_SCORING_BY_MODE[mode]} footnote={MATCH_FOOTNOTE} />
+      {/* Reglas de la FASE de esta jornada (grupos vs. final). La J1 (grupos)
+          no menciona penaltis. */}
+      <ScoringTable sections={matchScoringSections(mode, day.stage !== "group")} />
       <MatchdayPredictionForm
         matchdayId={day.id}
         open={open}

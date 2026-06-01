@@ -105,6 +105,10 @@ export const pointsSource = pgEnum("points_source", [
   "knockout_qualifier",
   "knockout_pens_bonus",
   "knockout_score_90",
+  // Resultado del partido (Completo/Marcador): UNA entrada por partido con el
+  // tier de puntos. Sustituye a match_exact_score/match_outcome/knockout_* en
+  // el modelo nuevo (esos quedan inertes para ligas/datos antiguos).
+  "match_result",
   "match_scorer",
   "match_first_scorer",
   "special_prediction",

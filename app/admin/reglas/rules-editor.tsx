@@ -15,8 +15,10 @@ const SECTIONS: { title: string; prefix: string[] }[] = [
   { title: "Posiciones de grupo", prefix: ["group_position_", "group_top2_"] },
   { title: "Bracket eliminatorio", prefix: ["bracket_"] },
   { title: "Bota de Oro", prefix: ["top_scorer_"] },
-  { title: "Resultados de partido", prefix: ["match_exact", "match_outcome", "knockout_"] },
+  { title: "Partido · fase de grupos", prefix: ["match_g_"] },
+  { title: "Partido · fase final", prefix: ["match_ko_"] },
   { title: "Goleador del partido", prefix: ["match_scorer", "match_first_scorer"] },
+  { title: "Solo Ganador", prefix: ["solo_"] },
 ];
 
 export function RulesEditor({ rules: initialRules }: { rules: Rule[] }) {

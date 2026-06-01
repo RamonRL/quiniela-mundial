@@ -24,20 +24,20 @@ export type MatchScorerPrediction = {
 };
 
 const isKnockout = (stage: Stage) => stage !== "group";
+const sign = (a: number, b: number) => (a > b ? 1 : a < b ? -1 : 0);
 
 /**
- * Score a match-result prediction (categoría 4). Composable rules:
- * - Group stage:
- *   - Exact 90' score → match_exact_score (5)
- *   - Else, correct 90' outcome (winner/draw) → match_outcome (2)
- * - Knockout stage (90' result is what user predicted; pens decided separately):
- *   - Exact 90' score → match_exact_score (5)
- *   - Else, correct 90' outcome → match_outcome (2)
- *   - Correct qualifier (regardless of how) → knockout_qualifier (3)
- *   - Correctly predicted "will go to pens" → knockout_pens_bonus (2 extra)
+ * Puntúa el resultado de un partido (categoría 4), compartido por los modos
+ * Completo y Marcador. Modelo por TIERS mutuamente excluyentes: gana el más
+ * alto que aplique y se emite UNA sola entrada de ledger (`source:
+ * "match_result"`), con `sourceRef.phase` y `sourceRef.exact` para que el
+ * leaderboard cuente exactos y puntos de fase final.
  *
- * Note: in knockout the user predicts a 90' score AND who advances. They can
- * earn both score points and qualifier points on the same match.
+ * Fase de grupos: 5 exacto · 3 ganador+goles de un equipo · 2 ganador/empate ·
+ * 1 goles de un equipo.
+ * Fase final (incluye prórroga; empate predicho = va a pens, winnerTeamId =
+ * quién pasa): 7 empate exacto+pens · 5 marcador exacto · 4 empate+pens ·
+ * 3 ganador+goles de un equipo · 2 ganador/resultado · 1 goles de un equipo.
  */
 export function scoreMatchResultPrediction(args: {
   match: MatchOutcome;
@@ -45,70 +45,52 @@ export function scoreMatchResultPrediction(args: {
   rules: ScoringRules;
 }): LedgerEntry[] {
   const { match, prediction, rules } = args;
-  const entries: LedgerEntry[] = [];
 
-  const exactScore =
-    prediction.homeScore === match.homeScore && prediction.awayScore === match.awayScore;
+  const exact =
+    prediction.homeScore === match.homeScore &&
+    prediction.awayScore === match.awayScore;
+  // "goles de un equipo": uno de los dos marcadores coincide (y no es exacto).
+  const oneTeam =
+    !exact &&
+    (prediction.homeScore === match.homeScore ||
+      prediction.awayScore === match.awayScore);
+  const correctOutcome =
+    sign(prediction.homeScore, prediction.awayScore) ===
+    sign(match.homeScore, match.awayScore);
 
-  // 90' outcome: comparing scoring sign (home vs away vs draw)
-  const sign = (a: number, b: number) => (a > b ? 1 : a < b ? -1 : 0);
-  const predictedSign = sign(prediction.homeScore, prediction.awayScore);
-  const actualSign = sign(match.homeScore, match.awayScore);
-  const correctOutcome = predictedSign === actualSign;
+  const ko = isKnockout(match.stage);
+  let key: keyof ScoringRules | null = null;
 
-  if (isKnockout(match.stage)) {
-    if (exactScore) {
-      entries.push({
-        source: "knockout_score_90",
-        sourceKey: `match:${match.matchId}:score90`,
-        sourceRef: { matchId: match.matchId },
-        points: rules.knockout_score_90.points,
-      });
-    } else if (correctOutcome) {
-      entries.push({
-        source: "match_outcome",
-        sourceKey: `match:${match.matchId}:outcome`,
-        sourceRef: { matchId: match.matchId },
-        points: rules.match_outcome_only.points,
-      });
-    }
-
-    if (prediction.winnerTeamId && prediction.winnerTeamId === match.winnerTeamId) {
-      entries.push({
-        source: "knockout_qualifier",
-        sourceKey: `match:${match.matchId}:qualifier`,
-        sourceRef: { matchId: match.matchId, teamId: prediction.winnerTeamId },
-        points: rules.knockout_qualifier.points,
-      });
-    }
-
-    if (prediction.willGoToPens && match.wentToPens) {
-      entries.push({
-        source: "knockout_pens_bonus",
-        sourceKey: `match:${match.matchId}:pens_bonus`,
-        sourceRef: { matchId: match.matchId },
-        points: rules.knockout_pens_bonus.points,
-      });
-    }
+  if (ko) {
+    const predDraw = prediction.homeScore === prediction.awayScore;
+    const pensOk =
+      predDraw &&
+      match.wentToPens &&
+      prediction.winnerTeamId != null &&
+      prediction.winnerTeamId === match.winnerTeamId;
+    if (pensOk && exact) key = "match_ko_draw_exact_pens"; // 7
+    else if (exact) key = "match_ko_exact"; // 5
+    else if (pensOk) key = "match_ko_draw_pens"; // 4
+    else if (correctOutcome && oneTeam) key = "match_ko_outcome_team"; // 3
+    else if (correctOutcome) key = "match_ko_outcome"; // 2
+    else if (oneTeam) key = "match_ko_team"; // 1
   } else {
-    if (exactScore) {
-      entries.push({
-        source: "match_exact_score",
-        sourceKey: `match:${match.matchId}:exact`,
-        sourceRef: { matchId: match.matchId },
-        points: rules.match_exact_score.points,
-      });
-    } else if (correctOutcome) {
-      entries.push({
-        source: "match_outcome",
-        sourceKey: `match:${match.matchId}:outcome`,
-        sourceRef: { matchId: match.matchId },
-        points: rules.match_outcome_only.points,
-      });
-    }
+    if (exact) key = "match_g_exact"; // 5
+    else if (correctOutcome && oneTeam) key = "match_g_outcome_team"; // 3
+    else if (correctOutcome) key = "match_g_outcome"; // 2
+    else if (oneTeam) key = "match_g_team"; // 1
   }
 
-  return entries;
+  if (!key) return [];
+
+  return [
+    {
+      source: "match_result",
+      sourceKey: `match:${match.matchId}:result`,
+      sourceRef: { matchId: match.matchId, phase: ko ? "ko" : "group", exact },
+      points: rules[key].points,
+    },
+  ];
 }
 
 /**

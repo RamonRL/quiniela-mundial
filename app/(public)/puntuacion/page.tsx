@@ -2,17 +2,15 @@ import Link from "next/link";
 import { ArrowRight, Crown, Goal, ListChecks, Sparkles, Swords, Target, Trophy, Users } from "lucide-react";
 import { BreadcrumbLD } from "@/components/seo/jsonld";
 import { PageHeader } from "@/components/shell/page-header";
-import { ScoringBox, type ScoringSection } from "@/components/brand/scoring-box";
+import { ScoringTable, type ScoringSection } from "@/components/brand/scoring-box";
 import {
-  BRACKET_FOOTNOTE,
   BRACKET_SCORING,
-  GROUPS_FOOTNOTE,
   GROUPS_SCORING,
-  MATCH_FOOTNOTE,
-  MATCH_SCORING,
-  MATCH_SCORING_MARCADOR,
-  MATCH_SCORING_SOLO_GANADOR,
-  SPECIALS_FOOTNOTE,
+  MATCH_GROUP_SCORING,
+  MATCH_FINAL_SCORING,
+  SCORER_SCORING,
+  SOLO_GROUP_SCORING,
+  SOLO_FINAL_SCORING,
   SPECIALS_SCORING,
   TOP_SCORER_SCORING,
 } from "@/lib/scoring/copy";
@@ -44,8 +42,6 @@ type Category = {
   title: string;
   tagline: string;
   sections: ScoringSection[];
-  footnote?: string;
-  maxLine?: string;
 };
 
 // Categorías del modo completo (las 6 de siempre).
@@ -58,8 +54,6 @@ const COMPLETO_CATEGORIES: Category[] = [
     tagline:
       "Ordena los 4 equipos de cada uno de los 12 grupos del 1º al 4º. Cierra al kickoff del torneo.",
     sections: GROUPS_SCORING,
-    footnote: GROUPS_FOOTNOTE,
-    maxLine: "13 pts × 12 grupos = hasta 156 pts en juego.",
   },
   {
     id: "bracket",
@@ -69,8 +63,6 @@ const COMPLETO_CATEGORIES: Category[] = [
     tagline:
       "Predices quién pasa ronda a ronda — de los 16avos a la final. Cierra al cerrar la fase de grupos.",
     sections: BRACKET_SCORING,
-    footnote: BRACKET_FOOTNOTE,
-    maxLine: "Puntos acumulables por cada equipo que acierta en cada ronda.",
   },
   {
     id: "bota",
@@ -80,7 +72,6 @@ const COMPLETO_CATEGORIES: Category[] = [
     tagline:
       "Tu candidato a goleador del torneo. Una sola predicción que cierra al kickoff.",
     sections: TOP_SCORER_SCORING,
-    maxLine: "Hasta 15 pts si clavas el goleador exacto.",
   },
   {
     id: "marcadores",
@@ -88,10 +79,8 @@ const COMPLETO_CATEGORIES: Category[] = [
     cat: "04",
     title: "Marcador partido a partido",
     tagline:
-      "Marcador exacto + ganador + bonuses en eliminatoria. Cada partido cierra a su pitido inicial.",
-    sections: MATCH_SCORING,
-    footnote: MATCH_FOOTNOTE,
-    maxLine: "11 pts en grupos · 16 pts en KO si lo clavas todo en un partido.",
+      "Las reglas cambian entre fase de grupos y fase final. Cada partido cierra a su pitido inicial.",
+    sections: [MATCH_GROUP_SCORING, MATCH_FINAL_SCORING],
   },
   {
     id: "goleador-partido",
@@ -100,20 +89,7 @@ const COMPLETO_CATEGORIES: Category[] = [
     title: "Goleador por partido",
     tagline:
       "Apuntas a un jugador del partido. Si marca sumas, y aún más si es el primero del partido.",
-    sections: [
-      {
-        rules: [
-          { points: 4, label: "Tu jugador anota un gol en el partido" },
-          {
-            points: 2,
-            prefix: "+",
-            label: "Bonus si además es el primer gol del partido",
-            bonus: true,
-          },
-        ],
-      },
-    ],
-    maxLine: "Compatible con el marcador del partido — los aciertos se suman.",
+    sections: [SCORER_SCORING],
   },
   {
     id: "especiales",
@@ -123,12 +99,11 @@ const COMPLETO_CATEGORIES: Category[] = [
     tagline:
       "Preguntas con sabor: Balón de Oro, Guante de Oro, anfitrión más lejos, ¿África llega a semifinales?…",
     sections: SPECIALS_SCORING,
-    footnote: SPECIALS_FOOTNOTE,
-    maxLine: "Cada especial reparte sus propios puntos.",
   },
 ];
 
-// Modos marcador y solo_ganador: una sola categoría (predicción de partido).
+// Modos marcador y solo_ganador: una sola categoría (predicción de partido),
+// con las reglas separadas por fase.
 const MARCADOR_CATEGORIES: Category[] = [
   {
     id: "marcadores",
@@ -137,8 +112,7 @@ const MARCADOR_CATEGORIES: Category[] = [
     title: "Marcador partido a partido",
     tagline:
       "Predices el marcador exacto de cada partido. En eliminatoria, un empate implica penaltis y eliges quién pasa. Sin grupos, bracket ni goleadores.",
-    sections: MATCH_SCORING_MARCADOR,
-    maxLine: "Marcador exacto 5 · ganador 2 · extras de eliminatoria.",
+    sections: [MATCH_GROUP_SCORING, MATCH_FINAL_SCORING],
   },
 ];
 
@@ -150,8 +124,7 @@ const SOLO_GANADOR_CATEGORIES: Category[] = [
     title: "Ganador del partido",
     tagline:
       "Solo predices quién gana cada partido (o empate). En eliminatoria, si predices empate eliges también quién pasa en penaltis. Lo más rápido de rellenar.",
-    sections: MATCH_SCORING_SOLO_GANADOR,
-    maxLine: "3 pts por acierto · +2 en KO por acertar el ganador de la tanda.",
+    sections: [SOLO_GROUP_SCORING, SOLO_FINAL_SCORING],
   },
 ];
 
@@ -221,11 +194,11 @@ export default async function PuntuacionPage({
                 <span className="grid size-8 shrink-0 place-items-center rounded-md border border-[var(--color-border)] bg-[var(--color-surface-2)] text-[var(--color-arena)]">
                   {c.icon}
                 </span>
-                <div className="min-w-0 flex-1">
+                <div className="min-w-0 flex-1 leading-tight">
                   <p className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
                     Cat. {c.cat}
                   </p>
-                  <p className="truncate font-display text-sm tracking-tight">
+                  <p className="truncate py-0.5 font-display text-sm leading-normal tracking-tight">
                     {c.title}
                   </p>
                 </div>
@@ -299,18 +272,7 @@ function CategoryBlock({ category }: { category: Category }) {
         </div>
       </header>
 
-      <ScoringBox
-        title={`Reglas · ${category.title}`}
-        sections={category.sections}
-        footnote={category.footnote}
-        defaultOpen
-      />
-
-      {category.maxLine ? (
-        <p className="rounded-md border border-dashed border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_4%,var(--color-bg))] px-4 py-2 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-arena)]">
-          {category.maxLine}
-        </p>
-      ) : null}
+      <ScoringTable sections={category.sections} />
     </section>
   );
 }

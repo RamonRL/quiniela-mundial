@@ -13,6 +13,8 @@ export type ScoringRule = {
   label: string;
   /** Render the pill in arena (muted) styling — for bonuses and stacked extras. */
   bonus?: boolean;
+  /** Ejemplo corto opcional para la columna "Ejemplo" de la tabla. */
+  example?: string;
 };
 
 export type ScoringSection = {
@@ -175,3 +177,113 @@ function ScoringRow({ rule, dense }: { rule: ScoringRule; dense: boolean }) {
 }
 
 export { PointsPill };
+
+/**
+ * Tabla de puntuación siempre visible (no dropdown): columnas PTS · Regla ·
+ * Ejemplo. Pensada para `/puntuacion` y la página de jornada. Cada
+ * `ScoringSection` con `heading` se renderiza como un sub-bloque (p. ej.
+ * "Fase de grupos" / "Fase final"). La columna Ejemplo solo aparece si alguna
+ * regla trae `example`.
+ */
+export function ScoringTable({
+  sections,
+  className,
+}: {
+  sections: ScoringSection[];
+  className?: string;
+}) {
+  const hasExample = sections.some((s) => s.rules.some((r) => r.example));
+  const cols = hasExample ? 3 : 2;
+
+  return (
+    <div
+      className={cn(
+        "overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]",
+        className,
+      )}
+    >
+      <table className="w-full border-collapse text-left">
+        <thead>
+          <tr className="border-b border-[var(--color-border)] bg-[var(--color-surface-2)]">
+            <th className="w-14 px-3 py-2 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+              Pts
+            </th>
+            <th className="px-3 py-2 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+              Regla
+            </th>
+            {hasExample ? (
+              <th className="px-3 py-2 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+                Ejemplo
+              </th>
+            ) : null}
+          </tr>
+        </thead>
+        <tbody>
+          {sections.map((section, sIdx) => (
+            <ScoringTableSection
+              key={section.heading ?? `s${sIdx}`}
+              section={section}
+              cols={cols}
+              hasExample={hasExample}
+            />
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function ScoringTableSection({
+  section,
+  cols,
+  hasExample,
+}: {
+  section: ScoringSection;
+  cols: number;
+  hasExample: boolean;
+}) {
+  return (
+    <>
+      {section.heading ? (
+        <tr>
+          <td
+            colSpan={cols}
+            className="border-t border-[var(--color-border)] bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface-2))] px-3 py-1.5 font-mono text-[0.55rem] uppercase tracking-[0.22em] text-[var(--color-arena)]"
+          >
+            {section.heading}
+          </td>
+        </tr>
+      ) : null}
+      {section.rules.map((rule, rIdx) => (
+        <tr key={rIdx} className="border-t border-[var(--color-border)] align-middle">
+          <td className="px-3 py-2.5">
+            <span
+              className={cn(
+                "inline-flex min-w-[2.25rem] items-center justify-center rounded-md border px-1.5 py-0.5 font-display tabular text-base leading-none",
+                rule.bonus
+                  ? "border-dashed border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_6%,transparent)] text-[var(--color-arena)]"
+                  : "border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_12%,transparent)] text-[var(--color-arena)]",
+              )}
+            >
+              {(rule.prefix ?? (rule.bonus ? "+" : "")) + rule.points}
+            </span>
+          </td>
+          <td className="px-3 py-2.5 text-sm leading-snug text-[var(--color-foreground)]">
+            {rule.label}
+          </td>
+          {hasExample ? (
+            <td className="px-3 py-2.5">
+              {rule.example ? (
+                <span className="font-mono text-xs italic text-[var(--color-muted-foreground)]">
+                  {rule.example}
+                </span>
+              ) : (
+                <span className="text-[var(--color-muted-foreground)]/40">—</span>
+              )}
+            </td>
+          ) : null}
+        </tr>
+      ))}
+    </>
+  );
+}

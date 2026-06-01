@@ -24,35 +24,63 @@ export const DEFAULT_SCORING_RULES = {
   top_scorer_top3: { points: 5, description: "Tu jugador queda 2º o 3º" },
   top_scorer_top5: { points: 2, description: "Tu jugador queda entre los 5 primeros" },
 
-  // Categoría 4 — Resultados exactos por jornada
-  match_exact_score: { points: 5, description: "Marcador exacto" },
-  match_outcome_only: { points: 2, description: "Acierto del ganador/empate sin marcador exacto" },
-  knockout_qualifier: {
+  // Categoría 4 — Resultado del partido · FASE DE GRUPOS (tiers excluyentes)
+  match_g_exact: { points: 5, description: "Grupos: marcador exacto" },
+  match_g_outcome_team: {
     points: 3,
-    description: "En eliminatorias: aciertas el clasificado aunque sea por penaltis",
+    description: "Grupos: ganador correcto + goles de un equipo",
   },
-  knockout_score_90: {
-    points: 5,
-    description: "En eliminatorias: aciertas resultado en 90'",
-  },
-  knockout_pens_bonus: {
+  match_g_outcome: {
     points: 2,
-    description: "En eliminatorias: bonus por acertar que va a penaltis",
+    description: "Grupos: ganador o empate correcto, sin marcador exacto",
+  },
+  match_g_team: {
+    points: 1,
+    description: "Grupos: goles de un equipo, sin acertar el ganador",
   },
 
-  // Categoría 5 — Goleador por partido
+  // Categoría 4 — Resultado del partido · FASE FINAL / eliminatoria (tiers excluyentes)
+  match_ko_draw_exact_pens: {
+    points: 7,
+    description: "Final: empate exacto (incl. prórroga) + ganador en penaltis",
+  },
+  match_ko_exact: {
+    points: 5,
+    description: "Final: marcador exacto (incl. prórroga)",
+  },
+  match_ko_draw_pens: {
+    points: 4,
+    description: "Final: empate no exacto + ganador en penaltis",
+  },
+  match_ko_outcome_team: {
+    points: 3,
+    description: "Final: ganador correcto + goles de un equipo (incl. prórroga)",
+  },
+  match_ko_outcome: {
+    points: 2,
+    description: "Final: ganador/resultado correcto, sin marcador exacto",
+  },
+  match_ko_team: {
+    points: 1,
+    description: "Final: goles de un equipo, sin acertar el resultado",
+  },
+
+  // Categoría 5 — Goleador por partido (solo modo Completo)
   match_scorer: { points: 4, description: "Tu jugador marca en el partido" },
   match_first_scorer_bonus: { points: 2, description: "Bonus si tu jugador anota el primer gol" },
 
-  // Modo "Solo Ganador" — solo aplica en ligas de ese modo.
-  solo_winner_correct: {
+  // Modo "Solo Ganador" — tiers excluyentes (solo aplica en ligas de ese modo).
+  solo_g_correct: {
     points: 3,
-    description: "Solo Ganador: aciertas el ganador (o empate→pens en eliminatoria)",
+    description: "Solo Ganador · grupos: aciertas el ganador o el empate",
   },
-  solo_winner_pens_bonus: {
-    points: 2,
-    description:
-      "Solo Ganador: bonus por, habiendo predicho empate, acertar quién gana la tanda de penaltis",
+  solo_ko_draw_pens: {
+    points: 5,
+    description: "Solo Ganador · final: empate (incl. prórroga) + ganador en penaltis",
+  },
+  solo_ko_correct: {
+    points: 3,
+    description: "Solo Ganador · final: aciertas ganador o empate, sin el ganador de pens",
   },
 } as const;
 
