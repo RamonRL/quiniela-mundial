@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, X, Check } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 /**
  * Shell del modo interactivo de predicción (1 elemento por pantalla).
@@ -40,6 +41,9 @@ type Props = {
   finishLabel?: string;
   /** Para deshabilitar las flechas mientras se procesa un guardado. */
   pending?: boolean;
+  /** Centra el contenido en vertical (para pasos con poca info, p. ej.
+   *  Marcador y Solo Ganador) en vez de pegarlo arriba. */
+  centerBody?: boolean;
   /** Pinta toast con check verde durante 1.5s. */
   ref?: React.Ref<TourShellHandle>;
   children: React.ReactNode;
@@ -56,6 +60,7 @@ export function InteractiveTourShell(props: Props) {
     direction,
     finishLabel = "Finalizar",
     pending = false,
+    centerBody = false,
     children,
   } = props;
 
@@ -124,9 +129,11 @@ export function InteractiveTourShell(props: Props) {
       <main className="flex flex-1 flex-col overflow-y-auto">
         <div
           key={currentStep}
-          className={`mx-auto w-full max-w-3xl flex-1 px-4 py-6 sm:px-6 ${
-            direction === "right" ? "tour-slide-right" : "tour-slide-left"
-          }`}
+          className={cn(
+            "mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 py-6 sm:px-6",
+            centerBody && "justify-center",
+            direction === "right" ? "tour-slide-right" : "tour-slide-left",
+          )}
         >
           {children}
         </div>

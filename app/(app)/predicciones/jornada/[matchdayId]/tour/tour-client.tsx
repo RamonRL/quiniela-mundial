@@ -243,6 +243,9 @@ export function MatchdayTourClient({
       direction={direction}
       finishLabel="Finalizar"
       pending={pending}
+      // Marcador y Solo Ganador tienen poca info: centramos en vertical para
+      // que no quede pegada arriba con un hueco hasta "Siguiente".
+      centerBody={mode === "marcador" || mode === "solo_ganador"}
     >
       <div className="space-y-6">
         {soloGanador ? (
