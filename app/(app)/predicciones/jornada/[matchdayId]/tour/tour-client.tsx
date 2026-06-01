@@ -325,24 +325,26 @@ export function MatchdayTourClient({
               </div>
             </header>
 
-            {/* Marcador */}
-            <section className="flex items-center justify-center gap-6">
+            {/* Marcador — steppers grandes (paso a paso) */}
+            <section className="flex items-center justify-center gap-2 sm:gap-5">
               <div className="flex flex-col items-center gap-2">
                 <p className="font-mono text-[0.55rem] uppercase tracking-[0.2em] text-[var(--color-muted-foreground)]">
                   {current.home?.code ?? "—"}
                 </p>
                 <ScoreStepper
+                  size="lg"
                   value={currentPred.homeScore}
                   onChange={(v) => updateCurrent({ homeScore: v })}
                   ariaLabel={`Goles ${current.home?.name ?? "local"}`}
                 />
               </div>
-              <span className="font-display text-3xl text-[var(--color-muted-foreground)]">—</span>
+              <span className="font-display text-3xl text-[var(--color-muted-foreground)] sm:text-4xl">—</span>
               <div className="flex flex-col items-center gap-2">
                 <p className="font-mono text-[0.55rem] uppercase tracking-[0.2em] text-[var(--color-muted-foreground)]">
                   {current.away?.code ?? "—"}
                 </p>
                 <ScoreStepper
+                  size="lg"
                   value={currentPred.awayScore}
                   onChange={(v) => updateCurrent({ awayScore: v })}
                   ariaLabel={`Goles ${current.away?.name ?? "visitante"}`}

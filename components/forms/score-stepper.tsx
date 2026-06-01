@@ -11,8 +11,16 @@ type Props = {
   max?: number;
   /** Accessible label for the score, e.g. "Goles España". */
   ariaLabel?: string;
+  /** "lg" duplica el tamaño de los dígitos y de los signos -/+ (paso a paso). */
+  size?: "default" | "lg";
   className?: string;
 };
+
+const SIZE = {
+  default: { btn: "size-11", icon: "size-4", num: "h-11 w-12 text-2xl" },
+  // El doble: dígitos ~2× (text-5xl) y signos -/+ ~2× (size-8).
+  lg: { btn: "size-16", icon: "size-8", num: "h-16 min-w-16 px-2 text-5xl" },
+} as const;
 
 /**
  * Touch-friendly score stepper: `[-]  N  [+]`. Replaces the bare number input
@@ -26,8 +34,10 @@ export function ScoreStepper({
   min = 0,
   max = 20,
   ariaLabel,
+  size = "default",
   className,
 }: Props) {
+  const s = SIZE[size];
   const dec = () => {
     if (disabled) return;
     if (value > min) onChange(value - 1);
@@ -54,18 +64,22 @@ export function ScoreStepper({
         disabled={disabled || atMin}
         aria-label="Restar gol"
         className={cn(
-          "grid size-11 place-items-center text-[var(--color-muted-foreground)] transition",
+          "grid place-items-center text-[var(--color-muted-foreground)] transition",
+          s.btn,
           "active:bg-[var(--color-surface-2)]",
           atMin || disabled
             ? "cursor-not-allowed opacity-40"
             : "hover:bg-[var(--color-surface-2)] hover:text-[var(--color-arena)]",
         )}
       >
-        <Minus className="size-4" />
+        <Minus className={s.icon} />
       </button>
       <span
         aria-live="polite"
-        className="grid h-11 w-12 place-items-center border-x border-[var(--color-border)] bg-[var(--color-surface-2)] font-display tabular text-2xl tracking-tight text-[var(--color-foreground)]"
+        className={cn(
+          "grid place-items-center border-x border-[var(--color-border)] bg-[var(--color-surface-2)] font-display tabular tracking-tight text-[var(--color-foreground)]",
+          s.num,
+        )}
       >
         {value}
       </span>
@@ -75,14 +89,15 @@ export function ScoreStepper({
         disabled={disabled || atMax}
         aria-label="Sumar gol"
         className={cn(
-          "grid size-11 place-items-center text-[var(--color-muted-foreground)] transition",
+          "grid place-items-center text-[var(--color-muted-foreground)] transition",
+          s.btn,
           "active:bg-[var(--color-surface-2)]",
           atMax || disabled
             ? "cursor-not-allowed opacity-40"
             : "hover:bg-[var(--color-surface-2)] hover:text-[var(--color-arena)]",
         )}
       >
-        <Plus className="size-4" />
+        <Plus className={s.icon} />
       </button>
     </div>
   );
