@@ -212,9 +212,11 @@ function TeamPole({
     >
       <span
         className={cn(
-          "shrink-0 rounded-full transition-all duration-200",
-          state === "win" &&
-            "ring-2 ring-[var(--color-arena)] ring-offset-2 ring-offset-[var(--color-surface)]",
+          // inline-flex + leading-none → la caja del wrapper mide exactamente
+          // lo que la bandera (sin el hueco de baseline), así el anillo de
+          // "seleccionado" queda pegado al borde y no sobra espacio.
+          "inline-flex shrink-0 rounded-full leading-none transition-all duration-200",
+          state === "win" && "ring-2 ring-[var(--color-arena)]",
         )}
       >
         <TeamFlag code={team?.code} size={flagSize} />
