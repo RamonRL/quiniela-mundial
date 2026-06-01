@@ -3,6 +3,7 @@ import { Bug, Megaphone, Sparkles, Wrench } from "lucide-react";
 import { db } from "@/lib/db";
 import { patchNotes } from "@/lib/db/schema";
 import { formatDate, cn } from "@/lib/utils";
+import { AnswerText } from "@/components/faq/answer-text";
 
 /**
  * Tablón compacto de novedades de Quiniela Mundial: las 5 últimas notas
@@ -107,7 +108,7 @@ export async function PatchNotesBoard() {
               </div>
               <p className="font-display text-base tracking-tight">{n.title}</p>
               <p className="mt-1 whitespace-pre-line font-editorial text-sm leading-relaxed text-[var(--color-muted-foreground)]">
-                {n.body}
+                <AnswerText text={n.body} />
               </p>
             </li>
           );
