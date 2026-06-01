@@ -18,16 +18,13 @@ export type LeagueLogoPreset = {
 };
 
 export const PRESET_LEAGUE_LOGOS: ReadonlyArray<LeagueLogoPreset> = [
-  { id: "ball", name: "Balón", url: "/league-logos/ball.svg" },
   { id: "trophy", name: "Trofeo", url: "/league-logos/trophy.svg" },
   { id: "shield", name: "Escudo", url: "/league-logos/shield.svg" },
   { id: "bolt", name: "Rayo", url: "/league-logos/bolt.svg" },
   { id: "flame", name: "Llama", url: "/league-logos/flame.svg" },
   { id: "crown", name: "Corona", url: "/league-logos/crown.svg" },
-  { id: "megaphone", name: "Megáfono", url: "/league-logos/megaphone.svg" },
   { id: "target", name: "Diana", url: "/league-logos/target.svg" },
   { id: "star", name: "Estrella", url: "/league-logos/star.svg" },
-  { id: "flag", name: "Banderín", url: "/league-logos/flag.svg" },
 ];
 
 const PRESET_URLS = new Set(PRESET_LEAGUE_LOGOS.map((p) => p.url));
