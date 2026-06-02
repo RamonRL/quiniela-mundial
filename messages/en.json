@@ -399,7 +399,13 @@
   "modes": {
     "completo": "Full",
     "marcador": "Score",
-    "solo_ganador": "Winner Only"
+    "solo_ganador": "Winner Only",
+    "completoTagline": "The full experience",
+    "completoDescription": "All 6 categories: group standings, bracket, Golden Boot, specials, and the score + scorer of each match. For those who want to squeeze every drop out of the World Cup.",
+    "marcadorTagline": "Scores only",
+    "marcadorDescription": "Predict only the exact score of each match. Simple and direct: no groups, bracket or scorers.",
+    "solo_ganadorTagline": "The simplest",
+    "solo_ganadorDescription": "Predict only who wins each match (or a draw). The fastest to fill in: ideal for large groups and people with little time."
   },
   "scoringPage": {
     "breadcrumb": "How scoring works",

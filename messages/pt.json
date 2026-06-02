@@ -399,7 +399,13 @@
   "modes": {
     "completo": "Completo",
     "marcador": "Placar",
-    "solo_ganador": "Só Vencedor"
+    "solo_ganador": "Só Vencedor",
+    "completoTagline": "A experiência completa",
+    "completoDescription": "As 6 categorias: classificações de grupo, chave, Chuteira de Ouro, especiais, e o placar + artilheiro de cada jogo. Para quem quer aproveitar a Copa ao máximo.",
+    "marcadorTagline": "Só placares",
+    "marcadorDescription": "Dê palpite apenas no placar exato de cada jogo. Simples e direto: sem grupos, chave nem artilheiros.",
+    "solo_ganadorTagline": "O mais simples",
+    "solo_ganadorDescription": "Dê palpite só em quem vence cada jogo (ou empate). O mais rápido de preencher: ideal para grupos grandes e quem tem pouco tempo."
   },
   "scoringPage": {
     "breadcrumb": "Como é a pontuação",

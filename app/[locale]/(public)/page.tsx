@@ -31,7 +31,7 @@ import { FAQPageLD, SportsEventLD, WebSiteLD } from "@/components/seo/jsonld";
 import { AnswerText } from "@/components/faq/answer-text";
 import { NewsCard } from "@/components/news/news-card";
 import { listPublishedNews } from "@/lib/news/queries";
-import { PREDICTION_MODES, PREDICTION_MODE_META } from "@/lib/prediction-modes";
+import { PREDICTION_MODES } from "@/lib/prediction-modes";
 
 // Icono por modo para la sección "Modos de juego" de la home.
 const MODE_ICON = {
@@ -66,6 +66,7 @@ export default async function HomePage({
   const t = await getTranslations("home");
   const tNav = await getTranslations("nav");
   const tShell = await getTranslations("shell");
+  const tModes = await getTranslations("modes");
   const faqs = Array.from({ length: FAQ_COUNT }, (_, i) => ({
     q: t(`faqs.q${i + 1}`),
     a: t(`faqs.a${i + 1}`),
@@ -298,7 +299,6 @@ export default async function HomePage({
         </Reveal>
         <div className="grid gap-4 sm:grid-cols-3">
           {PREDICTION_MODES.map((m, i) => {
-            const meta = PREDICTION_MODE_META[m];
             const Icon = MODE_ICON[m];
             const primary = m === "completo";
             return (
@@ -329,12 +329,12 @@ export default async function HomePage({
                 </div>
                 <div className="space-y-1">
                   <p className="font-mono text-[0.55rem] uppercase tracking-[0.22em] text-[var(--color-arena)]">
-                    {meta.tagline}
+                    {tModes(`${m}Tagline`)}
                   </p>
-                  <h3 className="font-display text-2xl tracking-tight">{meta.label}</h3>
+                  <h3 className="font-display text-2xl tracking-tight">{tModes(m)}</h3>
                 </div>
                 <p className="font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)]">
-                  {meta.description}
+                  {tModes(`${m}Description`)}
                 </p>
               </Reveal>
             );

@@ -399,7 +399,13 @@
   "modes": {
     "completo": "Complet",
     "marcador": "Score",
-    "solo_ganador": "Vainqueur"
+    "solo_ganador": "Vainqueur",
+    "completoTagline": "L'expérience complète",
+    "completoDescription": "Les 6 catégories : classements de groupe, tableau, Soulier d'Or, spéciaux, et le score + buteur de chaque match. Pour qui veut savourer la Coupe du Monde à fond.",
+    "marcadorTagline": "Scores uniquement",
+    "marcadorDescription": "Pronostique seulement le score exact de chaque match. Simple et direct : ni groupes, ni tableau, ni buteurs.",
+    "solo_ganadorTagline": "Le plus simple",
+    "solo_ganadorDescription": "Pronostique seulement qui gagne chaque match (ou le nul). Le plus rapide à remplir : idéal pour les grands groupes et ceux qui ont peu de temps."
   },
   "scoringPage": {
     "breadcrumb": "Comment on marque les points",

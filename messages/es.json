@@ -399,7 +399,13 @@
   "modes": {
     "completo": "Completo",
     "marcador": "Marcador",
-    "solo_ganador": "Solo Ganador"
+    "solo_ganador": "Solo Ganador",
+    "completoTagline": "La experiencia completa",
+    "completoDescription": "Las 6 categorías: posiciones de grupo, bracket, bota de oro, especiales, marcador y goleador de cada partido. Para quien quiere exprimir el Mundial.",
+    "marcadorTagline": "Solo marcadores",
+    "marcadorDescription": "Predice únicamente el marcador exacto de cada partido. Sencilla y directa: nada de grupos, bracket ni goleadores.",
+    "solo_ganadorTagline": "Lo más simple",
+    "solo_ganadorDescription": "Predice solo quién gana cada partido (o empate). La más rápida de rellenar: ideal para grupos grandes y gente con poco tiempo."
   },
   "scoringPage": {
     "breadcrumb": "Cómo se puntúa",
