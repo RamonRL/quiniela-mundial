@@ -747,6 +747,73 @@ export async function upgradeLeague(
   return { ok: true, message: "Plan actualizado." };
 }
 
+const changeModeSchema = z.object({
+  id: z.coerce.number().int(),
+  mode: z.enum(["completo", "marcador", "solo_ganador"]),
+});
+
+/**
+ * Admin override: cambia el modo de predicción de una liga privada ya
+ * creada (p. ej. un cliente que pidió pasar de "Completo" a "Solo Ganador").
+ *
+ * El modo controla qué categorías ve el usuario y bajo qué ranking global
+ * compite la liga. No reescribe el `points_ledger`: los puntos ya anotados
+ * de categorías que el nuevo modo oculta seguirían sumando hasta el próximo
+ * recálculo. En la práctica esto solo importa si se cambia con el torneo ya
+ * empezado y con resultados cargados; antes del arranque es un no-op de datos.
+ * Por eso el form muestra un aviso cuando el cambio se hace en caliente.
+ */
+export async function changeLeagueMode(
+  _prev: LeagueFormState,
+  formData: FormData,
+): Promise<LeagueFormState> {
+  const me = await requireAdmin();
+  const parsed = changeModeSchema.safeParse({
+    id: formData.get("id"),
+    mode: formData.get("mode"),
+  });
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+  }
+
+  const [before] = await db
+    .select()
+    .from(leagues)
+    .where(eq(leagues.id, parsed.data.id))
+    .limit(1);
+  if (!before) return { ok: false, error: "Liga no encontrada." };
+  if (before.isPublic) {
+    return { ok: false, error: "El modo de la quiniela pública no se puede cambiar." };
+  }
+  if (before.predictionMode === parsed.data.mode) {
+    return { ok: false, error: "La liga ya está en ese modo." };
+  }
+
+  await db
+    .update(leagues)
+    .set({ predictionMode: parsed.data.mode })
+    .where(eq(leagues.id, before.id));
+
+  await logAdminAction({
+    adminId: me.id,
+    action: "league.change_mode",
+    payload: {
+      leagueId: before.id,
+      from: before.predictionMode,
+      to: parsed.data.mode,
+    },
+  });
+
+  revalidatePath("/admin/ligas");
+  revalidatePath(`/admin/ligas/${before.id}`);
+  revalidatePath("/mi-quiniela");
+  revalidatePath("/", "layout");
+  return {
+    ok: true,
+    message: `Modo cambiado a "${PREDICTION_MODE_META[parsed.data.mode].label}".`,
+  };
+}
+
 const VALID_LEAD_STATUS = ["new", "contacted", "won", "lost"] as const;
 const leadUpdateSchema = z.object({
   id: z.coerce.number().int(),

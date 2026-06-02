@@ -24,7 +24,9 @@ import { formatDateTime, initials } from "@/lib/utils";
 import { InviteLinkCopy } from "../invite-link-copy";
 import { MemberActions } from "./member-actions";
 import { LeaguePlanForm } from "./league-plan-form";
+import { LeagueModeForm } from "./league-mode-form";
 import type { LeagueTier } from "@/lib/leagues";
+import type { PredictionMode } from "@/lib/prediction-modes";
 
 export const metadata = { title: "Gestión de liga · Admin" };
 export const dynamic = "force-dynamic";
@@ -164,6 +166,15 @@ export default async function AdminLeagueDetailPage({
             paidAt: league.paidAt,
             paidAmountEur: league.paidAmountEur,
             paidVia: league.paidVia,
+          }}
+        />
+      ) : null}
+
+      {!league.isPublic ? (
+        <LeagueModeForm
+          league={{
+            id: league.id,
+            predictionMode: league.predictionMode as PredictionMode,
           }}
         />
       ) : null}
