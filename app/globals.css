@@ -121,11 +121,6 @@
   html {
     -webkit-text-size-adjust: 100%;
     text-rendering: optimizeLegibility;
-    /* Nada de desplazamiento horizontal al hacer scroll vertical: cortamos
-       el overflow-x del documento. Usamos `clip` (no `hidden`) para no crear
-       un contenedor de scroll —así no rompe `position: sticky`— y porque el
-       paneo con zoom (pinch) usa el viewport visual, que esto no limita. */
-    overflow-x: clip;
   }
 
   body {
@@ -406,16 +401,6 @@
   .reveal.is-visible {
     opacity: 1;
     transform: none;
-  }
-  /* En móvil, las entradas horizontales (left/right) desplazan el elemento
-     fuera del viewport mientras está oculto y provocan scroll lateral. Las
-     convertimos en entrada vertical en pantallas pequeñas — sin translateX,
-     sin desbordamiento. */
-  @media (max-width: 640px) {
-    .reveal-left,
-    .reveal-right {
-      transform: translateY(26px);
-    }
   }
 
   /* ─── Tutorial ─── */
