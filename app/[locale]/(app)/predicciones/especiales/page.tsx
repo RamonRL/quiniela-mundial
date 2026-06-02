@@ -8,7 +8,8 @@ import { PageHeader } from "@/components/shell/page-header";
 import { ScoringBox } from "@/components/brand/scoring-box";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
-import { SPECIALS_FOOTNOTE, SPECIALS_SCORING } from "@/lib/scoring/copy";
+import { getTranslations } from "next-intl/server";
+import { specialsScoring, specialsFootnote } from "@/lib/scoring/copy";
 import { InteractiveModeBanner } from "@/components/predictions/interactive-mode-banner";
 import { isSpecialAnswered, type SpecialType } from "./types";
 import { SpecialsForm } from "./specials-form";
@@ -17,6 +18,7 @@ export const metadata = { title: "Predicciones especiales" };
 
 export default async function PredictSpecialsPage() {
   const me = await requireUser();
+  const t = await getTranslations("scoring");
   const leagueId = (await currentLeagueId(me))!;
   // Solo "completo" tiene especiales. Marcador / Solo Ganador → fuera.
   const mode = (await getLeagueModes([leagueId])).get(leagueId) ?? "completo";
@@ -51,7 +53,7 @@ export default async function PredictSpecialsPage() {
           title="Predicciones especiales"
           description="Balón, Guante, anfitrión más lejos…"
         />
-        <ScoringBox sections={SPECIALS_SCORING} footnote={SPECIALS_FOOTNOTE} />
+        <ScoringBox sections={specialsScoring(t)} footnote={specialsFootnote(t)} />
         <EmptyState
           icon={<Sparkles className="size-5" />}
           title="Sin predicciones especiales todavía"
@@ -74,7 +76,7 @@ export default async function PredictSpecialsPage() {
           hint="Repasa pregunta a pregunta."
         />
       ) : null}
-      <ScoringBox sections={SPECIALS_SCORING} footnote={SPECIALS_FOOTNOTE} />
+      <ScoringBox sections={specialsScoring(t)} footnote={specialsFootnote(t)} />
       <SpecialsForm
         specials={specials.map((s) => ({
           id: s.id,

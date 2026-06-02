@@ -1,98 +1,119 @@
 import type { ScoringSection } from "@/components/brand/scoring-box";
 
 /**
- * Spanish-language copy for the scoring rules of each prediction category,
- * mirroring `lib/scoring/defaults.ts`. Centralised here so the hub cards
- * and the detail pages render the exact same numbers and labels.
+ * Copy de las reglas de puntuación de cada categoría, en paralelo a
+ * `lib/scoring/defaults.ts`. Centralizado aquí para que las cards del hub y
+ * las páginas de detalle muestren exactamente los mismos números y etiquetas.
  *
- * If a rule changes in `defaults.ts`, update it here too.
+ * Localizado vía next-intl: cada builder recibe un traductor `t` con el
+ * namespace "scoring" (de `getTranslations("scoring")` o `useTranslations`).
+ * Los puntos NO se traducen; solo las etiquetas, ejemplos y encabezados.
+ * Si cambia una regla en `defaults.ts`, actualízala aquí también.
  */
 
-export const GROUPS_SCORING: ScoringSection[] = [
-  {
-    rules: [
-      { points: 3, label: "Selección en su posición exacta (1º, 2º, 3º o 4º)" },
-      { points: 1, label: "Selección a ±1 posición de la real" },
-      { points: 1, prefix: "+", label: "Bonus: aciertas top-2 aunque cambies el orden", bonus: true },
-    ],
-  },
-];
-export const GROUPS_FOOTNOTE = "Hasta 13 pts por grupo · 12 grupos en juego.";
+type T = (key: string) => string;
 
-export const BRACKET_SCORING: ScoringSection[] = [
-  {
-    heading: "Por cada equipo correcto que avanza",
-    rules: [
-      { points: 2, label: "Pasa a octavos (R16)" },
-      { points: 4, label: "Pasa a cuartos (QF)" },
-      { points: 7, label: "Pasa a semifinales (SF)" },
-      { points: 10, label: "Llega a la final" },
-      { points: 20, label: "Campeón del torneo" },
-    ],
-  },
-];
-export const BRACKET_FOOTNOTE = "Cada slot acertado suma. Aciertos acumulables ronda a ronda.";
+export function groupsScoring(t: T): ScoringSection[] {
+  return [
+    {
+      rules: [
+        { points: 3, label: t("groupsExact") },
+        { points: 1, label: t("groupsOff1") },
+        { points: 1, prefix: "+", label: t("groupsTop2Bonus"), bonus: true },
+      ],
+    },
+  ];
+}
+export const groupsFootnote = (t: T) => t("groupsFootnote");
 
-export const TOP_SCORER_SCORING: ScoringSection[] = [
-  {
-    rules: [
-      { points: 15, label: "Tu pick es el máximo goleador del torneo" },
-      { points: 5, label: "Tu pick queda 2º o 3º goleador" },
-      { points: 2, label: "Tu pick termina entre los 5 primeros goleadores" },
-    ],
-  },
-];
+export function bracketScoring(t: T): ScoringSection[] {
+  return [
+    {
+      heading: t("bracketHeading"),
+      rules: [
+        { points: 2, label: t("bracketR16") },
+        { points: 4, label: t("bracketQf") },
+        { points: 7, label: t("bracketSf") },
+        { points: 10, label: t("bracketFinal") },
+        { points: 20, label: t("bracketChampion") },
+      ],
+    },
+  ];
+}
+export const bracketFootnote = (t: T) => t("bracketFootnote");
+
+export function topScorerScoring(t: T): ScoringSection[] {
+  return [
+    {
+      rules: [
+        { points: 15, label: t("topScorerFirst") },
+        { points: 5, label: t("topScorerSecond") },
+        { points: 2, label: t("topScorerTop5") },
+      ],
+    },
+  ];
+}
 
 // ───────────── Resultado del partido · por fase (Completo + Marcador) ─────────────
 
 /** Marcador · fase de grupos (tiers excluyentes). */
-export const MATCH_GROUP_SCORING: ScoringSection = {
-  heading: "Fase de grupos",
-  rules: [
-    { points: 5, label: "Marcador exacto", example: "Dices 2-0, queda 2-0" },
-    { points: 3, label: "Ganador correcto + los goles de un equipo", example: "Dices 2-0, queda 2-1" },
-    { points: 2, label: "Ganador o empate correcto, sin marcador exacto", example: "Dices 2-0, queda 3-1" },
-    { points: 1, label: "Goles de un equipo, sin acertar el ganador", example: "Dices 2-1, queda 2-3" },
-  ],
-};
+export function matchGroupScoring(t: T): ScoringSection {
+  return {
+    heading: t("phaseGroups"),
+    rules: [
+      { points: 5, label: t("mgExactLabel"), example: t("mgExactEx") },
+      { points: 3, label: t("mgOutcomeTeamLabel"), example: t("mgOutcomeTeamEx") },
+      { points: 2, label: t("mgOutcomeLabel"), example: t("mgOutcomeEx") },
+      { points: 1, label: t("mgTeamLabel"), example: t("mgTeamEx") },
+    ],
+  };
+}
 
 /** Marcador · fase final (incluye prórroga; empate = va a penaltis). */
-export const MATCH_FINAL_SCORING: ScoringSection = {
-  heading: "Fase final",
-  rules: [
-    { points: 7, label: "Empate exacto + aciertas quién pasa en penaltis", example: "Dices 1-1 y pasa MEX; 1-1 y pasa MEX en pens" },
-    { points: 5, label: "Marcador exacto (incluye prórroga)", example: "Dices 2-1, queda 2-1" },
-    { points: 4, label: "Empate (sin marcador exacto) + quién pasa en penaltis", example: "Dices 0-0 y pasa MEX; 1-1 y pasa MEX en pens" },
-    { points: 3, label: "Ganador correcto + los goles de un equipo", example: "Dices 2-1, queda 2-0" },
-    { points: 2, label: "Ganador/resultado correcto, sin marcador exacto", example: "Dices 2-1, queda 3-0" },
-    { points: 1, label: "Goles de un equipo, sin acertar el resultado", example: "Dices 2-1, queda 2-3" },
-  ],
-};
+export function matchFinalScoring(t: T): ScoringSection {
+  return {
+    heading: t("phaseFinal"),
+    rules: [
+      { points: 7, label: t("mfDrawExactPensLabel"), example: t("mfDrawExactPensEx") },
+      { points: 5, label: t("mfExactLabel"), example: t("mfExactEx") },
+      { points: 4, label: t("mfDrawPensLabel"), example: t("mfDrawPensEx") },
+      { points: 3, label: t("mfOutcomeTeamLabel"), example: t("mfOutcomeTeamEx") },
+      { points: 2, label: t("mfOutcomeLabel"), example: t("mfOutcomeEx") },
+      { points: 1, label: t("mfTeamLabel"), example: t("mfTeamEx") },
+    ],
+  };
+}
 
 /** Goleador por partido (solo modo Completo). */
-export const SCORER_SCORING: ScoringSection = {
-  rules: [
-    { points: 4, label: "Tu jugador anota un gol en el partido" },
-    { points: 2, prefix: "+", label: "Bonus si además es el primer gol del partido", bonus: true },
-  ],
-};
+export function scorerScoring(t: T): ScoringSection {
+  return {
+    rules: [
+      { points: 4, label: t("scorerGoal") },
+      { points: 2, prefix: "+", label: t("scorerFirstBonus"), bonus: true },
+    ],
+  };
+}
 
 // ───────────── Solo Ganador · por fase ─────────────
 
-export const SOLO_GROUP_SCORING: ScoringSection = {
-  heading: "Fase de grupos",
-  rules: [
-    { points: 3, label: "Aciertas el ganador o el empate", example: "Dices que gana MEX; gana MEX" },
-  ],
-};
+export function soloGroupScoring(t: T): ScoringSection {
+  return {
+    heading: t("phaseGroups"),
+    rules: [
+      { points: 3, label: t("soloGroupCorrect"), example: t("soloGroupCorrectEx") },
+    ],
+  };
+}
 
-export const SOLO_FINAL_SCORING: ScoringSection = {
-  heading: "Fase final",
-  rules: [
-    { points: 5, label: "Empate + aciertas quién pasa en penaltis", example: "Dices empate y pasa MEX; pasa MEX en pens" },
-    { points: 3, label: "Aciertas ganador o empate (sin el ganador de pens)", example: "Dices que gana MEX; gana MEX" },
-  ],
-};
+export function soloFinalScoring(t: T): ScoringSection {
+  return {
+    heading: t("phaseFinal"),
+    rules: [
+      { points: 5, label: t("soloFinalDrawPensLabel"), example: t("soloFinalDrawPensEx") },
+      { points: 3, label: t("soloFinalCorrectLabel"), example: t("soloFinalCorrectEx") },
+    ],
+  };
+}
 
 /**
  * Secciones de puntuación de PARTIDO para una fase concreta. Lo usa la página
@@ -100,35 +121,33 @@ export const SOLO_FINAL_SCORING: ScoringSection = {
  * sección de goleador.
  */
 export function matchScoringSections(
+  t: T,
   mode: "completo" | "marcador" | "solo_ganador",
   isKnockout: boolean,
 ): ScoringSection[] {
   if (mode === "solo_ganador") {
-    return [isKnockout ? SOLO_FINAL_SCORING : SOLO_GROUP_SCORING];
+    return [isKnockout ? soloFinalScoring(t) : soloGroupScoring(t)];
   }
-  const phase = isKnockout ? MATCH_FINAL_SCORING : MATCH_GROUP_SCORING;
+  const phase = isKnockout ? matchFinalScoring(t) : matchGroupScoring(t);
   if (mode === "completo") {
-    return [phase, { heading: "Goleador del partido", rules: SCORER_SCORING.rules }];
+    return [phase, { heading: t("matchScorerHeading"), rules: scorerScoring(t).rules }];
   }
   return [phase];
 }
 
-export const SPECIALS_SCORING: ScoringSection[] = [
-  {
-    rules: [
-      { points: 8, label: "Balón de Oro (mejor jugador del torneo)" },
-      { points: 6, label: "Guante de Oro (mejor portero del torneo)" },
-      { points: 5, label: "Total de goles en fase de grupos (±5 del real)" },
-      { points: 4, label: "¿África llega a semifinales?" },
-      { points: 3, label: "¿Resultado con +6 goles en grupos?" },
-      { points: 3, label: "Anfitrión que llega más lejos (acertando la selección)" },
-      {
-        points: 5,
-        prefix: "+",
-        label: "Anfitrión: bonus si además aciertas la ronda exacta",
-        bonus: true,
-      },
-    ],
-  },
-];
-export const SPECIALS_FOOTNOTE = "Cada especial tiene su propio cierre y reparto fijo.";
+export function specialsScoring(t: T): ScoringSection[] {
+  return [
+    {
+      rules: [
+        { points: 8, label: t("specialsBallon") },
+        { points: 6, label: t("specialsGlove") },
+        { points: 5, label: t("specialsGroupGoals") },
+        { points: 4, label: t("specialsAfricaSemis") },
+        { points: 3, label: t("specialsSixGoals") },
+        { points: 3, label: t("specialsHost") },
+        { points: 5, prefix: "+", label: t("specialsHostBonus"), bonus: true },
+      ],
+    },
+  ];
+}
+export const specialsFootnote = (t: T) => t("specialsFootnote");

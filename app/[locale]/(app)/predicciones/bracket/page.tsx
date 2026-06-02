@@ -12,7 +12,8 @@ import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
 import { formatDateTime } from "@/lib/utils";
 import { getBracketStatus, getQualifiedTeamIds } from "@/lib/bracket-state";
-import { BRACKET_FOOTNOTE, BRACKET_SCORING } from "@/lib/scoring/copy";
+import { getTranslations } from "next-intl/server";
+import { bracketScoring, bracketFootnote } from "@/lib/scoring/copy";
 import { BracketBuilder } from "./bracket-builder";
 import type { TeamLite } from "./bracket-builder";
 
@@ -24,6 +25,7 @@ export default async function PredictBracketPage({
   searchParams: Promise<{ preview?: string }>;
 }) {
   const me = await requireUser();
+  const t = await getTranslations("scoring");
   // Solo "completo" tiene bracket. Marcador / Solo Ganador → fuera.
   const guardLeagueId = (await currentLeagueId(me))!;
   const guardMode =
@@ -41,7 +43,7 @@ export default async function PredictBracketPage({
           title="Bracket eliminatorio"
           description="Se desbloquea al cerrar la fase de grupos."
         />
-        <ScoringBox sections={BRACKET_SCORING} footnote={BRACKET_FOOTNOTE} />
+        <ScoringBox sections={bracketScoring(t)} footnote={bracketFootnote(t)} />
         <EmptyState
           icon={<Swords className="size-5" />}
           title="Aún no abierto"
@@ -178,7 +180,7 @@ export default async function PredictBracketPage({
         title="Bracket eliminatorio"
         description={description}
       />
-      <ScoringBox sections={BRACKET_SCORING} footnote={BRACKET_FOOTNOTE} />
+      <ScoringBox sections={bracketScoring(t)} footnote={bracketFootnote(t)} />
       <BracketBuilder
         open={status.state === "open"}
         preview={previewRequested}

@@ -9,7 +9,8 @@ import { ScoringBox } from "@/components/brand/scoring-box";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
 import { formatDateTime } from "@/lib/utils";
-import { TOP_SCORER_SCORING } from "@/lib/scoring/copy";
+import { getTranslations } from "next-intl/server";
+import { topScorerScoring } from "@/lib/scoring/copy";
 import { TopScorerForm } from "./top-scorer-form";
 
 export const metadata = { title: "Bota de Oro · Predicciones" };
@@ -20,6 +21,7 @@ const KICKOFF = new Date(
 
 export default async function PredictTopScorerPage() {
   const me = await requireUser();
+  const t = await getTranslations("scoring");
   const leagueId = (await currentLeagueId(me))!;
   // Solo "completo" predice goleador. Marcador / Solo Ganador → fuera.
   const mode = (await getLeagueModes([leagueId])).get(leagueId) ?? "completo";
@@ -48,7 +50,7 @@ export default async function PredictTopScorerPage() {
           title="Bota de Oro"
           description="Tu candidato. Cierra al kickoff."
         />
-        <ScoringBox sections={TOP_SCORER_SCORING} />
+        <ScoringBox sections={topScorerScoring(t)} />
         <EmptyState
           icon={<Target className="size-5" />}
           title="Aún no hay jugadores cargados"
@@ -85,7 +87,7 @@ export default async function PredictTopScorerPage() {
             : "Cerrada."
         }
       />
-      <ScoringBox sections={TOP_SCORER_SCORING} />
+      <ScoringBox sections={topScorerScoring(t)} />
       <TopScorerForm
         open={open}
         existingPlayerId={mine[0]?.playerId ?? null}

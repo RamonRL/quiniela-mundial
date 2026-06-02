@@ -18,6 +18,7 @@ import { ScoringTable } from "@/components/brand/scoring-box";
 import { Lock } from "lucide-react";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
+import { getTranslations } from "next-intl/server";
 import { matchScoringSections } from "@/lib/scoring/copy";
 import { formatDateTime } from "@/lib/utils";
 import { getMatchdayState, isMatchClosed, type Stage } from "@/lib/matchday-state";
@@ -31,6 +32,7 @@ export default async function PredictMatchdayPage({
   params: Promise<{ matchdayId: string }>;
 }) {
   const me = await requireUser();
+  const t = await getTranslations("scoring");
   const leagueId = (await currentLeagueId(me))!;
   const userTz = me.timezone ?? undefined;
   const mode = (await getLeagueModes([leagueId])).get(leagueId) ?? "completo";
@@ -198,7 +200,7 @@ export default async function PredictMatchdayPage({
       ) : null}
       {/* Reglas de la FASE de esta jornada (grupos vs. final). La J1 (grupos)
           no menciona penaltis. */}
-      <ScoringTable sections={matchScoringSections(mode, day.stage !== "group")} />
+      <ScoringTable sections={matchScoringSections(t, mode, day.stage !== "group")} />
       <MatchdayPredictionForm
         matchdayId={day.id}
         open={open}

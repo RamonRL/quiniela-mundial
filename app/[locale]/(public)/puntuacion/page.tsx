@@ -1,22 +1,22 @@
 import Link from "next/link";
 import { ArrowRight, Crown, Goal, ListChecks, Sparkles, Swords, Target, Trophy, Users } from "lucide-react";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { BreadcrumbLD } from "@/components/seo/jsonld";
 import { PageHeader } from "@/components/shell/page-header";
 import { ScoringTable, type ScoringSection } from "@/components/brand/scoring-box";
 import {
-  BRACKET_SCORING,
-  GROUPS_SCORING,
-  MATCH_GROUP_SCORING,
-  MATCH_FINAL_SCORING,
-  SCORER_SCORING,
-  SOLO_GROUP_SCORING,
-  SOLO_FINAL_SCORING,
-  SPECIALS_SCORING,
-  TOP_SCORER_SCORING,
+  bracketScoring,
+  groupsScoring,
+  matchGroupScoring,
+  matchFinalScoring,
+  scorerScoring,
+  soloGroupScoring,
+  soloFinalScoring,
+  specialsScoring,
+  topScorerScoring,
 } from "@/lib/scoring/copy";
 import {
   PREDICTION_MODES,
-  PREDICTION_MODE_META,
   isPredictionMode,
   type PredictionMode,
 } from "@/lib/prediction-modes";
@@ -44,103 +44,107 @@ type Category = {
   sections: ScoringSection[];
 };
 
-// Categorías del modo completo (las 6 de siempre).
-const COMPLETO_CATEGORIES: Category[] = [
-  {
-    id: "grupos",
-    icon: <Users className="size-5" />,
-    cat: "01",
-    title: "Posiciones por grupo",
-    tagline:
-      "Ordena los 4 equipos de cada uno de los 12 grupos del 1º al 4º. Cierra al kickoff del torneo.",
-    sections: GROUPS_SCORING,
-  },
-  {
-    id: "bracket",
-    icon: <Swords className="size-5" />,
-    cat: "02",
-    title: "Bracket FIFA completo",
-    tagline:
-      "Predices quién pasa ronda a ronda — de los 16avos a la final. Cierra al cerrar la fase de grupos.",
-    sections: BRACKET_SCORING,
-  },
-  {
-    id: "bota",
-    icon: <Target className="size-5" />,
-    cat: "03",
-    title: "Bota de Oro",
-    tagline:
-      "Tu candidato a goleador del torneo. Una sola predicción que cierra al kickoff.",
-    sections: TOP_SCORER_SCORING,
-  },
-  {
-    id: "marcadores",
-    icon: <ListChecks className="size-5" />,
-    cat: "04",
-    title: "Marcador partido a partido",
-    tagline:
-      "Las reglas cambian entre fase de grupos y fase final. Cada partido cierra a su pitido inicial.",
-    sections: [MATCH_GROUP_SCORING, MATCH_FINAL_SCORING],
-  },
-  {
-    id: "goleador-partido",
-    icon: <Goal className="size-5" />,
-    cat: "05",
-    title: "Goleador por partido",
-    tagline:
-      "Apuntas a un jugador del partido. Si marca sumas, y aún más si es el primero del partido.",
-    sections: [SCORER_SCORING],
-  },
-  {
-    id: "especiales",
-    icon: <Sparkles className="size-5" />,
-    cat: "06",
-    title: "Predicciones especiales",
-    tagline:
-      "Preguntas con sabor: Balón de Oro, Guante de Oro, anfitrión más lejos, ¿África llega a semifinales?…",
-    sections: SPECIALS_SCORING,
-  },
-];
-
-// Modos marcador y solo_ganador: una sola categoría (predicción de partido),
-// con las reglas separadas por fase.
-const MARCADOR_CATEGORIES: Category[] = [
-  {
-    id: "marcadores",
-    icon: <ListChecks className="size-5" />,
-    cat: "01",
-    title: "Marcador partido a partido",
-    tagline:
-      "Predices el marcador exacto de cada partido. En eliminatoria, un empate implica penaltis y eliges quién pasa. Sin grupos, bracket ni goleadores.",
-    sections: [MATCH_GROUP_SCORING, MATCH_FINAL_SCORING],
-  },
-];
-
-const SOLO_GANADOR_CATEGORIES: Category[] = [
-  {
-    id: "ganador",
-    icon: <Trophy className="size-5" />,
-    cat: "01",
-    title: "Ganador del partido",
-    tagline:
-      "Solo predices quién gana cada partido (o empate). En eliminatoria, si predices empate eliges también quién pasa en penaltis. Lo más rápido de rellenar.",
-    sections: [SOLO_GROUP_SCORING, SOLO_FINAL_SCORING],
-  },
-];
-
-const CATEGORIES_BY_MODE: Record<PredictionMode, Category[]> = {
-  completo: COMPLETO_CATEGORIES,
-  marcador: MARCADOR_CATEGORIES,
-  solo_ganador: SOLO_GANADOR_CATEGORIES,
-};
-
 export default async function PuntuacionPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ locale: string }>;
   searchParams?: Promise<{ modo?: string }>;
 }) {
+  const { locale } = await params;
+  setRequestLocale(locale);
   const sp = (await searchParams) ?? {};
-  const mode: PredictionMode = isPredictionMode(sp.modo ?? "") ? (sp.modo as PredictionMode) : "completo";
+  const mode: PredictionMode = isPredictionMode(sp.modo ?? "")
+    ? (sp.modo as PredictionMode)
+    : "completo";
+
+  const t = await getTranslations("scoring");
+  const tp = await getTranslations("scoringPage");
+  const tm = await getTranslations("modes");
+  const tNav = await getTranslations("nav");
+
+  // Categorías del modo completo (las 6 de siempre).
+  const COMPLETO_CATEGORIES: Category[] = [
+    {
+      id: "grupos",
+      icon: <Users className="size-5" />,
+      cat: "01",
+      title: tp("gruposTitle"),
+      tagline: tp("gruposTagline"),
+      sections: groupsScoring(t),
+    },
+    {
+      id: "bracket",
+      icon: <Swords className="size-5" />,
+      cat: "02",
+      title: tp("bracketTitle"),
+      tagline: tp("bracketTagline"),
+      sections: bracketScoring(t),
+    },
+    {
+      id: "bota",
+      icon: <Target className="size-5" />,
+      cat: "03",
+      title: tp("botaTitle"),
+      tagline: tp("botaTagline"),
+      sections: topScorerScoring(t),
+    },
+    {
+      id: "marcadores",
+      icon: <ListChecks className="size-5" />,
+      cat: "04",
+      title: tp("marcadoresTitle"),
+      tagline: tp("marcadoresTagline"),
+      sections: [matchGroupScoring(t), matchFinalScoring(t)],
+    },
+    {
+      id: "goleador-partido",
+      icon: <Goal className="size-5" />,
+      cat: "05",
+      title: tp("goleadorTitle"),
+      tagline: tp("goleadorTagline"),
+      sections: [scorerScoring(t)],
+    },
+    {
+      id: "especiales",
+      icon: <Sparkles className="size-5" />,
+      cat: "06",
+      title: tp("especialesTitle"),
+      tagline: tp("especialesTagline"),
+      sections: specialsScoring(t),
+    },
+  ];
+
+  // Modos marcador y solo_ganador: una sola categoría (predicción de partido),
+  // con las reglas separadas por fase.
+  const MARCADOR_CATEGORIES: Category[] = [
+    {
+      id: "marcadores",
+      icon: <ListChecks className="size-5" />,
+      cat: "01",
+      title: tp("marcadoresTitle"),
+      tagline: tp("marcadorModeTagline"),
+      sections: [matchGroupScoring(t), matchFinalScoring(t)],
+    },
+  ];
+
+  const SOLO_GANADOR_CATEGORIES: Category[] = [
+    {
+      id: "ganador",
+      icon: <Trophy className="size-5" />,
+      cat: "01",
+      title: tp("ganadorTitle"),
+      tagline: tp("ganadorTagline"),
+      sections: [soloGroupScoring(t), soloFinalScoring(t)],
+    },
+  ];
+
+  const CATEGORIES_BY_MODE: Record<PredictionMode, Category[]> = {
+    completo: COMPLETO_CATEGORIES,
+    marcador: MARCADOR_CATEGORIES,
+    solo_ganador: SOLO_GANADOR_CATEGORIES,
+  };
+
   const categories = CATEGORIES_BY_MODE[mode];
   const showJumpGrid = mode === "completo";
 
@@ -148,15 +152,15 @@ export default async function PuntuacionPage({
     <div className="space-y-12">
       <BreadcrumbLD
         items={[
-          { name: "Inicio", href: "/" },
-          { name: "Cómo se puntúa", href: "/puntuacion" },
+          { name: tNav("inicio"), href: "/" },
+          { name: tp("breadcrumb"), href: "/puntuacion" },
         ]}
       />
 
       <PageHeader
-        eyebrow="Reglas del juego"
-        title="Cómo se puntúa"
-        description="Cada modo de quiniela tiene su rúbrica. Acertar más implica leer mejor el torneo."
+        eyebrow={tp("headerEyebrow")}
+        title={tp("headerTitle")}
+        description={tp("headerDesc")}
       />
 
       {/* Selector de modo */}
@@ -175,7 +179,7 @@ export default async function PuntuacionPage({
                   : "text-[var(--color-muted-foreground)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-foreground)]",
               )}
             >
-              {PREDICTION_MODE_META[m].label}
+              {tm(m)}
             </Link>
           );
         })}
@@ -183,37 +187,41 @@ export default async function PuntuacionPage({
 
       {/* Resumen visual (solo modo completo, con sus 6 categorías) */}
       {showJumpGrid ? (
-      <section>
-        <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {categories.map((c) => (
-            <li key={c.id}>
-              <Link
-                href={`#${c.id}`}
-                className="group flex items-center gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2.5 transition hover:border-[var(--color-arena)]/50 hover:bg-[var(--color-surface-2)]"
-              >
-                <span className="grid size-8 shrink-0 place-items-center rounded-md border border-[var(--color-border)] bg-[var(--color-surface-2)] text-[var(--color-arena)]">
-                  {c.icon}
-                </span>
-                <div className="min-w-0 flex-1 leading-tight">
-                  <p className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-                    Cat. {c.cat}
-                  </p>
-                  <p className="truncate py-0.5 font-display text-sm leading-normal tracking-tight">
-                    {c.title}
-                  </p>
-                </div>
-                <ArrowRight className="size-3.5 shrink-0 text-[var(--color-muted-foreground)] transition group-hover:text-[var(--color-arena)]" />
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
+        <section>
+          <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {categories.map((c) => (
+              <li key={c.id}>
+                <Link
+                  href={`#${c.id}`}
+                  className="group flex items-center gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2.5 transition hover:border-[var(--color-arena)]/50 hover:bg-[var(--color-surface-2)]"
+                >
+                  <span className="grid size-8 shrink-0 place-items-center rounded-md border border-[var(--color-border)] bg-[var(--color-surface-2)] text-[var(--color-arena)]">
+                    {c.icon}
+                  </span>
+                  <div className="min-w-0 flex-1 leading-tight">
+                    <p className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+                      {tp("catPrefix")} {c.cat}
+                    </p>
+                    <p className="truncate py-0.5 font-display text-sm leading-normal tracking-tight">
+                      {c.title}
+                    </p>
+                  </div>
+                  <ArrowRight className="size-3.5 shrink-0 text-[var(--color-muted-foreground)] transition group-hover:text-[var(--color-arena)]" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
       ) : null}
 
       {/* Categorías una a una (del modo activo) */}
       <div className="space-y-10">
         {categories.map((c) => (
-          <CategoryBlock key={c.id} category={c} />
+          <CategoryBlock
+            key={c.id}
+            category={c}
+            categoryPrefix={tp("categoryPrefix")}
+          />
         ))}
       </div>
 
@@ -227,22 +235,21 @@ export default async function PuntuacionPage({
           <div className="inline-flex items-center gap-2">
             <Crown className="size-4 text-[var(--color-arena)]" />
             <p className="font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-arena)]">
-              Listo para predecir
+              {tp("ctaEyebrow")}
             </p>
           </div>
           <h2 className="font-display text-3xl tracking-tight sm:text-4xl">
-            Pon a prueba tu lectura del Mundial
+            {tp("ctaTitle")}
           </h2>
           <p className="mx-auto max-w-xl font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base">
-            La rúbrica es la misma para todos. Quien lea mejor el torneo, gana
-            el ranking de su quiniela.
+            {tp("ctaText")}
           </p>
           <div className="pt-2">
             <Link
               href="/login?next=%2Fonboarding"
               className="inline-flex items-center gap-2 rounded-md border border-[var(--color-arena)] bg-[var(--color-arena)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white shadow-[var(--shadow-arena)] transition hover:opacity-90"
             >
-              Crear mi quiniela
+              {tp("ctaButton")}
               <ArrowRight className="size-4" />
             </Link>
           </div>
@@ -252,7 +259,13 @@ export default async function PuntuacionPage({
   );
 }
 
-function CategoryBlock({ category }: { category: Category }) {
+function CategoryBlock({
+  category,
+  categoryPrefix,
+}: {
+  category: Category;
+  categoryPrefix: string;
+}) {
   return (
     <section id={category.id} className="scroll-mt-24 space-y-4">
       <header className="flex items-start gap-4">
@@ -261,7 +274,7 @@ function CategoryBlock({ category }: { category: Category }) {
         </span>
         <div className="space-y-1">
           <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Categoría {category.cat}
+            {categoryPrefix} {category.cat}
           </p>
           <h2 className="font-display text-2xl tracking-tight sm:text-3xl">
             {category.title}

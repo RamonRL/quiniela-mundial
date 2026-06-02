@@ -9,7 +9,8 @@ import { Users } from "lucide-react";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
 import { formatDateTime } from "@/lib/utils";
-import { GROUPS_FOOTNOTE, GROUPS_SCORING } from "@/lib/scoring/copy";
+import { getTranslations } from "next-intl/server";
+import { groupsScoring, groupsFootnote } from "@/lib/scoring/copy";
 import { InteractiveModeBanner } from "@/components/predictions/interactive-mode-banner";
 import { GroupRankingForm } from "./group-ranking-form";
 
@@ -21,6 +22,7 @@ const KICKOFF = new Date(
 
 export default async function PredictGroupsPage() {
   const me = await requireUser();
+  const t = await getTranslations("scoring");
   const leagueId = (await currentLeagueId(me))!;
   // Solo el modo "completo" tiene pre-torneo. Marcador / Solo Ganador no
   // predicen grupos: cortamos el acceso directo por URL.
@@ -119,7 +121,7 @@ export default async function PredictGroupsPage() {
           hint="Repasa grupo a grupo."
         />
       ) : null}
-      <ScoringBox sections={GROUPS_SCORING} footnote={GROUPS_FOOTNOTE} />
+      <ScoringBox sections={groupsScoring(t)} footnote={groupsFootnote(t)} />
       <GroupRankingForm
         open={open}
         groups={allGroups.map((g) => ({
