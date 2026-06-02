@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { minigameScores } from "@/lib/db/schema";
 import { requireAdmin } from "@/lib/auth/guards";
 import { logAdminAction } from "@/lib/admin/audit";
-import { MINIGAMES } from "@/app/(public)/minijuegos/_lib/games";
+import { MINIGAMES } from "@/app/[locale]/(public)/minijuegos/_lib/games";
 
 export type FormState = { ok: boolean; error?: string; message?: string };
 

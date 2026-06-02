@@ -10,7 +10,11 @@ import { Toaster } from "@/components/ui/sonner";
 import { NavigationProgress } from "@/components/shell/navigation-progress";
 import { OrganizationLD, WebApplicationLD } from "@/components/seo/jsonld";
 import { GoogleTag } from "@/components/analytics/google-tag";
-import "./globals.css";
+import { NextIntlClientProvider, hasLocale } from "next-intl";
+import { setRequestLocale } from "next-intl/server";
+import { notFound } from "next/navigation";
+import { routing } from "@/i18n/routing";
+import "../globals.css";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -165,10 +169,28 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+// Prerenderiza los cuatro locales como rutas estáticas.
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
+
+export default async function RootLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  if (!hasLocale(routing.locales, locale)) {
+    notFound();
+  }
+  // Habilita el render estático para este locale (next-intl).
+  setRequestLocale(locale);
+
   return (
     <html
-      lang="es"
+      lang={locale}
       translate="no"
       suppressHydrationWarning
       className={`${dmSans.variable} ${bigShoulders.variable} ${monaSans.variable} ${jetbrains.variable}`}
@@ -185,14 +207,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </noscript>
       </head>
       <body>
-        <ThemeProvider>
-          <NavigationProgress />
-          {children}
-          <Toaster richColors position="top-center" />
-        </ThemeProvider>
-        <OrganizationLD />
-        <WebApplicationLD />
-        <GoogleTag />
+        <NextIntlClientProvider>
+          <ThemeProvider>
+            <NavigationProgress />
+            {children}
+            <Toaster richColors position="top-center" />
+          </ThemeProvider>
+          <OrganizationLD />
+          <WebApplicationLD />
+          <GoogleTag />
+        </NextIntlClientProvider>
       </body>
     </html>
   );

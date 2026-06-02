@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/card";
 import { toast } from "sonner";
 import { cn, formatRelative } from "@/lib/utils";
-import { MINIGAMES } from "@/app/(public)/minijuegos/_lib/games";
+import { MINIGAMES } from "@/app/[locale]/(public)/minijuegos/_lib/games";
 import {
   deleteScore,
   deleteScores,

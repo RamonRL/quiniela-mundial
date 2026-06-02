@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   submitCommercialLead,
   type CommercialLeadFormState,
-} from "@/app/(public)/precios/actions";
+} from "@/app/[locale]/(public)/precios/actions";
 
 const initialState: CommercialLeadFormState = { ok: false };
 

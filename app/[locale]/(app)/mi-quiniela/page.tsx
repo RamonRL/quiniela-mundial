@@ -19,7 +19,7 @@ import { EmptyState } from "@/components/shell/empty-state";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, inLeagueFilter, isPremiumTier } from "@/lib/leagues";
 import { formatDateTime, initials } from "@/lib/utils";
-import { InviteLinkCopy } from "@/app/admin/ligas/invite-link-copy";
+import { InviteLinkCopy } from "@/app/[locale]/admin/ligas/invite-link-copy";
 import { CodeDisplay } from "./code-display";
 import { DeleteLeagueDialog } from "./delete-league-dialog";
 import { EditLeagueDialog } from "./edit-league-dialog";
@@ -210,6 +210,9 @@ export default async function MyLeaguePage() {
               </p>
             </div>
           </Link>
+          {/* Descarga de fichero vía route handler — el <a> es deliberado
+              (queremos navegación real, no Link). */}
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a
             href="/mi-quiniela/export"
             className="flex items-center gap-3 rounded-xl border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_4%,var(--color-surface))] p-4 transition hover:border-[var(--color-arena)]/60"

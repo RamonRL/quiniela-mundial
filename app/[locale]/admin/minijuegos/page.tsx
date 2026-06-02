@@ -1,6 +1,6 @@
 import { PageHeader } from "@/components/shell/page-header";
 import { requireAdmin } from "@/lib/auth/guards";
-import { MINIGAMES } from "@/app/(public)/minijuegos/_lib/games";
+import { MINIGAMES } from "@/app/[locale]/(public)/minijuegos/_lib/games";
 import { loadGameScores, loadOverview } from "./actions";
 import { MinigamesAdminWorkspace } from "./admin-workspace";
 

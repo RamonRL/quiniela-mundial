@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shell/page-header";
 import { formatDateTime, initials } from "@/lib/utils";
-import { banUser, deleteMessage } from "@/app/(app)/chat/actions";
+import { banUser, deleteMessage } from "@/app/[locale]/(app)/chat/actions";
 import { Trash2, UserX } from "lucide-react";
 
 export const metadata = { title: "Moderación · Admin" };

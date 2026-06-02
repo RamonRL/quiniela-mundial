@@ -17,7 +17,7 @@ import { TeamFlag } from "@/components/brand/team-flag";
 import { EmptyState } from "@/components/shell/empty-state";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { cn, formatDateTime } from "@/lib/utils";
-import { deleteMatch } from "@/app/admin/calendario/actions";
+import { deleteMatch } from "@/app/[locale]/admin/calendario/actions";
 
 export const metadata = { title: "Resultados · Admin" };
 export const dynamic = "force-dynamic";

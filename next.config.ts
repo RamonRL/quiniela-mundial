@@ -1,5 +1,10 @@
 import { withSentryConfig } from "@sentry/nextjs";
+import createNextIntlPlugin from "next-intl/plugin";
 import type { NextConfig } from "next";
+
+// next-intl: carga `./i18n/request.ts` por defecto. Envuelve el config base
+// (antes de Sentry).
+const withNextIntl = createNextIntlPlugin();
 
 // Tras migrar a custom domain (auth.quinielamundial.es), las URLs de
 // Storage nuevas usan ese host. Pero hay URLs ya persistidas en DB con
@@ -65,7 +70,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSentryConfig(nextConfig, {
+export default withSentryConfig(withNextIntl(nextConfig), {
   // For all available options, see:
   // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
