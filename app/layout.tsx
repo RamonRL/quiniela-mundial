@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { NavigationProgress } from "@/components/shell/navigation-progress";
 import { OrganizationLD, WebApplicationLD } from "@/components/seo/jsonld";
+import { GoogleTag } from "@/components/analytics/google-tag";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -180,6 +181,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </ThemeProvider>
         <OrganizationLD />
         <WebApplicationLD />
+        <GoogleTag />
       </body>
     </html>
   );
