@@ -20,6 +20,9 @@ import {
 } from "lucide-react";
 import { db } from "@/lib/db";
 import { matches, teams } from "@/lib/db/schema";
+import { Reveal } from "@/components/animation/reveal";
+import { Counter } from "@/components/animation/counter";
+import { HeroPhones } from "./hero-phones";
 import { TeamFlag } from "@/components/brand/team-flag";
 import { formatDateTime } from "@/lib/utils";
 import { FAQPageLD, SportsEventLD, WebSiteLD } from "@/components/seo/jsonld";
@@ -161,7 +164,7 @@ export default async function HomePage() {
         />
 
         <div className="relative mx-auto flex max-w-3xl flex-col items-center gap-7 text-center">
-          <div className="flex flex-col items-center gap-1.5">
+          <Reveal variant="scale" className="flex flex-col items-center gap-1.5">
             <Image
               src="/fwc26.png"
               alt="FIFA World Cup 26"
@@ -173,50 +176,50 @@ export default async function HomePage() {
             <p className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
               Copa Mundial de la FIFA 2026
             </p>
-          </div>
+          </Reveal>
 
-          <div className="flex items-center gap-3">
+          <Reveal variant="up" delay={80} className="flex items-center gap-3">
             <span className="h-px w-10 bg-[var(--color-arena)]" />
             <p className="font-mono text-[0.65rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-arena)]">
               11 jun – 19 jul · USA · México · Canadá
             </p>
             <span className="h-px w-10 bg-[var(--color-arena)]" />
-          </div>
+          </Reveal>
 
-          <h1 className="font-display text-5xl leading-[0.95] tracking-tight sm:text-6xl">
+          <Reveal as="h1" variant="up" delay={140} className="font-display text-5xl leading-[0.95] tracking-tight sm:text-6xl">
             Quiniela Mundial 2026
-          </h1>
+          </Reveal>
 
-          <p className="max-w-xl font-editorial text-base italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-lg">
+          <Reveal as="p" variant="up" delay={200} className="max-w-xl font-editorial text-base italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-lg">
             Predice los 104 partidos del Mundial 2026 con tu grupo de amigos, tu equipo o
             toda tu empresa.
-          </p>
+          </Reveal>
 
-          <p className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
+          <Reveal as="p" variant="fade" delay={260} className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
             La <span className="text-[var(--color-foreground)]">quiniela del Mundial 2026</span>{" "}
             también llamada <strong className="font-semibold not-italic">porra</strong> (España),{" "}
             <strong className="font-semibold not-italic">prode</strong> (Argentina · Uruguay),{" "}
             <strong className="font-semibold not-italic">polla</strong> (Colombia · Venezuela) o{" "}
             <strong className="font-semibold not-italic">pool</strong>.
-          </p>
+          </Reveal>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
+          <Reveal variant="up" delay={320} className="flex flex-wrap items-center justify-center gap-3 pt-1">
             <Link
               href="/login?next=%2Fonboarding"
-              className="inline-flex items-center gap-2 rounded-md border border-[var(--color-arena)] bg-[var(--color-arena)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white shadow-[var(--shadow-arena)] transition hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-md border border-[var(--color-arena)] bg-[var(--color-arena)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white shadow-[var(--shadow-arena)] transition hover:opacity-90 hover:-translate-y-0.5"
             >
               Crear quiniela
               <ArrowRight className="size-4" />
             </Link>
             <Link
               href="/login"
-              className="inline-flex items-center gap-2 rounded-md border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] transition hover:border-[var(--color-arena)]/40"
+              className="inline-flex items-center gap-2 rounded-md border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] transition hover:border-[var(--color-arena)]/40 hover:-translate-y-0.5"
             >
               Unirme con código
             </Link>
-          </div>
+          </Reveal>
 
-          <div className="flex items-center gap-2 pt-1">
+          <Reveal variant="fade" delay={400} className="flex items-center gap-2 pt-1">
             <span className="relative flex size-2">
               <span
                 aria-hidden
@@ -227,57 +230,31 @@ export default async function HomePage() {
             <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
               T-{daysToKickoff.toString().padStart(2, "0")} días al kickoff
             </p>
-          </div>
+          </Reveal>
         </div>
 
-        {/* ─── Capturas de la app: 3 móviles. Va dentro del hero, justo
-            bajo los CTA, para que el visitante vea cómo es la app sin
-            necesidad de scrollear. PNG con fondo transparente + glow
-            arena detrás para dar profundidad. ─── */}
-        <div className="relative mx-auto mt-12 w-full max-w-4xl sm:mt-16">
-          <div className="flex items-center justify-center gap-3 pb-5">
-            <span className="h-px w-6 bg-[var(--color-arena)]" />
-            <p className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-              Así se ve la app
-            </p>
-            <span className="h-px w-6 bg-[var(--color-arena)]" />
-          </div>
-          <div className="relative">
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-x-0 top-1/4 mx-auto h-2/3 w-3/4 rounded-full opacity-40 blur-3xl"
-              style={{
-                background:
-                  "radial-gradient(circle, color-mix(in oklch, var(--color-arena) 22%, transparent), transparent 70%)",
-              }}
-            />
-            <Image
-              src="/app-screens.png"
-              alt="Capturas de la app Quiniela Mundial 2026: quiniela pública, cuenta atrás al kickoff y posiciones por grupo en el móvil"
-              width={1536}
-              height={1024}
-              priority
-              className="relative mx-auto h-auto w-full max-w-3xl drop-shadow-2xl"
-            />
-          </div>
-        </div>
+        {/* ─── Capturas de la app: 3 móviles con entrada + parallax sutil ─── */}
+        <HeroPhones />
 
         {/* ─── Tira de las 48 selecciones — 12 cols móvil (4 filas) /
             24 cols desktop (2 filas) ─── */}
         {allTeams.length > 0 && (
           <div className="relative mx-auto mt-14 w-full max-w-5xl">
-            <div className="flex items-center justify-center gap-3 pb-4">
+            <Reveal variant="fade" className="flex items-center justify-center gap-3 pb-4">
               <span className="h-px w-6 bg-[var(--color-arena)]" />
               <p className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
                 Las {allTeams.length} selecciones clasificadas
               </p>
               <span className="h-px w-6 bg-[var(--color-arena)]" />
-            </div>
+            </Reveal>
             <ul className="grid grid-cols-12 gap-1.5 sm:gap-2 lg:grid-cols-[repeat(24,minmax(0,1fr))]">
-              {allTeams.map((t) => (
-                <li
+              {allTeams.map((t, i) => (
+                <Reveal
+                  as="li"
+                  variant="scale"
+                  delay={(i % 12) * 30}
                   key={t.id}
-                  className="aspect-square transition hover:scale-110"
+                  className="aspect-square transition-transform duration-200 hover:scale-110"
                 >
                   <Link
                     href={`/equipos/${t.code}`}
@@ -287,7 +264,7 @@ export default async function HomePage() {
                   >
                     <TeamFlag code={t.code} fluid />
                   </Link>
-                </li>
+                </Reveal>
               ))}
             </ul>
           </div>
@@ -296,7 +273,7 @@ export default async function HomePage() {
 
       {/* ───────── CÓMO FUNCIONA ───────── */}
       <section className="space-y-6">
-        <header className="space-y-2">
+        <Reveal as="header" variant="up" className="space-y-2">
           <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
             Cómo funciona
           </p>
@@ -308,28 +285,32 @@ export default async function HomePage() {
             con capturas: la app guarda las predicciones, calcula los puntos en
             tiempo real y muestra el ranking en cada momento del torneo.
           </p>
-        </header>
+        </Reveal>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StepCard
             n={1}
+            delay={0}
             icon={<Users className="size-5" />}
             title="Crea o únete"
             text="Crea tu quiniela privada y reparte el código de 4 dígitos, o únete con el de tus amigos."
           />
           <StepCard
             n={2}
+            delay={90}
             icon={<ListChecks className="size-5" />}
             title="Predice"
             text="Según el modo de tu quiniela: en Completo, grupos, bracket FIFA, Bota de Oro y marcador + goleador de cada partido; en Marcador solo el marcador; en Solo Ganador solo el ganador."
           />
           <StepCard
             n={3}
+            delay={180}
             icon={<Trophy className="size-5" />}
             title="Compite"
             text="Conforme se juegan los partidos, los puntos se suman al instante. El ranking se actualiza en vivo."
           />
           <StepCard
             n={4}
+            delay={270}
             icon={<Crown className="size-5" />}
             title="Gana"
             text="El que mejor lea el torneo gana. Reconocimiento entre amigos, trofeo simbólico de la liga, o lo que pacten los participantes."
@@ -342,7 +323,7 @@ export default async function HomePage() {
           modo tiene su quiniela pública y se puede elegir al crear una
           privada. Fuente única: PREDICTION_MODE_META. */}
       <section className="space-y-6">
-        <header className="space-y-2">
+        <Reveal as="header" variant="up" className="space-y-2">
           <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
             Modos de juego
           </p>
@@ -354,19 +335,22 @@ export default async function HomePage() {
             rápido. Lo eliges al crear la tuya, o entras directamente a la
             quiniela pública de cada modo. Cada modo tiene su propio ranking.
           </p>
-        </header>
+        </Reveal>
         <div className="grid gap-4 sm:grid-cols-3">
-          {PREDICTION_MODES.map((m) => {
+          {PREDICTION_MODES.map((m, i) => {
             const meta = PREDICTION_MODE_META[m];
             const Icon = MODE_ICON[m];
             const primary = m === "completo";
             return (
-              <article
+              <Reveal
+                as="article"
+                variant="up"
+                delay={i * 90}
                 key={m}
-                className={`relative flex flex-col gap-3 overflow-hidden rounded-2xl border p-6 transition ${
+                className={`relative flex flex-col gap-3 overflow-hidden rounded-2xl border p-6 transition-all hover:-translate-y-0.5 ${
                   primary
                     ? "border-[var(--color-arena)]/50 bg-[color-mix(in_oklch,var(--color-arena)_6%,var(--color-surface))]"
-                    : "border-[var(--color-border)] bg-[var(--color-surface)]"
+                    : "border-[var(--color-border)] bg-[var(--color-surface)] hover:border-[var(--color-arena)]/40"
                 }`}
               >
                 {primary ? (
@@ -392,7 +376,7 @@ export default async function HomePage() {
                 <p className="font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)]">
                   {meta.description}
                 </p>
-              </article>
+              </Reveal>
             );
           })}
         </div>
@@ -421,7 +405,7 @@ export default async function HomePage() {
 
         <div className="relative space-y-8">
           <header className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-            <div className="space-y-2">
+            <Reveal variant="up" className="space-y-2">
               <div className="inline-flex items-center gap-2">
                 <Building2 className="size-3.5 text-[var(--color-arena)]" />
                 <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
@@ -437,7 +421,7 @@ export default async function HomePage() {
                 Sin Excel, sin grupos de WhatsApp, sin renovación. Pago único
                 por todo el torneo.
               </p>
-            </div>
+            </Reveal>
             <div className="flex shrink-0 flex-wrap items-center gap-2">
               <Link
                 href="/precios"
@@ -464,6 +448,7 @@ export default async function HomePage() {
               members="Hasta 50 miembros"
               perPerson="0,38 €/persona"
               highlight
+              delay={0}
             />
             <TierTeaser
               priceEur={49}
@@ -471,6 +456,7 @@ export default async function HomePage() {
               label="Pase Empresa"
               members="Hasta 100 miembros"
               perPerson="0,49 €/persona"
+              delay={90}
             />
             <TierTeaser
               priceEur={99}
@@ -478,24 +464,29 @@ export default async function HomePage() {
               label="Empresa Plus"
               members="Hasta 250 miembros"
               perPerson="0,40 €/persona"
+              delay={180}
             />
           </div>
 
           {/* Killer features · una línea cada uno */}
           <ul className="grid gap-3 sm:grid-cols-2">
             <FeatureBullet
+              delay={0}
               title="Departamentos internos"
               text="Marketing, Ventas, Ingeniería… compitiendo por media de puntos. Un equipo de 8 puede ganar al de 20."
             />
             <FeatureBullet
+              delay={70}
               title="Pago único, sin renovación"
               text="Cubre del 11 de junio al 19 de julio. Sin suscripción, sin cargos posteriores."
             />
             <FeatureBullet
+              delay={140}
               title="Hasta 250 miembros por liga"
               text="Tres tamaños para que entren los equipos pequeños o las plantillas grandes — escalas sin migrar datos."
             />
             <FeatureBullet
+              delay={210}
               title="Logo, export CSV, soporte prioritario"
               text="Branding corporativo en la cabecera, ranking exportable y respuesta directa por email durante el torneo."
             />
@@ -506,12 +497,12 @@ export default async function HomePage() {
       {/* ───────── EL TORNEO ───────── */}
       <section className="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:items-start">
         <div className="space-y-5">
-          <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
+          <Reveal as="p" variant="up" className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
             El torneo
-          </p>
-          <h2 className="font-display text-4xl tracking-tight sm:text-5xl">
+          </Reveal>
+          <Reveal as="h2" variant="up" delay={60} className="font-display text-4xl tracking-tight sm:text-5xl">
             Primera edición a 48 selecciones
-          </h2>
+          </Reveal>
           <p className="font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base">
             El Mundial 2026 estrena formato: <strong className="not-italic font-semibold">12 grupos</strong> de
             cuatro equipos, top 2 + los 8 mejores terceros pasan a una nueva
@@ -521,10 +512,10 @@ export default async function HomePage() {
             entre Estados Unidos, Canadá y México.
           </p>
           <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <StatTile big="48" label="Selecciones" />
-            <StatTile big="12" label="Grupos" />
-            <StatTile big="104" label="Partidos" />
-            <StatTile big="16" label="Sedes" />
+            <StatTile big="48" label="Selecciones" delay={0} />
+            <StatTile big="12" label="Grupos" delay={80} />
+            <StatTile big="104" label="Partidos" delay={160} />
+            <StatTile big="16" label="Sedes" delay={240} />
           </ul>
           <div className="flex flex-wrap gap-3 pt-2">
             <Link
@@ -557,7 +548,7 @@ export default async function HomePage() {
             </Link>
           </div>
         </div>
-        <div className="relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
+        <Reveal variant="right" delay={120} className="relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6">
           <div
             aria-hidden
             className="pitch-grid absolute inset-0 opacity-25"
@@ -643,7 +634,7 @@ export default async function HomePage() {
               </ul>
             )}
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* ───────── ÚLTIMAS NOTICIAS ─────────
@@ -655,7 +646,7 @@ export default async function HomePage() {
       {latestNews.length > 0 ? (
         <section className="space-y-6">
           <header className="flex flex-wrap items-end justify-between gap-3">
-            <div className="space-y-2">
+            <Reveal variant="up" className="space-y-2">
               <p className="inline-flex items-center gap-2 font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
                 <Newspaper className="size-3.5 text-[var(--color-arena)]" />
                 Últimas noticias
@@ -668,7 +659,7 @@ export default async function HomePage() {
                 previas con alineaciones probables y crónicas partido a
                 partido. Actualizado a diario durante el torneo.
               </p>
-            </div>
+            </Reveal>
             <Link
               href="/noticias"
               className="inline-flex items-center gap-2 rounded-md border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-4 py-2 font-mono text-[0.65rem] font-semibold uppercase tracking-[0.18em] transition hover:border-[var(--color-arena)]/40"
@@ -678,10 +669,10 @@ export default async function HomePage() {
             </Link>
           </header>
           <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {latestNews.map((n) => (
-              <li key={n.id}>
+            {latestNews.map((n, i) => (
+              <Reveal as="li" variant="up" delay={i * 80} key={n.id}>
                 <NewsCard {...n} />
-              </li>
+              </Reveal>
             ))}
           </ul>
         </section>
@@ -689,7 +680,7 @@ export default async function HomePage() {
 
       {/* ───────── EXPLORA EL TORNEO (hub interno + SEO) ───────── */}
       <section className="space-y-6">
-        <header className="space-y-2">
+        <Reveal as="header" variant="up" className="space-y-2">
           <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
             Explora el torneo
           </p>
@@ -701,40 +692,46 @@ export default async function HomePage() {
             la final, la tabla de máximos goleadores, las 48 selecciones y las 16
             sedes. Toda la información en abierto, sin registro.
           </p>
-        </header>
+        </Reveal>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <ExploreCard
             href="/calendario"
+            delay={0}
             icon={<CalendarDays className="size-5" />}
             title="Calendario completo"
             text="Los 104 partidos del Mundial 2026 ordenados por fecha y jornada."
           />
           <ExploreCard
             href="/grupos"
+            delay={70}
             icon={<Users className="size-5" />}
             title="Los 12 grupos"
             text="Las cuatro selecciones de cada grupo y sus enfrentamientos directos."
           />
           <ExploreCard
             href="/bracket"
+            delay={140}
             icon={<Swords className="size-5" />}
             title="Bracket eliminatorio"
             text="El cuadro FIFA: dieciseisavos, octavos, cuartos, semifinales y final."
           />
           <ExploreCard
             href="/goleadores"
+            delay={210}
             icon={<Target className="size-5" />}
             title="Máximos goleadores"
             text="La carrera por la Bota de Oro 2026 actualizada partido a partido."
           />
           <ExploreCard
             href="/equipos"
+            delay={280}
             icon={<Trophy className="size-5" />}
             title="48 selecciones"
             text="Plantilla completa de cada selección clasificada al Mundial 2026."
           />
           <ExploreCard
             href="/sedes"
+            delay={350}
             icon={<MapPin className="size-5" />}
             title="16 sedes"
             text="Estadios y ciudades de Estados Unidos, Canadá y México que acogen el torneo."
@@ -744,7 +741,7 @@ export default async function HomePage() {
 
       {/* ───────── 6 CATEGORÍAS DE PREDICCIÓN ───────── */}
       <section className="space-y-6">
-        <header className="space-y-2">
+        <Reveal as="header" variant="up" className="space-y-2">
           <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
             Las 6 categorías
           </p>
@@ -756,34 +753,40 @@ export default async function HomePage() {
             plazo (grupos, bracket, goleador del torneo) con predicciones más
             inmediatas (marcador exacto y goleador de cada partido).
           </p>
-        </header>
+        </Reveal>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <CategoryCard
+            delay={0}
             icon={<Users className="size-5" />}
             title="Posiciones por grupo"
             text="Ordenas los 4 equipos de cada uno de los 12 grupos. Cierra al inicio del torneo."
           />
           <CategoryCard
+            delay={70}
             icon={<Swords className="size-5" />}
             title="Bracket FIFA completo"
             text="R32, octavos, cuartos, semifinales y final. Predices la cruz entera y al campeón."
           />
           <CategoryCard
+            delay={140}
             icon={<Target className="size-5" />}
             title="Goleador del torneo"
             text="Tu Bota de Oro. Si tu jugador acaba como máximo goleador, set de puntos extra."
           />
           <CategoryCard
+            delay={210}
             icon={<Goal className="size-5" />}
             title="Marcadores partido a partido"
             text="Predices el resultado exacto de cada partido. Bonus por acertar marcador y ganador."
           />
           <CategoryCard
+            delay={280}
             icon={<Sparkles className="size-5" />}
             title="Goleador por partido"
             text="Eliges quién marca en cada uno de los 104 enfrentamientos."
           />
           <CategoryCard
+            delay={350}
             icon={<ShieldCheck className="size-5" />}
             title="Predicciones especiales"
             text="Preguntas estilo '¿habrá tanda de penales en cuartos?'. Sorpresas con peso."
@@ -793,15 +796,15 @@ export default async function HomePage() {
 
       {/* ───────── FAQ ───────── */}
       <section className="space-y-6">
-        <header className="space-y-2">
+        <Reveal as="header" variant="up" className="space-y-2">
           <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
             Preguntas frecuentes
           </p>
           <h2 className="font-display text-4xl tracking-tight sm:text-5xl">
             Lo que la gente pregunta
           </h2>
-        </header>
-        <div className="divide-y divide-[var(--color-border)] overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)]">
+        </Reveal>
+        <Reveal variant="up" className="divide-y divide-[var(--color-border)] overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)]">
           {FAQS.map((f, i) => (
             <details key={i} className="group px-5 py-4">
               <summary className="flex cursor-pointer items-center justify-between gap-3 list-none">
@@ -818,7 +821,7 @@ export default async function HomePage() {
               </p>
             </details>
           ))}
-        </div>
+        </Reveal>
       </section>
 
       {/* ───────── CTA FINAL ───────── */}
@@ -827,7 +830,7 @@ export default async function HomePage() {
           aria-hidden
           className="halftone pointer-events-none absolute inset-0 opacity-[0.05]"
         />
-        <div className="relative space-y-4">
+        <Reveal variant="up" className="relative space-y-4">
           <h2 className="font-display text-4xl tracking-tight sm:text-5xl">
             Tu quiniela del Mundial está a un click
           </h2>
@@ -849,7 +852,7 @@ export default async function HomePage() {
               Planes para empresas
             </Link>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* ───────── SOBRE LA MARCA · refuerzo de trigrama para SEO ─────────
@@ -858,14 +861,14 @@ export default async function HomePage() {
           que Google asocia a la query exacta de marca + año. Va antes
           del footer porque es donde el patrón "About" tradicional vive. */}
       <section className="space-y-4 border-t border-[var(--color-border)] pt-12">
-        <header className="space-y-2">
+        <Reveal as="header" variant="up" className="space-y-2">
           <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
             Sobre Quiniela Mundial 2026
           </p>
           <h2 className="font-display text-3xl tracking-tight sm:text-4xl">
             La quiniela colaborativa del Mundial 2026
           </h2>
-        </header>
+        </Reveal>
         <div className="grid gap-5 sm:grid-cols-2">
           <p className="font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base">
             <strong className="font-semibold not-italic text-[var(--color-foreground)]">
@@ -967,6 +970,7 @@ function TierTeaser({
   members,
   perPerson,
   highlight,
+  delay = 0,
 }: {
   priceEur: number;
   regularEur?: number;
@@ -974,13 +978,17 @@ function TierTeaser({
   members: string;
   perPerson: string;
   highlight?: boolean;
+  delay?: number;
 }) {
   return (
-    <article
-      className={`relative overflow-hidden rounded-xl border p-5 transition ${
+    <Reveal
+      as="article"
+      variant="up"
+      delay={delay}
+      className={`relative overflow-hidden rounded-xl border p-5 transition-all hover:-translate-y-0.5 ${
         highlight
           ? "border-[var(--color-arena)] bg-[var(--color-surface)] shadow-[var(--shadow-arena)]"
-          : "border-[var(--color-border)] bg-[var(--color-surface)]"
+          : "border-[var(--color-border)] bg-[var(--color-surface)] hover:border-[var(--color-arena)]/40"
       }`}
     >
       {highlight ? (
@@ -1005,13 +1013,18 @@ function TierTeaser({
       <p className="mt-1 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
         ≈ {perPerson}
       </p>
-    </article>
+    </Reveal>
   );
 }
 
-function FeatureBullet({ title, text }: { title: string; text: string }) {
+function FeatureBullet({ title, text, delay = 0 }: { title: string; text: string; delay?: number }) {
   return (
-    <li className="flex items-start gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+    <Reveal
+      as="li"
+      variant="up"
+      delay={delay}
+      className="flex items-start gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 transition-all hover:-translate-y-0.5 hover:border-[var(--color-arena)]/40"
+    >
       <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-[var(--color-arena)] text-white">
         <Check className="size-3" />
       </span>
@@ -1021,7 +1034,7 @@ function FeatureBullet({ title, text }: { title: string; text: string }) {
           {text}
         </p>
       </div>
-    </li>
+    </Reveal>
   );
 }
 
@@ -1030,14 +1043,21 @@ function StepCard({
   icon,
   title,
   text,
+  delay = 0,
 }: {
   n: number;
   icon: React.ReactNode;
   title: string;
   text: string;
+  delay?: number;
 }) {
   return (
-    <article className="relative overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
+    <Reveal
+      as="article"
+      variant="up"
+      delay={delay}
+      className="relative overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 transition-all hover:-translate-y-0.5 hover:border-[var(--color-arena)]/40"
+    >
       <span className="absolute -right-3 -top-3 font-display text-7xl leading-none tracking-tighter text-[var(--color-arena)]/10">
         {n.toString().padStart(2, "0")}
       </span>
@@ -1050,7 +1070,7 @@ function StepCard({
           {text}
         </p>
       </div>
-    </article>
+    </Reveal>
   );
 }
 
@@ -1060,17 +1080,20 @@ function ExploreCard({
   title,
   text,
   primary,
+  delay = 0,
 }: {
   href: string;
   icon: React.ReactNode;
   title: string;
   text: string;
   primary?: boolean;
+  delay?: number;
 }) {
   return (
+    <Reveal variant="up" delay={delay}>
     <Link
       href={href}
-      className={`group relative flex flex-col gap-2.5 overflow-hidden rounded-xl border p-5 transition-all hover:-translate-y-0.5 ${
+      className={`group relative flex h-full flex-col gap-2.5 overflow-hidden rounded-xl border p-5 transition-all hover:-translate-y-0.5 ${
         primary
           ? "border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface))] hover:border-[var(--color-arena)] hover:shadow-[var(--shadow-arena)]"
           : "border-[var(--color-border)] bg-[var(--color-surface)] hover:border-[var(--color-arena)]/40 hover:shadow-[var(--shadow-elev-1)]"
@@ -1093,6 +1116,7 @@ function ExploreCard({
         Ir <ArrowRight className="size-3" />
       </span>
     </Link>
+    </Reveal>
   );
 }
 
@@ -1100,13 +1124,20 @@ function CategoryCard({
   icon,
   title,
   text,
+  delay = 0,
 }: {
   icon: React.ReactNode;
   title: string;
   text: string;
+  delay?: number;
 }) {
   return (
-    <article className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
+    <Reveal
+      as="article"
+      variant="up"
+      delay={delay}
+      className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 transition-all hover:-translate-y-0.5 hover:border-[var(--color-arena)]/40"
+    >
       <div className="flex items-center gap-2.5 pb-2">
         <span className="grid size-8 place-items-center rounded-md border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_8%,transparent)] text-[var(--color-arena)]">
           {icon}
@@ -1116,19 +1147,25 @@ function CategoryCard({
       <p className="font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)]">
         {text}
       </p>
-    </article>
+    </Reveal>
   );
 }
 
-function StatTile({ big, label }: { big: string; label: string }) {
+function StatTile({ big, label, delay = 0 }: { big: string; label: string; delay?: number }) {
+  const numeric = Number(big);
   return (
-    <li className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3">
+    <Reveal
+      as="li"
+      variant="up"
+      delay={delay}
+      className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 transition-all hover:-translate-y-0.5 hover:border-[var(--color-arena)]/40"
+    >
       <p className="font-display tabular text-3xl leading-none tracking-tight text-[var(--color-arena)] sm:text-4xl">
-        {big}
+        {Number.isFinite(numeric) ? <Counter to={numeric} /> : big}
       </p>
       <p className="pt-1.5 font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
         {label}
       </p>
-    </li>
+    </Reveal>
   );
 }

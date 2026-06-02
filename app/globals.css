@@ -381,6 +381,28 @@
     animation: rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   }
 
+  /* ─── Scroll reveal (IntersectionObserver vía <Reveal/>) ───
+     Estado inicial oculto + transición; la clase .is-visible la añade el
+     componente cliente al entrar en viewport. El stagger se hace con
+     transition-delay inline. */
+  .reveal {
+    opacity: 0;
+    transition:
+      opacity 0.7s cubic-bezier(0.2, 0.8, 0.2, 1),
+      transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+    will-change: opacity, transform;
+  }
+  .reveal-up { transform: translateY(26px); }
+  .reveal-down { transform: translateY(-26px); }
+  .reveal-left { transform: translateX(-30px); }
+  .reveal-right { transform: translateX(30px); }
+  .reveal-scale { transform: scale(0.95); }
+  .reveal-fade { transform: none; }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
   /* ─── Tutorial ─── */
   @keyframes tutorial-mascot-idle {
     0%, 100% { transform: translateY(0); }
@@ -461,6 +483,11 @@
     .tour-slide-right,
     .tour-slide-left,
     .tour-save-toast { animation: none; }
+    .reveal {
+      opacity: 1 !important;
+      transform: none !important;
+      transition: none !important;
+    }
   }
   /* Fade puro para el card centered del tutorial — NO toca transform
      para no pisar el `translate(-50%, -50%)` que necesita para centrarse

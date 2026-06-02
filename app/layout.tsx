@@ -173,6 +173,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       suppressHydrationWarning
       className={`${dmSans.variable} ${bigShoulders.variable} ${monaSans.variable} ${jetbrains.variable}`}
     >
+      <head>
+        {/* Sin JS, los reveals quedarían ocultos: forzamos visible. */}
+        <noscript>
+          {/* eslint-disable-next-line react/no-danger */}
+          <style
+            dangerouslySetInnerHTML={{
+              __html: ".reveal{opacity:1!important;transform:none!important}",
+            }}
+          />
+        </noscript>
+      </head>
       <body>
         <ThemeProvider>
           <NavigationProgress />
