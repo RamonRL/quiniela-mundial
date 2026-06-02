@@ -135,11 +135,6 @@
     font-feature-settings: "ss01", "cv11", "ss03";
     font-optical-sizing: auto;
     min-height: 100dvh;
-    position: relative;
-    /* Refuerzo del guard horizontal: en Safari iOS el `overflow-x: clip`
-       solo en <html> no siempre frena el paneo lateral, así que lo
-       repetimos aquí. */
-    overflow-x: clip;
   }
 
   /* Subtle film grain over the whole app — anchors the editorial vibe */
