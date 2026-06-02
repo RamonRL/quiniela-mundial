@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ArrowRight, Check, Mail } from "lucide-react";
 import { PageHeader } from "@/components/shell/page-header";
 import { BreadcrumbLD, ProductOffersLD } from "@/components/seo/jsonld";
@@ -44,128 +45,108 @@ type Plan = {
   ctaHref?: string;
 };
 
-const PLANS: Plan[] = [
-  {
-    id: "free",
-    name: "Estándar",
-    price: "Gratis",
-    priceNote: "Para siempre",
-    members: "Hasta 20 miembros",
-    ctaLabel: "Crear gratis",
-    ctaHref: "/onboarding?step=privada-crear",
-  },
-  {
-    id: "team-50",
-    paidTierId: "team-50",
-    name: "Pase Equipo",
-    price: "19 €",
-    regularPrice: "29 €",
-    priceNote: "Pase Mundial 2026 · pago único",
-    members: "Hasta 50 miembros",
-    highlight: true,
-    ctaLabel: "Comprar",
-  },
-  {
-    id: "team-100",
-    paidTierId: "team-100",
-    name: "Pase Empresa",
-    price: "49 €",
-    regularPrice: "69 €",
-    priceNote: "Pase Mundial 2026 · pago único",
-    members: "Hasta 100 miembros",
-    ctaLabel: "Comprar",
-  },
-  {
-    id: "team-250",
-    paidTierId: "team-250",
-    name: "Pase Empresa Plus",
-    price: "99 €",
-    regularPrice: "149 €",
-    priceNote: "Pase Mundial 2026 · pago único",
-    members: "Hasta 250 miembros",
-    ctaLabel: "Comprar",
-  },
-];
+export default async function PreciosPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations("pricing");
+  const tNav = await getTranslations("nav");
 
-/** Lo mismo en todos los Pases — solo cambia el tope de miembros. */
-const PAID_FEATURES: string[] = [
-  "Departamentos internos con ranking por media de puntos",
-  "Logo corporativo custom",
-  "Anuncio fijado del organizador",
-  "Export CSV del ranking",
-  "Soporte prioritario por email",
-];
+  const PLANS: Plan[] = [
+    {
+      id: "free",
+      name: t("freeName"),
+      price: t("freePrice"),
+      priceNote: t("freeNote"),
+      members: t("freeMembers"),
+      ctaLabel: t("freeCta"),
+      ctaHref: "/onboarding?step=privada-crear",
+    },
+    {
+      id: "team-50",
+      paidTierId: "team-50",
+      name: t("t50Name"),
+      price: "19 €",
+      regularPrice: "29 €",
+      priceNote: t("paidNote"),
+      members: t("t50Members"),
+      highlight: true,
+      ctaLabel: t("buy"),
+    },
+    {
+      id: "team-100",
+      paidTierId: "team-100",
+      name: t("t100Name"),
+      price: "49 €",
+      regularPrice: "69 €",
+      priceNote: t("paidNote"),
+      members: t("t100Members"),
+      ctaLabel: t("buy"),
+    },
+    {
+      id: "team-250",
+      paidTierId: "team-250",
+      name: t("t250Name"),
+      price: "99 €",
+      regularPrice: "149 €",
+      priceNote: t("paidNote"),
+      members: t("t250Members"),
+      ctaLabel: t("buy"),
+    },
+  ];
 
-const FAQ: { q: string; a: string }[] = [
-  {
-    q: "¿Cómo funciona el pago?",
-    a: "Pulsa Comprar en el plan que quieras, se abre el checkout de Paddle (tarjeta o PayPal) y al confirmar el pago recibimos aviso al instante. En cuanto verificamos que vas asociado a la quiniela correcta, levantamos el tope de miembros — normalmente al momento.",
-  },
-  {
-    q: "¿Podéis emitir factura con los datos de mi empresa?",
-    a: "Sí. El pago lo procesa Paddle como Merchant of Record: ellos emiten una factura legal con el IVA correspondiente (en España, 21 %; en otros países UE, el aplicable). Durante el checkout puedes introducir los datos fiscales de tu empresa y la factura se descarga al momento en PDF — válida para deducción contable.",
-  },
-  {
-    q: "¿El precio es por torneo o suscripción?",
-    a: "Pago único: el Pase Mundial 2026 cubre toda la edición — del 11 de junio al 19 de julio de 2026. No hay suscripción ni renovaciones automáticas.",
-  },
-  {
-    q: "Necesitamos más de 250 miembros, ¿qué hacemos?",
-    a: "Indícanos la cifra real en el mensaje del formulario y te pasamos presupuesto a medida.",
-  },
-  {
-    q: "¿Cómo funcionan los departamentos?",
-    a: "Cualquier Pase Mundial 2026 (50, 100 o 250) desbloquea departamentos internos. Tú creas sub-grupos (Marketing, Ventas, Ingeniería…) y asignas a cada miembro al suyo. Compiten por MEDIA de puntos, no totales — así un departamento pequeño puede ganar al grande. Hay un ranking aparte en /ranking → Departamentos.",
-  },
-  {
-    q: "¿Y si quiero probarlo antes de pagar?",
-    a: "Crea una quiniela gratis hasta 20 miembros para enseñársela al equipo. Cuando confirméis, comprad el Pase desde /precios y subimos el límite sin migrar datos — la misma liga, los mismos miembros, más capacidad.",
-  },
-  {
-    q: "¿Devolución si no estamos satisfechos?",
-    a: "Si el torneo aún no ha empezado y no estás contento con la herramienta, escríbenos: gestionamos la devolución con Paddle. Una vez arrancado el Mundial el reembolso ya no aplica al haberse consumido el servicio.",
-  },
-];
+  // Lo mismo en todos los Pases — solo cambia el tope de miembros.
+  const PAID_FEATURES: string[] = [
+    t("feat1"),
+    t("feat2"),
+    t("feat3"),
+    t("feat4"),
+    t("feat5"),
+  ];
 
-export default function PreciosPage() {
+  const FAQ = Array.from({ length: 7 }, (_, i) => ({
+    q: t(`faq.q${i + 1}`),
+    a: t(`faq.a${i + 1}`),
+  }));
+
   return (
     <div className="space-y-12">
       <BreadcrumbLD
         items={[
-          { name: "Inicio", href: "/" },
-          { name: "Planes", href: "/precios" },
+          { name: tNav("inicio"), href: "/" },
+          { name: t("headerEyebrow"), href: "/precios" },
         ]}
       />
       <ProductOffersLD
         offers={[
           {
-            name: "Pase Equipo · 50 miembros",
+            name: t("offer50Name"),
             sku: "team-50",
             priceEur: 19,
-            description:
-              "Quiniela privada hasta 50 miembros con logo corporativo, anuncio fijado del organizador, export CSV del ranking y soporte prioritario por email.",
+            description: t("offer50Desc"),
           },
           {
-            name: "Pase Empresa · 100 miembros",
+            name: t("offer100Name"),
             sku: "team-100",
             priceEur: 49,
-            description:
-              "Quiniela privada hasta 100 miembros con logo corporativo, anuncio fijado del organizador, export CSV del ranking y soporte prioritario por email.",
+            description: t("offer100Desc"),
           },
           {
-            name: "Pase Empresa Plus · 250 miembros",
+            name: t("offer250Name"),
             sku: "team-250",
             priceEur: 99,
-            description:
-              "Quiniela privada hasta 250 miembros con logo corporativo, anuncio fijado del organizador, export CSV del ranking y soporte prioritario por email.",
+            description: t("offer250Desc"),
           },
         ]}
       />
 
       <PageHeader
-        eyebrow="Planes"
-        title="Quinielas para empresas y grupos grandes"
-        description="La versión Estándar aguanta hasta 20 miembros gratis. Para empresas, comunidades y eventos con más gente, los Pases Mundial 2026 escalan la liga a 50, 100 o 250 personas con extras pensados para uso profesional."
+        eyebrow={t("headerEyebrow")}
+        title={t("headerTitle")}
+        description={t("headerDesc")}
       />
 
       <BuyerLeagueBanner />
@@ -183,7 +164,7 @@ export default function PreciosPage() {
           >
             {plan.highlight ? (
               <span className="absolute right-4 top-4 rounded-full bg-[var(--color-arena)] px-2.5 py-1 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-white">
-                Más popular
+                {t("mostPopular")}
               </span>
             ) : null}
             <header className="space-y-1">
@@ -199,7 +180,7 @@ export default function PreciosPage() {
                 ) : null}
               </div>
               <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
-                {plan.regularPrice ? "Oferta de lanzamiento · " : ""}
+                {plan.regularPrice ? t("launchOffer") : ""}
                 {plan.priceNote}
               </p>
             </header>
@@ -219,14 +200,13 @@ export default function PreciosPage() {
       <section className="relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 sm:p-10">
         <header className="space-y-2">
           <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Pases Mundial 2026
+            {t("featuresEyebrow")}
           </p>
           <h2 className="font-display text-3xl tracking-tight">
-            Mismo paquete en los tres planes
+            {t("featuresTitle")}
           </h2>
           <p className="max-w-2xl font-editorial text-base italic leading-relaxed text-[var(--color-muted-foreground)]">
-            Los tres Pases incluyen exactamente las mismas ventajas — lo único
-            que cambia entre ellos es el tope de miembros de tu quiniela.
+            {t("featuresDesc")}
           </p>
         </header>
         <ul className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -247,21 +227,20 @@ export default function PreciosPage() {
         <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
           <div className="space-y-2">
             <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-              Enterprise · más de 250 miembros
+              {t("entEyebrow")}
             </p>
             <h2 className="font-display text-3xl tracking-tight">
-              Cuéntanos qué necesitáis.
+              {t("entTitle")}
             </h2>
             <p className="max-w-xl font-editorial text-base italic leading-relaxed text-[var(--color-muted-foreground)]">
-              Presupuesto a medida para grupos grandes, onboarding asistido,
-              branding extendido y soporte dedicado durante todo el torneo.
+              {t("entDesc")}
             </p>
           </div>
           <a
             href="#contacto"
             className="inline-flex items-center justify-center gap-2 rounded-md border border-[var(--color-arena)] bg-[var(--color-arena)] px-5 py-3 font-mono text-[0.65rem] uppercase tracking-[0.18em] text-white shadow-[var(--shadow-arena)]"
           >
-            Contactar <ArrowRight className="size-3.5" />
+            {t("contact")} <ArrowRight className="size-3.5" />
           </a>
         </div>
       </section>
@@ -271,7 +250,7 @@ export default function PreciosPage() {
         <header className="flex items-center gap-3 border-b border-[var(--color-border)] pb-2">
           <span className="h-px w-6 bg-[var(--color-arena)]" />
           <h2 className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Preguntas frecuentes
+            {t("faqEyebrow")}
           </h2>
         </header>
         <div className="divide-y divide-[var(--color-border)] overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]">
@@ -308,19 +287,18 @@ export default function PreciosPage() {
         <div className="relative space-y-6">
           <header className="space-y-2">
             <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-              Pídeme presupuesto
+              {t("contactEyebrow")}
             </p>
             <h2 className="font-display text-3xl tracking-tight">
-              Cuéntame de tu grupo.
+              {t("contactTitle")}
             </h2>
             <p className="font-editorial text-base italic text-[var(--color-muted-foreground)]">
-              Te contestamos en menos de 24 h con presupuesto y siguiente paso.
-              Sin compromiso.
+              {t("contactDesc")}
             </p>
           </header>
           <CommercialLeadForm />
           <p className="border-t border-[var(--color-border)] pt-4 text-center font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            o escríbeme directamente a{" "}
+            {t("orEmail")}{" "}
             <a
               href="mailto:admin@quinielamundial.es?subject=Plan%20para%20mi%20empresa"
               className="text-[var(--color-arena)]"
