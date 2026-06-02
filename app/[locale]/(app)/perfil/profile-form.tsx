@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { Camera, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -29,6 +30,7 @@ export function ProfileForm({
   nickname: string | null;
   avatarUrl: string | null;
 }) {
+  const t = useTranslations("profile");
   const [nicknameState, nicknameAction, nicknamePending] = useActionState(
     updateNickname,
     initial,
@@ -51,9 +53,7 @@ export function ProfileForm({
   function pickFile(file: File) {
     setError(null);
     if (file.size > MAX_RAW_INPUT_BYTES) {
-      setError(
-        `La imagen pesa ${formatBytes(file.size)}. Demasiado grande, prueba con otra.`,
-      );
+      setError(t("imageTooBig", { size: formatBytes(file.size) }));
       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
@@ -85,10 +85,10 @@ export function ProfileForm({
         if (res.ok && res.avatarUrl) {
           // Bust cache añadiendo timestamp porque el URL del Storage es estable.
           setPreview(`${res.avatarUrl}?t=${Date.now()}`);
-          toast.success("Foto actualizada.");
+          toast.success(t("photoUpdated"));
           closeCrop();
         } else {
-          toast.error(res.error ?? "No se pudo subir la foto.");
+          toast.error(res.error ?? t("photoError"));
         }
         resolve();
       });
@@ -100,7 +100,7 @@ export function ProfileForm({
       <form action={nicknameAction} className="space-y-4">
         <Card>
           <CardHeader>
-            <CardTitle>Identidad</CardTitle>
+            <CardTitle>{t("identity")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-8">
             {/* ─── Avatar como dropzone clickable ─── */}
@@ -117,7 +117,7 @@ export function ProfileForm({
                   const file = e.dataTransfer.files?.[0];
                   if (file) pickFile(file);
                 }}
-                aria-label="Cambiar avatar"
+                aria-label={t("changeAvatar")}
                 disabled={uploading}
                 className="group relative mx-auto size-32 shrink-0 sm:mx-0"
               >
@@ -141,7 +141,7 @@ export function ProfileForm({
                       <Camera className="size-6" />
                     )}
                     <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em]">
-                      {uploading ? "Subiendo" : "Cambiar"}
+                      {uploading ? t("uploading") : t("change")}
                     </span>
                   </span>
                 </span>
@@ -158,10 +158,10 @@ export function ProfileForm({
                   {email}
                 </p>
                 <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
-                  Pulsa o arrastra una imagen sobre el avatar.
+                  {t("dropHint")}
                   <br />
                   <span className="font-mono not-italic uppercase tracking-[0.18em]">
-                    Ajustas el encuadre y se guarda al momento
+                    {t("dropHint2")}
                   </span>
                 </p>
                 {error ? (
@@ -185,7 +185,7 @@ export function ProfileForm({
             {/* ─── Apodo · underline minimal ─── */}
             <label className="group block space-y-2">
               <span className="block font-mono text-[0.6rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-muted-foreground)] transition-colors group-focus-within:text-[var(--color-arena)]">
-                Apodo
+                {t("nickname")}
               </span>
               <input
                 id="nickname"
@@ -196,7 +196,7 @@ export function ProfileForm({
                 className="w-full border-0 border-b-2 border-[var(--color-border)] bg-transparent px-0 pb-2 pt-1 font-display text-2xl tracking-tight text-[var(--color-foreground)] outline-none transition-colors placeholder:text-[var(--color-muted-foreground)]/50 focus:border-[var(--color-arena)] sm:text-3xl"
               />
               <span className="block font-editorial text-xs italic text-[var(--color-muted-foreground)]">
-                Opcional. Si lo dejas vacío usamos la primera parte de tu email.
+                {t("nicknameHint")}
               </span>
             </label>
           </CardContent>
@@ -206,13 +206,13 @@ export function ProfileForm({
           <p className="text-sm text-[var(--color-danger)]">{nicknameState.error}</p>
         ) : null}
         {nicknameState.ok ? (
-          <p className="text-sm text-[var(--color-success)]">Apodo actualizado.</p>
+          <p className="text-sm text-[var(--color-success)]">{t("nicknameUpdated")}</p>
         ) : null}
 
         <div className="flex justify-end">
           <Button type="submit" size="lg" disabled={nicknamePending}>
             <Save />
-            {nicknamePending ? "Guardando…" : "Guardar apodo"}
+            {nicknamePending ? t("saving") : t("saveNickname")}
           </Button>
         </div>
       </form>

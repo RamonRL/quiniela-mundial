@@ -10,6 +10,7 @@ import {
 } from "@/lib/leagues";
 import { getPickCountsByLeague } from "@/lib/import-predictions";
 import { initials } from "@/lib/utils";
+import { getTranslations } from "next-intl/server";
 import { ProfileForm } from "./profile-form";
 import { MyLeaguesSection } from "./my-leagues-section";
 
@@ -29,13 +30,14 @@ export default async function ProfilePage() {
   for (const m of memberships) {
     pickCountByLeagueId[m.id] = pickCounts.get(m.id) ?? 0;
   }
+  const t = await getTranslations("profile");
 
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Cuenta"
-        title="Mi perfil"
-        description="Apodo y avatar."
+        eyebrow={t("pageEyebrow")}
+        title={t("pageTitle")}
+        description={t("pageDesc")}
       />
 
       {/* Tu ficha — vista pública resumida + atajo al detalle de participante */}
@@ -52,20 +54,20 @@ export default async function ProfilePage() {
             </Avatar>
             <div className="space-y-1">
               <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                Cómo te ven los demás
+                {t("howOthersSee")}
               </p>
               <p className="font-display text-2xl tracking-tight">
                 {display}
                 {me.role === "admin" ? (
                   <Badge variant="outline" className="ml-2 align-middle text-[0.55rem]">
-                    Admin
+                    {t("admin")}
                   </Badge>
                 ) : null}
               </p>
             </div>
           </div>
           <span className="flex items-center gap-1.5 font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)] group-hover:underline">
-            Ver mi ficha completa <ArrowUpRight className="size-3" />
+            {t("viewFullCard")} <ArrowUpRight className="size-3" />
           </span>
         </div>
       </Link>

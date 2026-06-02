@@ -1,7 +1,8 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { Check, Copy, LogOut, Plus, Trophy } from "lucide-react";
 import { toast } from "sonner";
 import { leaveLeague, setActiveLeague } from "@/lib/league-actions";
@@ -33,6 +34,7 @@ export function MyLeaguesSection({
   /** Total de picks (suma de las 6 tablas pred_*) por liga del usuario. */
   pickCountByLeagueId: Record<number, number>;
 }) {
+  const t = useTranslations("profile");
   const [pending, start] = useTransition();
 
   const setActive = (id: number) => {
@@ -44,18 +46,13 @@ export function MyLeaguesSection({
   };
 
   const leave = (id: number, name: string) => {
-    if (
-      !window.confirm(
-        `Vas a abandonar "${name}". Perderás acceso a su ranking, chat y predicciones. ¿Continuar?`,
-      )
-    )
-      return;
+    if (!window.confirm(t("confirmLeave", { name }))) return;
     const fd = new FormData();
     fd.set("leagueId", String(id));
     start(async () => {
       const res = await leaveLeague(fd);
-      if (res.ok) toast.success(res.message ?? "Abandonada.");
-      else toast.error(res.error ?? "No se pudo abandonar.");
+      if (res.ok) toast.success(res.message ?? t("left"));
+      else toast.error(res.error ?? t("leaveError"));
     });
   };
 
@@ -67,7 +64,7 @@ export function MyLeaguesSection({
   ) => {
     if (
       !window.confirm(
-        `Copiar las predicciones de "${sourceName}" que falten en "${targetName}". No se sobrescribe ninguna que ya tengas en "${targetName}". ¿Continuar?`,
+        t("confirmCopy", { source: sourceName, target: targetName }),
       )
     )
       return;
@@ -76,8 +73,8 @@ export function MyLeaguesSection({
     fd.set("targetLeagueId", String(targetId));
     start(async () => {
       const res = await copyPredictionsBetweenLeaguesAction({ ok: false }, fd);
-      if (res.ok) toast.success(res.message ?? "Predicciones copiadas.");
-      else toast.error(res.error ?? "No se pudo copiar.");
+      if (res.ok) toast.success(res.message ?? t("copied"));
+      else toast.error(res.error ?? t("copyError"));
     });
   };
 
@@ -88,18 +85,20 @@ export function MyLeaguesSection({
           <div className="flex items-center gap-3">
             <span className="h-px w-8 bg-[var(--color-arena)]" />
             <p className="font-mono text-[0.65rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-              Mis quinielas
+              {t("myPools")}
             </p>
           </div>
           <h2 className="mt-2 font-display text-2xl tracking-tight">
-            En las que participas
+            {t("participating")}
           </h2>
         </div>
         <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
           <span className="font-display text-base text-[var(--color-arena)]">
             {privateCount}
           </span>
-          {privateLimit == null ? " privadas · sin límite" : `/${privateLimit} privadas`}
+          {privateLimit == null
+            ? ` ${t("privateUnlimited")}`
+            : t("privateLimited", { limit: privateLimit })}
         </p>
       </header>
 
@@ -153,7 +152,7 @@ export function MyLeaguesSection({
                   <div className="flex flex-wrap items-center gap-2 text-[0.65rem] text-[var(--color-muted-foreground)]">
                     {m.isPublic ? (
                       <Badge variant="success" className="text-[0.55rem]">
-                        Permanente
+                        {t("permanent")}
                       </Badge>
                     ) : (
                       <>
@@ -165,7 +164,7 @@ export function MyLeaguesSection({
                       </>
                     )}
                     <span className="font-mono uppercase tracking-[0.18em]">
-                      {thisCount} pick{thisCount === 1 ? "" : "s"}
+                      {t("picks", { count: thisCount })}
                     </span>
                   </div>
                 </div>
@@ -173,7 +172,7 @@ export function MyLeaguesSection({
               <div className="flex flex-wrap items-center gap-2">
                 {isActive ? (
                   <span className="inline-flex items-center gap-1 rounded-md border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_8%,transparent)] px-2.5 py-1 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-arena)]">
-                    <Check className="size-3" /> Activa
+                    <Check className="size-3" /> {t("active")}
                   </span>
                 ) : (
                   <Button
@@ -183,7 +182,7 @@ export function MyLeaguesSection({
                     disabled={pending}
                     onClick={() => setActive(m.id)}
                   >
-                    Hacer activa
+                    {t("makeActive")}
                   </Button>
                 )}
                 {eligibleSources.length > 0 ? (
@@ -196,12 +195,12 @@ export function MyLeaguesSection({
                         disabled={pending}
                       >
                         <Copy className="size-3.5" />
-                        Copiar predicciones
+                        {t("copyPredictions")}
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="min-w-[16rem]">
                       <p className="px-2 pb-1.5 pt-1 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-                        {`Copiar a "${m.name}" desde…`}
+                        {t("copyToFrom", { name: m.name })}
                       </p>
                       {eligibleSources.map((s) => {
                         const sourceCount = pickCountByLeagueId[s.id] ?? 0;
@@ -232,7 +231,7 @@ export function MyLeaguesSection({
                     className="text-[var(--color-danger)] hover:text-[var(--color-danger)]"
                   >
                     <LogOut className="size-3.5" />
-                    Abandonar
+                    {t("leave")}
                   </Button>
                 ) : null}
               </div>
@@ -243,12 +242,12 @@ export function MyLeaguesSection({
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-dashed border-[var(--color-border)] pt-4">
         <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
-          La pública es permanente. Las privadas, libres.
+          {t("publicPermanentNote")}
         </p>
         <Button asChild variant="outline" size="sm">
           <Link href="/onboarding?step=root">
             <Plus className="size-3.5" />
-            Unirse o crear
+            {t("joinOrCreate")}
           </Link>
         </Button>
       </div>
