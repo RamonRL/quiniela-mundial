@@ -433,5 +433,19 @@
     "ctaTitle": "Mets ta lecture de la Coupe du Monde à l'épreuve",
     "ctaText": "Le barème est le même pour tous. Celui qui lit le mieux le tournoi gagne le classement de sa grille.",
     "ctaButton": "Créer ma grille"
+  },
+  "leadForm": {
+    "thanks": "Merci !",
+    "thanksDefault": "Je te réponds en moins de 24 h avec un devis et la prochaine étape.",
+    "honeypot": "Ton site web ?",
+    "name": "Ton nom",
+    "company": "Entreprise / groupe",
+    "email": "E-mail de contact",
+    "members": "Membres prévus",
+    "messageLabel": "Message · facultatif",
+    "messagePlaceholder": "Dis-moi brièvement pour quoi vous la voulez, délais, questions…",
+    "replyNote": "Je réponds en moins de 24 h.",
+    "sending": "Envoi…",
+    "submit": "Envoyer la demande"
   }
 }

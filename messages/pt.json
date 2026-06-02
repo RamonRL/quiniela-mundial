@@ -433,5 +433,19 @@
     "ctaTitle": "Ponha sua leitura da Copa do Mundo à prova",
     "ctaText": "A regra é a mesma para todos. Quem ler melhor o torneio ganha a classificação do seu bolão.",
     "ctaButton": "Criar meu bolão"
+  },
+  "leadForm": {
+    "thanks": "Obrigado!",
+    "thanksDefault": "Respondo em menos de 24 h com orçamento e próximo passo.",
+    "honeypot": "Seu site?",
+    "name": "Seu nome",
+    "company": "Empresa / grupo",
+    "email": "E-mail de contato",
+    "members": "Membros previstos",
+    "messageLabel": "Mensagem · opcional",
+    "messagePlaceholder": "Conte brevemente para que vocês querem, prazos, dúvidas…",
+    "replyNote": "Respondo em menos de 24 h.",
+    "sending": "Enviando…",
+    "submit": "Enviar consulta"
   }
 }

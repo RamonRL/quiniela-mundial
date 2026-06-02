@@ -433,5 +433,19 @@
     "ctaTitle": "Pon a prueba tu lectura del Mundial",
     "ctaText": "La rúbrica es la misma para todos. Quien lea mejor el torneo, gana el ranking de su quiniela.",
     "ctaButton": "Crear mi quiniela"
+  },
+  "leadForm": {
+    "thanks": "¡Gracias!",
+    "thanksDefault": "Te respondo en menos de 24 h con presupuesto y siguiente paso.",
+    "honeypot": "¿Tu web?",
+    "name": "Tu nombre",
+    "company": "Empresa / grupo",
+    "email": "Email de contacto",
+    "members": "Miembros previstos",
+    "messageLabel": "Mensaje · opcional",
+    "messagePlaceholder": "Cuéntame brevemente para qué la queréis, plazos, dudas…",
+    "replyNote": "Te respondo en menos de 24 h.",
+    "sending": "Enviando…",
+    "submit": "Enviar consulta"
   }
 }

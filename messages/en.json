@@ -433,5 +433,19 @@
     "ctaTitle": "Put your read of the World Cup to the test",
     "ctaText": "The rubric is the same for everyone. Whoever reads the tournament best wins their pool's leaderboard.",
     "ctaButton": "Create my pool"
+  },
+  "leadForm": {
+    "thanks": "Thank you!",
+    "thanksDefault": "I'll get back to you within 24 h with a quote and next step.",
+    "honeypot": "Your website?",
+    "name": "Your name",
+    "company": "Company / group",
+    "email": "Contact email",
+    "members": "Expected members",
+    "messageLabel": "Message · optional",
+    "messagePlaceholder": "Tell me briefly what you need it for, timing, questions…",
+    "replyNote": "I'll reply within 24 h.",
+    "sending": "Sending…",
+    "submit": "Send enquiry"
   }
 }
