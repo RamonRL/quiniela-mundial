@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { BrandWordmark } from "@/components/brand/brand-wordmark";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { ChevronsLeft, ChevronsRight, Globe2, LogOut, Settings, UserCog } from "lucide-react";

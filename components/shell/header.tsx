@@ -1,8 +1,9 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { BrandWordmark } from "@/components/brand/brand-wordmark";
 import { UserMenu } from "./user-menu";
 import { LeagueSwitcher } from "./league-switcher";
+import { LanguageSwitcher } from "./language-switcher";
 import type { Membership } from "@/lib/leagues";
 
 type Props = {
@@ -52,6 +53,7 @@ export function AppHeader({
         ) : null}
       </div>
       <div className="flex items-center justify-end gap-3">
+        <LanguageSwitcher />
         {isAuthenticated && email ? (
           <UserMenu
             email={email}
