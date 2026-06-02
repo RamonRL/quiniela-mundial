@@ -447,5 +447,25 @@
     "replyNote": "Te respondo en menos de 24 h.",
     "sending": "Enviando…",
     "submit": "Enviar consulta"
+  },
+  "settings": {
+    "pageEyebrow": "Cuenta",
+    "pageTitle": "Ajustes",
+    "pageDesc": "Apariencia y zona horaria. Los cambios se aplican solo a esta cuenta.",
+    "tzEyebrow": "Zona horaria",
+    "tzTitle": "Hora local de partidos",
+    "tzDesc": "Los horarios de partidos en la app se mostrarán en esta zona. Si la dejas en automático, usamos la del navegador con fallback a Europe/Madrid.",
+    "tzLabel": "Zona horaria preferida",
+    "tzPlaceholder": "Selecciona una zona horaria",
+    "tzAuto": "Automática (detectar del navegador)",
+    "tzDetect": "Detectar mi zona automáticamente",
+    "tzSave": "Guardar zona horaria",
+    "themeEyebrow": "Apariencia",
+    "themeTitle": "Tema",
+    "themeDesc": "Por defecto oscuro. Se aplica al instante y se recuerda en este navegador.",
+    "themeDark": "Oscuro",
+    "themeDarkDesc": "Recomendado para uso prolongado y partidos de noche.",
+    "themeLight": "Claro",
+    "themeLightDesc": "Modo cremoso editorial, mejor en exteriores con sol."
   }
 }

@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { profiles } from "@/lib/db/schema";
+import { getTranslations } from "next-intl/server";
 import { PageHeader } from "@/components/shell/page-header";
 import { requireUser } from "@/lib/auth/guards";
 import { SettingsForm } from "./settings-form";
@@ -18,13 +19,14 @@ export default async function AjustesPage() {
     .where(eq(profiles.id, me.id))
     .limit(1);
   const currentTimezone = row?.timezone ?? null;
+  const t = await getTranslations("settings");
 
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Cuenta"
-        title="Ajustes"
-        description="Apariencia y zona horaria. Los cambios se aplican solo a esta cuenta."
+        eyebrow={t("pageEyebrow")}
+        title={t("pageTitle")}
+        description={t("pageDesc")}
       />
       <SettingsForm currentTimezone={currentTimezone} />
     </div>

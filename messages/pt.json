@@ -447,5 +447,25 @@
     "replyNote": "Respondo em menos de 24 h.",
     "sending": "Enviando…",
     "submit": "Enviar consulta"
+  },
+  "settings": {
+    "pageEyebrow": "Conta",
+    "pageTitle": "Configurações",
+    "pageDesc": "Aparência e fuso horário. As mudanças se aplicam só a esta conta.",
+    "tzEyebrow": "Fuso horário",
+    "tzTitle": "Horário local dos jogos",
+    "tzDesc": "Os horários dos jogos no app serão mostrados neste fuso. Se deixar no automático, usamos o do navegador, com fallback para Europe/Madrid.",
+    "tzLabel": "Fuso horário preferido",
+    "tzPlaceholder": "Selecione um fuso horário",
+    "tzAuto": "Automático (detectar do navegador)",
+    "tzDetect": "Detectar meu fuso automaticamente",
+    "tzSave": "Salvar fuso horário",
+    "themeEyebrow": "Aparência",
+    "themeTitle": "Tema",
+    "themeDesc": "Escuro por padrão. Aplica na hora e fica salvo neste navegador.",
+    "themeDark": "Escuro",
+    "themeDarkDesc": "Recomendado para uso prolongado e jogos à noite.",
+    "themeLight": "Claro",
+    "themeLightDesc": "Modo editorial cremoso, melhor ao ar livre no sol."
   }
 }

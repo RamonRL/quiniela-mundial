@@ -447,5 +447,25 @@
     "replyNote": "I'll reply within 24 h.",
     "sending": "Sending…",
     "submit": "Send enquiry"
+  },
+  "settings": {
+    "pageEyebrow": "Account",
+    "pageTitle": "Settings",
+    "pageDesc": "Appearance and time zone. Changes apply to this account only.",
+    "tzEyebrow": "Time zone",
+    "tzTitle": "Local match times",
+    "tzDesc": "Match times in the app will show in this zone. If you leave it on automatic, we use the browser's, falling back to Europe/Madrid.",
+    "tzLabel": "Preferred time zone",
+    "tzPlaceholder": "Select a time zone",
+    "tzAuto": "Automatic (detect from browser)",
+    "tzDetect": "Detect my zone automatically",
+    "tzSave": "Save time zone",
+    "themeEyebrow": "Appearance",
+    "themeTitle": "Theme",
+    "themeDesc": "Dark by default. Applies instantly and is remembered in this browser.",
+    "themeDark": "Dark",
+    "themeDarkDesc": "Recommended for long sessions and night matches.",
+    "themeLight": "Light",
+    "themeLightDesc": "Creamy editorial mode, better outdoors in sunlight."
   }
 }

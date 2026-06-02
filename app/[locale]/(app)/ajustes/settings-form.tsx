@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { useTheme } from "next-themes";
+import { useTranslations } from "next-intl";
 import { Check, Loader2, Moon, Sparkles, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -45,6 +46,7 @@ const TZ_OPTIONS: { value: string; label: string }[] = [
 const AUTO_VALUE = "auto";
 
 export function SettingsForm({ currentTimezone }: { currentTimezone: string | null }) {
+  const t = useTranslations("settings");
   const [state, action, pending] = useActionState(updateTimezone, INITIAL_STATE);
   const [tz, setTz] = useState<string>(currentTimezone ?? AUTO_VALUE);
 
@@ -72,29 +74,27 @@ export function SettingsForm({ currentTimezone }: { currentTimezone: string | nu
       <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 sm:p-6">
         <header className="space-y-1 pb-4">
           <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Zona horaria
+            {t("tzEyebrow")}
           </p>
-          <h2 className="font-display text-xl tracking-tight">Hora local de partidos</h2>
+          <h2 className="font-display text-xl tracking-tight">{t("tzTitle")}</h2>
           <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-            Los horarios de partidos en la app se mostrarán en esta zona. Si la
-            dejas en automático, usamos la del navegador con fallback a
-            Europe/Madrid.
+            {t("tzDesc")}
           </p>
         </header>
 
         <form action={action} className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="timezone-select" className="text-xs">
-              Zona horaria preferida
+              {t("tzLabel")}
             </Label>
             <input type="hidden" name="timezone" value={tz === AUTO_VALUE ? "" : tz} />
             <Select value={tz} onValueChange={setTz}>
               <SelectTrigger id="timezone-select" className="w-full">
-                <SelectValue placeholder="Selecciona una zona horaria" />
+                <SelectValue placeholder={t("tzPlaceholder")} />
               </SelectTrigger>
               <SelectContent className="max-h-72">
                 <SelectItem value={AUTO_VALUE}>
-                  Automática (detectar del navegador)
+                  {t("tzAuto")}
                 </SelectItem>
                 {allOptions.map((opt) => (
                   <SelectItem key={opt.value} value={opt.value}>
@@ -114,11 +114,11 @@ export function SettingsForm({ currentTimezone }: { currentTimezone: string | nu
               disabled={pending}
             >
               <Sparkles className="size-3.5" />
-              Detectar mi zona automáticamente
+              {t("tzDetect")}
             </Button>
             <Button type="submit" size="sm" disabled={pending}>
               {pending ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
-              Guardar zona horaria
+              {t("tzSave")}
             </Button>
           </div>
 
@@ -137,6 +137,7 @@ export function SettingsForm({ currentTimezone }: { currentTimezone: string | nu
 // ──────────────────────── Tema ────────────────────────
 
 function ThemeSection() {
+  const t = useTranslations("settings");
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   // next-themes solo conoce el tema activo después del mount (hydration).
@@ -149,11 +150,11 @@ function ThemeSection() {
     <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 sm:p-6">
       <header className="space-y-1 pb-4">
         <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-          Apariencia
+          {t("themeEyebrow")}
         </p>
-        <h2 className="font-display text-xl tracking-tight">Tema</h2>
+        <h2 className="font-display text-xl tracking-tight">{t("themeTitle")}</h2>
         <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-          Por defecto oscuro. Se aplica al instante y se recuerda en este navegador.
+          {t("themeDesc")}
         </p>
       </header>
 
@@ -162,15 +163,15 @@ function ThemeSection() {
           active={active === "dark"}
           onClick={() => setTheme("dark")}
           icon={<Moon className="size-4" />}
-          label="Oscuro"
-          description="Recomendado para uso prolongado y partidos de noche."
+          label={t("themeDark")}
+          description={t("themeDarkDesc")}
         />
         <ThemeButton
           active={active === "light"}
           onClick={() => setTheme("light")}
           icon={<Sun className="size-4" />}
-          label="Claro"
-          description="Modo cremoso editorial, mejor en exteriores con sol."
+          label={t("themeLight")}
+          description={t("themeLightDesc")}
         />
       </div>
     </section>

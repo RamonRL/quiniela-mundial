@@ -447,5 +447,25 @@
     "replyNote": "Je réponds en moins de 24 h.",
     "sending": "Envoi…",
     "submit": "Envoyer la demande"
+  },
+  "settings": {
+    "pageEyebrow": "Compte",
+    "pageTitle": "Réglages",
+    "pageDesc": "Apparence et fuseau horaire. Les changements ne s'appliquent qu'à ce compte.",
+    "tzEyebrow": "Fuseau horaire",
+    "tzTitle": "Heure locale des matchs",
+    "tzDesc": "Les horaires des matchs dans l'appli s'afficheront dans ce fuseau. Si tu le laisses en automatique, on utilise celui du navigateur, avec repli sur Europe/Madrid.",
+    "tzLabel": "Fuseau horaire préféré",
+    "tzPlaceholder": "Choisis un fuseau horaire",
+    "tzAuto": "Automatique (détecter depuis le navigateur)",
+    "tzDetect": "Détecter mon fuseau automatiquement",
+    "tzSave": "Enregistrer le fuseau",
+    "themeEyebrow": "Apparence",
+    "themeTitle": "Thème",
+    "themeDesc": "Sombre par défaut. S'applique aussitôt et est mémorisé dans ce navigateur.",
+    "themeDark": "Sombre",
+    "themeDarkDesc": "Recommandé pour les longues sessions et les matchs de nuit.",
+    "themeLight": "Clair",
+    "themeLightDesc": "Mode éditorial crème, meilleur en extérieur au soleil."
   }
 }
