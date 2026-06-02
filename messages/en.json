@@ -209,5 +209,77 @@
       "terminos": "Terms",
       "contacto": "Contact"
     }
+  },
+  "faqPage": {
+    "headerEyebrow": "Help",
+    "headerTitle": "Frequently asked questions",
+    "headerDesc": "What people ask us most about accounts, pools, predictions and the tournament. If you can't find your answer, write to us.",
+    "s1": {
+      "title": "How the pool works",
+      "q1": "Is a World Cup pool the same as a sweepstake, a bracket or an office pool?",
+      "a1": "Yes — they're different names for the same thing depending on the country (porra in Spain, prode in Argentina, pool in the US, sweepstake or bracket in English). It's what we offer here: a 2026 World Cup pool where you and your group predict the results (score, scorers, standings, bracket) and rack up points. Whatever your league calls it, the app works exactly the same.",
+      "q2": "How does Quiniela Mundial 2026 work?",
+      "a2": "You join a pool (the public one or a private one with a 4-digit code) and predict according to its game mode: Full (group standings, bracket, scorers, match-by-match scores and specials), Score (just the exact score of each match) or Winner Only (just who wins). You earn points as you get them right. There are overall and per-league leaderboards, live during the tournament.",
+      "q3": "Is it free to make a pool?",
+      "a3": "Yes, up to 20 members per private pool. You can create up to 5 private pools for free with your friends and always take part in the Public Pool. For companies or larger groups (50, 100 or 250 members), we have 2026 World Cup Passes from €19 — see /precios.",
+      "q4": "Do you have plans for companies or large groups?",
+      "a4": "Yes. The Standard version supports up to 20 members per pool, for free. For companies, communities or events with more people there are three 2026 World Cup Passes (€19 up to 50 members · €49 up to 100 · €99 up to 250) that include a custom corporate logo, a pinned organizer announcement, CSV export of the leaderboard and priority support. One payment per tournament. More at /precios.",
+      "q5": "Is there an app for iPhone and Android?",
+      "a5": "It works as a Progressive Web App: from Safari (iPhone/iPad) or Chrome (Android) you can 'Add to Home Screen' and it behaves like a native app, full screen and with its own icon.",
+      "q6": "Who runs the tournament?",
+      "a6": "The 2026 World Cup is organized by FIFA. This site is not affiliated with FIFA — it's just a predictions tool. All schedule, group and venue information reflects the official programming published by FIFA."
+    },
+    "s2": {
+      "title": "Accounts and privacy",
+      "q1": "How do I sign up?",
+      "a1": "With Google only. You click 'Create pool' or 'Log in', authorize with your Google account and you're straight in. No email form or password to remember.",
+      "q2": "What data do you store?",
+      "a2": "Your email, name, avatar (the ones Google returns), your predictions, your chat messages and the points you earn. Nothing else.",
+      "q3": "Can I delete my account?",
+      "a3": "Yes. From My Profile you can request deletion or, if you prefer, write to admin@quinielamundial.es and we process it manually."
+    },
+    "s3": {
+      "title": "Private pools",
+      "q1": "How do I create my private pool?",
+      "a1": "After logging in we take you to onboarding. You choose 'Create pool', name it (max 25 characters), pick the prediction mode (Full, Score or Winner Only) and the plan, and the app generates a 4-digit code and an invite link, both fixed forever.",
+      "q2": "How do I join my friends' pool?",
+      "a2": "Ask the creator for the 4-digit code or the invite link. Enter it on the join screen and you're in instantly.",
+      "q3": "How many private pools can I have?",
+      "a3": "Up to 5 private pools per user, plus the Public Pool (always active). You can be the creator of some and a participant in others; each with its own leaderboard.",
+      "q4": "How many members fit in my private pool?",
+      "a4": "Up to 20 members on the Free plan. If your group grows (company, community, event), you can expand it to 50, 100 or 250 members with a 2026 World Cup Pass — you don't migrate data, the limit just goes up in the same league. Details and prices at /precios.",
+      "q5": "Can I remove someone from my pool?",
+      "a5": "Yes, if you're the creator. From 'My pool' you have a button to remove members and another to delete the whole pool (everyone moves to the public one).",
+      "q6": "Can I leave a pool I'm in?",
+      "a6": "Yes, from 'My pool'. The public one is the only exception — it's permanent. After leaving a private pool, the public one becomes active again."
+    },
+    "s4": {
+      "title": "Predictions and points",
+      "q1": "Which prediction modes can I choose?",
+      "a1": "Three, which you choose when you create your pool (each mode also has its own public pool and its own leaderboard). Full: the entire experience — group standings, FIFA bracket, Golden Boot, special predictions and score + scorer of each match. Score: just the exact score of each match, simple and direct. Winner Only: just who wins each match (or a draw), the fastest to fill in — ideal for large groups or people with little time. In Score and Winner Only there are no groups, bracket, Golden Boot or specials.",
+      "q2": "What are the categories in Full mode?",
+      "a2": "In Full mode there are six: group standings, full FIFA bracket, tournament top scorer (Golden Boot), match-by-match scores, scorer per match and special predictions (questions like 'will there be penalties in the quarters?'). The Score and Winner Only modes use only the prediction of each match.",
+      "q3": "Until when can I change my prediction?",
+      "a3": "Each category has its deadline. Group standings and the Golden Boot close at the tournament kickoff. Each match closes at the start of that match. The bracket closes at the first round-of-32 match. Specials have their own date (always before the moment being predicted).",
+      "q4": "How are points calculated?",
+      "a4": "Each category has its own rubric. For example: in scores you earn more points for an exact score than for just the winner; in scorer per match you score if your player scores; in groups you score for each correct position. You have the full breakdown and the exact points at /puntuacion, and you'll also see them on each prediction screen.",
+      "q5": "Can I see other people's predictions?",
+      "a5": "Yes, but they only become public once they can no longer be changed. Once a match starts (or the stage closes), the whole league's predictions become visible to everyone. Before that they're locked.",
+      "q6": "What happens if I don't predict a match?",
+      "a6": "You're left with zero points for that match. The app warns you with a banner when a matchday is about to close and you still have matches left to predict."
+    },
+    "s5": {
+      "title": "About the 2026 World Cup",
+      "q1": "When and where is it played?",
+      "a1": "From June 11 to July 19, 2026 in the United States, Canada and Mexico. It's the first edition with 48 teams, 12 groups, 104 matches and 16 venues across the three host countries.",
+      "q2": "What's the format this time?",
+      "a2": "It changes from previous editions: 12 groups of 4 teams, the top 2 + the 8 best third-placed sides advance to a new round of 32. Then round of 16, quarters, semis and the final on July 19 in New York-NJ.",
+      "q3": "Where is the final played?",
+      "a3": "MetLife Stadium, New York-NJ. The opening match is on June 11 at the Estadio Azteca in Mexico City."
+    },
+    "ctaTitle": "Can't find what you're looking for?",
+    "ctaText": "Write to me and I'll reply as soon as I can.",
+    "ctaButton": "Go to contact",
+    "ctaOr": "or directly to"
   }
 }

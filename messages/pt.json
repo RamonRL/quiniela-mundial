@@ -209,5 +209,77 @@
       "terminos": "Termos",
       "contacto": "Contato"
     }
+  },
+  "faqPage": {
+    "headerEyebrow": "Ajuda",
+    "headerTitle": "Perguntas frequentes",
+    "headerDesc": "O que mais nos perguntam sobre contas, bolões, palpites e o torneio. Se não achar sua resposta, escreva para nós.",
+    "s1": {
+      "title": "Como funciona o bolão",
+      "q1": "Um bolão da Copa é a mesma coisa que uma porra, um prode ou um pool?",
+      "a1": "Sim — são nomes diferentes para a mesma coisa conforme o país (porra na Espanha, prode na Argentina, pool nos EUA, bolão no Brasil). É o que oferecemos aqui: um bolão da Copa do Mundo 2026 onde você e seu grupo dão palpites nos resultados (placar, artilheiros, classificações, chave) e somam pontos. Seja qual for o nome que sua liga usar, o app funciona exatamente igual.",
+      "q2": "Como funciona o Quiniela Mundial 2026?",
+      "a2": "Você entra em um bolão (o público ou um privado com código de 4 dígitos) e dá palpites conforme o modo de jogo: Completo (classificações de grupo, chave, artilheiros, placares jogo a jogo e especiais), Placar (só o placar exato de cada jogo) ou Só Vencedor (só quem vence). Você soma pontos conforme acerta. Há classificações geral e por liga, ao vivo durante o torneio.",
+      "q3": "É grátis criar um bolão?",
+      "a3": "Sim, até 20 membros por bolão privado. Você pode criar até 5 bolões privados grátis com seus amigos e sempre participar do Bolão Público. Para empresas ou grupos maiores (50, 100 ou 250 membros), temos Passes Copa do Mundo 2026 a partir de € 19 — veja /precios.",
+      "q4": "Vocês têm planos para empresas ou grupos grandes?",
+      "a4": "Sim. A versão Padrão aguenta até 20 membros por bolão, grátis. Para empresas, comunidades ou eventos com mais gente há três Passes Copa do Mundo 2026 (€ 19 até 50 membros · € 49 até 100 · € 99 até 250) que incluem logo da empresa personalizado, anúncio fixado do organizador, exportação CSV da classificação e suporte prioritário. Pagamento único por torneio. Mais em /precios.",
+      "q5": "Tem app para iPhone e Android?",
+      "a5": "Funciona como Progressive Web App: pelo Safari (iPhone/iPad) ou Chrome (Android) você pode 'Adicionar à Tela de Início' e ele se comporta como um app nativo, em tela cheia e com seu próprio ícone.",
+      "q6": "Quem organiza o torneio?",
+      "a6": "A Copa do Mundo 2026 é organizada pela FIFA. Este site não é afiliado à FIFA — é só uma ferramenta de palpites. Todas as informações de calendário, grupos e sedes refletem a programação oficial publicada pela FIFA."
+    },
+    "s2": {
+      "title": "Contas e privacidade",
+      "q1": "Como faço meu cadastro?",
+      "a1": "Só com Google. Você clica em 'Criar bolão' ou 'Entrar', autoriza com sua conta Google e entra direto. Sem formulário de e-mail nem senha para lembrar.",
+      "q2": "Quais dados vocês guardam?",
+      "a2": "Seu e-mail, nome, avatar (os que o Google retorna), seus palpites, suas mensagens no chat e os pontos que você soma. Nada mais.",
+      "q3": "Posso apagar minha conta?",
+      "a3": "Sim. Em Meu Perfil você pode solicitar a exclusão ou, se preferir, escreva para admin@quinielamundial.es e processamos manualmente."
+    },
+    "s3": {
+      "title": "Bolões privados",
+      "q1": "Como crio meu bolão privado?",
+      "a1": "Após o login levamos você ao onboarding. Você escolhe 'Criar bolão', dá um nome (máx 25 caracteres), escolhe o modo de palpite (Completo, Placar ou Só Vencedor) e o plano, e o app gera um código de 4 dígitos e um link de convite, ambos fixos para sempre.",
+      "q2": "Como entro no bolão dos meus amigos?",
+      "a2": "Peça ao criador o código de 4 dígitos ou o link de convite. Você o insere na tela de entrar e já está dentro.",
+      "q3": "Quantos bolões privados posso ter?",
+      "a3": "Até 5 bolões privados por usuário, além do Bolão Público (sempre ativo). Você pode ser o criador de uns e participante de outros; cada um com sua própria classificação.",
+      "q4": "Quantos membros cabem no meu bolão privado?",
+      "a4": "Até 20 membros no plano grátis. Se seu grupo crescer (empresa, comunidade, evento), você pode ampliá-lo para 50, 100 ou 250 membros com um Passe Copa do Mundo 2026 — você não migra dados, o limite sobe na mesma liga. Detalhes e preços em /precios.",
+      "q5": "Posso remover alguém do meu bolão?",
+      "a5": "Sim, se você for o criador. Em 'Meu bolão' há um botão para remover membros e outro para excluir o bolão inteiro (todos passam para o público).",
+      "q6": "Posso sair de um bolão em que estou?",
+      "a6": "Sim, em 'Meu bolão'. O público é a única exceção — é permanente. Depois de sair de um privado, o público volta a ficar ativo."
+    },
+    "s4": {
+      "title": "Palpites e pontos",
+      "q1": "Quais modos de palpite posso escolher?",
+      "a1": "Três, que você escolhe ao criar seu bolão (cada modo tem também seu próprio bolão público e sua própria classificação). Completo: a experiência inteira — classificações de grupo, chave da FIFA, Chuteira de Ouro, palpites especiais e placar + artilheiro de cada jogo. Placar: só o placar exato de cada jogo, simples e direto. Só Vencedor: só quem vence cada jogo (ou empate), o mais rápido de preencher — ideal para grupos grandes ou quem tem pouco tempo. No Placar e no Só Vencedor não há grupos, chave, Chuteira de Ouro nem especiais.",
+      "q2": "Quais são as categorias do modo Completo?",
+      "a2": "No modo Completo são seis: classificações de grupo, chave completa da FIFA, artilheiro do torneio (Chuteira de Ouro), placares jogo a jogo, artilheiro por jogo e palpites especiais (perguntas do tipo 'vai ter pênaltis nas quartas?'). Os modos Placar e Só Vencedor usam só o palpite de cada jogo.",
+      "q3": "Até quando posso mudar meu palpite?",
+      "a3": "Cada categoria tem seu prazo. As classificações de grupo e a Chuteira de Ouro fecham no pontapé inicial do torneio. Cada jogo fecha no início do próprio jogo. A chave fecha no primeiro jogo da fase de 32. Os especiais têm sua própria data (sempre antes do momento previsto).",
+      "q4": "Como os pontos são calculados?",
+      "a4": "Cada categoria tem sua própria regra. Por exemplo: nos placares você ganha mais pontos pelo placar exato do que só pelo vencedor; no artilheiro por jogo você pontua se seu jogador marca; nos grupos você pontua por cada posição correta. Você tem o detalhamento completo e os pontos exatos em /puntuacion, e também os verá em cada tela de palpite.",
+      "q5": "Posso ver os palpites dos outros?",
+      "a5": "Sim, mas só ficam públicos quando não podem mais ser alterados. Quando um jogo começa (ou a fase fecha), os palpites de toda a liga ficam visíveis para todos. Antes ficam bloqueados.",
+      "q6": "O que acontece se eu não palpitar um jogo?",
+      "a6": "Você fica com zero ponto nesse jogo. O app avisa com um banner quando uma rodada está prestes a fechar e você ainda tem jogos sem palpite."
+    },
+    "s5": {
+      "title": "Sobre a Copa do Mundo 2026",
+      "q1": "Quando e onde é disputada?",
+      "a1": "De 11 de junho a 19 de julho de 2026 nos Estados Unidos, Canadá e México. É a primeira edição com 48 seleções, 12 grupos, 104 jogos e 16 sedes entre os três países-sede.",
+      "q2": "Como é o formato desta vez?",
+      "a2": "Muda em relação às edições anteriores: 12 grupos de 4 times, os 2 primeiros + os 8 melhores terceiros avançam para uma nova fase de 32. Depois oitavas, quartas, semis e a final em 19 de julho em Nova York-NJ.",
+      "q3": "Onde é disputada a final?",
+      "a3": "MetLife Stadium, Nova York-NJ. A abertura é em 11 de junho no Estádio Azteca, na Cidade do México."
+    },
+    "ctaTitle": "Não encontra o que procura?",
+    "ctaText": "Escreva para mim e respondo assim que puder.",
+    "ctaButton": "Ir para contato",
+    "ctaOr": "ou direto para"
   }
 }

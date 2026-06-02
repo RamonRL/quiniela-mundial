@@ -209,5 +209,77 @@
       "terminos": "Conditions",
       "contacto": "Contact"
     }
+  },
+  "faqPage": {
+    "headerEyebrow": "Aide",
+    "headerTitle": "Questions fréquentes",
+    "headerDesc": "Ce qu'on nous demande le plus sur les comptes, les grilles, les pronostics et le tournoi. Si tu ne trouves pas ta réponse, écris-nous.",
+    "s1": {
+      "title": "Comment marche la grille",
+      "q1": "Une grille de la Coupe du Monde, c'est la même chose qu'un loto sportif ou un pool de bureau ?",
+      "a1": "Oui — ce sont des noms différents pour la même chose selon le pays (porra en Espagne, prode en Argentine, pool aux États-Unis, grille ou loto sportif en français). C'est ce qu'on propose ici : une grille de la Coupe du Monde 2026 où toi et ton groupe pronostiquez les résultats (score, buteurs, classements, tableau) et cumulez des points. Quel que soit le nom que ta ligue lui donne, l'appli fonctionne exactement pareil.",
+      "q2": "Comment fonctionne Quiniela Mundial 2026 ?",
+      "a2": "Tu rejoins une grille (la publique ou une privée avec un code à 4 chiffres) et tu pronostiques selon son mode de jeu : Complet (classements de groupe, tableau, buteurs, scores match par match et spéciaux), Score (juste le score exact de chaque match) ou Vainqueur (juste qui gagne). Tu cumules des points selon tes bons pronostics. Il y a des classements général et par ligue, en direct pendant le tournoi.",
+      "q3": "Est-ce gratuit de créer une grille ?",
+      "a3": "Oui, jusqu'à 20 membres par grille privée. Tu peux créer jusqu'à 5 grilles privées gratuites avec tes amis et toujours participer à la Grille Publique. Pour les entreprises ou grands groupes (50, 100 ou 250 membres), il y a des Pass Coupe du Monde 2026 à partir de 19 € — voir /precios.",
+      "q4": "Avez-vous des offres pour les entreprises ou grands groupes ?",
+      "a4": "Oui. La version Standard accepte jusqu'à 20 membres par grille, gratuitement. Pour les entreprises, communautés ou événements avec plus de monde, il y a trois Pass Coupe du Monde 2026 (19 € jusqu'à 50 membres · 49 € jusqu'à 100 · 99 € jusqu'à 250) qui incluent un logo d'entreprise personnalisé, une annonce épinglée de l'organisateur, l'export CSV du classement et un support prioritaire. Paiement unique par tournoi. Plus sur /precios.",
+      "q5": "Y a-t-il une appli pour iPhone et Android ?",
+      "a5": "Elle fonctionne comme une Progressive Web App : depuis Safari (iPhone/iPad) ou Chrome (Android) tu peux « Ajouter à l'écran d'accueil » et elle se comporte comme une appli native, en plein écran et avec sa propre icône.",
+      "q6": "Qui organise le tournoi ?",
+      "a6": "La Coupe du Monde 2026 est organisée par la FIFA. Ce site n'est pas affilié à la FIFA — c'est juste un outil de pronostics. Toutes les infos de calendrier, groupes et stades reflètent la programmation officielle publiée par la FIFA."
+    },
+    "s2": {
+      "title": "Comptes et confidentialité",
+      "q1": "Comment je m'inscris ?",
+      "a1": "Uniquement avec Google. Tu cliques sur « Créer une grille » ou « Se connecter », tu autorises avec ton compte Google et tu entres directement. Pas de formulaire d'e-mail ni de mot de passe à retenir.",
+      "q2": "Quelles données conservez-vous ?",
+      "a2": "Ton e-mail, ton nom, ton avatar (ceux que renvoie Google), tes pronostics, tes messages dans le chat et les points que tu cumules. Rien d'autre.",
+      "q3": "Puis-je supprimer mon compte ?",
+      "a3": "Oui. Depuis Mon Profil tu peux demander la suppression ou, si tu préfères, écrire à admin@quinielamundial.es et nous la traitons manuellement."
+    },
+    "s3": {
+      "title": "Grilles privées",
+      "q1": "Comment je crée ma grille privée ?",
+      "a1": "Après la connexion, on t'emmène à l'onboarding. Tu choisis « Créer une grille », tu la nommes (max 25 caractères), tu choisis le mode de pronostic (Complet, Score ou Vainqueur) et l'offre, et l'appli génère un code à 4 chiffres et un lien d'invitation, tous deux fixes pour toujours.",
+      "q2": "Comment je rejoins la grille de mes amis ?",
+      "a2": "Demande au créateur le code à 4 chiffres ou le lien d'invitation. Tu le saisis sur l'écran pour rejoindre et tu entres aussitôt.",
+      "q3": "Combien de grilles privées puis-je avoir ?",
+      "a3": "Jusqu'à 5 grilles privées par utilisateur, en plus de la Grille Publique (toujours active). Tu peux être le créateur de certaines et participant à d'autres ; chacune avec son propre classement.",
+      "q4": "Combien de membres tiennent dans ma grille privée ?",
+      "a4": "Jusqu'à 20 membres en offre gratuite. Si ton groupe grandit (entreprise, communauté, événement), tu peux l'étendre à 50, 100 ou 250 membres avec un Pass Coupe du Monde 2026 — tu ne migres pas de données, la limite monte dans la même ligue. Détails et tarifs sur /precios.",
+      "q5": "Puis-je exclure quelqu'un de ma grille ?",
+      "a5": "Oui, si tu es le créateur. Depuis « Ma grille » tu as un bouton pour retirer des membres et un autre pour supprimer toute la grille (tout le monde passe à la publique).",
+      "q6": "Puis-je quitter une grille où je suis ?",
+      "a6": "Oui, depuis « Ma grille ». La publique est la seule exception — elle est permanente. Après avoir quitté une privée, la publique redevient active."
+    },
+    "s4": {
+      "title": "Pronostics et points",
+      "q1": "Quels modes de pronostic puis-je choisir ?",
+      "a1": "Trois, que tu choisis en créant ta grille (chaque mode a aussi sa propre grille publique et son propre classement). Complet : l'expérience entière — classements de groupe, tableau FIFA, Soulier d'Or, pronostics spéciaux et score + buteur de chaque match. Score : juste le score exact de chaque match, simple et direct. Vainqueur : juste qui gagne chaque match (ou le nul), le plus rapide à remplir — idéal pour les grands groupes ou ceux qui ont peu de temps. En Score et Vainqueur, il n'y a ni groupes, ni tableau, ni Soulier d'Or, ni spéciaux.",
+      "q2": "Quelles sont les catégories du mode Complet ?",
+      "a2": "En mode Complet il y en a six : classements de groupe, tableau FIFA complet, meilleur buteur du tournoi (Soulier d'Or), scores match par match, buteur par match et pronostics spéciaux (questions du type « y aura-t-il des tirs au but en quarts ? »). Les modes Score et Vainqueur n'utilisent que le pronostic de chaque match.",
+      "q3": "Jusqu'à quand puis-je changer mon pronostic ?",
+      "a3": "Chaque catégorie a sa date limite. Les classements de groupe et le Soulier d'Or se ferment au coup d'envoi du tournoi. Chaque match se ferme au début du match. Le tableau se ferme au premier match du tour à 32. Les spéciaux ont leur propre date (toujours avant le moment pronostiqué).",
+      "q4": "Comment sont calculés les points ?",
+      "a4": "Chaque catégorie a son propre barème. Par exemple : pour les scores tu gagnes plus de points pour un score exact que pour le seul vainqueur ; pour le buteur par match tu marques si ton joueur marque ; pour les groupes tu marques pour chaque position correcte. Tu as le détail complet et les points exacts sur /puntuacion, et tu les verras aussi sur chaque écran de pronostic.",
+      "q5": "Puis-je voir les pronostics des autres ?",
+      "a5": "Oui, mais ils ne deviennent publics que lorsqu'ils ne peuvent plus être changés. Une fois qu'un match commence (ou que la phase se ferme), les pronostics de toute la ligue deviennent visibles par tous. Avant, ils sont verrouillés.",
+      "q6": "Que se passe-t-il si je ne pronostique pas un match ?",
+      "a6": "Tu restes à zéro point sur ce match. L'appli te prévient avec une bannière quand une journée est sur le point de se fermer et qu'il te reste des matchs à pronostiquer."
+    },
+    "s5": {
+      "title": "À propos de la Coupe du Monde 2026",
+      "q1": "Quand et où se joue-t-elle ?",
+      "a1": "Du 11 juin au 19 juillet 2026 aux États-Unis, au Canada et au Mexique. C'est la première édition à 48 équipes, 12 groupes, 104 matchs et 16 stades répartis entre les trois pays hôtes.",
+      "q2": "Quel est le format cette fois ?",
+      "a2": "Il change par rapport aux éditions précédentes : 12 groupes de 4 équipes, les 2 premiers + les 8 meilleurs troisièmes passent à un nouveau tour à 32. Ensuite huitièmes, quarts, demies et finale le 19 juillet à New York-NJ.",
+      "q3": "Où se joue la finale ?",
+      "a3": "MetLife Stadium, New York-NJ. Le match d'ouverture a lieu le 11 juin à l'Estadio Azteca de Mexico."
+    },
+    "ctaTitle": "Tu ne trouves pas ce que tu cherches ?",
+    "ctaText": "Écris-moi et je réponds dès que possible.",
+    "ctaButton": "Aller au contact",
+    "ctaOr": "ou directement à"
   }
 }
