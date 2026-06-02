@@ -1,12 +1,14 @@
 "use client";
 
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 
 import { Reveal } from "@/components/animation/reveal";
 import { useParallax } from "@/components/animation/use-parallax";
 
 /** Bloque "Así se ve la app": 3 móviles con entrada en scale + parallax sutil. */
 export function HeroPhones() {
+  const t = useTranslations("home");
   const parallax = useParallax<HTMLDivElement>(20);
 
   return (
@@ -15,7 +17,7 @@ export function HeroPhones() {
         <div className="flex items-center justify-center gap-3 pb-5">
           <span className="h-px w-6 bg-[var(--color-arena)]" />
           <p className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Así se ve la app
+            {t("hero.phones")}
           </p>
           <span className="h-px w-6 bg-[var(--color-arena)]" />
         </div>

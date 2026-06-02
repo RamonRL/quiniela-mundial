@@ -18,6 +18,8 @@ import {
   Trophy,
   Users,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { db } from "@/lib/db";
 import { matches, teams } from "@/lib/db/schema";
 import { Reveal } from "@/components/animation/reveal";
@@ -50,53 +52,24 @@ const KICKOFF = new Date(
   process.env.NEXT_PUBLIC_TOURNAMENT_KICKOFF_AT ?? "2026-06-11T19:00:00Z",
 );
 
-// FAQ usadas también para JSON-LD FAQPage. Cada pregunta apunta a una
-// keyword objetivo en español ("quiniela mundial gratis", "código de
-// invitación", "android iOS", "máximo participantes").
-const FAQS: { q: string; a: string }[] = [
-  {
-    q: "¿Cómo funciona Quiniela Mundial 2026?",
-    a: "Te unes a una quiniela (la pública o una privada con código de 4 dígitos) y predices según su modo de juego. En el modo Completo: las posiciones de los 12 grupos, el bracket completo, los goleadores, los marcadores partido a partido y predicciones especiales. En Marcador: solo el marcador exacto de cada partido. En Solo Ganador: solo quién gana cada partido. Vas sumando puntos según aciertes, con ranking general y por liga.",
-  },
-  {
-    q: "¿Qué modos de predicción hay?",
-    a: "Tres, y eliges el que quieras al crear tu quiniela (cada modo tiene además su propia quiniela pública). Completo: la experiencia entera — posiciones de grupo, bracket FIFA, Bota de Oro, especiales y marcador + goleador de cada partido. Marcador: solo el marcador exacto de cada partido, sencillo y directo. Solo Ganador: solo quién gana cada partido (o empate), la más rápida de rellenar, ideal para grupos grandes o gente con poco tiempo.",
-  },
-  {
-    q: "¿Es gratis hacer una quiniela?",
-    a: "Sí, hasta 20 miembros por quiniela privada. Puedes crear hasta 5 privadas gratis con tus amigos y participar siempre en la Quiniela Pública. Para empresas o grupos más grandes (50, 100 o 250 miembros), tenemos Pases Mundial 2026 desde 19 € — mira /precios.",
-  },
-  {
-    q: "¿Hay planes para empresas y grupos grandes?",
-    a: "Sí. La versión Estándar aguanta hasta 20 miembros por quiniela, gratis. Para empresas, comunidades o eventos con más gente hay Pases Mundial 2026 que escalan la liga a 50, 100 o 250 miembros. Pago único por torneo. Detalles en /precios.",
-  },
-  {
-    q: "¿Hay app para iPhone y Android?",
-    a: "Funciona como Progressive Web App: desde Safari (iPhone/iPad) o Chrome (Android) puedes 'Añadir a pantalla de inicio' y se comporta como una app nativa, en pantalla completa y con su icono propio.",
-  },
-  {
-    q: "¿Cuándo y dónde se juega el Mundial 2026?",
-    a: "Del 11 de junio al 19 de julio de 2026 en Estados Unidos, Canadá y México. Es la primera edición con 48 selecciones, 12 grupos, 104 partidos y 16 sedes repartidas entre los tres países anfitriones.",
-  },
-  {
-    q: "¿Cómo me uno a la quiniela de mis amigos?",
-    a: "Pídele al creador el código de 4 dígitos o el enlace de invitación. Lo introduces en la pantalla de unirme y entras al instante. Cada usuario puede pertenecer a la pública más 5 quinielas privadas.",
-  },
-  {
-    q: "¿Puedo cambiar mi predicción después?",
-    a: "Sí, mientras no se haya cerrado la jornada o la fase. Cada categoría tiene su deadline (la fase de grupos cierra en el kickoff del primer partido de la jornada; los marcadores cierran al inicio de cada partido).",
-  },
-  {
-    q: "¿Quién organiza el torneo y publica los partidos?",
-    a: "El Mundial 2026 lo organiza la FIFA. Esta web no está afiliada — es solo una herramienta de predicciones. Toda la información de calendario, grupos y sedes refleja la programación oficial publicada por FIFA.",
-  },
-  {
-    q: "¿Cuántas quinielas privadas puedo crear o unirme?",
-    a: "Hasta 5 privadas por usuario, además de la Quiniela Pública (siempre activa). Puedes ser creador de unas y simple participante en otras; cada una con su propio ranking.",
-  },
-];
+// Las FAQ (también usadas para el JSON-LD FAQPage) se construyen dentro de
+// HomePage desde el catálogo i18n (home.faqs.q1..q10 / a1..a10).
+const FAQ_COUNT = 10;
 
-export default async function HomePage() {
+export default async function HomePage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations("home");
+  const tNav = await getTranslations("nav");
+  const tShell = await getTranslations("shell");
+  const faqs = Array.from({ length: FAQ_COUNT }, (_, i) => ({
+    q: t(`faqs.q${i + 1}`),
+    a: t(`faqs.a${i + 1}`),
+  }));
   // Próximos 6 partidos para el destacado del calendario. Si la base
   // está vacía (entorno fresco), simplemente no se renderiza la sección.
   const now = new Date();
@@ -140,7 +113,7 @@ export default async function HomePage() {
     <div className="space-y-20">
       <WebSiteLD />
       <SportsEventLD />
-      <FAQPageLD faqs={FAQS} />
+      <FAQPageLD faqs={faqs} />
 
       {/* ───────── HERO ─────────
           Minimalista, mismo lenguaje que /login: centrado, eyebrow con
@@ -174,14 +147,14 @@ export default async function HomePage() {
               className="h-20 w-auto sm:h-24"
             />
             <p className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-              Copa Mundial de la FIFA 2026
+              {t("hero.eyebrowFifa")}
             </p>
           </Reveal>
 
           <Reveal variant="up" delay={80} className="flex items-center gap-3">
             <span className="h-px w-10 bg-[var(--color-arena)]" />
             <p className="font-mono text-[0.65rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-arena)]">
-              11 jun – 19 jul · USA · México · Canadá
+              {t("hero.dateRange")}
             </p>
             <span className="h-px w-10 bg-[var(--color-arena)]" />
           </Reveal>
@@ -191,8 +164,7 @@ export default async function HomePage() {
           </Reveal>
 
           <Reveal as="p" variant="up" delay={200} className="max-w-xl font-editorial text-base italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-lg">
-            Predice los 104 partidos del Mundial 2026 con tu grupo de amigos, tu equipo o
-            toda tu empresa.
+            {t("hero.subtitle")}
           </Reveal>
 
           <Reveal variant="up" delay={320} className="flex flex-wrap items-center justify-center gap-3 pt-1">
@@ -200,14 +172,14 @@ export default async function HomePage() {
               href="/login?next=%2Fonboarding"
               className="inline-flex items-center gap-2 rounded-md border border-[var(--color-arena)] bg-[var(--color-arena)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white shadow-[var(--shadow-arena)] transition hover:opacity-90 hover:-translate-y-0.5"
             >
-              Crear quiniela
+              {t("hero.ctaCreate")}
               <ArrowRight className="size-4" />
             </Link>
             <Link
               href="/login"
               className="inline-flex items-center gap-2 rounded-md border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] transition hover:border-[var(--color-arena)]/40 hover:-translate-y-0.5"
             >
-              Unirme con código
+              {t("hero.ctaJoin")}
             </Link>
           </Reveal>
 
@@ -220,7 +192,7 @@ export default async function HomePage() {
               <span className="relative inline-flex size-2 rounded-full bg-[var(--color-arena)]" />
             </span>
             <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-              T-{daysToKickoff.toString().padStart(2, "0")} días al kickoff
+              {t("hero.kickoff", { days: daysToKickoff.toString().padStart(2, "0") })}
             </p>
           </Reveal>
         </div>
@@ -235,7 +207,7 @@ export default async function HomePage() {
             <Reveal variant="fade" className="flex items-center justify-center gap-3 pb-4">
               <span className="h-px w-6 bg-[var(--color-arena)]" />
               <p className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                Las {allTeams.length} selecciones clasificadas
+                {t("hero.teamsQualified", { count: allTeams.length })}
               </p>
               <span className="h-px w-6 bg-[var(--color-arena)]" />
             </Reveal>
@@ -267,15 +239,13 @@ export default async function HomePage() {
       <section className="space-y-6">
         <Reveal as="header" variant="up" className="space-y-2">
           <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Cómo funciona
+            {t("how.eyebrow")}
           </p>
           <h2 className="font-display text-4xl tracking-tight sm:text-5xl">
-            Te unes, predices, comparas, ganas
+            {t("how.title")}
           </h2>
           <p className="max-w-3xl font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base">
-            Una quiniela del Mundial entre amigos sin Excel ni grupos de WhatsApp
-            con capturas: la app guarda las predicciones, calcula los puntos en
-            tiempo real y muestra el ranking en cada momento del torneo.
+            {t("how.intro")}
           </p>
         </Reveal>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -283,29 +253,29 @@ export default async function HomePage() {
             n={1}
             delay={0}
             icon={<Users className="size-5" />}
-            title="Crea o únete"
-            text="Crea tu quiniela privada y reparte el código de 4 dígitos, o únete con el de tus amigos."
+            title={t("how.step1Title")}
+            text={t("how.step1Text")}
           />
           <StepCard
             n={2}
             delay={90}
             icon={<ListChecks className="size-5" />}
-            title="Predice"
-            text="Según el modo de tu quiniela: en Completo, grupos, bracket FIFA, Bota de Oro y marcador + goleador de cada partido; en Marcador solo el marcador; en Solo Ganador solo el ganador."
+            title={t("how.step2Title")}
+            text={t("how.step2Text")}
           />
           <StepCard
             n={3}
             delay={180}
             icon={<Trophy className="size-5" />}
-            title="Compite"
-            text="Conforme se juegan los partidos, los puntos se suman al instante. El ranking se actualiza en vivo."
+            title={t("how.step3Title")}
+            text={t("how.step3Text")}
           />
           <StepCard
             n={4}
             delay={270}
             icon={<Crown className="size-5" />}
-            title="Gana"
-            text="El que mejor lea el torneo gana. Reconocimiento entre amigos, trofeo simbólico de la liga, o lo que pacten los participantes."
+            title={t("how.step4Title")}
+            text={t("how.step4Text")}
           />
         </div>
       </section>
@@ -317,15 +287,13 @@ export default async function HomePage() {
       <section className="space-y-6">
         <Reveal as="header" variant="up" className="space-y-2">
           <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Modos de juego
+            {t("modes.eyebrow")}
           </p>
           <h2 className="font-display text-4xl tracking-tight sm:text-5xl">
-            Elige cuánto quieres complicarte
+            {t("modes.title")}
           </h2>
           <p className="max-w-3xl font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base">
-            Cada quiniela tiene un modo de predicción — del más completo al más
-            rápido. Lo eliges al crear la tuya, o entras directamente a la
-            quiniela pública de cada modo. Cada modo tiene su propio ranking.
+            {t("modes.intro")}
           </p>
         </Reveal>
         <div className="grid gap-4 sm:grid-cols-3">
@@ -347,7 +315,7 @@ export default async function HomePage() {
               >
                 {primary ? (
                   <span className="absolute right-4 top-4 rounded-full bg-[var(--color-arena)] px-2 py-0.5 font-mono text-[0.5rem] uppercase tracking-[0.18em] text-white">
-                    El más jugado
+                    {t("modes.mostPlayed")}
                   </span>
                 ) : null}
                 <div
@@ -401,17 +369,14 @@ export default async function HomePage() {
               <div className="inline-flex items-center gap-2">
                 <Building2 className="size-3.5 text-[var(--color-arena)]" />
                 <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-                  Para empresas y grupos grandes
+                  {t("empresas.eyebrow")}
                 </p>
               </div>
               <h2 className="font-display text-4xl tracking-tight sm:text-5xl">
-                El ritual de oficina del Mundial
+                {t("empresas.title")}
               </h2>
               <p className="max-w-2xl font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base">
-                Tres semanas con tu equipo pegado al ranking, comentando los
-                partidos en el chat interno y compitiendo entre departamentos.
-                Sin Excel, sin grupos de WhatsApp, sin renovación. Pago único
-                por todo el torneo.
+                {t("empresas.intro")}
               </p>
             </Reveal>
             <div className="flex shrink-0 flex-wrap items-center gap-2">
@@ -419,14 +384,14 @@ export default async function HomePage() {
                 href="/precios"
                 className="inline-flex items-center gap-2 rounded-md border border-[var(--color-arena)] bg-[var(--color-arena)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white shadow-[var(--shadow-arena)] transition hover:opacity-90"
               >
-                Ver planes
+                {t("empresas.seePlans")}
                 <ArrowRight className="size-4" />
               </Link>
               <Link
                 href="/precios#contacto"
                 className="inline-flex items-center gap-2 rounded-md border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] transition hover:border-[var(--color-arena)]/40"
               >
-                Pídeme presupuesto
+                {t("empresas.quote")}
               </Link>
             </div>
           </header>
@@ -436,26 +401,27 @@ export default async function HomePage() {
             <TierTeaser
               priceEur={19}
               regularEur={29}
-              label="Pase Equipo"
-              members="Hasta 50 miembros"
-              perPerson="0,38 €/persona"
+              label={t("empresas.tier1Label")}
+              members={t("empresas.tier1Members")}
+              perPerson={t("empresas.tier1PerPerson")}
+              popularLabel={t("empresas.mostPopular")}
               highlight
               delay={0}
             />
             <TierTeaser
               priceEur={49}
               regularEur={69}
-              label="Pase Empresa"
-              members="Hasta 100 miembros"
-              perPerson="0,49 €/persona"
+              label={t("empresas.tier2Label")}
+              members={t("empresas.tier2Members")}
+              perPerson={t("empresas.tier2PerPerson")}
               delay={90}
             />
             <TierTeaser
               priceEur={99}
               regularEur={149}
-              label="Empresa Plus"
-              members="Hasta 250 miembros"
-              perPerson="0,40 €/persona"
+              label={t("empresas.tier3Label")}
+              members={t("empresas.tier3Members")}
+              perPerson={t("empresas.tier3PerPerson")}
               delay={180}
             />
           </div>
@@ -464,23 +430,23 @@ export default async function HomePage() {
           <ul className="grid gap-3 sm:grid-cols-2">
             <FeatureBullet
               delay={0}
-              title="Departamentos internos"
-              text="Marketing, Ventas, Ingeniería… compitiendo por media de puntos. Un equipo de 8 puede ganar al de 20."
+              title={t("empresas.feat1Title")}
+              text={t("empresas.feat1Text")}
             />
             <FeatureBullet
               delay={70}
-              title="Pago único, sin renovación"
-              text="Cubre del 11 de junio al 19 de julio. Sin suscripción, sin cargos posteriores."
+              title={t("empresas.feat2Title")}
+              text={t("empresas.feat2Text")}
             />
             <FeatureBullet
               delay={140}
-              title="Hasta 250 miembros por liga"
-              text="Tres tamaños para que entren los equipos pequeños o las plantillas grandes — escalas sin migrar datos."
+              title={t("empresas.feat3Title")}
+              text={t("empresas.feat3Text")}
             />
             <FeatureBullet
               delay={210}
-              title="Logo, export CSV, soporte prioritario"
-              text="Branding corporativo en la cabecera, ranking exportable y respuesta directa por email durante el torneo."
+              title={t("empresas.feat4Title")}
+              text={t("empresas.feat4Text")}
             />
           </ul>
         </div>
@@ -490,52 +456,51 @@ export default async function HomePage() {
       <section className="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:items-start">
         <div className="space-y-5">
           <Reveal as="p" variant="up" className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            El torneo
+            {t("tournament.eyebrow")}
           </Reveal>
           <Reveal as="h2" variant="up" delay={60} className="font-display text-4xl tracking-tight sm:text-5xl">
-            Primera edición a 48 selecciones
+            {t("tournament.title")}
           </Reveal>
           <p className="font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base">
-            El Mundial 2026 estrena formato: <strong className="not-italic font-semibold">12 grupos</strong> de
-            cuatro equipos, top 2 + los 8 mejores terceros pasan a una nueva
-            ronda de dieciseisavos (R32). Después: octavos, cuartos,
-            semifinales y final el <strong className="not-italic font-semibold">19 de julio en Nueva York-NJ</strong>.
-            Un total de <strong className="not-italic font-semibold">104 partidos en 39 días</strong> repartidos
-            entre Estados Unidos, Canadá y México.
+            {t.rich("tournament.intro", {
+              b: (chunks) => (
+                <strong className="not-italic font-semibold">{chunks}</strong>
+              ),
+            })}
           </p>
           <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <StatTile big="48" label="Selecciones" delay={0} />
-            <StatTile big="12" label="Grupos" delay={80} />
-            <StatTile big="104" label="Partidos" delay={160} />
-            <StatTile big="16" label="Sedes" delay={240} />
+            <StatTile big="48" label={t("tournament.statTeams")} delay={0} />
+            <StatTile big="12" label={t("tournament.statGroups")} delay={80} />
+            <StatTile big="104" label={t("tournament.statMatches")} delay={160} />
+            <StatTile big="16" label={t("tournament.statVenues")} delay={240} />
           </ul>
           <div className="flex flex-wrap gap-3 pt-2">
             <Link
               href="/calendario"
               className="inline-flex items-center gap-2 rounded-md border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition hover:border-[var(--color-arena)]/40"
             >
-              Ver calendario completo
+              {t("tournament.seeCalendar")}
               <ArrowRight className="size-3.5" />
             </Link>
             <Link
               href="/grupos"
               className="inline-flex items-center gap-2 rounded-md border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition hover:border-[var(--color-arena)]/40"
             >
-              Los 12 grupos
+              {t("tournament.the12Groups")}
               <ArrowRight className="size-3.5" />
             </Link>
             <Link
               href="/equipos"
               className="inline-flex items-center gap-2 rounded-md border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition hover:border-[var(--color-arena)]/40"
             >
-              48 selecciones
+              {t("tournament.the48Teams")}
               <ArrowRight className="size-3.5" />
             </Link>
             <Link
               href="/sedes"
               className="inline-flex items-center gap-2 rounded-md border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition hover:border-[var(--color-arena)]/40"
             >
-              16 sedes
+              {t("tournament.the16Venues")}
               <ArrowRight className="size-3.5" />
             </Link>
           </div>
@@ -547,11 +512,11 @@ export default async function HomePage() {
           />
           <div className="relative space-y-4">
             <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-              Próximos partidos destacados
+              {t("tournament.featuredMatches")}
             </p>
             {featuredMatches.length === 0 ? (
               <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-                Calendario pendiente de publicar.
+                {t("tournament.calendarPending")}
               </p>
             ) : (
               <ul className="space-y-2">
@@ -641,22 +606,20 @@ export default async function HomePage() {
             <Reveal variant="up" className="space-y-2">
               <p className="inline-flex items-center gap-2 font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
                 <Newspaper className="size-3.5 text-[var(--color-arena)]" />
-                Últimas noticias
+                {t("news.eyebrow")}
               </p>
               <h2 className="font-display text-4xl tracking-tight sm:text-5xl">
-                Convocatorias, previas y todo el Mundial
+                {t("news.title")}
               </h2>
               <p className="max-w-3xl font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base">
-                Lo último de las 48 selecciones, lesiones de última hora,
-                previas con alineaciones probables y crónicas partido a
-                partido. Actualizado a diario durante el torneo.
+                {t("news.intro")}
               </p>
             </Reveal>
             <Link
               href="/noticias"
               className="inline-flex items-center gap-2 rounded-md border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-4 py-2 font-mono text-[0.65rem] font-semibold uppercase tracking-[0.18em] transition hover:border-[var(--color-arena)]/40"
             >
-              Ver todas
+              {t("news.seeAll")}
               <ArrowRight className="size-3.5" />
             </Link>
           </header>
@@ -674,15 +637,13 @@ export default async function HomePage() {
       <section className="space-y-6">
         <Reveal as="header" variant="up" className="space-y-2">
           <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Explora el torneo
+            {t("explore.eyebrow")}
           </p>
           <h2 className="font-display text-4xl tracking-tight sm:text-5xl">
-            Todo el Mundial 2026, organizado
+            {t("explore.title")}
           </h2>
           <p className="max-w-3xl font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base">
-            Calendario completo, los 12 grupos, el bracket FIFA con su cruz hasta
-            la final, la tabla de máximos goleadores, las 48 selecciones y las 16
-            sedes. Toda la información en abierto, sin registro.
+            {t("explore.intro")}
           </p>
         </Reveal>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -690,43 +651,43 @@ export default async function HomePage() {
             href="/calendario"
             delay={0}
             icon={<CalendarDays className="size-5" />}
-            title="Calendario completo"
-            text="Los 104 partidos del Mundial 2026 ordenados por fecha y jornada."
+            title={t("explore.calendarTitle")}
+            text={t("explore.calendarText")}
           />
           <ExploreCard
             href="/grupos"
             delay={70}
             icon={<Users className="size-5" />}
-            title="Los 12 grupos"
-            text="Las cuatro selecciones de cada grupo y sus enfrentamientos directos."
+            title={t("explore.groupsTitle")}
+            text={t("explore.groupsText")}
           />
           <ExploreCard
             href="/bracket"
             delay={140}
             icon={<Swords className="size-5" />}
-            title="Bracket eliminatorio"
-            text="El cuadro FIFA: dieciseisavos, octavos, cuartos, semifinales y final."
+            title={t("explore.bracketTitle")}
+            text={t("explore.bracketText")}
           />
           <ExploreCard
             href="/goleadores"
             delay={210}
             icon={<Target className="size-5" />}
-            title="Máximos goleadores"
-            text="La carrera por la Bota de Oro 2026 actualizada partido a partido."
+            title={t("explore.scorersTitle")}
+            text={t("explore.scorersText")}
           />
           <ExploreCard
             href="/equipos"
             delay={280}
             icon={<Trophy className="size-5" />}
-            title="48 selecciones"
-            text="Plantilla completa de cada selección clasificada al Mundial 2026."
+            title={t("explore.teamsTitle")}
+            text={t("explore.teamsText")}
           />
           <ExploreCard
             href="/sedes"
             delay={350}
             icon={<MapPin className="size-5" />}
-            title="16 sedes"
-            text="Estadios y ciudades de Estados Unidos, Canadá y México que acogen el torneo."
+            title={t("explore.venuesTitle")}
+            text={t("explore.venuesText")}
           />
         </div>
       </section>
@@ -735,53 +696,51 @@ export default async function HomePage() {
       <section className="space-y-6">
         <Reveal as="header" variant="up" className="space-y-2">
           <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Las 6 categorías
+            {t("categories.eyebrow")}
           </p>
           <h2 className="font-display text-4xl tracking-tight sm:text-5xl">
-            Seis formas de sumar puntos
+            {t("categories.title")}
           </h2>
           <p className="max-w-3xl font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base">
-            El juego no se limita a marcadores. Combinas predicciones a largo
-            plazo (grupos, bracket, goleador del torneo) con predicciones más
-            inmediatas (marcador exacto y goleador de cada partido).
+            {t("categories.intro")}
           </p>
         </Reveal>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <CategoryCard
             delay={0}
             icon={<Users className="size-5" />}
-            title="Posiciones por grupo"
-            text="Ordenas los 4 equipos de cada uno de los 12 grupos. Cierra al inicio del torneo."
+            title={t("categories.groupTitle")}
+            text={t("categories.groupText")}
           />
           <CategoryCard
             delay={70}
             icon={<Swords className="size-5" />}
-            title="Bracket FIFA completo"
-            text="R32, octavos, cuartos, semifinales y final. Predices la cruz entera y al campeón."
+            title={t("categories.bracketTitle")}
+            text={t("categories.bracketText")}
           />
           <CategoryCard
             delay={140}
             icon={<Target className="size-5" />}
-            title="Goleador del torneo"
-            text="Tu Bota de Oro. Si tu jugador acaba como máximo goleador, set de puntos extra."
+            title={t("categories.scorerTitle")}
+            text={t("categories.scorerText")}
           />
           <CategoryCard
             delay={210}
             icon={<Goal className="size-5" />}
-            title="Marcadores partido a partido"
-            text="Predices el resultado exacto de cada partido. Bonus por acertar marcador y ganador."
+            title={t("categories.matchScoreTitle")}
+            text={t("categories.matchScoreText")}
           />
           <CategoryCard
             delay={280}
             icon={<Sparkles className="size-5" />}
-            title="Goleador por partido"
-            text="Eliges quién marca en cada uno de los 104 enfrentamientos."
+            title={t("categories.matchScorerTitle")}
+            text={t("categories.matchScorerText")}
           />
           <CategoryCard
             delay={350}
             icon={<ShieldCheck className="size-5" />}
-            title="Predicciones especiales"
-            text="Preguntas estilo '¿habrá tanda de penales en cuartos?'. Sorpresas con peso."
+            title={t("categories.specialsTitle")}
+            text={t("categories.specialsText")}
           />
         </div>
       </section>
@@ -790,14 +749,14 @@ export default async function HomePage() {
       <section className="space-y-6">
         <Reveal as="header" variant="up" className="space-y-2">
           <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Preguntas frecuentes
+            {t("faqSection.eyebrow")}
           </p>
           <h2 className="font-display text-4xl tracking-tight sm:text-5xl">
-            Lo que la gente pregunta
+            {t("faqSection.title")}
           </h2>
         </Reveal>
         <Reveal variant="up" className="divide-y divide-[var(--color-border)] overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)]">
-          {FAQS.map((f, i) => (
+          {faqs.map((f, i) => (
             <details key={i} className="group px-5 py-4">
               <summary className="flex cursor-pointer items-center justify-between gap-3 list-none">
                 <span className="font-display text-base tracking-tight">{f.q}</span>
@@ -824,24 +783,24 @@ export default async function HomePage() {
         />
         <Reveal variant="up" className="relative space-y-4">
           <h2 className="font-display text-4xl tracking-tight sm:text-5xl">
-            Tu quiniela del Mundial está a un click
+            {t("ctaFinal.title")}
           </h2>
           <p className="mx-auto max-w-2xl font-editorial text-sm italic text-[var(--color-muted-foreground)] sm:text-base">
-            Crea la tuya, comparte el código con los tuyos y que empiece la pelea.
+            {t("ctaFinal.text")}
           </p>
           <div className="flex flex-wrap justify-center gap-3 pt-2">
             <Link
               href="/login?next=%2Fonboarding"
               className="inline-flex items-center gap-2 rounded-md border border-[var(--color-arena)] bg-[var(--color-arena)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white shadow-[var(--shadow-arena)]"
             >
-              Empezar gratis
+              {t("ctaFinal.start")}
               <ArrowRight className="size-4" />
             </Link>
             <Link
               href="/precios"
               className="inline-flex items-center gap-2 rounded-md border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] transition hover:border-[var(--color-arena)]/40"
             >
-              Planes para empresas
+              {t("ctaFinal.plans")}
             </Link>
           </div>
         </Reveal>
@@ -855,55 +814,49 @@ export default async function HomePage() {
       <section className="space-y-4 border-t border-[var(--color-border)] pt-12">
         <Reveal as="header" variant="up" className="space-y-2">
           <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Sobre Quiniela Mundial 2026
+            {t("about.eyebrow")}
           </p>
           <h2 className="font-display text-3xl tracking-tight sm:text-4xl">
-            La quiniela colaborativa del Mundial 2026
+            {t("about.title")}
           </h2>
         </Reveal>
         <div className="grid gap-5 sm:grid-cols-2">
           <p className="font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base">
-            <strong className="font-semibold not-italic text-[var(--color-foreground)]">
-              Quiniela Mundial 2026
-            </strong>{" "}
-            es la plataforma para jugar la quiniela del Mundial 2026 con tu
-            grupo. Eliges si compites con la comunidad en la Quiniela Pública o
-            si creas una privada con tus amigos, tu equipo o toda tu empresa.
-            Predices marcadores, goleadores, posiciones de grupo, bracket y un
-            puñado de preguntas especiales — todo en la misma app, sin Excel ni
-            grupos de WhatsApp llenos de capturas.
+            {t.rich("about.p1", {
+              b: (chunks) => (
+                <strong className="font-semibold not-italic text-[var(--color-foreground)]">
+                  {chunks}
+                </strong>
+              ),
+            })}
           </p>
           <p className="font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base">
-            Hecho para hispanohablantes a ambos lados del Atlántico, Quiniela
-            Mundial 2026 va igual de bien si lo tuyo es la{" "}
-            <em className="not-italic font-medium">porra</em> con los amigos en
-            España, el <em className="not-italic font-medium">prode</em> de la
-            oficina en Buenos Aires, la{" "}
-            <em className="not-italic font-medium">polla</em> de la familia en
-            Bogotá o el <em className="not-italic font-medium">pool</em> de
-            compañeros en Miami. El producto es uno, el nombre lo eliges tú —
-            la experiencia colaborativa y la mecánica de puntos, idéntica.
+            {t.rich("about.p2", {
+              em: (chunks) => (
+                <em className="not-italic font-medium">{chunks}</em>
+              ),
+            })}
           </p>
         </div>
         <p className="font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base">
-          Crear una quiniela en{" "}
-          <Link
-            href="/login?next=%2Fonboarding"
-            className="text-[var(--color-arena)] underline-offset-4 hover:underline"
-          >
-            Quiniela Mundial 2026
-          </Link>{" "}
-          es gratis hasta 20 miembros. Para empresas, comunidades o eventos con
-          grupos grandes hay{" "}
-          <Link
-            href="/precios"
-            className="text-[var(--color-arena)] underline-offset-4 hover:underline"
-          >
-            Pases Mundial 2026
-          </Link>{" "}
-          desde 19 € (pago único, sin suscripción) que escalan la liga hasta
-          50, 100 o 250 miembros con logo corporativo, anuncio fijado y export
-          CSV.
+          {t.rich("about.p3", {
+            home: (chunks) => (
+              <Link
+                href="/login?next=%2Fonboarding"
+                className="text-[var(--color-arena)] underline-offset-4 hover:underline"
+              >
+                {chunks}
+              </Link>
+            ),
+            pricing: (chunks) => (
+              <Link
+                href="/precios"
+                className="text-[var(--color-arena)] underline-offset-4 hover:underline"
+              >
+                {chunks}
+              </Link>
+            ),
+          })}
         </p>
       </section>
 
@@ -926,27 +879,27 @@ export default async function HomePage() {
             </div>
           </div>
           <nav className="flex flex-wrap gap-x-5 gap-y-2 font-mono text-[0.65rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-            <Link href="/calendario" className="hover:text-[var(--color-arena)]">Calendario</Link>
-            <Link href="/grupos" className="hover:text-[var(--color-arena)]">Grupos</Link>
-            <Link href="/bracket" className="hover:text-[var(--color-arena)]">Bracket</Link>
-            <Link href="/goleadores" className="hover:text-[var(--color-arena)]">Goleadores</Link>
-            <Link href="/noticias" className="hover:text-[var(--color-arena)]">Noticias</Link>
-            <Link href="/equipos" className="hover:text-[var(--color-arena)]">Selecciones</Link>
-            <Link href="/sedes" className="hover:text-[var(--color-arena)]">Sedes</Link>
-            <Link href="/puntuacion" className="hover:text-[var(--color-arena)]">Puntuación</Link>
-            <Link href="/login" className="hover:text-[var(--color-arena)]">Entrar</Link>
+            <Link href="/calendario" className="hover:text-[var(--color-arena)]">{tNav("calendario")}</Link>
+            <Link href="/grupos" className="hover:text-[var(--color-arena)]">{tNav("grupos")}</Link>
+            <Link href="/bracket" className="hover:text-[var(--color-arena)]">{tNav("bracket")}</Link>
+            <Link href="/goleadores" className="hover:text-[var(--color-arena)]">{tNav("goleadores")}</Link>
+            <Link href="/noticias" className="hover:text-[var(--color-arena)]">{tNav("noticias")}</Link>
+            <Link href="/equipos" className="hover:text-[var(--color-arena)]">{tNav("selecciones")}</Link>
+            <Link href="/sedes" className="hover:text-[var(--color-arena)]">{tNav("sedes")}</Link>
+            <Link href="/puntuacion" className="hover:text-[var(--color-arena)]">{t("footer.scoring")}</Link>
+            <Link href="/login" className="hover:text-[var(--color-arena)]">{tShell("login")}</Link>
           </nav>
         </div>
         <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[var(--color-border)] pt-4 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]/80">
-          <Link href="/aviso-legal" className="hover:text-[var(--color-arena)]">Aviso legal</Link>
+          <Link href="/aviso-legal" className="hover:text-[var(--color-arena)]">{t("footer.avisoLegal")}</Link>
           <span aria-hidden>·</span>
-          <Link href="/privacidad" className="hover:text-[var(--color-arena)]">Privacidad</Link>
+          <Link href="/privacidad" className="hover:text-[var(--color-arena)]">{t("footer.privacidad")}</Link>
           <span aria-hidden>·</span>
-          <Link href="/cookies" className="hover:text-[var(--color-arena)]">Cookies</Link>
+          <Link href="/cookies" className="hover:text-[var(--color-arena)]">{t("footer.cookies")}</Link>
           <span aria-hidden>·</span>
-          <Link href="/terminos" className="hover:text-[var(--color-arena)]">Términos</Link>
+          <Link href="/terminos" className="hover:text-[var(--color-arena)]">{t("footer.terminos")}</Link>
           <span aria-hidden>·</span>
-          <Link href="/contacto" className="hover:text-[var(--color-arena)]">Contacto</Link>
+          <Link href="/contacto" className="hover:text-[var(--color-arena)]">{t("footer.contacto")}</Link>
         </div>
       </footer>
     </div>
@@ -961,6 +914,7 @@ function TierTeaser({
   label,
   members,
   perPerson,
+  popularLabel,
   highlight,
   delay = 0,
 }: {
@@ -969,6 +923,7 @@ function TierTeaser({
   label: string;
   members: string;
   perPerson: string;
+  popularLabel?: string;
   highlight?: boolean;
   delay?: number;
 }) {
@@ -985,7 +940,7 @@ function TierTeaser({
     >
       {highlight ? (
         <span className="absolute right-3 top-3 rounded-full bg-[var(--color-arena)] px-2 py-0.5 font-mono text-[0.5rem] uppercase tracking-[0.18em] text-white">
-          Más popular
+          {popularLabel}
         </span>
       ) : null}
       <p className="font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
@@ -1081,6 +1036,7 @@ function ExploreCard({
   primary?: boolean;
   delay?: number;
 }) {
+  const t = useTranslations("home");
   return (
     <Reveal variant="up" delay={delay}>
     <Link
@@ -1105,7 +1061,7 @@ function ExploreCard({
         {text}
       </p>
       <span className="mt-1 inline-flex items-center gap-1.5 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-arena)] transition-transform group-hover:translate-x-1">
-        Ir <ArrowRight className="size-3" />
+        {t("explore.go")} <ArrowRight className="size-3" />
       </span>
     </Link>
     </Reveal>
