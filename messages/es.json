@@ -1,1 +1,54 @@
-{}
+{
+  "nav": {
+    "inicio": "Inicio",
+    "calendario": "Calendario",
+    "grupos": "Grupos",
+    "bracket": "Bracket",
+    "goleadores": "Goleadores",
+    "noticias": "Noticias",
+    "estadisticas": "Estadísticas",
+    "predicciones": "Mis predicciones",
+    "prediccionesMobile": "Predicciones",
+    "misResultados": "Mis resultados",
+    "miQuiniela": "Mi Quiniela",
+    "ranking": "Ranking",
+    "chat": "Chat",
+    "minijuegos": "Minijuegos",
+    "comparar": "Comparar",
+    "selecciones": "Selecciones",
+    "sedes": "Sedes",
+    "faqs": "FAQs",
+    "contacto": "Contacto",
+    "admin": "Admin",
+    "group": {
+      "main": "Torneo",
+      "predicciones": "Predicciones",
+      "social": "Comunidad",
+      "ayuda": "Ayuda",
+      "admin": "Admin"
+    }
+  },
+  "shell": {
+    "expandSidebar": "Expandir barra lateral",
+    "collapseSidebar": "Contraer barra lateral",
+    "expand": "Expandir",
+    "collapse": "Contraer",
+    "homeTitle": "Inicio",
+    "hostCountries": "Canadá · México · USA",
+    "tournamentDates": "11 jun — 19 jul",
+    "visitorCtaTitle": "Quiniela Pública",
+    "visitorCtaCopy": "Compite contra todos sin necesitar código.",
+    "visitorCtaButton": "Unirme",
+    "profile": "Perfil",
+    "settings": "Ajustes",
+    "logout": "Cerrar sesión",
+    "myProfile": "Mi perfil",
+    "admin": "Admin",
+    "companies": "Empresas",
+    "login": "Entrar",
+    "createPool": "Crear quiniela",
+    "more": "Más",
+    "navigation": "Navegación",
+    "allSections": "Todas las secciones"
+  }
+}

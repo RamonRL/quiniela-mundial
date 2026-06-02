@@ -1,1 +1,54 @@
-{}
+{
+  "nav": {
+    "inicio": "Início",
+    "calendario": "Calendário",
+    "grupos": "Grupos",
+    "bracket": "Chave",
+    "goleadores": "Artilheiros",
+    "noticias": "Notícias",
+    "estadisticas": "Estatísticas",
+    "predicciones": "Meus palpites",
+    "prediccionesMobile": "Palpites",
+    "misResultados": "Meus resultados",
+    "miQuiniela": "Meu bolão",
+    "ranking": "Classificação",
+    "chat": "Chat",
+    "minijuegos": "Minijogos",
+    "comparar": "Comparar",
+    "selecciones": "Seleções",
+    "sedes": "Sedes",
+    "faqs": "FAQ",
+    "contacto": "Contato",
+    "admin": "Admin",
+    "group": {
+      "main": "Torneio",
+      "predicciones": "Palpites",
+      "social": "Comunidade",
+      "ayuda": "Ajuda",
+      "admin": "Admin"
+    }
+  },
+  "shell": {
+    "expandSidebar": "Expandir barra lateral",
+    "collapseSidebar": "Recolher barra lateral",
+    "expand": "Expandir",
+    "collapse": "Recolher",
+    "homeTitle": "Início",
+    "hostCountries": "Canadá · México · EUA",
+    "tournamentDates": "11 jun — 19 jul",
+    "visitorCtaTitle": "Bolão público",
+    "visitorCtaCopy": "Concorra contra todos, sem precisar de código.",
+    "visitorCtaButton": "Participar",
+    "profile": "Perfil",
+    "settings": "Configurações",
+    "logout": "Sair",
+    "myProfile": "Meu perfil",
+    "admin": "Admin",
+    "companies": "Empresas",
+    "login": "Entrar",
+    "createPool": "Criar bolão",
+    "more": "Mais",
+    "navigation": "Navegação",
+    "allSections": "Todas as seções"
+  }
+}

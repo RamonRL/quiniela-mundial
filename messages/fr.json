@@ -1,1 +1,54 @@
-{}
+{
+  "nav": {
+    "inicio": "Accueil",
+    "calendario": "Calendrier",
+    "grupos": "Groupes",
+    "bracket": "Tableau",
+    "goleadores": "Buteurs",
+    "noticias": "Actualités",
+    "estadisticas": "Stats",
+    "predicciones": "Mes pronostics",
+    "prediccionesMobile": "Pronostics",
+    "misResultados": "Mes résultats",
+    "miQuiniela": "Ma grille",
+    "ranking": "Classement",
+    "chat": "Chat",
+    "minijuegos": "Mini-jeux",
+    "comparar": "Comparer",
+    "selecciones": "Équipes",
+    "sedes": "Stades",
+    "faqs": "FAQ",
+    "contacto": "Contact",
+    "admin": "Admin",
+    "group": {
+      "main": "Tournoi",
+      "predicciones": "Pronostics",
+      "social": "Communauté",
+      "ayuda": "Aide",
+      "admin": "Admin"
+    }
+  },
+  "shell": {
+    "expandSidebar": "Déplier la barre latérale",
+    "collapseSidebar": "Replier la barre latérale",
+    "expand": "Déplier",
+    "collapse": "Replier",
+    "homeTitle": "Accueil",
+    "hostCountries": "Canada · Mexique · États-Unis",
+    "tournamentDates": "11 juin — 19 juil.",
+    "visitorCtaTitle": "Grille publique",
+    "visitorCtaCopy": "Affronte tout le monde, sans code.",
+    "visitorCtaButton": "Rejoindre",
+    "profile": "Profil",
+    "settings": "Réglages",
+    "logout": "Se déconnecter",
+    "myProfile": "Mon profil",
+    "admin": "Admin",
+    "companies": "Entreprises",
+    "login": "Se connecter",
+    "createPool": "Créer une grille",
+    "more": "Plus",
+    "navigation": "Navigation",
+    "allSections": "Toutes les sections"
+  }
+}

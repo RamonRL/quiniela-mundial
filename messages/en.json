@@ -1,1 +1,54 @@
-{}
+{
+  "nav": {
+    "inicio": "Home",
+    "calendario": "Schedule",
+    "grupos": "Groups",
+    "bracket": "Bracket",
+    "goleadores": "Top scorers",
+    "noticias": "News",
+    "estadisticas": "Stats",
+    "predicciones": "My predictions",
+    "prediccionesMobile": "Predictions",
+    "misResultados": "My results",
+    "miQuiniela": "My pool",
+    "ranking": "Leaderboard",
+    "chat": "Chat",
+    "minijuegos": "Mini-games",
+    "comparar": "Compare",
+    "selecciones": "Teams",
+    "sedes": "Venues",
+    "faqs": "FAQs",
+    "contacto": "Contact",
+    "admin": "Admin",
+    "group": {
+      "main": "Tournament",
+      "predicciones": "Predictions",
+      "social": "Community",
+      "ayuda": "Help",
+      "admin": "Admin"
+    }
+  },
+  "shell": {
+    "expandSidebar": "Expand sidebar",
+    "collapseSidebar": "Collapse sidebar",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "homeTitle": "Home",
+    "hostCountries": "Canada · Mexico · USA",
+    "tournamentDates": "Jun 11 — Jul 19",
+    "visitorCtaTitle": "Public Pool",
+    "visitorCtaCopy": "Compete against everyone — no code needed.",
+    "visitorCtaButton": "Join",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Log out",
+    "myProfile": "My profile",
+    "admin": "Admin",
+    "companies": "For companies",
+    "login": "Log in",
+    "createPool": "Create pool",
+    "more": "More",
+    "navigation": "Navigation",
+    "allSections": "All sections"
+  }
+}
