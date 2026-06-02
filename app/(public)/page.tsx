@@ -195,14 +195,6 @@ export default async function HomePage() {
             toda tu empresa.
           </Reveal>
 
-          <Reveal as="p" variant="fade" delay={260} className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            La <span className="text-[var(--color-foreground)]">quiniela del Mundial 2026</span>{" "}
-            también llamada <strong className="font-semibold not-italic">porra</strong> (España),{" "}
-            <strong className="font-semibold not-italic">prode</strong> (Argentina · Uruguay),{" "}
-            <strong className="font-semibold not-italic">polla</strong> (Colombia · Venezuela) o{" "}
-            <strong className="font-semibold not-italic">pool</strong>.
-          </Reveal>
-
           <Reveal variant="up" delay={320} className="flex flex-wrap items-center justify-center gap-3 pt-1">
             <Link
               href="/login?next=%2Fonboarding"
