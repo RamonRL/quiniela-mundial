@@ -53,7 +53,11 @@ export function AppHeader({
         ) : null}
       </div>
       <div className="flex items-center justify-end gap-3">
-        <LanguageSwitcher />
+        {/* El selector de idioma se oculta en móvil: rompía la barra
+            superior. En móvil el idioma se cambia desde Ajustes. */}
+        <span className="hidden sm:inline-flex">
+          <LanguageSwitcher />
+        </span>
         {isAuthenticated && email ? (
           <UserMenu
             email={email}

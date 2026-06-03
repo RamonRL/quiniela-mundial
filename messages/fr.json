@@ -452,6 +452,8 @@
     "pageEyebrow": "Compte",
     "pageTitle": "Réglages",
     "pageDesc": "Apparence et fuseau horaire. Les changements ne s'appliquent qu'à ce compte.",
+    "langTitle": "Langue",
+    "langDesc": "Change la langue de l'interface. Les actualités restent en espagnol.",
     "tzEyebrow": "Fuseau horaire",
     "tzTitle": "Heure locale des matchs",
     "tzDesc": "Les horaires des matchs dans l'appli s'afficheront dans ce fuseau. Si tu le laisses en automatique, on utilise celui du navigateur, avec repli sur Europe/Madrid.",

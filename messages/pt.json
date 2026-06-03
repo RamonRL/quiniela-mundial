@@ -452,6 +452,8 @@
     "pageEyebrow": "Conta",
     "pageTitle": "Configurações",
     "pageDesc": "Aparência e fuso horário. As mudanças se aplicam só a esta conta.",
+    "langTitle": "Idioma",
+    "langDesc": "Mude o idioma da interface. As notícias permanecem em espanhol.",
     "tzEyebrow": "Fuso horário",
     "tzTitle": "Horário local dos jogos",
     "tzDesc": "Os horários dos jogos no app serão mostrados neste fuso. Se deixar no automático, usamos o do navegador, com fallback para Europe/Madrid.",

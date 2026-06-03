@@ -452,6 +452,8 @@
     "pageEyebrow": "Cuenta",
     "pageTitle": "Ajustes",
     "pageDesc": "Apariencia y zona horaria. Los cambios se aplican solo a esta cuenta.",
+    "langTitle": "Idioma",
+    "langDesc": "Cambia el idioma de la interfaz. Las noticias se mantienen en español.",
     "tzEyebrow": "Zona horaria",
     "tzTitle": "Hora local de partidos",
     "tzDesc": "Los horarios de partidos en la app se mostrarán en esta zona. Si la dejas en automático, usamos la del navegador con fallback a Europe/Madrid.",

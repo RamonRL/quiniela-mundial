@@ -4,6 +4,7 @@ import { profiles } from "@/lib/db/schema";
 import { getTranslations } from "next-intl/server";
 import { PageHeader } from "@/components/shell/page-header";
 import { requireUser } from "@/lib/auth/guards";
+import { LanguageSwitcher } from "@/components/shell/language-switcher";
 import { SettingsForm } from "./settings-form";
 
 export const metadata = { title: "Ajustes" };
@@ -29,6 +30,16 @@ export default async function AjustesPage() {
         description={t("pageDesc")}
       />
       <SettingsForm currentTimezone={currentTimezone} />
+
+      <section className="space-y-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
+        <div className="space-y-1">
+          <h2 className="font-display text-lg tracking-tight">{t("langTitle")}</h2>
+          <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
+            {t("langDesc")}
+          </p>
+        </div>
+        <LanguageSwitcher />
+      </section>
     </div>
   );
 }

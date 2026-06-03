@@ -452,6 +452,8 @@
     "pageEyebrow": "Account",
     "pageTitle": "Settings",
     "pageDesc": "Appearance and time zone. Changes apply to this account only.",
+    "langTitle": "Language",
+    "langDesc": "Change the interface language. News stays in Spanish.",
     "tzEyebrow": "Time zone",
     "tzTitle": "Local match times",
     "tzDesc": "Match times in the app will show in this zone. If you leave it on automatic, we use the browser's, falling back to Europe/Madrid.",
