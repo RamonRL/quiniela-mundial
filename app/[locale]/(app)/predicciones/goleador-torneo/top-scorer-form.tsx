@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useActionState, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Lock, Search, X } from "lucide-react";
 import { TeamFlag } from "@/components/brand/team-flag";
 import { SavePredictionButton } from "@/components/predictions/save-prediction-button";
@@ -27,17 +28,17 @@ type GroupOpt = { code: string; teams: { code: string; name: string }[] };
 
 type Position = "DEL" | "MED" | "DEF" | "POR";
 const POSITIONS: Position[] = ["DEL", "MED", "DEF", "POR"];
-const POSITION_LABEL: Record<Position, string> = {
-  DEL: "Delanteros",
-  MED: "Mediocampistas",
-  DEF: "Defensas",
-  POR: "Porteros",
+const POSITION_LABEL_KEY: Record<Position, string> = {
+  DEL: "posDel",
+  MED: "posMed",
+  DEF: "posDef",
+  POR: "posPor",
 };
-const POSITION_LABEL_SHORT: Record<Position, string> = {
-  DEL: "Delantero",
-  MED: "Mediocampo",
-  DEF: "Defensa",
-  POR: "Portero",
+const POSITION_LABEL_SHORT_KEY: Record<Position, string> = {
+  DEL: "posDelShort",
+  MED: "posMedShort",
+  DEF: "posDefShort",
+  POR: "posPorShort",
 };
 const POSITION_ACCENT: Record<
   Position,
@@ -95,6 +96,7 @@ export function TopScorerForm({
   existingPlayerId: number | null;
   open: boolean;
 }) {
+  const t = useTranslations("predTopScorer");
   const [selected, setSelected] = useState<number | null>(existingPlayerId);
   const [teamFilter, setTeamFilter] = useState<string | null>(null);
   const [posFilter, setPosFilter] = useState<Position | null>(null);
@@ -102,8 +104,8 @@ export function TopScorerForm({
   const [state, action, pending] = useActionState(saveTopScorerPrediction, initial);
 
   usePredictionSaveToast(state, {
-    successTitle: "Bota de Oro guardada",
-    successDescription: "Tu candidato a máximo goleador quedó anotado.",
+    successTitle: t("savedTitle"),
+    successDescription: t("savedDesc"),
   });
 
   const searchTokens = useMemo(
@@ -117,7 +119,7 @@ export function TopScorerForm({
       if (posFilter && normalizePosition(p.position) !== posFilter) return false;
       if (searchTokens.length > 0) {
         const haystack = `${fold(p.name)} ${fold(p.teamName)} ${p.teamCode.toLowerCase()}`;
-        if (!searchTokens.every((t) => haystack.includes(t))) return false;
+        if (!searchTokens.every((tok) => haystack.includes(tok))) return false;
       }
       return true;
     });
@@ -156,7 +158,7 @@ export function TopScorerForm({
       {!open ? (
         <div className="flex items-center gap-2 rounded-lg border border-[var(--color-warning)]/40 bg-[var(--color-warning)]/10 p-3 text-sm text-[var(--color-warning)]">
           <Lock className="size-4" />
-          La predicción está cerrada.
+          {t("closedBanner")}
         </div>
       ) : null}
 
@@ -168,7 +170,7 @@ export function TopScorerForm({
       <section className="space-y-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 sm:p-5">
         {/* Buscador por nombre */}
         <label className="relative block">
-          <span className="sr-only">Buscar jugador</span>
+          <span className="sr-only">{t("searchLabel")}</span>
           <Search
             className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[var(--color-muted-foreground)]"
             aria-hidden
@@ -177,14 +179,14 @@ export function TopScorerForm({
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por nombre…"
+            placeholder={t("searchPlaceholder")}
             className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-2)] py-2.5 pl-10 pr-10 text-sm text-[var(--color-foreground)] outline-none transition-colors placeholder:text-[var(--color-muted-foreground)]/70 focus:border-[var(--color-arena)]"
           />
           {search ? (
             <button
               type="button"
               onClick={() => setSearch("")}
-              aria-label="Borrar búsqueda"
+              aria-label={t("clearSearch")}
               className="absolute right-2.5 top-1/2 grid size-6 -translate-y-1/2 place-items-center rounded-full text-[var(--color-muted-foreground)] transition hover:bg-[var(--color-surface)] hover:text-[var(--color-foreground)]"
             >
               <X className="size-3.5" />
@@ -256,7 +258,7 @@ export function TopScorerForm({
         {/* Pills de posición */}
         <div className="flex flex-wrap items-center gap-2 border-t border-dashed border-[var(--color-border)] pt-4">
           <p className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Posición
+            {t("positionLabel")}
           </p>
           {POSITIONS.map((p) => {
             const active = posFilter === p;
@@ -274,7 +276,7 @@ export function TopScorerForm({
                 )}
               >
                 <span className={cn("size-1.5 rounded-full", a.dot)} />
-                {POSITION_LABEL[p]}
+                {t(POSITION_LABEL_KEY[p])}
               </button>
             );
           })}
@@ -288,7 +290,7 @@ export function TopScorerForm({
               }}
               className="ml-auto font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)] underline-offset-2 hover:underline"
             >
-              Limpiar filtros
+              {t("clearFilters")}
             </button>
           ) : null}
         </div>
@@ -298,7 +300,7 @@ export function TopScorerForm({
       <section className="space-y-6">
         {totalShown === 0 ? (
           <p className="rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface)]/60 p-8 text-center font-editorial italic text-[var(--color-muted-foreground)]">
-            Sin candidatos para esos filtros.
+            {t("noCandidates")}
           </p>
         ) : (
           (
@@ -315,7 +317,7 @@ export function TopScorerForm({
                     POSITION_ACCENT[pos].text,
                   )}
                 >
-                  {POSITION_LABEL[pos]}
+                  {t(POSITION_LABEL_KEY[pos])}
                 </p>
                 <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
                   {byPosition.map[pos].length}
@@ -340,7 +342,7 @@ export function TopScorerForm({
           <div className="space-y-3">
             <header className="flex items-center gap-3">
               <p className="font-mono text-[0.65rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                Sin posición
+                {t("noPosition")}
               </p>
               <span className="ml-2 h-px flex-1 bg-[var(--color-border)]" />
             </header>
@@ -377,7 +379,7 @@ export function TopScorerForm({
               </span>
             ) : (
               <span className="font-editorial italic text-[var(--color-muted-foreground)]">
-                Aún sin candidato.
+                {t("noCandidateBar")}
               </span>
             )}
           </div>
@@ -441,6 +443,7 @@ function PlayerCard({
   active: boolean;
   onClick: () => void;
 }) {
+  const t = useTranslations("predTopScorer");
   const accent = pos ? POSITION_ACCENT[pos] : null;
   return (
     <button
@@ -492,7 +495,7 @@ function PlayerCard({
                 POSITION_ACCENT[pos].chip,
               )}
             >
-              {POSITION_LABEL_SHORT[pos]}
+              {t(POSITION_LABEL_SHORT_KEY[pos])}
             </span>
           ) : null}
         </div>
@@ -508,6 +511,7 @@ function PlayerCard({
 }
 
 function SelectedPlayerHero({ player }: { player: PlayerOpt | null }) {
+  const t = useTranslations("predTopScorer");
   const pos = player ? normalizePosition(player.position) : null;
   const accent = pos ? POSITION_ACCENT[pos] : null;
 
@@ -534,7 +538,7 @@ function SelectedPlayerHero({ player }: { player: PlayerOpt | null }) {
             accent ? accent.text : "text-[var(--color-muted-foreground)]",
           )}
         >
-          Tu Bota de Oro
+          {t("heroTitle")}
         </p>
 
         {player ? (
@@ -581,12 +585,12 @@ function SelectedPlayerHero({ player }: { player: PlayerOpt | null }) {
                     )}
                   >
                     <span className={cn("size-1.5 rounded-full", POSITION_ACCENT[pos].dot)} />
-                    {POSITION_LABEL_SHORT[pos]}
+                    {t(POSITION_LABEL_SHORT_KEY[pos])}
                   </span>
                 ) : null}
                 {player.jerseyNumber != null ? (
                   <span className="inline-flex items-center gap-1 font-mono text-[0.65rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-                    Dorsal
+                    {t("jersey")}
                     <span className="font-display tabular text-lg tracking-tight text-[var(--color-foreground)]">
                       {player.jerseyNumber}
                     </span>
@@ -603,10 +607,10 @@ function SelectedPlayerHero({ player }: { player: PlayerOpt | null }) {
               </span>
             </span>
             <h2 className="font-display text-4xl leading-[0.95] tracking-tight text-[var(--color-muted-foreground)] lg:text-5xl xl:text-6xl">
-              Aún sin candidato
+              {t("heroNoCandidate")}
             </h2>
             <p className="font-editorial text-base italic text-[var(--color-muted-foreground)]">
-              Pulsa una bandera y elige el jugador que más te ponga.
+              {t("heroHint")}
             </p>
           </>
         )}

@@ -22,6 +22,7 @@ const KICKOFF = new Date(
 export default async function PredictTopScorerPage() {
   const me = await requireUser();
   const t = await getTranslations("scoring");
+  const ts = await getTranslations("predTopScorer");
   const leagueId = (await currentLeagueId(me))!;
   // Solo "completo" predice goleador. Marcador / Solo Ganador → fuera.
   const mode = (await getLeagueModes([leagueId])).get(leagueId) ?? "completo";
@@ -46,15 +47,15 @@ export default async function PredictTopScorerPage() {
     return (
       <div className="space-y-6">
         <PageHeader
-          eyebrow="Categoría 2"
-          title="Bota de Oro"
-          description="Tu candidato. Cierra al kickoff."
+          eyebrow={ts("eyebrow")}
+          title={ts("title")}
+          description={ts("descEmpty")}
         />
         <ScoringBox sections={topScorerScoring(t)} />
         <EmptyState
           icon={<Target className="size-5" />}
-          title="Aún no hay jugadores cargados"
-          description="Pendiente de las plantillas."
+          title={ts("emptyTitle")}
+          description={ts("emptyDesc")}
         />
       </div>
     );
@@ -79,12 +80,12 @@ export default async function PredictTopScorerPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Categoría 2"
-        title="Bota de Oro"
+        eyebrow={ts("eyebrow")}
+        title={ts("title")}
         description={
           open
-            ? `Tu candidato al máximo goleador. Cierra ${formatDateTime(KICKOFF)}.`
-            : "Cerrada."
+            ? ts("descOpen", { date: formatDateTime(KICKOFF) })
+            : ts("descClosed")
         }
       />
       <ScoringBox sections={topScorerScoring(t)} />
