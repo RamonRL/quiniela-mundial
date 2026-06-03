@@ -1152,5 +1152,15 @@
     "saving": "Enregistrement…",
     "saveChanges": "Enregistrer",
     "deleteConfirm": "Supprimer « {name} » ? Les membres se retrouveront sans département."
+  },
+  "shellExtra": {
+    "closesIn": "Clôture dans {remaining}",
+    "predictionOf": "Pronostic de <s>{label}</s>",
+    "unsent": "· {n} non envoyés",
+    "go": "Aller →",
+    "changeActive": "Changer de grille active",
+    "selectPool": "Choisis une grille",
+    "myPools": "Mes grilles",
+    "joinOrCreate": "Rejoindre ou créer une grille"
   }
 }

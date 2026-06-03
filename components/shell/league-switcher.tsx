@@ -1,6 +1,7 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { Check, ChevronsUpDown, Plus } from "lucide-react";
 import {
   DropdownMenu,
@@ -22,6 +23,7 @@ export function LeagueSwitcher({
   memberships: Membership[];
   activeLeagueId: number | null;
 }) {
+  const t = useTranslations("shellExtra");
   const active = memberships.find((m) => m.id === activeLeagueId) ?? null;
 
   return (
@@ -30,7 +32,7 @@ export function LeagueSwitcher({
         <button
           type="button"
           data-tutorial-id="league-switcher"
-          aria-label="Cambiar quiniela activa"
+          aria-label={t("changeActive")}
           className="group inline-flex max-w-[26rem] items-center gap-2 rounded-sm transition hover:opacity-80 focus:outline-none focus-visible:ring-1 focus-visible:ring-[var(--color-arena)]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)]"
         >
           {active && !active.isPublic ? (
@@ -44,7 +46,7 @@ export function LeagueSwitcher({
             </Avatar>
           ) : null}
           <span className="truncate font-display text-xl uppercase tracking-[0.06em] text-[var(--color-foreground)] sm:text-2xl">
-            {active?.name ?? "Selecciona quiniela"}
+            {active?.name ?? t("selectPool")}
           </span>
           <ChevronsUpDown
             className="size-3.5 shrink-0 text-[var(--color-muted-foreground)] opacity-40 transition-opacity group-hover:opacity-80"
@@ -53,7 +55,7 @@ export function LeagueSwitcher({
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="center" className="w-72">
-        <DropdownMenuLabel>Mis quinielas</DropdownMenuLabel>
+        <DropdownMenuLabel>{t("myPools")}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {memberships.map((m) => {
           const isActive = m.id === activeLeagueId;
@@ -98,7 +100,7 @@ export function LeagueSwitcher({
             className="flex w-full items-center gap-2 text-[var(--color-arena)]"
           >
             <Plus className="size-3.5" />
-            Unirse o crear quiniela
+            {t("joinOrCreate")}
           </Link>
         </DropdownMenuItem>
       </DropdownMenuContent>

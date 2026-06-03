@@ -1152,5 +1152,15 @@
     "saving": "Saving…",
     "saveChanges": "Save changes",
     "deleteConfirm": "Delete \"{name}\"? Members will be left without a department."
+  },
+  "shellExtra": {
+    "closesIn": "Closes in {remaining}",
+    "predictionOf": "Prediction for <s>{label}</s>",
+    "unsent": "· {n} not submitted",
+    "go": "Go →",
+    "changeActive": "Switch active pool",
+    "selectPool": "Select pool",
+    "myPools": "My pools",
+    "joinOrCreate": "Join or create a pool"
   }
 }

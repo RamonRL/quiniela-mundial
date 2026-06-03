@@ -1152,5 +1152,15 @@
     "saving": "Salvando…",
     "saveChanges": "Salvar alterações",
     "deleteConfirm": "Excluir \"{name}\"? Os membros ficarão sem departamento."
+  },
+  "shellExtra": {
+    "closesIn": "Fecha em {remaining}",
+    "predictionOf": "Palpite de <s>{label}</s>",
+    "unsent": "· {n} não enviados",
+    "go": "Ir →",
+    "changeActive": "Trocar bolão ativo",
+    "selectPool": "Selecione um bolão",
+    "myPools": "Meus bolões",
+    "joinOrCreate": "Entrar ou criar bolão"
   }
 }

@@ -1152,5 +1152,15 @@
     "saving": "Guardando…",
     "saveChanges": "Guardar cambios",
     "deleteConfirm": "¿Borrar \"{name}\"? Los miembros quedarán sin departamento."
+  },
+  "shellExtra": {
+    "closesIn": "Cierra en {remaining}",
+    "predictionOf": "Predicción de <s>{label}</s>",
+    "unsent": "· {n} sin enviar",
+    "go": "Ir →",
+    "changeActive": "Cambiar quiniela activa",
+    "selectPool": "Selecciona quiniela",
+    "myPools": "Mis quinielas",
+    "joinOrCreate": "Unirse o crear quiniela"
   }
 }
