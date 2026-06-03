@@ -1,5 +1,7 @@
 import { TeamFlag } from "@/components/brand/team-flag";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import { and, asc, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { matches, predBracketSlot, teams } from "@/lib/db/schema";
@@ -30,19 +32,21 @@ export const metadata = {
   },
 };
 
-const STAGE_LABEL = {
-  r32: "Dieciseisavos",
-  r16: "Octavos",
-  qf: "Cuartos",
-  sf: "Semifinales",
-  third: "Tercer puesto",
-  final: "Final",
+const STAGE_LABEL_KEY = {
+  r32: "stR32",
+  r16: "stR16",
+  qf: "stQf",
+  sf: "stSf",
+  third: "stThird",
+  final: "stFinal",
 } as const;
 
 const KO_STAGES = ["r32", "r16", "qf", "sf", "final", "third"] as const;
 type KoStage = (typeof KO_STAGES)[number];
 
 export default async function BracketPage() {
+  const t = await getTranslations("bracketPage");
+  const tt = await getTranslations("tournament");
   const me = await getCurrentUser();
   const leagueId = me ? await currentLeagueId(me) : null;
   const [koMatches, bracketStatus] = await Promise.all([
@@ -88,14 +92,14 @@ export default async function BracketPage() {
     return (
       <div className="space-y-6">
         <PageHeader
-          eyebrow="Eliminación directa"
-          title="Bracket del Mundial 2026"
-          description="Pendiente de cargar."
+          eyebrow={t("eyebrow")}
+          title={t("title")}
+          description={t("emptyHeaderDesc")}
         />
         <EmptyState
           icon={<Swords className="size-5" />}
-          title="Sin partidos eliminatorios"
-          description="Programa la fase eliminatoria desde admin."
+          title={t("emptyTitle")}
+          description={t("emptyDesc")}
         />
       </div>
     );
@@ -144,32 +148,28 @@ export default async function BracketPage() {
     <div className="space-y-8 lg:-mx-10">
       <BreadcrumbLD
         items={[
-          { name: "Inicio", href: "/" },
-          { name: "Bracket", href: "/bracket" },
+          { name: tt("home"), href: "/" },
+          { name: t("breadcrumb"), href: "/bracket" },
         ]}
       />
       <PageHeader
-        eyebrow="Eliminación directa"
-        title="Bracket del Mundial 2026"
-        description={
-          isPreview
-            ? "Vista previa del cuadro FIFA. Los slots se llenan al cerrar grupos."
-            : "El árbol oficial de FIFA. Picks (●) y aciertos en verde."
-        }
+        eyebrow={t("eyebrow")}
+        title={t("title")}
+        description={isPreview ? t("descPreview") : t("descLive")}
         actions={
           me ? (
             <Link
               href="/predicciones/bracket"
               className="inline-flex items-center gap-2 rounded-md border border-[var(--color-border-strong)] bg-[var(--color-surface-2)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-foreground)] transition hover:border-[var(--color-arena)]/50"
             >
-              Editar mi bracket
+              {t("editBracket")}
             </Link>
           ) : (
             <Link
               href="/login?next=%2Fpredicciones%2Fbracket"
               className="inline-flex items-center gap-2 rounded-md border border-[var(--color-arena)] bg-[var(--color-arena)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white shadow-[var(--shadow-arena)]"
             >
-              Crear mi bracket
+              {t("createBracket")}
             </Link>
           )
         }
@@ -192,14 +192,14 @@ export default async function BracketPage() {
           return (
             <section key={stage} className="space-y-2">
               <h2 className="font-display text-2xl tracking-tight">
-                {STAGE_LABEL[stage]}
+                {tt(STAGE_LABEL_KEY[stage])}
               </h2>
               <div className="grid gap-3 sm:grid-cols-2">
                 {stageMatches.map((m) => {
                   const home = m.homeTeamId ? teamById.get(m.homeTeamId) : null;
                   const away = m.awayTeamId ? teamById.get(m.awayTeamId) : null;
-                  const homePh = mobilePlaceholder(stage, m.code, "home");
-                  const awayPh = mobilePlaceholder(stage, m.code, "away");
+                  const homePh = mobilePlaceholder(stage, m.code, "home", tt);
+                  const awayPh = mobilePlaceholder(stage, m.code, "away", tt);
                   return (
                     <Card key={m.id}>
                       <CardHeader className="flex flex-row items-center justify-between p-3">
@@ -221,7 +221,7 @@ export default async function BracketPage() {
                                 : "outline"
                           }
                         >
-                          {STATUS_LABEL[m.status] ?? m.status}
+                          {STATUS_LABEL_KEY[m.status] ? tt(STATUS_LABEL_KEY[m.status]) : m.status}
                         </Badge>
                       </CardHeader>
                       <CardContent className="space-y-1.5 p-3 pt-0">
@@ -241,7 +241,7 @@ export default async function BracketPage() {
                         />
                         {m.wentToPens ? (
                           <p className="text-[0.65rem] text-[var(--color-muted-foreground)]">
-                            Pen.: {m.homeScorePen ?? 0} – {m.awayScorePen ?? 0}
+                            {tt("pens", { h: m.homeScorePen ?? 0, a: m.awayScorePen ?? 0 })}
                           </p>
                         ) : null}
                       </CardContent>
@@ -265,7 +265,7 @@ export default async function BracketPage() {
               </span>
               <div>
                 <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                  Tu campeón
+                  {t("yourChampion")}
                 </p>
                 {myChampion && teamById.get(myChampion) ? (
                   <Link
@@ -275,7 +275,7 @@ export default async function BracketPage() {
                     {teamById.get(myChampion)!.name}
                   </Link>
                 ) : (
-                  <p className="font-display text-3xl tracking-tight">Sin elegir</p>
+                  <p className="font-display text-3xl tracking-tight">{t("notChosen")}</p>
                 )}
               </div>
             </div>
@@ -292,7 +292,7 @@ export default async function BracketPage() {
                 href="/predicciones/bracket"
                 className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-arena)]"
               >
-                Elegir campeón →
+                {t("chooseChampion")}
               </Link>
             )}
           </div>
@@ -300,50 +300,50 @@ export default async function BracketPage() {
       ) : (
         <section className="rounded-xl border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_6%,var(--color-surface))] p-8 text-center">
           <p className="font-display text-3xl tracking-tight">
-            ¿Quién levantará la copa?
+            {t("whoLifts")}
           </p>
           <p className="pt-1 font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-            Crea tu quiniela, predice el bracket completo y compite con tus
-            amigos en cada ronda.
+            {t("whoLiftsDesc")}
           </p>
           <Link
             href="/login?next=%2Fpredicciones%2Fbracket"
             className="mt-4 inline-flex items-center gap-1.5 rounded-md border border-[var(--color-arena)] bg-[var(--color-arena)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white shadow-[var(--shadow-arena)]"
           >
-            Crear mi bracket
+            {t("createBracket")}
           </Link>
         </section>
       )}
 
       <BrandCTA
         brandVariant="bare"
-        hint="Arma tu cuadro completo — de R32 a la final — antes del primer pitido el 11 de junio."
+        hint={t("ctaHint")}
       />
     </div>
   );
 }
 
 function Legend() {
+  const t = useTranslations("bracketPage");
   return (
     <div className="flex flex-wrap items-center gap-4 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-xs text-[var(--color-muted-foreground)]">
       <span className="flex items-center gap-1.5">
         <span className="size-2 rounded-full bg-[var(--color-success)]" />
-        Equipo que avanzó
+        {t("legendAdvanced")}
       </span>
       <span className="flex items-center gap-1.5 font-mono text-[0.7rem] text-[var(--color-arena)]">
-        ● Tu pick
+        {t("legendPick")}
       </span>
       <span className="ml-auto hidden font-mono text-[0.6rem] uppercase tracking-[0.32em] sm:inline">
-        Pulsa cualquier partido para ver el detalle
+        {t("legendTap")}
       </span>
     </div>
   );
 }
 
-const STATUS_LABEL: Record<string, string> = {
-  scheduled: "Programado",
-  live: "En vivo",
-  finished: "Final",
+const STATUS_LABEL_KEY: Record<string, string> = {
+  scheduled: "statusScheduled",
+  live: "statusLive",
+  finished: "statusFinal",
 };
 
 function MobileTeamRow({
@@ -359,8 +359,9 @@ function MobileTeamRow({
   isMyPick: boolean;
   placeholderLabel?: string | null;
 }) {
+  const tt = useTranslations("tournament");
   const isPlaceholder = team == null;
-  const label = team?.name ?? placeholderLabel ?? "TBD";
+  const label = team?.name ?? placeholderLabel ?? tt("tbd");
   return (
     <div
       className={`flex items-center justify-between gap-2 rounded-md border px-2 py-1.5 ${
@@ -403,9 +404,10 @@ function MobileTeamRow({
 }
 
 function mobilePlaceholder(
-  stage: keyof typeof STAGE_LABEL,
+  stage: keyof typeof STAGE_LABEL_KEY,
   code: string,
   side: "home" | "away",
+  tt: (key: string, values?: Record<string, string | number>) => string,
 ): string | null {
   if (stage === "r32") {
     const slot = R32_SLOTS[code];
@@ -415,5 +417,5 @@ function mobilePlaceholder(
   const feed = KO_FEEDS[code];
   if (!feed) return null;
   const f = side === "home" ? feed.home : feed.away;
-  return f.loser ? `Pierde ${f.code}` : `Gana ${f.code}`;
+  return f.loser ? tt("loses", { code: f.code }) : tt("wins", { code: f.code });
 }

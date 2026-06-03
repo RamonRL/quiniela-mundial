@@ -1,5 +1,6 @@
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { Crown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { TeamFlag } from "@/components/brand/team-flag";
@@ -116,7 +117,8 @@ function Column({
   matches: Map<string, BracketMatch>;
   myPicks: Props["myPicks"];
 }) {
-  const stageLabel = STAGE_LABEL[stage];
+  const tt = useTranslations("tournament");
+  const stageLabel = tt(STAGE_LABEL_KEY[stage]);
   // For r32 we group every two matches into a pair (the two feeders for one r16).
   // For r16/qf we also pair (each pair feeds one parent in the next column).
   // For sf there's no pair — it's a single match per side.
@@ -174,13 +176,14 @@ function FinalColumn({
   matches: Map<string, BracketMatch>;
   myPicks: Props["myPicks"];
 }) {
+  const tt = useTranslations("tournament");
   const finalMatch = matches.get(STRUCTURE.final);
   const thirdMatch = matches.get(STRUCTURE.third);
   return (
     <div className="flex flex-col">
       <div className="grid place-items-center pb-3">
         <span className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-          Final
+          {tt("stFinal")}
         </span>
       </div>
       <div className="flex flex-1 flex-col items-stretch justify-center gap-6">
@@ -196,7 +199,7 @@ function FinalColumn({
             className="h-12 w-auto"
           />
           <p className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Copa Mundial 2026
+            {tt("worldCup")}
           </p>
         </div>
         {finalMatch ? (
@@ -273,6 +276,7 @@ function BracketCard({
   stage: "r32" | "r16" | "qf" | "sf";
   myPicks: Props["myPicks"];
 }) {
+  const tt = useTranslations("tournament");
   // Which set of picks corresponds to "the team I think advances from THIS match"?
   // After r32 → my r16 picks tell me. After r16 → my qf picks. Etc.
   const advancePool: Set<number> | null =
@@ -292,8 +296,8 @@ function BracketCard({
   // de dónde viene (p.ej. "1º A", "3º A·B·C·D·F", "Gana M74"). Para R32 lo
   // sacamos del mapa FIFA; para rondas posteriores, del feeder. data-slot-*
   // habilita el resaltado interactivo desde BracketSlotHighlighter.
-  const homePlaceholder = computePlaceholder(stage, code, "home");
-  const awayPlaceholder = computePlaceholder(stage, code, "away");
+  const homePlaceholder = computePlaceholder(stage, code, "home", tt);
+  const awayPlaceholder = computePlaceholder(stage, code, "away", tt);
   const dataSlotHome = stage === "r32" ? encodeSlotSource(R32_SLOTS[code].home) : undefined;
   const dataSlotAway = stage === "r32" ? encodeSlotSource(R32_SLOTS[code].away) : undefined;
 
@@ -307,14 +311,14 @@ function BracketCard({
       {match ? (
         <Link
           href={`/partido/${match.id}`}
-          aria-label={`Partido ${match.code}`}
+          aria-label={tt("matchAria", { code: match.code })}
           className="absolute inset-0 z-0 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-arena)]"
         />
       ) : null}
       <div className="pointer-events-none relative flex items-center justify-between border-b border-[var(--color-border)] bg-[var(--color-surface-2)] px-2 py-1 font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
         <span>{code}</span>
         {match?.status === "finished" ? (
-          <span className="text-[var(--color-success)]">FIN</span>
+          <span className="text-[var(--color-success)]">{tt("finShort")}</span>
         ) : match?.status === "live" ? (
           <span className="text-[var(--color-arena)]">LIVE</span>
         ) : null}
@@ -338,7 +342,7 @@ function BracketCard({
       />
       {match?.wentToPens ? (
         <p className="pointer-events-none relative border-t border-[var(--color-border)] bg-[var(--color-surface-2)] px-2 py-0.5 text-center font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
-          Pen.: {match.homeScorePen ?? 0} – {match.awayScorePen ?? 0}
+          {tt("pens", { h: match.homeScorePen ?? 0, a: match.awayScorePen ?? 0 })}
         </p>
       ) : null}
     </div>
@@ -349,6 +353,7 @@ function computePlaceholder(
   stage: "r32" | "r16" | "qf" | "sf",
   code: string,
   side: "home" | "away",
+  tt: (key: string, values?: Record<string, string | number>) => string,
 ): string | null {
   if (stage === "r32") {
     const slots = R32_SLOTS[code];
@@ -358,7 +363,7 @@ function computePlaceholder(
   const feed = KO_FEEDS[code];
   if (!feed) return null;
   const f = side === "home" ? feed.home : feed.away;
-  return f.loser ? `Pierde ${f.code}` : `Gana ${f.code}`;
+  return f.loser ? tt("loses", { code: f.code }) : tt("wins", { code: f.code });
 }
 
 function TeamLine({
@@ -376,8 +381,9 @@ function TeamLine({
   placeholderLabel?: string | null;
   compact?: boolean;
 }) {
+  const tt = useTranslations("tournament");
   const isPlaceholder = team == null;
-  const label = team?.name ?? placeholderLabel ?? "TBD";
+  const label = team?.name ?? placeholderLabel ?? tt("tbd");
   return (
     <div
       className={cn(
@@ -435,12 +441,13 @@ function FinalCard({
   match: BracketMatch;
   championTeamId: number | null;
 }) {
+  const tt = useTranslations("tournament");
   const homeFeed = KO_FEEDS[match.code]?.home;
   const awayFeed = KO_FEEDS[match.code]?.away;
   return (
     <div className="overflow-hidden rounded-lg border-2 border-[var(--color-arena)]/50 bg-[color-mix(in_oklch,var(--color-arena)_8%,var(--color-surface))] shadow-[var(--shadow-arena)]">
       <div className="flex items-center justify-between border-b border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_15%,transparent)] px-3 py-1.5 font-mono text-[0.6rem] uppercase tracking-[0.32em]">
-        <span className="text-[var(--color-arena)]">FINAL · {match.code}</span>
+        <span className="text-[var(--color-arena)]">{tt("stFinal")} · {match.code}</span>
         <Crown className="size-4 text-[var(--color-arena)]" />
       </div>
       <TeamLine
@@ -448,7 +455,7 @@ function FinalCard({
         score={match.homeScore}
         isWinner={match.winnerTeamId != null && match.homeTeam?.id === match.winnerTeamId}
         isMyPick={match.homeTeam != null && match.homeTeam.id === championTeamId}
-        placeholderLabel={homeFeed ? `Gana ${homeFeed.code}` : null}
+        placeholderLabel={homeFeed ? tt("wins", { code: homeFeed.code }) : null}
       />
       <div className="border-t border-dashed border-[var(--color-border)]" />
       <TeamLine
@@ -456,26 +463,27 @@ function FinalCard({
         score={match.awayScore}
         isWinner={match.winnerTeamId != null && match.awayTeam?.id === match.winnerTeamId}
         isMyPick={match.awayTeam != null && match.awayTeam.id === championTeamId}
-        placeholderLabel={awayFeed ? `Gana ${awayFeed.code}` : null}
+        placeholderLabel={awayFeed ? tt("wins", { code: awayFeed.code }) : null}
       />
     </div>
   );
 }
 
 function ThirdCard({ match }: { match: BracketMatch }) {
+  const tt = useTranslations("tournament");
   const homeFeed = KO_FEEDS[match.code]?.home;
   const awayFeed = KO_FEEDS[match.code]?.away;
   return (
     <div className="overflow-hidden rounded-md border border-dashed border-[var(--color-border-strong)] bg-[var(--color-surface)]">
       <div className="border-b border-[var(--color-border)] bg-[var(--color-surface-2)] px-3 py-1 text-center font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-        Tercer puesto · {match.code}
+        {tt("stThird")} · {match.code}
       </div>
       <TeamLine
         team={match.homeTeam}
         score={match.homeScore}
         isWinner={match.winnerTeamId != null && match.homeTeam?.id === match.winnerTeamId}
         isMyPick={false}
-        placeholderLabel={homeFeed ? `Pierde ${homeFeed.code}` : null}
+        placeholderLabel={homeFeed ? tt("loses", { code: homeFeed.code }) : null}
       />
       <div className="border-t border-dashed border-[var(--color-border)]" />
       <TeamLine
@@ -483,7 +491,7 @@ function ThirdCard({ match }: { match: BracketMatch }) {
         score={match.awayScore}
         isWinner={match.winnerTeamId != null && match.awayTeam?.id === match.winnerTeamId}
         isMyPick={false}
-        placeholderLabel={awayFeed ? `Pierde ${awayFeed.code}` : null}
+        placeholderLabel={awayFeed ? tt("loses", { code: awayFeed.code }) : null}
       />
     </div>
   );
@@ -495,9 +503,9 @@ function chunkPairs<T>(arr: T[]): T[][] {
   return out;
 }
 
-const STAGE_LABEL: Record<"r32" | "r16" | "qf" | "sf", string> = {
-  r32: "Dieciseisavos",
-  r16: "Octavos",
-  qf: "Cuartos",
-  sf: "Semifinal",
+const STAGE_LABEL_KEY: Record<"r32" | "r16" | "qf" | "sf", string> = {
+  r32: "stR32",
+  r16: "stR16",
+  qf: "stQf",
+  sf: "stSf",
 };
