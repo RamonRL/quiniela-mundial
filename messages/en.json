@@ -1420,5 +1420,33 @@
     "capacity": "Capacity",
     "seeDetail": "See detail →",
     "ctaHint": "Follow the matches at each of the 16 World Cup 2026 venues from your league."
+  },
+  "contactPage": {
+    "breadcrumb": "Contact",
+    "eyebrow": "Help",
+    "title": "Contact",
+    "desc": "Bugs, improvements or anything else — we'll get back to you as soon as we can.",
+    "emailLabel": "Email",
+    "emailHint": "Click to open your mail client.",
+    "aboutEyebrow": "About the project",
+    "aboutTitle": "Made by a fan, for fans.",
+    "aboutP1": "Quiniela Mundial was born for a group of friends, as an alternative to traditional fantasy games — endless spreadsheets, screenshots in the WhatsApp group, uncontrolled clause battles and always the feeling of missing a better experience. We decided to build the app we were missing and open it for anyone to use.",
+    "aboutP2": "If you find a bug, have an idea, want to suggest a new category or just give feedback, write to <email></email>. There's no big team behind this, so it may take a day or two to reply, but we read everything.",
+    "whyWrite": "Why write",
+    "bugsTitle": "Bugs",
+    "bugsText": "Something doesn't work or looks off. Tell me what happened and, if you can, send a screenshot.",
+    "bugsSubject": "Bug in Quiniela Mundial",
+    "improvTitle": "Improvements",
+    "improvText": "An idea for a new category, a screen, a feature. I'm all ears.",
+    "improvSubject": "Improvement for Quiniela Mundial",
+    "otherTitle": "Other",
+    "otherText": "Anything: press, collaborations, legal questions, deletion requests.",
+    "otherSubject": "Quiniela Mundial · ",
+    "write": "Write →",
+    "companiesEyebrow": "Companies and big groups",
+    "companiesTitle": "Does your company want to use it?",
+    "companiesDesc": "Private pools hold 20 people on the Free plan. For bigger teams check <link>/precios</link> or fill in the form and we'll reply within 24h.",
+    "socials": "Social media",
+    "portraitAlt": "Creator of Quiniela Mundial"
   }
 }

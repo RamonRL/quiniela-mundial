@@ -1420,5 +1420,33 @@
     "capacity": "Capacidade",
     "seeDetail": "Ver detalhe →",
     "ctaHint": "Acompanhe os jogos em cada uma das 16 sedes da Copa do Mundo 2026 pela sua liga."
+  },
+  "contactPage": {
+    "breadcrumb": "Contato",
+    "eyebrow": "Ajuda",
+    "title": "Contato",
+    "desc": "Bugs, melhorias ou qualquer assunto — respondemos o quanto antes.",
+    "emailLabel": "Email",
+    "emailHint": "Clique para abrir seu cliente de e-mail.",
+    "aboutEyebrow": "Sobre o projeto",
+    "aboutTitle": "Feito por um torcedor, para torcedores.",
+    "aboutP1": "O Quiniela Mundial nasceu para um grupo de amigos, como alternativa aos jogos fantasy tradicionais — planilhas infinitas, prints no grupo do WhatsApp, batalhas de cláusulas sem controle e sempre a sensação de faltar uma experiência melhor. Decidimos construir o app que faltava e abri-lo para qualquer um usar.",
+    "aboutP2": "Se encontrar um bug, tiver uma ideia, quiser sugerir uma categoria nova ou só dar feedback, escreva para <email></email>. Não há uma equipe grande por trás, então pode demorar um dia ou dois para responder, mas lemos tudo.",
+    "whyWrite": "Por que escrever",
+    "bugsTitle": "Bugs",
+    "bugsText": "Algo não funciona ou aparece estranho. Conte o que aconteceu e, se puder, mande print.",
+    "bugsSubject": "Bug no Quiniela Mundial",
+    "improvTitle": "Melhorias",
+    "improvText": "Uma ideia para uma categoria nova, uma tela, uma funcionalidade. Sou todo ouvidos.",
+    "improvSubject": "Melhoria para o Quiniela Mundial",
+    "otherTitle": "Outros",
+    "otherText": "O que for: imprensa, parcerias, dúvidas legais, pedidos de exclusão.",
+    "otherSubject": "Quiniela Mundial · ",
+    "write": "Escrever →",
+    "companiesEyebrow": "Empresas e grupos grandes",
+    "companiesTitle": "Sua empresa quer usar?",
+    "companiesDesc": "Os bolões privados comportam 20 pessoas no plano Free. Para equipes maiores veja <link>/precios</link> ou preencha o formulário e respondemos em menos de 24h.",
+    "socials": "Redes sociais",
+    "portraitAlt": "Criador do Quiniela Mundial"
   }
 }

@@ -1420,5 +1420,33 @@
     "capacity": "Capacité",
     "seeDetail": "Voir le détail →",
     "ctaHint": "Suis les matchs dans chacun des 16 stades de la Coupe du monde 2026 depuis ta ligue."
+  },
+  "contactPage": {
+    "breadcrumb": "Contact",
+    "eyebrow": "Aide",
+    "title": "Contact",
+    "desc": "Bugs, améliorations ou toute autre question — on te répond dès que possible.",
+    "emailLabel": "Email",
+    "emailHint": "Clique pour ouvrir ton client mail.",
+    "aboutEyebrow": "À propos du projet",
+    "aboutTitle": "Fait par un passionné, pour les passionnés.",
+    "aboutP1": "Quiniela Mundial est né pour un groupe d'amis, comme alternative aux jeux fantasy classiques — tableurs sans fin, captures dans le groupe WhatsApp, batailles de clauses incontrôlables et toujours le sentiment qu'il manquait une meilleure expérience. On a décidé de construire l'app qui nous manquait et de l'ouvrir à tout le monde.",
+    "aboutP2": "Si tu trouves un bug, as une idée, veux suggérer une nouvelle catégorie ou juste donner ton avis, écris à <email></email>. Il n'y a pas une grande équipe derrière, donc ça peut prendre un jour ou deux, mais on lit tout.",
+    "whyWrite": "Pourquoi écrire",
+    "bugsTitle": "Bugs",
+    "bugsText": "Quelque chose ne marche pas ou s'affiche bizarrement. Dis-moi ce qui s'est passé et, si tu peux, envoie une capture.",
+    "bugsSubject": "Bug dans Quiniela Mundial",
+    "improvTitle": "Améliorations",
+    "improvText": "Une idée de nouvelle catégorie, d'écran, de fonctionnalité. Je suis tout ouïe.",
+    "improvSubject": "Amélioration pour Quiniela Mundial",
+    "otherTitle": "Autres",
+    "otherText": "Tout : presse, collaborations, questions juridiques, demandes de suppression.",
+    "otherSubject": "Quiniela Mundial · ",
+    "write": "Écrire →",
+    "companiesEyebrow": "Entreprises et grands groupes",
+    "companiesTitle": "Ton entreprise veut l'utiliser ?",
+    "companiesDesc": "Les grilles privées accueillent 20 personnes en plan Free. Pour des équipes plus grandes, regarde <link>/precios</link> ou remplis le formulaire et on te répond en moins de 24 h.",
+    "socials": "Réseaux sociaux",
+    "portraitAlt": "Créateur de Quiniela Mundial"
   }
 }

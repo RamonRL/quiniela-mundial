@@ -1420,5 +1420,33 @@
     "capacity": "Capacidad",
     "seeDetail": "Ver detalle →",
     "ctaHint": "Sigue los partidos en cada una de las 16 sedes del Mundial 2026 desde tu liga."
+  },
+  "contactPage": {
+    "breadcrumb": "Contacto",
+    "eyebrow": "Ayuda",
+    "title": "Contacto",
+    "desc": "Bugs, mejoras o cualquier asunto — te respondemos lo antes posible.",
+    "emailLabel": "Email",
+    "emailHint": "Click para abrir tu cliente de correo.",
+    "aboutEyebrow": "Sobre el proyecto",
+    "aboutTitle": "Hecho por un aficionado, para aficionados.",
+    "aboutP1": "Quiniela Mundial nació para un grupo de amigos, como alternativa a los juegos fantasy tradicionales — excels infinitos, capturas en el grupo de WhatsApp, batallas de clausulazos sin control y siempre con la sensación de echar en falta una experiencia mejor. Decidimos construir la app que nos faltaba y abrirla para que la usara cualquiera.",
+    "aboutP2": "Si te encuentras un bug, tienes una idea, quieres sugerir una categoría nueva o solo dar feedback, escribe a <email></email>. No hay un equipo grande detrás, así que puede tardar un día o dos en responder, pero leemos todo.",
+    "whyWrite": "Por qué escribir",
+    "bugsTitle": "Bugs",
+    "bugsText": "Algo no funciona o se ve raro. Cuéntame qué pasó y, si puedes, manda captura.",
+    "bugsSubject": "Bug en Quiniela Mundial",
+    "improvTitle": "Mejoras",
+    "improvText": "Una idea para una categoría nueva, una pantalla, una funcionalidad. Soy todo oídos.",
+    "improvSubject": "Mejora para Quiniela Mundial",
+    "otherTitle": "Otros",
+    "otherText": "Lo que sea: prensa, colaboraciones, dudas legales, peticiones de borrado.",
+    "otherSubject": "Quiniela Mundial · ",
+    "write": "Escribir →",
+    "companiesEyebrow": "Empresas y grupos grandes",
+    "companiesTitle": "¿Tu empresa lo quiere usar?",
+    "companiesDesc": "Las quinielas privadas aguantan 20 personas en plan Free. Para equipos más grandes mira <link>/precios</link> o rellena el formulario y te respondemos en menos de 24 h.",
+    "socials": "Redes sociales",
+    "portraitAlt": "Creador de Quiniela Mundial"
   }
 }

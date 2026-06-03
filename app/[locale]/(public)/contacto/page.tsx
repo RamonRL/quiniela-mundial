@@ -1,5 +1,6 @@
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
 import { Briefcase, Bug, Lightbulb, Mail, MessageSquare } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
 import { PageHeader } from "@/components/shell/page-header";
@@ -57,20 +58,22 @@ const SOCIALS: Social[] = [
   },
 ];
 
-export default function ContactoPage() {
+export default async function ContactoPage() {
+  const t = await getTranslations("contactPage");
+  const tt = await getTranslations("tournament");
   return (
     <div className="space-y-12">
       <BreadcrumbLD
         items={[
-          { name: "Inicio", href: "/" },
-          { name: "Contacto", href: "/contacto" },
+          { name: tt("home"), href: "/" },
+          { name: t("breadcrumb"), href: "/contacto" },
         ]}
       />
 
       <PageHeader
-        eyebrow="Ayuda"
-        title="Contacto"
-        description="Bugs, mejoras o cualquier asunto — te respondemos lo antes posible."
+        eyebrow={t("eyebrow")}
+        title={t("title")}
+        description={t("desc")}
       />
 
       {/* ─── Email hero ─── */}
@@ -84,7 +87,7 @@ export default function ContactoPage() {
             <Mail className="size-5" />
           </span>
           <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-            Email
+            {t("emailLabel")}
           </p>
           <a
             href={`mailto:${EMAIL}`}
@@ -93,7 +96,7 @@ export default function ContactoPage() {
             {EMAIL}
           </a>
           <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-            Click para abrir tu cliente de correo.
+            {t("emailHint")}
           </p>
         </div>
       </section>
@@ -108,7 +111,7 @@ export default function ContactoPage() {
             <div className="relative z-10 size-32 overflow-hidden rounded-full border-2 border-[var(--color-arena)]/40 bg-[var(--color-surface)] shadow-[var(--shadow-elev-2)]">
               <Image
                 src="/yo-portrait.jpg"
-                alt="Creador de Quiniela Mundial"
+                alt={t("portraitAlt")}
                 width={640}
                 height={640}
                 className="h-full w-full object-cover"
@@ -137,30 +140,25 @@ export default function ContactoPage() {
         </div>
         <div className="space-y-4">
           <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Sobre el proyecto
+            {t("aboutEyebrow")}
           </p>
           <h2 className="font-display text-3xl tracking-tight sm:text-4xl">
-            Hecho por un aficionado, para aficionados.
+            {t("aboutTitle")}
           </h2>
           <p className="font-editorial text-base italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-lg">
-            Quiniela Mundial nació para un grupo de amigos, como alternativa
-            a los juegos fantasy tradicionales — excels infinitos, capturas
-            en el grupo de WhatsApp, batallas de clausulazos sin control y
-            siempre con la sensación de echar en falta una experiencia mejor.
-            Decidimos construir la app que nos faltaba y abrirla para que la
-            usara cualquiera.
+            {t("aboutP1")}
           </p>
           <p className="font-editorial text-base italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-lg">
-            Si te encuentras un bug, tienes una idea, quieres sugerir una
-            categoría nueva o solo dar feedback, escribe a{" "}
-            <a
-              href={`mailto:${EMAIL}`}
-              className="text-[var(--color-arena)] underline-offset-2 hover:underline"
-            >
-              {EMAIL}
-            </a>
-            . No hay un equipo grande detrás, así que puede tardar un día o
-            dos en responder, pero leemos todo.
+            {t.rich("aboutP2", {
+              email: () => (
+                <a
+                  href={`mailto:${EMAIL}`}
+                  className="text-[var(--color-arena)] underline-offset-2 hover:underline"
+                >
+                  {EMAIL}
+                </a>
+              ),
+            })}
           </p>
         </div>
       </section>
@@ -170,27 +168,30 @@ export default function ContactoPage() {
         <header className="flex items-center gap-3 border-b border-[var(--color-border)] pb-2">
           <span className="h-px w-6 bg-[var(--color-arena)]" />
           <h2 className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Por qué escribir
+            {t("whyWrite")}
           </h2>
         </header>
         <div className="grid gap-3 sm:grid-cols-3">
           <ContactCard
             icon={<Bug className="size-5" />}
-            title="Bugs"
-            text="Algo no funciona o se ve raro. Cuéntame qué pasó y, si puedes, manda captura."
-            href={`mailto:${EMAIL}?subject=${encodeURIComponent("Bug en Quiniela Mundial")}`}
+            title={t("bugsTitle")}
+            text={t("bugsText")}
+            href={`mailto:${EMAIL}?subject=${encodeURIComponent(t("bugsSubject"))}`}
+            writeLabel={t("write")}
           />
           <ContactCard
             icon={<Lightbulb className="size-5" />}
-            title="Mejoras"
-            text="Una idea para una categoría nueva, una pantalla, una funcionalidad. Soy todo oídos."
-            href={`mailto:${EMAIL}?subject=${encodeURIComponent("Mejora para Quiniela Mundial")}`}
+            title={t("improvTitle")}
+            text={t("improvText")}
+            href={`mailto:${EMAIL}?subject=${encodeURIComponent(t("improvSubject"))}`}
+            writeLabel={t("write")}
           />
           <ContactCard
             icon={<MessageSquare className="size-5" />}
-            title="Otros"
-            text="Lo que sea: prensa, colaboraciones, dudas legales, peticiones de borrado."
-            href={`mailto:${EMAIL}?subject=${encodeURIComponent("Quiniela Mundial · ")}`}
+            title={t("otherTitle")}
+            text={t("otherText")}
+            href={`mailto:${EMAIL}?subject=${encodeURIComponent(t("otherSubject"))}`}
+            writeLabel={t("write")}
           />
         </div>
       </section>
@@ -210,21 +211,22 @@ export default function ContactoPage() {
               <Briefcase className="size-5" />
             </span>
             <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-              Empresas y grupos grandes
+              {t("companiesEyebrow")}
             </p>
             <h2 className="font-display text-3xl tracking-tight">
-              ¿Tu empresa lo quiere usar?
+              {t("companiesTitle")}
             </h2>
             <p className="max-w-md font-editorial text-base italic leading-relaxed text-[var(--color-muted-foreground)]">
-              Las quinielas privadas aguantan 20 personas en plan Free. Para
-              equipos más grandes mira{" "}
-              <Link
-                href="/precios"
-                className="text-[var(--color-arena)] underline-offset-2 hover:underline"
-              >
-                /precios
-              </Link>{" "}
-              o rellena el formulario y te respondemos en menos de 24 h.
+              {t.rich("companiesDesc", {
+                link: (chunks) => (
+                  <Link
+                    href="/precios"
+                    className="text-[var(--color-arena)] underline-offset-2 hover:underline"
+                  >
+                    {chunks}
+                  </Link>
+                ),
+              })}
             </p>
           </div>
           <CommercialLeadForm />
@@ -237,7 +239,7 @@ export default function ContactoPage() {
           <header className="flex items-center gap-3 border-b border-[var(--color-border)] pb-2">
             <span className="h-px w-6 bg-[var(--color-arena)]" />
             <h2 className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-              Redes sociales
+              {t("socials")}
             </h2>
           </header>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -280,11 +282,13 @@ function ContactCard({
   title,
   text,
   href,
+  writeLabel,
 }: {
   icon: React.ReactNode;
   title: string;
   text: string;
   href: string;
+  writeLabel: string;
 }) {
   return (
     <a
@@ -299,7 +303,7 @@ function ContactCard({
         {text}
       </p>
       <span className="mt-auto font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-arena)] transition group-hover:translate-x-0.5">
-        Escribir →
+        {writeLabel}
       </span>
     </a>
   );
