@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
 import { ArrowRight, ChevronRight } from "lucide-react";
 import { asc } from "drizzle-orm";
 import { db } from "@/lib/db";
@@ -23,6 +24,7 @@ export async function GroupStandingsSlider() {
   ]);
 
   if (allGroups.length === 0) return null;
+  const t = await getTranslations("dashboard");
 
   // Indexamos por (groupId, teamId) para mirar el standing de cada equipo
   // en O(1) sin un join SQL más pesado.
@@ -51,23 +53,23 @@ export async function GroupStandingsSlider() {
       <header className="flex items-end justify-between gap-3">
         <div>
           <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Fase de grupos
+            {t("gsEyebrow")}
           </p>
           <h2 className="font-display text-2xl tracking-tight sm:text-3xl">
-            Cómo van los 12 grupos
+            {t("gsTitle")}
           </h2>
         </div>
         <Link
           href="/grupos"
           className="hidden items-center gap-1 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-arena)] hover:underline sm:inline-flex"
         >
-          Ver todos <ArrowRight className="size-3" />
+          {t("gsSeeAll")} <ArrowRight className="size-3" />
         </Link>
       </header>
 
       <div
         className="scroll-x-only-on-pc -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-3 lg:mx-0 lg:px-0"
-        aria-label="Preview de los 12 grupos del Mundial 2026"
+        aria-label={t("gsAria")}
       >
         {cards.map(({ group, teams: teamsInGroup }) => (
           <Link

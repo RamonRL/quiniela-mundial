@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { loadActivityFeed } from "@/lib/activity-feed";
 
 /**
@@ -19,6 +20,7 @@ export async function ActivityFeedCard({
   if (myPoints <= 0) return null;
   const activity = await loadActivityFeed(userId, leagueId, 8).catch(() => []);
   if (activity.length === 0) return null;
+  const t = await getTranslations("dashboard");
 
   return (
     <section className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
@@ -26,7 +28,7 @@ export async function ActivityFeedCard({
         <div className="flex items-center gap-3">
           <span className="h-px w-6 bg-[var(--color-arena)]" />
           <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Últimos puntos · tu ledger
+            {t("afHeader")}
           </p>
         </div>
         <p className="font-display text-xl tracking-tight">+{myPoints}</p>
