@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { Trash2, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,8 +18,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { deleteOwnLeague } from "@/lib/league-actions";
 
-const CONFIRM_WORD = "ELIMINAR";
-
 /**
  * Eliminar quiniela (solo el creador). En vez de un confirm() del navegador,
  * abre un modal con el estilo de la web donde el usuario debe escribir
@@ -33,11 +32,13 @@ export function DeleteLeagueDialog({
   leagueName: string;
   memberCount: number;
 }) {
+  const t = useTranslations("myPool");
+  const confirmWord = t("confirmWord");
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
   const [pending, start] = useTransition();
 
-  const confirmable = value.trim().toUpperCase() === CONFIRM_WORD;
+  const confirmable = value.trim().toUpperCase() === confirmWord;
 
   function onOpenChange(next: boolean) {
     if (pending) return;
@@ -65,7 +66,7 @@ export function DeleteLeagueDialog({
           className="border-[var(--color-danger)]/40 text-[var(--color-danger)] hover:bg-[var(--color-danger)]/8 hover:text-[var(--color-danger)]"
         >
           <Trash2 className="size-4" />
-          <span>Eliminar</span>
+          <span>{t("deleteBtn")}</span>
         </Button>
       </DialogTrigger>
 
@@ -74,19 +75,25 @@ export function DeleteLeagueDialog({
           <div className="mb-1 flex size-11 items-center justify-center rounded-lg bg-[color-mix(in_oklch,var(--color-danger)_14%,transparent)] text-[var(--color-danger)]">
             <TriangleAlert className="size-5" />
           </div>
-          <DialogTitle>Eliminar «{leagueName}»</DialogTitle>
+          <DialogTitle>{t("deleteTitle", { name: leagueName })}</DialogTitle>
           <DialogDescription>
-            Esta acción es <strong className="font-semibold">irreversible</strong>.
-            Se borra la quiniela y sus predicciones, y sus{" "}
-            {memberCount === 1 ? "1 miembro pasará" : `${memberCount} miembros pasarán`}{" "}
-            a la Quiniela Pública.
+            {t.rich("deleteDesc", {
+              count: memberCount,
+              b: (chunks) => <strong className="font-semibold">{chunks}</strong>,
+            })}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-2">
           <Label htmlFor="delete-confirm" className="text-sm">
-            Escribe <span className="font-mono font-semibold text-[var(--color-danger)]">ELIMINAR</span>{" "}
-            para confirmar
+            {t.rich("deleteTypePrompt", {
+              word: confirmWord,
+              w: (chunks) => (
+                <span className="font-mono font-semibold text-[var(--color-danger)]">
+                  {chunks}
+                </span>
+              ),
+            })}
           </Label>
           <Input
             id="delete-confirm"
@@ -94,7 +101,7 @@ export function DeleteLeagueDialog({
             onChange={(e) => setValue(e.target.value)}
             autoComplete="off"
             autoCapitalize="characters"
-            placeholder="ELIMINAR"
+            placeholder={confirmWord}
             disabled={pending}
             onKeyDown={(e) => {
               if (e.key === "Enter" && confirmable) {
@@ -109,7 +116,7 @@ export function DeleteLeagueDialog({
         <DialogFooter>
           <DialogClose asChild>
             <Button type="button" variant="ghost" disabled={pending}>
-              Cancelar
+              {t("cancel")}
             </Button>
           </DialogClose>
           <Button
@@ -119,7 +126,7 @@ export function DeleteLeagueDialog({
             className="bg-[var(--color-danger)] text-white hover:bg-[var(--color-danger)]/90"
           >
             <Trash2 className="size-4" />
-            {pending ? "Eliminando…" : "Eliminar definitivamente"}
+            {pending ? t("deleting") : t("deleteConfirmBtn")}
           </Button>
         </DialogFooter>
       </DialogContent>

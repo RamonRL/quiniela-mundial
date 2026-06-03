@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { UserMinus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { kickFromOwnLeague, leaveLeague } from "@/lib/league-actions";
@@ -16,6 +17,7 @@ type Props = {
  * usa DeleteButton (eliminar la quiniela entera) en su lugar.
  */
 export function LeaveButton({ leagueId, leagueName }: Props) {
+  const t = useTranslations("myPool");
   const [pending, start] = useTransition();
   return (
     <Button
@@ -24,22 +26,17 @@ export function LeaveButton({ leagueId, leagueName }: Props) {
       size="sm"
       disabled={pending}
       onClick={() => {
-        if (
-          !confirm(
-            `¿Abandonar "${leagueName}"? Pasarás a tener la Quiniela Pública como activa. Podrás volver a unirte con el código si te lo comparten.`,
-          )
-        )
-          return;
+        if (!confirm(t("leaveConfirm", { name: leagueName }))) return;
         start(async () => {
           const fd = new FormData();
           fd.set("leagueId", String(leagueId));
           const res = await leaveLeague(fd);
-          if (res.ok) toast.success(res.message ?? "Has abandonado la quiniela.");
-          else toast.error(res.error ?? "No se pudo abandonar.");
+          if (res.ok) toast.success(res.message ?? t("leftLeague"));
+          else toast.error(res.error ?? t("leaveFailed"));
         });
       }}
     >
-      {pending ? "Saliendo…" : "Abandonar quiniela"}
+      {pending ? t("leaving") : t("leaveBtn")}
     </Button>
   );
 }
@@ -55,6 +52,7 @@ type KickProps = {
  * que DeleteButton (transition + confirm) pero con copy específico.
  */
 export function KickButton({ userId, userLabel, leagueId }: KickProps) {
+  const t = useTranslations("myPool");
   const [pending, start] = useTransition();
   return (
     <Button
@@ -62,15 +60,10 @@ export function KickButton({ userId, userLabel, leagueId }: KickProps) {
       variant="ghost"
       size="icon"
       disabled={pending}
-      aria-label={`Quitar a ${userLabel}`}
-      title={`Quitar a ${userLabel}`}
+      aria-label={t("kickAria", { name: userLabel })}
+      title={t("kickAria", { name: userLabel })}
       onClick={() => {
-        if (
-          !confirm(
-            `¿Quitar a ${userLabel} de la quiniela? Sus puntos en esta liga se quedan, pero deja de ser miembro.`,
-          )
-        )
-          return;
+        if (!confirm(t("kickConfirm", { name: userLabel }))) return;
         start(async () => {
           const fd = new FormData();
           fd.set("userId", userId);

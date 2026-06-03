@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -11,6 +12,7 @@ import { toast } from "sonner";
  * y compartible de toda la pantalla, así que merece protagonismo.
  */
 export function CodeDisplay({ code }: { code: string }) {
+  const t = useTranslations("myPool");
   const [copied, setCopied] = useState(false);
   const digits = code.padStart(4, "0").slice(0, 4).split("");
 
@@ -19,10 +21,10 @@ export function CodeDisplay({ code }: { code: string }) {
       .writeText(code)
       .then(() => {
         setCopied(true);
-        toast.success("Código copiado");
+        toast.success(t("codeCopied"));
         setTimeout(() => setCopied(false), 1500);
       })
-      .catch(() => toast.error("No se pudo copiar."));
+      .catch(() => toast.error(t("copyFailed")));
   }
 
   return (
@@ -31,16 +33,16 @@ export function CodeDisplay({ code }: { code: string }) {
       <div className="relative flex flex-col items-center gap-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-center sm:text-left">
           <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-            Código de invitación
+            {t("inviteCode")}
           </p>
           <p className="pt-1 font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-            Compártelo y se unen al instante.
+            {t("inviteCodeHint")}
           </p>
         </div>
         <button
           type="button"
           onClick={copy}
-          aria-label="Copiar código"
+          aria-label={t("copyCode")}
           className="group flex items-center gap-2 sm:gap-3"
         >
           <span className="flex gap-1.5 sm:gap-2">

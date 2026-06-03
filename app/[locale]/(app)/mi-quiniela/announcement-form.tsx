@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Megaphone, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +22,7 @@ type Props = {
  * premium. Cuerpo opcional (vacío = limpia el anuncio).
  */
 export function AnnouncementForm({ leagueId, initialValue }: Props) {
+  const t = useTranslations("myPool");
   const [state, action, pending] = useActionState(
     updateLeagueAnnouncement,
     initial,
@@ -35,7 +37,7 @@ export function AnnouncementForm({ leagueId, initialValue }: Props) {
       <input type="hidden" name="id" value={leagueId} />
       <header className="flex items-center gap-2 font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
         <Megaphone className="size-3.5" />
-        <span>Anuncio fijado · Pase Mundial 2026</span>
+        <span>{t("annHeader")}</span>
       </header>
       <textarea
         name="announcement"
@@ -43,12 +45,12 @@ export function AnnouncementForm({ leagueId, initialValue }: Props) {
         maxLength={280}
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="Ej. 'El ganador se lleva 200€ en Amazon. Fecha de entrega: 25/07.'"
+        placeholder={t("annPlaceholder")}
         className="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2.5 text-sm text-[var(--color-foreground)] outline-none transition focus:border-[var(--color-arena)]"
       />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
-          Lo verán todos los miembros como banner en /mi-quiniela.
+          {t("annHint")}
           {" "}
           <span className="font-mono not-italic uppercase tracking-[0.18em]">
             {value.length}/280
@@ -56,7 +58,7 @@ export function AnnouncementForm({ leagueId, initialValue }: Props) {
         </p>
         <Button type="submit" size="sm" disabled={pending}>
           <Save className="size-3.5" />
-          {pending ? "Guardando…" : "Guardar"}
+          {pending ? t("saving") : t("save")}
         </Button>
       </div>
       {state.error ? (

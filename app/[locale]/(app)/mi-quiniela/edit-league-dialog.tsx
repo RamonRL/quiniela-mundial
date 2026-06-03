@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Pencil, Save } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,7 @@ type Props = {
  * que tras un guardado exitoso se cierre y muestre toast.
  */
 export function EditLeagueDialog({ league }: Props) {
+  const t = useTranslations("myPool");
   const [open, setOpen] = useState(false);
   const [state, action, pending] = useActionState(updateLeague, initial);
   const [name, setName] = useState(league.name);
@@ -56,7 +58,7 @@ export function EditLeagueDialog({ league }: Props) {
   // render y para que el flash de éxito no se quede atrapado.
   useEffect(() => {
     if (state.ok && open) {
-      toast.success(state.message ?? "Quiniela actualizada.");
+      toast.success(state.message ?? t("leagueUpdated"));
       setOpen(false);
     }
     // state cambia al haber respuesta — depender solo de su contenido.
@@ -68,22 +70,21 @@ export function EditLeagueDialog({ league }: Props) {
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           <Pencil className="size-3.5" />
-          Editar
+          {t("edit")}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Editar quiniela</DialogTitle>
+          <DialogTitle>{t("editTitle")}</DialogTitle>
           <DialogDescription>
-            Cambia el nombre y el logo. El código y el invite link se
-            mantienen.
+            {t("editDesc")}
           </DialogDescription>
         </DialogHeader>
         <form action={action} className="space-y-5">
           <input type="hidden" name="id" value={league.id} />
 
           <div className="space-y-1.5">
-            <Label htmlFor="league-name">Nombre · máx 25 caracteres</Label>
+            <Label htmlFor="league-name">{t("nameLabel")}</Label>
             <Input
               id="league-name"
               name="name"
@@ -95,14 +96,14 @@ export function EditLeagueDialog({ league }: Props) {
           </div>
 
           <div className="space-y-1.5">
-            <Label>Logo</Label>
+            <Label>{t("logoLabel")}</Label>
             <LeagueLogoGalleryPicker initialLogoUrl={league.logoUrl} />
           </div>
 
           {league.isPremium ? (
             <div className="rounded-md border border-[var(--color-border)] p-3">
               <div className="pb-2 font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
-                Logo custom
+                {t("customLogo")}
               </div>
               <div className="flex items-center gap-3">
                 <LeagueLogoDropzone
@@ -112,7 +113,7 @@ export function EditLeagueDialog({ league }: Props) {
                   onCompressingChange={setLogoBusy}
                 />
                 <p className="font-editorial text-xs italic leading-snug text-[var(--color-muted-foreground)]">
-                  Sustituye la galería al guardar.
+                  {t("customLogoHint")}
                 </p>
               </div>
             </div>
@@ -128,11 +129,11 @@ export function EditLeagueDialog({ league }: Props) {
               variant="ghost"
               onClick={() => setOpen(false)}
             >
-              Cancelar
+              {t("cancel")}
             </Button>
             <Button type="submit" disabled={pending || logoBusy}>
               <Save />
-              {pending ? "Guardando…" : "Guardar"}
+              {pending ? t("saving") : t("save")}
             </Button>
           </DialogFooter>
         </form>

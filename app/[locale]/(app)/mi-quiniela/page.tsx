@@ -1,5 +1,7 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import { ArrowRight, Building2, Crown, Download, Mail, Megaphone, Sparkles, ShieldCheck, Users } from "lucide-react";
 import { asc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
@@ -31,6 +33,7 @@ export const dynamic = "force-dynamic";
 
 export default async function MyLeaguePage() {
   const me = await requireUser();
+  const t = await getTranslations("myPool");
   const leagueId = await currentLeagueId(me);
   if (leagueId == null) redirect("/onboarding");
 
@@ -83,17 +86,18 @@ export default async function MyLeaguePage() {
       {isOwner && isFull ? (
         <aside className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--color-danger)]/40 bg-[var(--color-danger)]/5 p-4">
           <p className="font-editorial text-sm italic leading-relaxed">
-            <strong className="font-semibold not-italic">
-              Quiniela completa ({memberLimit}/{memberLimit} miembros).
-            </strong>{" "}
-            Para que entren más, contrata un Pase Mundial 2026 — sin migrar
-            datos, mismo grupo.
+            {t.rich("fullBanner", {
+              limit: memberLimit,
+              b: (chunks) => (
+                <strong className="font-semibold not-italic">{chunks}</strong>
+              ),
+            })}
           </p>
           <Link
             href="/precios"
             className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-[var(--color-arena)] bg-[var(--color-arena)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-white shadow-[var(--shadow-arena)]"
           >
-            Ver planes <ArrowRight className="size-3" />
+            {t("seePlans")} <ArrowRight className="size-3" />
           </Link>
         </aside>
       ) : null}
@@ -101,14 +105,13 @@ export default async function MyLeaguePage() {
       {isOwner && nearLimit ? (
         <aside className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_6%,var(--color-surface))] p-4">
           <p className="font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)]">
-            Estás cerca del límite ({members.length}/{memberLimit}). ¿Tu grupo
-            va a crecer?
+            {t("nearLimitBanner", { members: members.length, limit: memberLimit })}
           </p>
           <Link
             href="/precios"
             className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-[var(--color-arena)]/40 bg-[var(--color-surface)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--color-arena)] hover:bg-[color-mix(in_oklch,var(--color-arena)_8%,transparent)]"
           >
-            Ver planes <ArrowRight className="size-3" />
+            {t("seePlans")} <ArrowRight className="size-3" />
           </Link>
         </aside>
       ) : null}
@@ -124,13 +127,9 @@ export default async function MyLeaguePage() {
         ) : null}
         <div className="min-w-0 flex-1">
           <PageHeader
-            eyebrow="Quiniela privada"
+            eyebrow={t("eyebrowPrivate")}
             title={league.name}
-            description={
-              isOwner
-                ? "Tu quiniela. Comparte el código o el enlace para que se unan, gestiona miembros y, si quieres, elimínala."
-                : "Aquí ves a quienes están dentro y cómo invitar a más gente."
-            }
+            description={isOwner ? t("descOwner") : t("descMember")}
             actions={
               isOwner ? (
                 <div className="flex items-center gap-2">
@@ -164,7 +163,7 @@ export default async function MyLeaguePage() {
 
       <section className="grid gap-3 sm:grid-cols-3">
         <StatTile
-          label="Miembros"
+          label={t("statMembers")}
           value={
             memberLimit != null ? `${members.length} / ${memberLimit}` : String(members.length)
           }
@@ -172,12 +171,12 @@ export default async function MyLeaguePage() {
           textValue
         />
         <StatTile
-          label="Plan"
-          value={isPremium ? "Pase Mundial 2026" : "Free"}
+          label={t("statPlan")}
+          value={isPremium ? t("planPremium") : t("planFree")}
           textValue
         />
         <StatTile
-          label="Creada"
+          label={t("statCreated")}
           value={formatDateTime(league.createdAt, {
             day: "2-digit",
             month: "short",
@@ -204,9 +203,9 @@ export default async function MyLeaguePage() {
               <Building2 className="size-4" />
             </span>
             <div className="min-w-0">
-              <p className="font-display text-sm tracking-tight">Departamentos</p>
+              <p className="font-display text-sm tracking-tight">{t("deptCardTitle")}</p>
               <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
-                Sub-grupos con ranking por media de puntos.
+                {t("deptCardDesc")}
               </p>
             </div>
           </Link>
@@ -221,9 +220,9 @@ export default async function MyLeaguePage() {
               <Download className="size-4" />
             </span>
             <div className="min-w-0">
-              <p className="font-display text-sm tracking-tight">Exportar CSV</p>
+              <p className="font-display text-sm tracking-tight">{t("exportCardTitle")}</p>
               <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
-                Ranking completo con email y puntos.
+                {t("exportCardDesc")}
               </p>
             </div>
           </a>
@@ -236,10 +235,10 @@ export default async function MyLeaguePage() {
             </span>
             <div className="min-w-0">
               <p className="flex items-center gap-1.5 font-display text-sm tracking-tight">
-                Soporte prioritario <Sparkles className="size-3" />
+                {t("supportCardTitle")} <Sparkles className="size-3" />
               </p>
               <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
-                Respondo en menos de 24 h.
+                {t("supportCardDesc")}
               </p>
             </div>
           </a>
@@ -248,35 +247,34 @@ export default async function MyLeaguePage() {
 
       <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
         <header className="flex items-center justify-between gap-3 pb-3 font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-          <span>Invite link</span>
+          <span>{t("inviteLink")}</span>
         </header>
         <InviteLinkCopy token={league.inviteToken} />
         <p className="pt-3 font-editorial text-xs italic leading-relaxed text-[var(--color-muted-foreground)]">
-          Quien tenga el enlace o el código entra directo. Ambos son fijos
-          para siempre — no rotan.
+          {t("inviteHint")}
         </p>
       </div>
 
       <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]">
         <header className="flex items-center justify-between gap-3 border-b border-[var(--color-border)] px-5 py-3 font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-          <span>Participantes</span>
+          <span>{t("participants")}</span>
           <span>{members.length}</span>
         </header>
         {members.length === 0 ? (
           <EmptyState
             icon={<Users className="size-5" />}
-            title="Sin miembros"
-            description="Comparte el código o el enlace de arriba para que se unan."
+            title={t("noMembersTitle")}
+            description={t("noMembersDesc")}
           />
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Participante</TableHead>
-                <TableHead className="hidden sm:table-cell">Alta</TableHead>
-                <TableHead className="text-right">Pts</TableHead>
+                <TableHead>{t("thParticipant")}</TableHead>
+                <TableHead className="hidden sm:table-cell">{t("thJoined")}</TableHead>
+                <TableHead className="text-right">{t("thPts")}</TableHead>
                 {isOwner ? (
-                  <TableHead className="w-16 text-right" aria-label="Acciones" />
+                  <TableHead className="w-16 text-right" aria-label={t("actionsAria")} />
                 ) : null}
               </TableRow>
             </TableHeader>
@@ -301,19 +299,19 @@ export default async function MyLeaguePage() {
                             {display}
                             {isMe ? (
                               <Badge variant="outline" className="px-1.5 text-[0.55rem]">
-                                Tú
+                                {t("you")}
                               </Badge>
                             ) : null}
                             {isCreator ? (
                               <Crown
                                 className="size-3 text-[var(--color-arena)]"
-                                aria-label="Creador"
+                                aria-label={t("creatorAria")}
                               />
                             ) : null}
                             {m.role === "admin" ? (
                               <ShieldCheck
                                 className="size-3 text-[var(--color-arena)]"
-                                aria-label="Admin"
+                                aria-label={t("adminAria")}
                               />
                             ) : null}
                           </p>
@@ -347,11 +345,11 @@ export default async function MyLeaguePage() {
 
       {isOwner ? (
         <p className="font-editorial text-xs italic leading-relaxed text-[var(--color-muted-foreground)]">
-          <strong className="font-semibold not-italic">Quitar</strong> echa al
-          miembro de esta quiniela; sus predicciones y puntos en esta liga
-          quedan en su perfil pero deja de aparecer en el ranking.{" "}
-          <strong className="font-semibold not-italic">Eliminar quiniela</strong>{" "}
-          la borra entera y todos los miembros vuelven a la pública.
+          {t.rich("footerNote", {
+            b: (chunks) => (
+              <strong className="font-semibold not-italic">{chunks}</strong>
+            ),
+          })}
         </p>
       ) : null}
     </div>
@@ -372,6 +370,7 @@ function UpgradePromo({
   currentMembers: number;
   currentLimit: number | null;
 }) {
+  const t = useTranslations("myPool");
   return (
     <section className="relative overflow-hidden rounded-2xl border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface))] p-5 sm:p-6">
       <div
@@ -392,36 +391,36 @@ function UpgradePromo({
           <div className="inline-flex items-center gap-2">
             <Crown className="size-3.5 text-[var(--color-arena)]" />
             <p className="font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-arena)]">
-              Pase Mundial 2026
+              {t("promoEyebrow")}
             </p>
           </div>
           <h2 className="font-display text-2xl tracking-tight sm:text-3xl">
-            Hazlo el ritual de oficina del Mundial
+            {t("promoTitle")}
           </h2>
           <p className="font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)]">
-            Tu liga Free está topada a {currentLimit ?? 20} miembros (vais {currentMembers}). Con un Pase ampliamos a 50, 100 o 250 y desbloqueamos las funciones pensadas para grupos grandes.
+            {t("promoDesc", { limit: currentLimit ?? 20, members: currentMembers })}
           </p>
 
           <ul className="grid gap-1.5 pt-1 sm:grid-cols-2">
-            <PromoBullet>Departamentos internos con ranking por media</PromoBullet>
-            <PromoBullet>Hasta 250 miembros por liga</PromoBullet>
-            <PromoBullet>Logo corporativo + anuncio fijado</PromoBullet>
-            <PromoBullet>Export CSV del ranking y soporte prioritario</PromoBullet>
+            <PromoBullet>{t("promoBullet1")}</PromoBullet>
+            <PromoBullet>{t("promoBullet2")}</PromoBullet>
+            <PromoBullet>{t("promoBullet3")}</PromoBullet>
+            <PromoBullet>{t("promoBullet4")}</PromoBullet>
           </ul>
         </div>
 
         <div className="flex flex-col items-start gap-2 lg:items-end">
           <p className="font-display tabular text-4xl tracking-tight text-[var(--color-arena)] glow-arena">
-            desde 19 €
+            {t("promoFrom")}
           </p>
           <p className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-            Pago único · sin renovación
+            {t("promoOneTime")}
           </p>
           <Link
             href="/precios"
             className="inline-flex items-center gap-2 rounded-md border border-[var(--color-arena)] bg-[var(--color-arena)] px-4 py-2 font-mono text-[0.65rem] uppercase tracking-[0.18em] text-white shadow-[var(--shadow-arena)] transition hover:opacity-90"
           >
-            Ver planes <ArrowRight className="size-3.5" />
+            {t("seePlans")} <ArrowRight className="size-3.5" />
           </Link>
         </div>
       </div>
