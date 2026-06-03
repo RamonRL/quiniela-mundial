@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { AlertTriangle, Check } from "lucide-react";
 import { PlayerAvatar } from "@/components/brand/player-avatar";
 import { TeamFlag } from "@/components/brand/team-flag";
@@ -16,11 +17,11 @@ export type PlayerCardData = {
 
 type TeamLite = { id: number; code: string; name: string };
 
-const POSITION_LABEL: Record<string, string> = {
-  DEL: "Delanteros",
-  MED: "Mediocampistas",
-  DEF: "Defensas",
-  POR: "Porteros",
+const POSITION_LABEL_KEY: Record<string, string> = {
+  DEL: "posDel",
+  MED: "posMed",
+  DEF: "posDef",
+  POR: "posPor",
 };
 const POSITION_ORDER = ["DEL", "MED", "DEF", "POR"];
 const POSITION_ACCENT: Record<string, string> = {
@@ -140,6 +141,7 @@ function TeamColumn({
   onSelect: (playerId: number) => void;
   hiddenOnMobile: boolean;
 }) {
+  const t = useTranslations("predMatchday");
   const groups = groupByPosition(players);
   const unofficial = players.length > 0 && players.every((p) => !p.photoUrl);
   return (
@@ -158,7 +160,7 @@ function TeamColumn({
               className="font-mono text-[0.55rem] uppercase tracking-[0.18em]"
               style={{ color: POSITION_ACCENT[pos] }}
             >
-              {POSITION_LABEL[pos]}
+              {t(POSITION_LABEL_KEY[pos])}
             </p>
             <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-3">
               {list.map((p) => (
@@ -177,7 +179,7 @@ function TeamColumn({
       {groups["?"] && groups["?"].length > 0 ? (
         <section className="space-y-2">
           <p className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-            Sin posición
+            {t("noPosition")}
           </p>
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-3">
             {groups["?"].map((p) => (
@@ -197,15 +199,16 @@ function TeamColumn({
 }
 
 function UnofficialSquadNotice() {
+  const t = useTranslations("predMatchday");
   return (
     <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2">
       <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-amber-500" />
       <div className="space-y-0.5">
         <p className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-amber-600 dark:text-amber-400">
-          Convocatoria no oficial
+          {t("unofficialTitle")}
         </p>
         <p className="font-editorial text-[0.72rem] italic leading-snug text-[var(--color-muted-foreground)]">
-          Esta selección aún no ha confirmado su lista para el Mundial. El jugador que elijas podría quedarse fuera.
+          {t("unofficialDesc")}
         </p>
       </div>
     </div>

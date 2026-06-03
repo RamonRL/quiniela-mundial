@@ -2,6 +2,7 @@
 
 import { TeamFlag } from "@/components/brand/team-flag";
 import { ScoreStepper } from "@/components/forms/score-stepper";
+import { useTranslations } from "next-intl";
 import { useActionState, useState } from "react";
 import { Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -57,20 +58,23 @@ type MatchInput = {
   existingScorerPlayerId: number | null;
 };
 
-const KNOCKOUT_LABEL: Record<MatchInput["stage"], string> = {
-  group: "Grupo",
-  r32: "16avos",
-  r16: "Octavos",
-  qf: "Cuartos",
-  sf: "Semis",
-  third: "3er puesto",
-  final: "Final",
+const KNOCKOUT_LABEL_KEY: Record<MatchInput["stage"], string> = {
+  group: "stGroup",
+  r32: "stR32",
+  r16: "stR16",
+  qf: "stQf",
+  sf: "stSf",
+  third: "stThird",
+  final: "stFinal",
 };
 
 /** Texto del badge: "Grupo A" en fase de grupos, nombre traducido en KO. */
-function stageLabel(m: Pick<MatchInput, "stage" | "groupCode">): string {
-  if (m.stage === "group" && m.groupCode) return `Grupo ${m.groupCode}`;
-  return KNOCKOUT_LABEL[m.stage];
+function stageLabel(
+  m: Pick<MatchInput, "stage" | "groupCode">,
+  t: ReturnType<typeof useTranslations>,
+): string {
+  if (m.stage === "group" && m.groupCode) return t("groupWithCode", { code: m.groupCode });
+  return t(KNOCKOUT_LABEL_KEY[m.stage]);
 }
 
 type Prediction = {
@@ -105,6 +109,7 @@ export function MatchdayPredictionForm({
    *  solo_ganador (solo 1X2 / quién pasa). */
   mode?: PredictionMode;
 }) {
+  const t = useTranslations("predMatchday");
   const soloGanador = mode === "solo_ganador";
   const showScorer = mode === "completo";
   const [predictions, setPredictions] = useState<Prediction[]>(
@@ -122,12 +127,12 @@ export function MatchdayPredictionForm({
   const [state, action, pending] = useActionState(saveMatchdayPredictions, initial);
 
   usePredictionSaveToast(state, {
-    successTitle: "Jornada guardada",
+    successTitle: t("savedTitle"),
     successDescription: soloGanador
-      ? "Ganadores anotados para esta jornada."
+      ? t("savedSolo")
       : showScorer
-        ? "Marcadores y goleadores anotados para esta jornada."
-        : "Marcadores anotados para esta jornada.",
+        ? t("savedCompleto")
+        : t("savedMarcador"),
   });
 
   function update(matchId: number, patch: Partial<Prediction>) {
@@ -154,7 +159,7 @@ export function MatchdayPredictionForm({
       {!open ? (
         <div className="flex items-center gap-2 rounded-lg border border-[var(--color-warning)]/40 bg-[var(--color-warning)]/10 p-3 text-sm text-[var(--color-warning)]">
           <Lock className="size-4" />
-          Todos los partidos de la jornada ya empezaron. Sólo puedes consultar lo que enviaste.
+          {t("closedBanner")}
         </div>
       ) : null}
 
@@ -176,13 +181,13 @@ export function MatchdayPredictionForm({
             >
               <CardHeader className="flex flex-row items-center justify-between gap-2 p-4">
                 <Badge variant="outline" className="text-[0.65rem] uppercase">
-                  {stageLabel(m)}
+                  {stageLabel(m, t)}
                 </Badge>
                 <div className="flex items-center gap-2">
                   {matchClosed && open ? (
                     <Badge variant="outline" className="gap-1 text-[0.55rem] uppercase">
                       <Lock className="size-3" />
-                      Cerrado
+                      {t("closed")}
                     </Badge>
                   ) : null}
                   <span className="text-xs text-[var(--color-muted-foreground)]">
@@ -214,7 +219,7 @@ export function MatchdayPredictionForm({
                     value={p.homeScore}
                     onChange={(v) => update(m.id, { homeScore: v })}
                     disabled={inputsDisabled}
-                    ariaLabel={`Goles ${m.home?.name ?? "local"}`}
+                    ariaLabel={t("goalsAria", { team: m.home?.name ?? t("localFallback") })}
                   />
                 </div>
                 <div className="flex items-center justify-between gap-3">
@@ -223,7 +228,7 @@ export function MatchdayPredictionForm({
                     value={p.awayScore}
                     onChange={(v) => update(m.id, { awayScore: v })}
                     disabled={inputsDisabled}
-                    ariaLabel={`Goles ${m.away?.name ?? "visitante"}`}
+                    ariaLabel={t("goalsAria", { team: m.away?.name ?? t("awayFallback") })}
                   />
                 </div>
                 {isKnockout ? (
@@ -237,10 +242,10 @@ export function MatchdayPredictionForm({
                         }
                         disabled={inputsDisabled}
                       />
-                      <Label htmlFor={`pens-${m.id}`}>Predigo penaltis (+2)</Label>
+                      <Label htmlFor={`pens-${m.id}`}>{t("pensCheck")}</Label>
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs">Clasificado a la siguiente ronda</Label>
+                      <Label className="text-xs">{t("qualifiedNext")}</Label>
                       <Select
                         value={p.winnerTeamId?.toString() ?? ""}
                         onValueChange={(v) =>
@@ -271,7 +276,7 @@ export function MatchdayPredictionForm({
                 {showScorer ? (
                 <div className="space-y-1.5 border-t border-dashed border-[var(--color-border)] pt-3">
                   <Label className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-                    Goleador del partido <span className="text-[var(--color-arena)]">+4 / +6</span>
+                    {t("scorerLabel")} <span className="text-[var(--color-arena)]">+4 / +6</span>
                   </Label>
                   {hasPlayers ? (
                     <Select
@@ -284,12 +289,12 @@ export function MatchdayPredictionForm({
                       disabled={inputsDisabled}
                     >
                       <SelectTrigger className="h-9 text-sm">
-                        <SelectValue placeholder="Sin pick" />
+                        <SelectValue placeholder={t("noPick")} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value={NO_SCORER}>
                           <span className="text-[var(--color-muted-foreground)]">
-                            Sin pick
+                            {t("noPick")}
                           </span>
                         </SelectItem>
                         {m.home && m.homePlayers.length > 0 ? (
@@ -320,7 +325,7 @@ export function MatchdayPredictionForm({
                     </Select>
                   ) : (
                     <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
-                      Plantillas pendientes de carga.
+                      {t("squadsPending")}
                     </p>
                   )}
                 </div>

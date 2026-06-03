@@ -33,6 +33,7 @@ export default async function PredictMatchdayPage({
 }) {
   const me = await requireUser();
   const t = await getTranslations("scoring");
+  const tm = await getTranslations("predMatchday");
   const leagueId = (await currentLeagueId(me))!;
   const userTz = me.timezone ?? undefined;
   const mode = (await getLeagueModes([leagueId])).get(leagueId) ?? "completo";
@@ -62,14 +63,17 @@ export default async function PredictMatchdayPage({
         >
           <Link href="/predicciones">
             <ArrowLeft />
-            Mis predicciones
+            {tm("backLink")}
           </Link>
         </Button>
         <PageHeader eyebrow={day.stage.toUpperCase()} title={day.name} description={status.reason} />
         <EmptyState
           icon={<Lock className="size-5" />}
-          title="Bloqueada"
-          description={`${status.reason} Cuando se desbloquee tendrás hasta ${formatDateTime(day.predictionDeadlineAt, { timeZone: userTz })} para predecir.`}
+          title={tm("blockedTitle")}
+          description={tm("blockedDesc", {
+            reason: status.reason ?? "",
+            date: formatDateTime(day.predictionDeadlineAt, { timeZone: userTz }),
+          })}
         />
       </div>
     );
@@ -174,7 +178,7 @@ export default async function PredictMatchdayPage({
       <Button asChild variant="ghost" size="sm" className="px-0 text-[var(--color-muted-foreground)]">
         <Link href="/predicciones">
           <ArrowLeft />
-          Mis predicciones
+          {tm("backLink")}
         </Link>
       </Button>
       <PageHeader
@@ -182,20 +186,24 @@ export default async function PredictMatchdayPage({
         title={day.name}
         description={
           open
-            ? `Cierra el ${formatDateTime(day.predictionDeadlineAt, { timeZone: userTz })}. ${
+            ? `${tm("closesOn", {
+                date: formatDateTime(day.predictionDeadlineAt, { timeZone: userTz }),
+              })} ${
                 mode === "solo_ganador"
-                  ? "Elige el ganador (o empate) de cada partido."
+                  ? tm("descOpenSolo")
                   : mode === "marcador"
-                    ? "Marcador exacto de cada partido."
-                    : "Marcador y goleador en una sola jugada."
+                    ? tm("descOpenMarcador")
+                    : tm("descOpenCompleto")
               }`
-            : `Cierre pasado: ${formatDateTime(day.predictionDeadlineAt, { timeZone: userTz })}.`
+            : tm("closedPast", {
+                date: formatDateTime(day.predictionDeadlineAt, { timeZone: userTz }),
+              })
         }
       />
       {open ? (
         <InteractiveModeBanner
           href={`/predicciones/jornada/${day.id}/tour`}
-          hint="Repasa partido a partido."
+          hint={tm("bannerHint")}
         />
       ) : null}
       {/* Reglas de la FASE de esta jornada (grupos vs. final). La J1 (grupos)

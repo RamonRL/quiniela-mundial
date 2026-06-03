@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Calendar, MapPin } from "lucide-react";
 import { TeamFlag } from "@/components/brand/team-flag";
@@ -37,14 +38,14 @@ type MatchItem = {
   existingScorerPlayerId: number | null;
 };
 
-const STAGE_LABEL: Record<MatchItem["stage"], string> = {
-  group: "Grupo",
-  r32: "16avos",
-  r16: "Octavos",
-  qf: "Cuartos",
-  sf: "Semis",
-  third: "3er puesto",
-  final: "Final",
+const STAGE_LABEL_KEY: Record<MatchItem["stage"], string> = {
+  group: "stGroup",
+  r32: "stR32",
+  r16: "stR16",
+  qf: "stQf",
+  sf: "stSf",
+  third: "stThird",
+  final: "stFinal",
 };
 
 type LocalPrediction = {
@@ -72,6 +73,7 @@ export function MatchdayTourClient({
   allCompleteOnEntry: boolean;
   mode: PredictionMode;
 }) {
+  const t = useTranslations("predMatchday");
   const soloGanador = mode === "solo_ganador";
   const showScorer = mode === "completo";
 
@@ -102,11 +104,11 @@ export function MatchdayTourClient({
     if (toldEntryToast.current) return;
     toldEntryToast.current = true;
     if (allCompleteOnEntry) {
-      toast(`Ya predijiste los ${matches.length} partidos.`, {
-        description: "Revisa o cierra cuando quieras. Auto-guardado al pasar.",
+      toast(t("tourEntryToast", { n: matches.length }), {
+        description: t("tourEntryDesc"),
       });
     }
-  }, [allCompleteOnEntry, matches.length]);
+  }, [allCompleteOnEntry, matches.length, t]);
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -196,15 +198,14 @@ export function MatchdayTourClient({
     const p = preds[current.id];
     const reason = blockReason(p);
     if (reason === "scorer") {
-      toast.warning("Selecciona un goleador.", {
-        description:
-          "Aunque tu marcador sea 0-0, acertarlo te da +4 puntos extra. Nunca penaliza.",
+      toast.warning(t("warnScorerTitle"), {
+        description: t("warnScorerDesc"),
       });
       return;
     }
     if (reason === "picked") {
-      toast.warning("Elige un resultado.", {
-        description: "Pulsa 1 (local), X (empate) o 2 (visitante) para continuar.",
+      toast.warning(t("warnPickedTitle"), {
+        description: t("warnPickedDesc"),
       });
       return;
     }
@@ -227,8 +228,8 @@ export function MatchdayTourClient({
 
   const isKnockout = current.stage !== "group";
   const stageEyebrow = current.groupCode
-    ? `Grupo ${current.groupCode}`
-    : STAGE_LABEL[current.stage];
+    ? t("groupWithCode", { code: current.groupCode })
+    : t(STAGE_LABEL_KEY[current.stage]);
 
   // El paso a paso NO muestra "cuánto puntúa este paso": metía ruido. Las
   // reglas viven fuera del tour (página de jornada y /puntuacion).
@@ -241,7 +242,7 @@ export function MatchdayTourClient({
       onPrev={onPrev}
       onNext={onNext}
       direction={direction}
-      finishLabel="Finalizar"
+      finishLabel={t("finish")}
       pending={pending}
       // Marcador y Solo Ganador tienen poca info: centramos en vertical para
       // que no quede pegada arriba con un hueco hasta "Siguiente".
@@ -300,7 +301,7 @@ export function MatchdayTourClient({
                   </span>
                 ) : null}
                 <span className="font-mono text-xs uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-                  vs
+                  {t("vs")}
                 </span>
                 {current.away ? (
                   <span className="flex items-center gap-2">
@@ -338,7 +339,7 @@ export function MatchdayTourClient({
                   size="lg"
                   value={currentPred.homeScore}
                   onChange={(v) => updateCurrent({ homeScore: v })}
-                  ariaLabel={`Goles ${current.home?.name ?? "local"}`}
+                  ariaLabel={t("goalsAria", { team: current.home?.name ?? t("localFallback") })}
                 />
               </div>
               <span className="font-display text-3xl text-[var(--color-muted-foreground)] sm:text-4xl">—</span>
@@ -350,7 +351,7 @@ export function MatchdayTourClient({
                   size="lg"
                   value={currentPred.awayScore}
                   onChange={(v) => updateCurrent({ awayScore: v })}
-                  ariaLabel={`Goles ${current.away?.name ?? "visitante"}`}
+                  ariaLabel={t("goalsAria", { team: current.away?.name ?? t("awayFallback") })}
                 />
               </div>
             </section>
@@ -365,7 +366,7 @@ export function MatchdayTourClient({
                     checked={currentPred.willGoToPens}
                     onChange={(e) => updateCurrent({ willGoToPens: e.target.checked })}
                   />
-                  Se va a penaltis
+                  {t("goesToPens")}
                 </label>
                 {currentPred.willGoToPens && current.home && current.away ? (
                   <select
@@ -377,7 +378,7 @@ export function MatchdayTourClient({
                     }
                     className="h-9 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-2 text-sm"
                   >
-                    <option value="">Clasificado por penaltis…</option>
+                    <option value="">{t("qualifiedByPens")}</option>
                     <option value={current.home.id}>{current.home.name}</option>
                     <option value={current.away.id}>{current.away.name}</option>
                   </select>
@@ -390,10 +391,10 @@ export function MatchdayTourClient({
               <section className="space-y-3 border-t border-[var(--color-border)] pt-5">
                 <div className="text-center">
                   <p className="font-mono text-[0.6rem] uppercase tracking-[0.22em] text-[var(--color-muted-foreground)]">
-                    Goleador del partido
+                    {t("scorerLabel")}
                   </p>
                   <p className="mt-1 font-editorial text-xs italic text-[var(--color-muted-foreground)]">
-                    Acertar +4 pts · Aunque marques 0-0, acertar un goleador suma extra. Nunca penaliza.
+                    {t("scorerHint")}
                   </p>
                 </div>
                 {current.home && current.away ? (
@@ -407,7 +408,7 @@ export function MatchdayTourClient({
                   />
                 ) : (
                   <p className="text-center text-sm italic text-[var(--color-muted-foreground)]">
-                    Los equipos se conocerán cuando avance el bracket.
+                    {t("teamsTBD")}
                   </p>
                 )}
               </section>
