@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { BookOpen } from "lucide-react";
 import { useTutorial } from "./tutorial-provider";
 
@@ -22,6 +23,7 @@ export const TUTORIAL_REPLAY_KEY = "tutorial:replay";
  * solo viven allí.
  */
 export function TutorialReplayButton() {
+  const t = useTranslations("tutorial");
   const router = useRouter();
   const pathname = usePathname();
   const { start } = useTutorial();
@@ -47,7 +49,7 @@ export function TutorialReplayButton() {
       className="inline-flex h-9 items-center gap-2 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-foreground)] transition hover:border-[var(--color-arena)]/40 hover:text-[var(--color-arena)]"
     >
       <BookOpen className="size-3.5" />
-      Ver tutorial
+      {t("replay")}
     </button>
   );
 }

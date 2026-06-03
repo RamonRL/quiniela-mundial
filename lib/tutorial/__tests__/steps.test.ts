@@ -28,6 +28,7 @@ describe("TUTORIAL_STEPS", () => {
     expect(last.kind).toBe("centered");
     expect(last.fanfare).toBe(true);
     expect(last.cta?.href).toBe("/predicciones/grupos");
+    expect(last.cta?.labelKey).toBe("finishCta");
   });
 
   it("los pasos spotlight declaran selector desktop válido", () => {
@@ -44,10 +45,10 @@ describe("TUTORIAL_STEPS", () => {
     expect(withNav[0].navigateTo).toBe("/predicciones");
   });
 
-  it("body y title de cada paso no están vacíos", () => {
+  it("bodyKey y titleKey de cada paso no están vacíos", () => {
     for (const step of TUTORIAL_STEPS) {
-      expect(step.title.length).toBeGreaterThan(0);
-      expect(step.body.length).toBeGreaterThan(0);
+      expect(step.titleKey.length).toBeGreaterThan(0);
+      expect(step.bodyKey.length).toBeGreaterThan(0);
     }
   });
 });
@@ -75,6 +76,7 @@ describe("tutoriales reducidos (Marcador / Solo Ganador)", () => {
       expect(last.id).toBe("finish");
       expect(last.fanfare).toBe(true);
       expect(last.cta?.href).toBe("/predicciones");
+      expect(last.cta?.labelKey).toBe("finishCta");
     }
   });
 
@@ -89,9 +91,9 @@ describe("tutoriales reducidos (Marcador / Solo Ganador)", () => {
   it("Marcador y Solo Ganador tienen copy distinto en el paso de jornadas", () => {
     const mJor = TUTORIAL_STEPS_MARCADOR.find((s) => s.id === "jornadas");
     const gJor = TUTORIAL_STEPS_SOLO_GANADOR.find((s) => s.id === "jornadas");
-    expect(mJor?.body).not.toBe(gJor?.body);
-    expect(mJor?.body).toMatch(/marcador/i);
-    expect(gJor?.body).toMatch(/gana|empate/i);
+    expect(mJor?.bodyKey).not.toBe(gJor?.bodyKey);
+    expect(mJor?.bodyKey).toBe("jorBodyMarcador");
+    expect(gJor?.bodyKey).toBe("jorBodySoloGanador");
   });
 });
 

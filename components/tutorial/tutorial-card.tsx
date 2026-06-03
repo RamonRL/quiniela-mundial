@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { ArrowLeft, ArrowRight, X } from "lucide-react";
 import { useTutorial } from "./tutorial-provider";
 import { markTutorialCompleted } from "@/lib/tutorial/actions";
@@ -36,6 +37,7 @@ type SheetMode = "bottom" | "bottom-near" | "top";
  * interactivo para que el usuario pueda usar Tab/Enter sin click.
  */
 export function TutorialCard() {
+  const t = useTranslations("tutorial");
   const router = useRouter();
   const { step, stepIndex, totalSteps, targetRect, isMobile, next, back, skip } =
     useTutorial();
@@ -265,12 +267,12 @@ export function TutorialCard() {
             <TutorialMascot tone={step.fanfare ? "wiggle" : "idle"} />
           </div>
           <p className="mt-2 text-center font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-            Paso {stepIndex + 1} de {totalSteps}
+            {t("stepCounter", { current: stepIndex + 1, total: totalSteps })}
           </p>
           <button
             type="button"
             onClick={skip}
-            aria-label="Saltar tutorial"
+            aria-label={t("skipAria")}
             className="absolute right-0 top-0 grid size-9 place-items-center rounded-md text-[var(--color-muted-foreground)] transition hover:bg-[var(--color-surface-2)] hover:text-[var(--color-foreground)]"
           >
             <X className="size-4" />
@@ -287,7 +289,7 @@ export function TutorialCard() {
               : "font-display text-2xl leading-tight tracking-tight sm:text-3xl"
           }
         >
-          {step.title}
+          {t(step.titleKey)}
         </h2>
         <p
           id="tutorial-card-body"
@@ -297,7 +299,7 @@ export function TutorialCard() {
               : "mt-2 font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base"
           }
         >
-          {step.body}
+          {t(step.bodyKey)}
         </p>
 
         {/* Slot opcional — actualmente solo "install" (tabs Android/iOS
@@ -328,7 +330,7 @@ export function TutorialCard() {
             disabled={isFirst}
             className="inline-flex h-11 items-center gap-1.5 rounded-md border border-[var(--color-border)] bg-[var(--color-surface-2)] px-3 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-[var(--color-foreground)] transition hover:border-[var(--color-arena)]/40 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            <ArrowLeft className="size-3.5" /> Atrás
+            <ArrowLeft className="size-3.5" /> {t("back")}
           </button>
           {isLast && step.cta ? (
             <button
@@ -337,7 +339,7 @@ export function TutorialCard() {
               onClick={handleCta}
               className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-md border border-[var(--color-arena)] bg-[var(--color-arena)] px-4 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-white shadow-[var(--shadow-arena)] transition hover:opacity-90"
             >
-              {step.cta.label} <ArrowRight className="size-3.5" />
+              {t(step.cta.labelKey)} <ArrowRight className="size-3.5" />
             </button>
           ) : (
             <button
@@ -346,7 +348,7 @@ export function TutorialCard() {
               onClick={next}
               className="inline-flex h-11 items-center gap-2 rounded-md border border-[var(--color-arena)] bg-[var(--color-arena)] px-4 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-white shadow-[var(--shadow-arena)] transition hover:opacity-90"
             >
-              {step.nextLabel ?? "Siguiente"} <ArrowRight className="size-3.5" />
+              {step.nextLabelKey ? t(step.nextLabelKey) : t("next")} <ArrowRight className="size-3.5" />
             </button>
           )}
         </div>

@@ -4,6 +4,11 @@
  * este array — la única fuente de verdad sobre qué se enseña, en qué
  * orden y dónde se ancla.
  *
+ * i18n: el texto NO vive aquí. Cada paso declara `titleKey` / `bodyKey`
+ * (y opcionalmente `nextLabelKey` / `cta.labelKey`) que el componente
+ * resuelve con `useTranslations("tutorial")`. Así `steps.ts` sigue
+ * siendo data pura serializable y los strings se traducen ES/EN/FR/PT.
+ *
  * Reglas:
  *  - El `id` es único y estable; se usa en la URL del replay y en el
  *    test unitario.
@@ -20,16 +25,20 @@
 export type TutorialStep = {
   id: string;
   kind: "centered" | "spotlight";
-  title: string;
-  body: string;
+  /** Clave i18n del título (namespace "tutorial"). */
+  titleKey: string;
+  /** Clave i18n del cuerpo (namespace "tutorial"). */
+  bodyKey: string;
   anchor?: {
     desktop: string;
     mobile?: string;
   };
   navigateTo?: string;
-  nextLabel?: string;
+  /** Clave i18n para el botón "Siguiente" en este paso. */
+  nextLabelKey?: string;
   cta?: {
-    label: string;
+    /** Clave i18n de la etiqueta del CTA final. */
+    labelKey: string;
     href: string;
   };
   fanfare?: boolean;
@@ -62,23 +71,23 @@ export type TutorialMode = "completo" | "marcador" | "solo_ganador";
 const STEP_WELCOME: TutorialStep = {
   id: "welcome",
   kind: "centered",
-  title: "¡Bienvenido a Quiniela Mundial!",
-  body: "Te enseño la app en 30 segundos. Puedes saltarte el tour cuando quieras pulsando la cruz arriba a la derecha.",
+  titleKey: "welcomeTitle",
+  bodyKey: "welcomeBody",
 };
 
 const STEP_LEAGUE_SWITCHER: TutorialStep = {
   id: "league-switcher",
   kind: "spotlight",
-  title: "Tu quiniela activa",
-  body: "Aquí ves la quiniela en la que estás compitiendo ahora mismo. Si perteneces a varias, pulsa para alternar entre ellas. Desde tu perfil puedes crear otras nuevas o unirte con un código de 4 dígitos.",
+  titleKey: "switcherTitle",
+  bodyKey: "switcherBody",
   anchor: { desktop: '[data-tutorial-id="league-switcher"]' },
 };
 
 const STEP_INSTALL: TutorialStep = {
   id: "install",
   kind: "centered",
-  title: "Llévalo en el bolsillo",
-  body: "Instala Quiniela Mundial como app — sin pasar por la AppStore ni Google Play. Ocupa lo mismo que un acceso directo.",
+  titleKey: "installTitle",
+  bodyKey: "installBody",
   slot: "install",
 };
 
@@ -89,8 +98,8 @@ export const TUTORIAL_STEPS: ReadonlyArray<TutorialStep> = [
   {
     id: "progress-hub",
     kind: "spotlight",
-    title: "Tu puesto de mando",
-    body: "Esta es tu base: predicciones pendientes, próximo cierre, tu posición en el ranking y las próximas jornadas para predecir. Vuelves aquí siempre que entres.",
+    titleKey: "hubTitle",
+    bodyKey: "hubBody",
     anchor: {
       desktop: '[data-tutorial-id="progress-hub"]',
       mobile: '[data-tutorial-id="progress-hub-mobile"]',
@@ -100,19 +109,19 @@ export const TUTORIAL_STEPS: ReadonlyArray<TutorialStep> = [
   {
     id: "nav-predicciones",
     kind: "spotlight",
-    title: "Tus predicciones",
-    body: "Las 6 categorías viven aquí: posiciones por grupo, Bota de Oro, especiales, marcadores partido a partido, bracket y goleadores por partido. Vamos a verlas.",
+    titleKey: "navTitle",
+    bodyKey: "navBodyFull",
     anchor: { desktop: '[data-tutorial-id="nav-predicciones"]' },
     navigateTo: "/predicciones",
-    nextLabel: "Llévame a predicciones",
+    nextLabelKey: "navNextLabel",
     // mobile-nav vive fixed-bottom → la card SIEMPRE debe ir arriba.
     mobileCardPosition: "top",
   },
   {
     id: "pre-torneo",
     kind: "spotlight",
-    title: "Pre-torneo",
-    body: "Los tres cierres del kickoff: posiciones por grupo, Bota de Oro y especiales. Ciérralos antes del 11 de junio — no se vuelven a abrir.",
+    titleKey: "preTitle",
+    bodyKey: "preBody",
     anchor: {
       desktop: '[data-tutorial-id="cat-pre-torneo"]',
       mobile: '[data-tutorial-id="cat-pre-torneo-mobile"]',
@@ -121,8 +130,8 @@ export const TUTORIAL_STEPS: ReadonlyArray<TutorialStep> = [
   {
     id: "jornadas",
     kind: "spotlight",
-    title: "Jornada a jornada",
-    body: "Cuando arranque el torneo, irán abriéndose las jornadas. Predices el marcador y el goleador de cada partido — cada partido cierra a su pitido inicial.",
+    titleKey: "jorTitle",
+    bodyKey: "jorBodyFull",
     anchor: {
       desktop: '[data-tutorial-id="cat-jornadas"]',
       mobile: '[data-tutorial-id="cat-jornadas-mobile"]',
@@ -131,8 +140,8 @@ export const TUTORIAL_STEPS: ReadonlyArray<TutorialStep> = [
   {
     id: "eliminatoria",
     kind: "spotlight",
-    title: "Eliminatoria",
-    body: "Al final de la fase de grupos se abre el bracket: dieciseisavos, octavos, cuartos, semis y final. Es aquí donde se decide el campeón.",
+    titleKey: "elimTitle",
+    bodyKey: "elimBody",
     anchor: { desktop: '[data-tutorial-id="cat-eliminatoria"]' },
     // En móvil la sección Eliminatoria entera cabe, pero la card por
     // defecto la tapaba. Subimos la card al top y alineamos el target
@@ -144,10 +153,10 @@ export const TUTORIAL_STEPS: ReadonlyArray<TutorialStep> = [
   {
     id: "finish",
     kind: "centered",
-    title: "¡Listo! A predecir.",
-    body: "Tienes hasta el 11 de junio para cerrar tus primeras predicciones. ¿Empezamos por las posiciones por grupo?",
+    titleKey: "finishTitle",
+    bodyKey: "finishBodyFull",
     cta: {
-      label: "Hacer mi primera predicción",
+      labelKey: "finishCta",
       href: "/predicciones/grupos",
     },
     fanfare: true,
@@ -163,8 +172,8 @@ export const TUTORIAL_STEPS: ReadonlyArray<TutorialStep> = [
 const STEP_PROGRESS_HUB_REDUCED: TutorialStep = {
   id: "progress-hub",
   kind: "spotlight",
-  title: "Tu puesto de mando",
-  body: "Esta es tu base: lo siguiente que tienes que predecir, tu posición en el ranking y las jornadas abiertas. Vuelves aquí siempre que entres.",
+  titleKey: "hubTitle",
+  bodyKey: "hubBodyReduced",
   anchor: {
     desktop: '[data-tutorial-id="progress-hub"]',
     mobile: '[data-tutorial-id="progress-hub-mobile"]',
@@ -172,8 +181,8 @@ const STEP_PROGRESS_HUB_REDUCED: TutorialStep = {
 };
 
 function buildReducedSteps(opts: {
-  navBody: string;
-  jornadasBody: string;
+  navBodyKey: string;
+  jornadasBodyKey: string;
 }): ReadonlyArray<TutorialStep> {
   return [
     STEP_WELCOME,
@@ -182,18 +191,18 @@ function buildReducedSteps(opts: {
     {
       id: "nav-predicciones",
       kind: "spotlight",
-      title: "Tus predicciones",
-      body: opts.navBody,
+      titleKey: "navTitle",
+      bodyKey: opts.navBodyKey,
       anchor: { desktop: '[data-tutorial-id="nav-predicciones"]' },
       navigateTo: "/predicciones",
-      nextLabel: "Llévame a predicciones",
+      nextLabelKey: "navNextLabel",
       mobileCardPosition: "top",
     },
     {
       id: "jornadas",
       kind: "spotlight",
-      title: "Jornada a jornada",
-      body: opts.jornadasBody,
+      titleKey: "jorTitle",
+      bodyKey: opts.jornadasBodyKey,
       anchor: {
         desktop: '[data-tutorial-id="cat-jornadas"]',
         mobile: '[data-tutorial-id="cat-jornadas-mobile"]',
@@ -203,10 +212,10 @@ function buildReducedSteps(opts: {
     {
       id: "finish",
       kind: "centered",
-      title: "¡Listo! A predecir.",
-      body: "Ya puedes empezar a predecir tus partidos. ¡Suerte!",
+      titleKey: "finishTitle",
+      bodyKey: "finishBodyReduced",
       cta: {
-        label: "Hacer mi primera predicción",
+        labelKey: "finishCta",
         href: "/predicciones",
       },
       fanfare: true,
@@ -216,18 +225,14 @@ function buildReducedSteps(opts: {
 
 export const TUTORIAL_STEPS_MARCADOR: ReadonlyArray<TutorialStep> =
   buildReducedSteps({
-    navBody:
-      "En esta quiniela predices el marcador exacto de cada partido del Mundial. Vamos a verlo.",
-    jornadasBody:
-      "Aquí predices el marcador exacto de cada partido: cuántos goles mete cada selección. En eliminatorias, si pones empate, eliges quién pasa en los penaltis. Cada partido cierra a su pitido inicial.",
+    navBodyKey: "navBodyMarcador",
+    jornadasBodyKey: "jorBodyMarcador",
   });
 
 export const TUTORIAL_STEPS_SOLO_GANADOR: ReadonlyArray<TutorialStep> =
   buildReducedSteps({
-    navBody:
-      "En esta quiniela eliges quién gana cada partido del Mundial (o si acaban en empate). Vamos a verlo.",
-    jornadasBody:
-      "Aquí eliges el resultado de cada partido: gana local, empate o gana visitante. En eliminatorias, si eliges empate, dices además quién pasa en los penaltis. Cada partido cierra a su pitido inicial.",
+    navBodyKey: "navBodySoloGanador",
+    jornadasBodyKey: "jorBodySoloGanador",
   });
 
 /** Devuelve los pasos del tutorial según el modo de la liga activa. */

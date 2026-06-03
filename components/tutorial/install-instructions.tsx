@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Apple, ScanLine, Share, MoreVertical, Plus } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 
@@ -29,6 +30,7 @@ const MOBILE_QUERY = "(max-width: 768px)";
  * `beforeinstallprompt` porque iOS Safari ni la implementa.
  */
 export function InstallInstructions() {
+  const t = useTranslations("tutorial");
   const [platform, setPlatform] = useState<Platform>("android");
   const [isMobile, setIsMobile] = useState(false);
 
@@ -61,7 +63,7 @@ export function InstallInstructions() {
       {/* Tabs */}
       <div
         role="tablist"
-        aria-label="Instalación de la app"
+        aria-label={t("installAria")}
         className="grid grid-cols-2 gap-1 rounded-md bg-[var(--color-surface)] p-1"
       >
         <TabButton
@@ -86,6 +88,7 @@ export function InstallInstructions() {
 }
 
 function DesktopQR() {
+  const t = useTranslations("tutorial");
   return (
     <div className="mt-3 flex flex-col items-center gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-2)]/50 p-4 sm:p-5">
       {/* Marco arena alrededor del QR para que destaque sobre el card. */}
@@ -109,11 +112,10 @@ function DesktopQR() {
       </div>
       <div className="text-center">
         <p className="font-mono text-[0.62rem] uppercase tracking-[0.28em] text-[var(--color-arena)]">
-          Escanea con tu móvil
+          {t("scanTitle")}
         </p>
         <p className="mt-1.5 font-editorial text-sm italic leading-snug text-[var(--color-muted-foreground)]">
-          Abre la cámara y enfoca este código. Cuando aterrices en el móvil,
-          te enseñamos a añadirla a la pantalla de inicio en dos toques.
+          {t("scanDesc")}
         </p>
       </div>
     </div>
@@ -149,45 +151,48 @@ function TabButton({
   );
 }
 
+const richTags = {
+  code: (chunks: React.ReactNode) => (
+    <span className="font-mono text-[0.7rem]">{chunks}</span>
+  ),
+  b: (chunks: React.ReactNode) => <strong>{chunks}</strong>,
+};
+
 function AndroidSteps() {
+  const t = useTranslations("tutorial");
   return (
     <ol className="space-y-2 font-editorial text-[0.78rem] leading-snug text-[var(--color-foreground)]">
-      <Step n={1}>
-        Abre <span className="font-mono text-[0.7rem]">quinielamundial.es</span>{" "}
-        en Chrome.
-      </Step>
+      <Step n={1}>{t.rich("androidStep1", richTags)}</Step>
       <Step n={2}>
-        Toca el menú <MoreVertical className="inline size-3.5 align-text-bottom" />{" "}
-        arriba a la derecha.
+        {t.rich("androidStep2", {
+          ...richTags,
+          icon: () => <MoreVertical className="inline size-3.5 align-text-bottom" />,
+        })}
       </Step>
-      <Step n={3}>
-        Pulsa <strong>&quot;Añadir a pantalla de inicio&quot;</strong> o{" "}
-        <strong>&quot;Instalar app&quot;</strong>.
-      </Step>
-      <Step n={4}>Confirma. Ya tienes el icono en tu pantalla de inicio.</Step>
+      <Step n={3}>{t.rich("androidStep3", richTags)}</Step>
+      <Step n={4}>{t.rich("androidStep4", richTags)}</Step>
     </ol>
   );
 }
 
 function IOSSteps() {
+  const t = useTranslations("tutorial");
   return (
     <ol className="space-y-2 font-editorial text-[0.78rem] leading-snug text-[var(--color-foreground)]">
-      <Step n={1}>
-        Abre <span className="font-mono text-[0.7rem]">quinielamundial.es</span>{" "}
-        en <strong>Safari</strong> (no funciona en Chrome iOS).
-      </Step>
+      <Step n={1}>{t.rich("iosStep1", richTags)}</Step>
       <Step n={2}>
-        Toca el botón compartir <Share className="inline size-3.5 align-text-bottom" />.
+        {t.rich("iosStep2", {
+          ...richTags,
+          icon: () => <Share className="inline size-3.5 align-text-bottom" />,
+        })}
       </Step>
       <Step n={3}>
-        Desliza y pulsa{" "}
-        <strong>
-          &quot;Añadir a pantalla de inicio&quot;{" "}
-          <Plus className="inline size-3.5 align-text-bottom" />
-        </strong>
-        .
+        {t.rich("iosStep3", {
+          ...richTags,
+          icon: () => <Plus className="inline size-3.5 align-text-bottom" />,
+        })}
       </Step>
-      <Step n={4}>Confirma con &quot;Añadir&quot;. Listo.</Step>
+      <Step n={4}>{t.rich("iosStep4", richTags)}</Step>
     </ol>
   );
 }
