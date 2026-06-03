@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Building2, Edit2, Plus, Trash2, Users } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -61,6 +62,7 @@ export function DepartmentsManager({
   rankings: DepartmentRankingEntry[];
   members: Member[];
 }) {
+  const t = useTranslations("departments");
   const router = useRouter();
   const [createOpen, setCreateOpen] = useState(false);
   const [editDept, setEditDept] = useState<Department | null>(null);
@@ -72,12 +74,12 @@ export function DepartmentsManager({
       {/* ─── Sección 1 · Departamentos como cards con media de puntos ─── */}
       <section className="space-y-4">
         <header className="flex items-center justify-between gap-3">
-          <h2 className="font-display text-xl tracking-tight">Departamentos</h2>
+          <h2 className="font-display text-xl tracking-tight">{t("sectionDepts")}</h2>
           <Dialog open={createOpen} onOpenChange={setCreateOpen}>
             <DialogTrigger asChild>
               <Button size="sm">
                 <Plus className="size-4" />
-                Crear departamento
+                {t("createDept")}
               </Button>
             </DialogTrigger>
             <CreateDepartmentDialog leagueId={leagueId} onClose={() => setCreateOpen(false)} />
@@ -107,7 +109,7 @@ export function DepartmentsManager({
                           size="icon"
                           className="size-8"
                           onClick={() => setEditDept(d)}
-                          aria-label="Editar departamento"
+                          aria-label={t("editAria")}
                         >
                           <Edit2 className="size-3.5" />
                         </Button>
@@ -118,20 +120,20 @@ export function DepartmentsManager({
                   <CardContent className="space-y-2 p-4 pt-0">
                     <div className="flex items-baseline justify-between">
                       <span className="font-mono text-[0.65rem] uppercase tracking-[0.2em] text-[var(--color-muted-foreground)]">
-                        Media puntos
+                        {t("avgPoints")}
                       </span>
                       <span className="font-display text-2xl">
                         {r?.avgPoints ?? 0}
                       </span>
                     </div>
                     <div className="flex items-baseline justify-between text-xs text-[var(--color-muted-foreground)]">
-                      <span>Activos</span>
+                      <span>{t("active")}</span>
                       <span>
                         {r?.activeMembers ?? 0} / {r?.totalMembers ?? 0}
                       </span>
                     </div>
                     <div className="flex items-baseline justify-between text-xs text-[var(--color-muted-foreground)]">
-                      <span>Total puntos</span>
+                      <span>{t("totalPoints")}</span>
                       <span>{r?.totalPoints ?? 0}</span>
                     </div>
                   </CardContent>
@@ -146,9 +148,9 @@ export function DepartmentsManager({
       <section className="space-y-3">
         <header className="flex items-center gap-2">
           <Users className="size-4 text-[var(--color-muted-foreground)]" />
-          <h2 className="font-display text-xl tracking-tight">Miembros</h2>
+          <h2 className="font-display text-xl tracking-tight">{t("sectionMembers")}</h2>
           <span className="font-mono text-[0.65rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-            {members.length} en la liga
+            {t("inLeague", { n: members.length })}
           </span>
         </header>
         <div className="overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]">
@@ -164,7 +166,7 @@ export function DepartmentsManager({
         </div>
         {departments.length === 0 ? (
           <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-            Crea al menos un departamento para empezar a asignar miembros.
+            {t("createFirstHint")}
           </p>
         ) : null}
       </section>
@@ -191,6 +193,7 @@ function MemberRow({
   departments: Department[];
   onChange: () => void;
 }) {
+  const t = useTranslations("departments");
   const [pending, startTransition] = useTransition();
   const display = member.nickname || member.email.split("@")[0];
 
@@ -223,11 +226,11 @@ function MemberRow({
         disabled={pending || departments.length === 0}
       >
         <SelectTrigger className="w-44">
-          <SelectValue placeholder="Sin asignar" />
+          <SelectValue placeholder={t("unassigned")} />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={NO_DEPT}>
-            <span className="text-[var(--color-muted-foreground)]">Sin asignar</span>
+            <span className="text-[var(--color-muted-foreground)]">{t("unassigned")}</span>
           </SelectItem>
           {departments.map((d) => (
             <SelectItem key={d.id} value={String(d.id)}>
@@ -248,6 +251,7 @@ function CreateDepartmentDialog({
   leagueId: number;
   onClose: () => void;
 }) {
+  const t = useTranslations("departments");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -255,7 +259,7 @@ function CreateDepartmentDialog({
   return (
     <DialogContent>
       <DialogHeader>
-        <DialogTitle>Crear departamento</DialogTitle>
+        <DialogTitle>{t("createTitle")}</DialogTitle>
       </DialogHeader>
       <form
         action={(fd: FormData) => {
@@ -264,7 +268,7 @@ function CreateDepartmentDialog({
           startTransition(async () => {
             const res = await createDepartment({ ok: false }, fd);
             if (!res.ok) {
-              setError(res.error ?? "Error al crear");
+              setError(res.error ?? t("errorCreate"));
               return;
             }
             router.refresh();
@@ -274,26 +278,26 @@ function CreateDepartmentDialog({
         className="space-y-3"
       >
         <div className="space-y-1.5">
-          <Label htmlFor="dept-name">Nombre</Label>
-          <Input id="dept-name" name="name" placeholder="Marketing" required maxLength={40} autoFocus />
+          <Label htmlFor="dept-name">{t("nameLabel")}</Label>
+          <Input id="dept-name" name="name" placeholder={t("namePlaceholder")} required maxLength={40} autoFocus />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label htmlFor="dept-emoji">Emoji (opcional)</Label>
+            <Label htmlFor="dept-emoji">{t("emojiOptional")}</Label>
             <Input id="dept-emoji" name="emoji" placeholder="📊" maxLength={4} />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="dept-color">Color (opcional)</Label>
+            <Label htmlFor="dept-color">{t("colorOptional")}</Label>
             <Input id="dept-color" name="color" type="color" defaultValue="#ef5043" />
           </div>
         </div>
         {error ? <p className="text-sm text-[var(--color-danger)]">{error}</p> : null}
         <DialogFooter>
           <Button type="button" variant="ghost" onClick={onClose}>
-            Cancelar
+            {t("cancel")}
           </Button>
           <Button type="submit" disabled={pending}>
-            {pending ? "Creando…" : "Crear"}
+            {pending ? t("creating") : t("create")}
           </Button>
         </DialogFooter>
       </form>
@@ -308,6 +312,7 @@ function EditDepartmentDialog({
   dept: Department;
   onClose: () => void;
 }) {
+  const t = useTranslations("departments");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -320,7 +325,7 @@ function EditDepartmentDialog({
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Editar departamento</DialogTitle>
+          <DialogTitle>{t("editTitle")}</DialogTitle>
         </DialogHeader>
         <form
           action={(fd: FormData) => {
@@ -329,7 +334,7 @@ function EditDepartmentDialog({
             startTransition(async () => {
               const res = await updateDepartment({ ok: false }, fd);
               if (!res.ok) {
-                setError(res.error ?? "Error");
+                setError(res.error ?? t("errorGeneric"));
                 return;
               }
               router.refresh();
@@ -339,7 +344,7 @@ function EditDepartmentDialog({
           className="space-y-3"
         >
           <div className="space-y-1.5">
-            <Label htmlFor="dept-name">Nombre</Label>
+            <Label htmlFor="dept-name">{t("nameLabel")}</Label>
             <Input
               id="dept-name"
               name="name"
@@ -351,7 +356,7 @@ function EditDepartmentDialog({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="dept-emoji">Emoji</Label>
+              <Label htmlFor="dept-emoji">{t("emojiLabel")}</Label>
               <Input
                 id="dept-emoji"
                 name="emoji"
@@ -360,11 +365,11 @@ function EditDepartmentDialog({
                 maxLength={4}
               />
               <p className="font-editorial text-[0.65rem] italic text-[var(--color-muted-foreground)]">
-                Déjalo vacío para quitarlo.
+                {t("emojiClearHint")}
               </p>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="dept-color">Color</Label>
+              <Label htmlFor="dept-color">{t("colorLabel")}</Label>
               <Input
                 id="dept-color"
                 name="color"
@@ -376,10 +381,10 @@ function EditDepartmentDialog({
           {error ? <p className="text-sm text-[var(--color-danger)]">{error}</p> : null}
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={onClose}>
-              Cancelar
+              {t("cancel")}
             </Button>
             <Button type="submit" disabled={pending}>
-              {pending ? "Guardando…" : "Guardar cambios"}
+              {pending ? t("saving") : t("saveChanges")}
             </Button>
           </DialogFooter>
         </form>
@@ -389,10 +394,11 @@ function EditDepartmentDialog({
 }
 
 function DeleteDeptButton({ deptId, name }: { deptId: number; name: string }) {
+  const t = useTranslations("departments");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const onClick = () => {
-    if (!confirm(`¿Borrar "${name}"? Los miembros quedarán sin departamento.`)) return;
+    if (!confirm(t("deleteConfirm", { name }))) return;
     const fd = new FormData();
     fd.append("deptId", String(deptId));
     startTransition(async () => {

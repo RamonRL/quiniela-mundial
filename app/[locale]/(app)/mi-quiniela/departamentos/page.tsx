@@ -1,5 +1,6 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { ArrowLeft, Building2, Sparkles } from "lucide-react";
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
@@ -18,6 +19,7 @@ export const dynamic = "force-dynamic";
 
 export default async function DepartmentsPage() {
   const me = await requireUser();
+  const t = await getTranslations("departments");
   const leagueId = await currentLeagueId(me);
   if (leagueId == null) redirect("/onboarding");
 
@@ -41,13 +43,13 @@ export default async function DepartmentsPage() {
         <Button asChild variant="ghost" size="sm" className="px-0 text-[var(--color-muted-foreground)]">
           <Link href="/mi-quiniela">
             <ArrowLeft />
-            Volver a Mi Quiniela
+            {t("backToMyPool")}
           </Link>
         </Button>
         <PageHeader
-          eyebrow="Plan empresa"
-          title="Departamentos"
-          description="Crea sub-grupos (Marketing, Ventas, Ingeniería…) y deja que compitan por media de puntos."
+          eyebrow={t("eyebrowEnterprise")}
+          title={t("title")}
+          description={t("descLocked")}
         />
         <div className="rounded-2xl border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface))] p-6 sm:p-8">
           <div className="flex items-start gap-4">
@@ -55,14 +57,20 @@ export default async function DepartmentsPage() {
               <Sparkles className="size-5" />
             </span>
             <div className="min-w-0 space-y-2">
-              <h2 className="font-display text-2xl tracking-tight">Esta feature es de los Pases Mundial 2026</h2>
+              <h2 className="font-display text-2xl tracking-tight">{t("lockedTitle")}</h2>
               <p className="font-editorial text-base italic leading-relaxed text-[var(--color-muted-foreground)]">
-                Los departamentos están incluidos en los planes de 50, 100 y 250 miembros. Tu quiniela actual aún
-                no tiene Pase activo — contrátalo desde <Link href="/precios" className="text-[var(--color-arena)] underline">/precios</Link>.
+                {t.rich("lockedBody", {
+                  link: (chunks) => (
+                    <Link href="/precios" className="text-[var(--color-arena)] underline">
+                      {chunks}
+                    </Link>
+                  ),
+                })}
               </p>
               <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-                Cada departamento aparece como un equipo aparte en el ranking. Compiten por <strong>media de puntos</strong>,
-                no por totales — así que un dept. de 5 personas tiene las mismas posibilidades que uno de 50.
+                {t.rich("lockedBody2", {
+                  b: (chunks) => <strong>{chunks}</strong>,
+                })}
               </p>
             </div>
           </div>
@@ -99,19 +107,19 @@ export default async function DepartmentsPage() {
       <Button asChild variant="ghost" size="sm" className="px-0 text-[var(--color-muted-foreground)]">
         <Link href="/mi-quiniela">
           <ArrowLeft />
-          Volver a Mi Quiniela
+          {t("backToMyPool")}
         </Link>
       </Button>
       <PageHeader
         eyebrow={league.name}
-        title="Departamentos"
-        description="Crea sub-grupos y asigna miembros. El ranking de departamentos se actualiza solo y compite por media de puntos (no totales)."
+        title={t("title")}
+        description={t("desc")}
       />
       {departments.length === 0 ? (
         <EmptyState
           icon={<Building2 className="size-5" />}
-          title="Aún no hay departamentos"
-          description="Crea el primero con el botón de abajo. Lo típico: Marketing, Ventas, Ingeniería, Operaciones."
+          title={t("emptyTitle")}
+          description={t("emptyDesc")}
         />
       ) : null}
       <DepartmentsManager
