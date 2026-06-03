@@ -19,6 +19,7 @@ export const metadata = { title: "Predicciones especiales" };
 export default async function PredictSpecialsPage() {
   const me = await requireUser();
   const t = await getTranslations("scoring");
+  const ts = await getTranslations("predSpecials");
   const leagueId = (await currentLeagueId(me))!;
   // Solo "completo" tiene especiales. Marcador / Solo Ganador → fuera.
   const mode = (await getLeagueModes([leagueId])).get(leagueId) ?? "completo";
@@ -49,15 +50,15 @@ export default async function PredictSpecialsPage() {
     return (
       <div className="space-y-6">
         <PageHeader
-          eyebrow="Categoría 3"
-          title="Predicciones especiales"
-          description="Balón, Guante, anfitrión más lejos…"
+          eyebrow={ts("eyebrow")}
+          title={ts("title")}
+          description={ts("descEmpty")}
         />
         <ScoringBox sections={specialsScoring(t)} footnote={specialsFootnote(t)} />
         <EmptyState
           icon={<Sparkles className="size-5" />}
-          title="Sin predicciones especiales todavía"
-          description="Pendiente de seed."
+          title={ts("emptyTitle")}
+          description={ts("emptyDesc")}
         />
       </div>
     );
@@ -66,14 +67,14 @@ export default async function PredictSpecialsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Categoría 3"
-        title="Predicciones especiales"
-        description="Cada una con su propio cierre."
+        eyebrow={ts("eyebrow")}
+        title={ts("title")}
+        description={ts("desc")}
       />
       {specials.some((s) => new Date(s.closesAt).getTime() > Date.now()) ? (
         <InteractiveModeBanner
           href="/predicciones/especiales/tour"
-          hint="Repasa pregunta a pregunta."
+          hint={ts("bannerHint")}
         />
       ) : null}
       <ScoringBox sections={specialsScoring(t)} footnote={specialsFootnote(t)} />

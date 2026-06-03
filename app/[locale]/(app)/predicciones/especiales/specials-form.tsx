@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   Check,
   CircleHelp,
@@ -40,28 +41,29 @@ type Props = {
 
 const TYPE_META: Record<
   SpecialType,
-  { label: string; icon: typeof Hash; accent: string }
+  { labelKey: string; icon: typeof Hash; accent: string }
 > = {
-  yes_no: { label: "Sí o no", icon: CircleHelp, accent: "text-amber-500" },
-  single_choice: { label: "Elige una", icon: ListChecks, accent: "text-sky-400" },
-  team_with_round: { label: "Selección + ronda", icon: Globe2, accent: "text-emerald-500" },
-  number_range: { label: "Número", icon: Hash, accent: "text-[var(--color-arena)]" },
-  player: { label: "Jugador", icon: User, accent: "text-indigo-400" },
+  yes_no: { labelKey: "typeYesNo", icon: CircleHelp, accent: "text-amber-500" },
+  single_choice: { labelKey: "typeSingle", icon: ListChecks, accent: "text-sky-400" },
+  team_with_round: { labelKey: "typeTeamRound", icon: Globe2, accent: "text-emerald-500" },
+  number_range: { labelKey: "typeNumber", icon: Hash, accent: "text-[var(--color-arena)]" },
+  player: { labelKey: "typePlayer", icon: User, accent: "text-indigo-400" },
 };
 
-const ROUND_LABEL: Record<string, string> = {
-  group: "Fase de grupos",
-  r32: "Dieciseisavos",
-  r16: "Octavos",
-  qf: "Cuartos",
-  sf: "Semifinales",
-  final: "Final",
-  champion: "Campeón",
+const ROUND_LABEL_KEY: Record<string, string> = {
+  group: "roundGroup",
+  r32: "roundR32",
+  r16: "roundR16",
+  qf: "roundQf",
+  sf: "roundSf",
+  final: "roundFinal",
+  champion: "roundChampion",
 };
 
 const isAnswered = isSpecialAnsweredHelper;
 
 export function SpecialsForm({ specials, existing, players, teams }: Props) {
+  const t = useTranslations("predSpecials");
   const initialMap: Record<number, Record<string, unknown>> = Object.fromEntries(
     specials.map((s) => [s.id, {}]),
   );
@@ -71,8 +73,8 @@ export function SpecialsForm({ specials, existing, players, teams }: Props) {
   const [state, action, pending] = useActionState(saveSpecialPredictions, initial);
 
   usePredictionSaveToast(state, {
-    successTitle: "Predicciones especiales guardadas",
-    successDescription: "Tus respuestas se han registrado correctamente.",
+    successTitle: t("savedTitle"),
+    successDescription: t("savedDesc"),
   });
 
   const payload = {
@@ -96,7 +98,7 @@ export function SpecialsForm({ specials, existing, players, teams }: Props) {
             <span className="text-base text-[var(--color-muted-foreground)]"> / {specials.length}</span>
           </span>
           <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            respondidas
+            {t("answeredLabel")}
           </p>
         </div>
       </div>
@@ -141,10 +143,12 @@ export function SpecialsForm({ specials, existing, players, teams }: Props) {
                   </span>
                   <div className="leading-tight">
                     <p className={cn("font-mono text-[0.55rem] uppercase tracking-[0.28em]", meta.accent)}>
-                      {meta.label}
+                      {t(meta.labelKey)}
                     </p>
                     <p className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-                      Cierra · {formatDateTime(s.closesAt, { day: "2-digit", month: "short" })}
+                      {t("closeShort", {
+                        date: formatDateTime(s.closesAt, { day: "2-digit", month: "short" }),
+                      })}
                     </p>
                   </div>
                 </div>
@@ -157,7 +161,7 @@ export function SpecialsForm({ specials, existing, players, teams }: Props) {
                   {!open ? (
                     <span className="inline-flex items-center gap-1 rounded-md border border-[var(--color-warning)]/40 bg-[var(--color-warning)]/10 px-2 py-0.5 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-warning)]">
                       <Lock className="size-3" />
-                      Cerrada
+                      {t("closed")}
                     </span>
                   ) : null}
                 </div>
@@ -186,7 +190,7 @@ export function SpecialsForm({ specials, existing, players, teams }: Props) {
                 <footer className="flex items-center justify-between gap-2 border-t border-dashed border-[var(--color-border)] pt-3">
                   {perRound ? (
                     <p className="font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
-                      Hasta
+                      {t("upTo")}
                     </p>
                   ) : (
                     <span aria-hidden />
@@ -281,6 +285,7 @@ function YesNoField({
   onChange: (v: Record<string, unknown>) => void;
   disabled: boolean;
 }) {
+  const t = useTranslations("predSpecials");
   const v = value.value as boolean | undefined;
   return (
     <div className="grid grid-cols-2 gap-2">
@@ -290,7 +295,7 @@ function YesNoField({
         onClick={() => onChange({ value: v === true ? null : true })}
         accent="success"
       >
-        <Check className="size-4" /> Sí
+        <Check className="size-4" /> {t("yes")}
       </ChoicePill>
       <ChoicePill
         active={v === false}
@@ -298,7 +303,7 @@ function YesNoField({
         onClick={() => onChange({ value: v === false ? null : false })}
         accent="danger"
       >
-        <X className="size-4" /> No
+        <X className="size-4" /> {t("no")}
       </ChoicePill>
     </div>
   );
@@ -353,6 +358,7 @@ function NumberField({
   onChange: (v: Record<string, unknown>) => void;
   disabled: boolean;
 }) {
+  const t = useTranslations("predSpecials");
   const tolerance = (special.optionsJson as { tolerance?: number } | null)?.tolerance ?? 0;
   const v = value.value as number | null | undefined;
   const update = (n: number | null) => onChange({ value: n });
@@ -364,7 +370,7 @@ function NumberField({
           disabled={disabled || (v ?? 0) <= 0}
           onClick={() => update(Math.max(0, (v ?? 0) - 1))}
           className="grid size-10 place-items-center rounded-md border border-[var(--color-border)] bg-[var(--color-surface-2)] font-display text-xl tracking-tight transition hover:border-[var(--color-arena)]/50 disabled:opacity-40"
-          aria-label="Restar"
+          aria-label={t("subtract")}
         >
           −
         </button>
@@ -382,14 +388,14 @@ function NumberField({
           disabled={disabled}
           onClick={() => update((v ?? -1) + 1)}
           className="grid size-10 place-items-center rounded-md border border-[var(--color-border)] bg-[var(--color-surface-2)] font-display text-xl tracking-tight transition hover:border-[var(--color-arena)]/50 disabled:opacity-40"
-          aria-label="Sumar"
+          aria-label={t("add")}
         >
           +
         </button>
       </div>
       {tolerance > 0 ? (
         <p className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-          Tolerancia ±{tolerance}
+          {t("tolerance", { n: tolerance })}
         </p>
       ) : null}
     </div>
@@ -409,11 +415,12 @@ function TeamRoundField({
   disabled: boolean;
   teams: { id: number; code: string; name: string }[];
 }) {
+  const t = useTranslations("predSpecials");
   const opts = special.optionsJson as { teamCodes?: string[]; rounds?: string[] } | null;
   const teamCode = (value.teamCode as string | undefined) ?? "";
   const round = (value.round as string | undefined) ?? "";
   const allowedTeams = useMemo(
-    () => teams.filter((t) => opts?.teamCodes?.includes(t.code)),
+    () => teams.filter((tm) => opts?.teamCodes?.includes(tm.code)),
     [teams, opts?.teamCodes],
   );
   const rounds = opts?.rounds ?? [];
@@ -438,7 +445,7 @@ function TeamRoundField({
       <div className="space-y-1.5">
         <div className="flex items-center justify-between gap-2">
           <p className="font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
-            Selección
+            {t("teamLabel")}
           </p>
           {correctPts != null ? <InlinePointsPill points={correctPts} /> : null}
         </div>
@@ -446,16 +453,16 @@ function TeamRoundField({
           className="-mx-1 flex gap-2 overflow-x-auto px-1 py-2"
           style={{ touchAction: "pan-x", overscrollBehaviorY: "contain" }}
         >
-          {allowedTeams.map((t) => {
-            const active = teamCode === t.code;
+          {allowedTeams.map((tm) => {
+            const active = teamCode === tm.code;
             return (
               <button
-                key={t.code}
+                key={tm.code}
                 type="button"
                 disabled={disabled}
-                onClick={() => onChange({ ...value, teamCode: active ? "" : t.code })}
-                title={t.name}
-                aria-label={t.name}
+                onClick={() => onChange({ ...value, teamCode: active ? "" : tm.code })}
+                title={tm.name}
+                aria-label={tm.name}
                 className={cn(
                   "block size-8 shrink-0 rounded-full transition disabled:opacity-50",
                   active
@@ -463,7 +470,7 @@ function TeamRoundField({
                     : "opacity-90 hover:opacity-100",
                 )}
               >
-                <TeamFlag code={t.code} size={32} />
+                <TeamFlag code={tm.code} size={32} />
               </button>
             );
           })}
@@ -474,7 +481,7 @@ function TeamRoundField({
       <div className="space-y-1.5">
         <div className="flex items-center justify-between gap-2">
           <p className="font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
-            Hasta qué ronda
+            {t("untilRound")}
           </p>
           {bonusPts != null ? <InlinePointsPill points={bonusPts} bonus /> : null}
         </div>
@@ -494,7 +501,7 @@ function TeamRoundField({
                     : "border-[var(--color-border)] bg-[var(--color-surface-2)] text-[var(--color-foreground)] hover:border-[var(--color-arena)]/50",
                 )}
               >
-                {ROUND_LABEL[r] ?? r}
+                {ROUND_LABEL_KEY[r] ? t(ROUND_LABEL_KEY[r]) : r}
               </button>
             );
           })}
@@ -537,6 +544,7 @@ function PlayerField({
   players: { id: number; name: string; position: string | null; teamId: number }[];
   teams: { id: number; code: string; name: string }[];
 }) {
+  const t = useTranslations("predSpecials");
   const positionFilter = (special.optionsJson as { positionFilter?: string } | null)
     ?.positionFilter;
   const POSITION_FILTER_MAP: Record<string, string> = {
@@ -580,9 +588,9 @@ function PlayerField({
     return candidates
       .filter((p) => {
         if (p.name.toLowerCase().includes(q)) return true;
-        const t = teamById.get(p.teamId);
-        if (t?.code.toLowerCase().includes(q)) return true;
-        if (t?.name.toLowerCase().includes(q)) return true;
+        const tm = teamById.get(p.teamId);
+        if (tm?.code.toLowerCase().includes(q)) return true;
+        if (tm?.name.toLowerCase().includes(q)) return true;
         return false;
       })
       .slice(0, 30);
@@ -604,7 +612,7 @@ function PlayerField({
           type="button"
           disabled={disabled}
           onClick={() => onChange({ playerId: null })}
-          aria-label="Quitar selección"
+          aria-label={t("removePick")}
           className="text-[var(--color-muted-foreground)] hover:text-[var(--color-danger)] disabled:opacity-50"
         >
           <X className="size-4" />
@@ -616,7 +624,7 @@ function PlayerField({
   if (candidates.length === 0) {
     return (
       <p className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-        Aún sin candidatos cargados.
+        {t("noCandidatesLoaded")}
       </p>
     );
   }
@@ -634,7 +642,7 @@ function PlayerField({
             setOpen(true);
           }}
           onFocus={() => setOpen(true)}
-          placeholder="Buscar jugador o selección…"
+          placeholder={t("searchPlayerTeam")}
           className="h-10 w-full rounded-md border border-[var(--color-border)] bg-[var(--color-surface-2)] pl-8 pr-3 text-sm outline-none focus:border-[var(--color-arena)] disabled:opacity-50"
         />
       </div>
@@ -642,12 +650,12 @@ function PlayerField({
         <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-72 overflow-y-auto rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-elev-2)]">
           {filtered.length === 0 ? (
             <p className="px-3 py-2 text-xs text-[var(--color-muted-foreground)]">
-              Sin coincidencias.
+              {t("noMatches")}
             </p>
           ) : (
             <ul>
               {filtered.map((p) => {
-                const t = teamById.get(p.teamId);
+                const tm = teamById.get(p.teamId);
                 return (
                   <li key={p.id}>
                     <button
@@ -659,10 +667,10 @@ function PlayerField({
                       }}
                       className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-[var(--color-surface-2)]"
                     >
-                      <TeamFlag code={t?.code} size={16} />
+                      <TeamFlag code={tm?.code} size={16} />
                       <span className="flex-1 truncate">{p.name}</span>
                       <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-                        {t?.code ?? ""}
+                        {tm?.code ?? ""}
                         {p.position ? ` · ${p.position}` : ""}
                       </span>
                     </button>
@@ -673,7 +681,7 @@ function PlayerField({
           )}
           {!query && candidates.length > 30 ? (
             <p className="border-t border-[var(--color-border)] px-3 py-1.5 text-[0.65rem] text-[var(--color-muted-foreground)]">
-              Mostrando 30 de {candidates.length}. Escribe para buscar más.
+              {t("showingOf", { n: candidates.length })}
             </p>
           ) : null}
         </div>

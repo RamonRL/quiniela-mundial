@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
   InteractiveTourShell,
@@ -33,6 +34,7 @@ export function SpecialsTourClient({
   initialStep: number;
   allCompleteOnEntry: boolean;
 }) {
+  const t = useTranslations("predSpecials");
   const router = useRouter();
   const [step, setStep] = useState(initialStep);
   const [direction, setDirection] = useState<"left" | "right">("right");
@@ -46,11 +48,11 @@ export function SpecialsTourClient({
     if (toldEntryToast.current) return;
     toldEntryToast.current = true;
     if (allCompleteOnEntry) {
-      toast(`Ya respondiste las ${items.length} especiales.`, {
-        description: "Revisa o cierra cuando quieras. Auto-guardado al pasar.",
+      toast(t("tourEntryToast", { n: items.length }), {
+        description: t("tourEntryDesc"),
       });
     }
-  }, [allCompleteOnEntry, items.length]);
+  }, [allCompleteOnEntry, items.length, t]);
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -70,7 +72,7 @@ export function SpecialsTourClient({
       valueJson: values[current.id] ?? {},
     });
     if (!res.ok) {
-      toast.error(res.error ?? "No se pudo guardar.");
+      toast.error(res.error ?? t("saveError"));
       return false;
     }
     // Solo mostramos toast si había algo que guardar (evita ruido en steps vacíos).
@@ -107,19 +109,21 @@ export function SpecialsTourClient({
 
   return (
     <InteractiveTourShell
-      title="Predicciones especiales"
+      title={t("title")}
       currentStep={step}
       totalSteps={items.length}
       onPrev={onPrev}
       onNext={onNext}
       direction={direction}
-      finishLabel="Finalizar"
+      finishLabel={t("finish")}
       pending={pending}
     >
       <div className="space-y-6">
         <header className="text-center">
           <p className="font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-arena)]">
-            Cierra {formatDateTime(current.closesAt, { day: "2-digit", month: "short" })}
+            {t("closeTour", {
+              date: formatDateTime(current.closesAt, { day: "2-digit", month: "short" }),
+            })}
           </p>
           <h1 className="mt-2 font-display text-2xl leading-snug tracking-tight sm:text-3xl">
             {current.question}
@@ -140,7 +144,7 @@ export function SpecialsTourClient({
         </div>
 
         <p className="text-center font-editorial text-xs italic text-[var(--color-muted-foreground)]">
-          Puedes dejar una en blanco y volver más tarde. Auto-guardado.
+          {t("tourHint")}
         </p>
       </div>
     </InteractiveTourShell>
