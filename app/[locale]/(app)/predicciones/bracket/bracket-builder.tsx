@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useActionState, useMemo, useState } from "react";
 import { Crown, Eye, Lock, Save, Trophy } from "lucide-react";
 import { TeamFlag } from "@/components/brand/team-flag";
@@ -77,6 +78,7 @@ export function BracketBuilder({
   preview?: boolean;
   r32Pairings: R32Pairings;
 }) {
+  const t = useTranslations("predBracket");
   const [picks, setPicks] = useState<Picks>(initialPicks);
   const [state, action, pending] = useActionState(saveBracketPicks, initialFormState);
   const interactive = open || preview;
@@ -161,19 +163,19 @@ export function BracketBuilder({
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_8%,transparent)] p-3 text-sm text-[var(--color-arena)]">
           <span className="flex items-center gap-2">
             <Eye className="size-4" />
-            Vista previa admin · emparejamiento sintético, nada se guarda.
+            {t("previewBanner")}
           </span>
           <Link
             href="/predicciones/bracket"
             className="font-mono text-[0.6rem] uppercase tracking-[0.18em] underline-offset-2 hover:underline"
           >
-            Salir
+            {t("exit")}
           </Link>
         </div>
       ) : !open ? (
         <div className="flex items-center gap-2 rounded-lg border border-[var(--color-warning)]/40 bg-[var(--color-warning)]/10 p-3 text-sm text-[var(--color-warning)]">
           <Lock className="size-4" />
-          El bracket está cerrado. Sólo lectura.
+          {t("closedBanner")}
         </div>
       ) : null}
 
@@ -189,13 +191,13 @@ export function BracketBuilder({
       />
 
       {state.error ? <p className="text-sm text-[var(--color-danger)]">{state.error}</p> : null}
-      {state.ok ? <p className="text-sm text-[var(--color-success)]">Bracket guardado.</p> : null}
+      {state.ok ? <p className="text-sm text-[var(--color-success)]">{t("saved")}</p> : null}
 
       {open && !preview ? (
         <div className="flex justify-end">
           <Button type="submit" size="lg" disabled={pending}>
             <Save />
-            {pending ? "Guardando…" : "Guardar bracket"}
+            {pending ? t("saving") : t("saveBtn")}
           </Button>
         </div>
       ) : null}
@@ -329,13 +331,14 @@ function applyPick(
 // ──────────────────────────── Progress strip ────────────────────────────
 
 function ProgressStrip({ picks }: { picks: Picks }) {
+  const t = useTranslations("predBracket");
   const items = [
     { label: "R16", count: picks.r16.length, total: 16 },
     { label: "QF", count: picks.qf.length, total: 8 },
     { label: "SF", count: picks.sf.length, total: 4 },
-    { label: "Final", count: picks.finalists.length, total: 2 },
-    { label: "Campeón", count: picks.championTeamId != null ? 1 : 0, total: 1 },
-    { label: "3.º", count: picks.thirdTeamId != null ? 1 : 0, total: 1 },
+    { label: t("stFinal"), count: picks.finalists.length, total: 2 },
+    { label: t("champShort"), count: picks.championTeamId != null ? 1 : 0, total: 1 },
+    { label: t("thirdShort"), count: picks.thirdTeamId != null ? 1 : 0, total: 1 },
   ];
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
@@ -367,6 +370,7 @@ type TreeUIProps = {
 };
 
 function BracketTreeUI(props: TreeUIProps) {
+  const t = useTranslations("predBracket");
   return (
     <>
       {/* Desktop tree (lg+) */}
@@ -398,7 +402,7 @@ function BracketTreeUI(props: TreeUIProps) {
           return (
             <section key={stage} className="space-y-2">
               <h2 className="font-mono text-[0.65rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-arena)]">
-                {STAGE_LABEL[stage]}
+                {t(STAGE_LABEL_KEY[stage])}
               </h2>
               <div className="grid gap-2 sm:grid-cols-2">
                 {codes.map((code) => (
@@ -428,13 +432,13 @@ function stageCodes(stage: "r32" | "r16" | "qf" | "sf" | "final" | "third"): str
   return [STRUCTURE.third];
 }
 
-const STAGE_LABEL: Record<"r32" | "r16" | "qf" | "sf" | "final" | "third", string> = {
-  r32: "R32",
-  r16: "Octavos",
-  qf: "Cuartos",
-  sf: "Semifinales",
-  final: "Final",
-  third: "Tercer puesto",
+const STAGE_LABEL_KEY: Record<"r32" | "r16" | "qf" | "sf" | "final" | "third", string> = {
+  r32: "stR32",
+  r16: "stR16",
+  qf: "stQf",
+  sf: "stSf",
+  final: "stFinal",
+  third: "stThird",
 };
 
 function Column({
@@ -447,9 +451,10 @@ function Column({
   side: "left" | "right";
   order: readonly string[];
 }) {
+  const t = useTranslations("predBracket");
   return (
     <div className="flex flex-col">
-      <ColumnHeader label={STAGE_LABEL[stage]} side={side} />
+      <ColumnHeader label={t(STAGE_LABEL_KEY[stage])} side={side} />
       <div className="flex flex-1 flex-col">
         {stage === "sf" ? (
           <div className="flex flex-1 items-center justify-center">
@@ -493,11 +498,12 @@ function Column({
 }
 
 function FinalColumn(props: TreeUIProps) {
+  const t = useTranslations("predBracket");
   return (
     <div className="flex flex-col">
       <div className="grid place-items-center pb-3">
         <span className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-          Final
+          {t("stFinal")}
         </span>
       </div>
       <div className="flex flex-1 flex-col items-stretch justify-center gap-6">
@@ -510,7 +516,7 @@ function FinalColumn(props: TreeUIProps) {
             className="h-12 w-auto"
           />
           <p className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Copa Mundial 2026
+            {t("worldCup")}
           </p>
         </div>
         <FinalCard {...props} />
@@ -558,6 +564,7 @@ function MatchCard({
   stage: "r32" | "r16" | "qf" | "sf" | "final" | "third";
   showHeader?: boolean;
 }) {
+  const t = useTranslations("predBracket");
   const cands = homeAwayByCode[code] ?? { home: null, away: null };
   const winner = matchPickedFromPair(stage, cands, picks);
 
@@ -565,11 +572,11 @@ function MatchCard({
   const away = cands.away != null ? teamById.get(cands.away) ?? null : null;
 
   // Placeholder labels para slots todavía sin equipo (preview o pre-cierre).
-  const homePlaceholder = computePlaceholder(stage, code, "home");
-  const awayPlaceholder = computePlaceholder(stage, code, "away");
+  const homePlaceholder = computePlaceholder(stage, code, "home", t);
+  const awayPlaceholder = computePlaceholder(stage, code, "away", t);
 
   const headerText =
-    stage === "final" ? "Final" : stage === "third" ? "Tercer puesto" : code;
+    stage === "final" ? t("stFinal") : stage === "third" ? t("stThird") : code;
 
   return (
     <div
@@ -694,6 +701,7 @@ function computePlaceholder(
   stage: "r32" | "r16" | "qf" | "sf" | "final" | "third",
   code: string,
   side: "home" | "away",
+  t: ReturnType<typeof useTranslations>,
 ): string | null {
   if (stage === "r32") {
     const slots = R32_SLOTS[code];
@@ -703,7 +711,7 @@ function computePlaceholder(
   const feed = KO_FEEDS[code];
   if (!feed) return null;
   const f = side === "home" ? feed.home : feed.away;
-  return f.loser ? `Pierde ${f.code}` : `Gana ${f.code}`;
+  return f.loser ? t("loses", { code: f.code }) : t("wins", { code: f.code });
 }
 
 function chunkPairs<T>(arr: T[]): T[][] {

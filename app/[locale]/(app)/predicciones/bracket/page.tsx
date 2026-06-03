@@ -26,6 +26,7 @@ export default async function PredictBracketPage({
 }) {
   const me = await requireUser();
   const t = await getTranslations("scoring");
+  const tb = await getTranslations("predBracket");
   // Solo "completo" tiene bracket. Marcador / Solo Ganador → fuera.
   const guardLeagueId = (await currentLeagueId(me))!;
   const guardMode =
@@ -39,21 +40,21 @@ export default async function PredictBracketPage({
     return (
       <div className="space-y-6">
         <PageHeader
-          eyebrow="Categoría 4"
-          title="Bracket eliminatorio"
-          description="Se desbloquea al cerrar la fase de grupos."
+          eyebrow={tb("eyebrow")}
+          title={tb("title")}
+          description={tb("descWaiting")}
         />
         <ScoringBox sections={bracketScoring(t)} footnote={bracketFootnote(t)} />
         <EmptyState
           icon={<Swords className="size-5" />}
-          title="Aún no abierto"
-          description="Se abrirá al cierre de los grupos. Plazo hasta el primer dieciseisavos."
+          title={tb("emptyTitle")}
+          description={tb("emptyDesc")}
           action={
             me.role === "admin" ? (
               <Button asChild variant="outline" size="sm">
                 <Link href="/predicciones/bracket?preview=1">
                   <Eye />
-                  Vista previa admin
+                  {tb("adminPreviewBtn")}
                 </Link>
               </Button>
             ) : undefined
@@ -166,18 +167,18 @@ export default async function PredictBracketPage({
   const sortedTeams = [...qualifiedTeams].sort((a, b) => a.name.localeCompare(b.name));
 
   const description = previewRequested
-    ? "Vista previa admin: así verán los participantes el bracket cuando se abra."
+    ? tb("descPreview")
     : status.state === "open"
-      ? `Selecciona quién avanza en cada ronda hasta el campeón. Cierre: ${
-          status.closesAt ? formatDateTime(status.closesAt) : "primer partido de R32"
-        }.`
-      : "Bracket cerrado: los dieciseisavos ya arrancaron.";
+      ? tb("descOpen", {
+          date: status.closesAt ? formatDateTime(status.closesAt) : tb("closesFirstR32"),
+        })
+      : tb("descClosed");
 
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Categoría 4"
-        title="Bracket eliminatorio"
+        eyebrow={tb("eyebrow")}
+        title={tb("title")}
         description={description}
       />
       <ScoringBox sections={bracketScoring(t)} footnote={bracketFootnote(t)} />
