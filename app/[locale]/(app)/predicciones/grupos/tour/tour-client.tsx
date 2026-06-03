@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
   DndContext,
@@ -51,6 +52,7 @@ export function GroupsTourClient({
   initialStep: number;
   allCompleteOnEntry: boolean;
 }) {
+  const t = useTranslations("predGroups");
   const router = useRouter();
   const [step, setStep] = useState(initialStep);
   const [direction, setDirection] = useState<"left" | "right">("right");
@@ -65,11 +67,11 @@ export function GroupsTourClient({
     if (toldEntryToast.current) return;
     toldEntryToast.current = true;
     if (allCompleteOnEntry) {
-      toast("Ya predijiste los 12 grupos.", {
-        description: "Revisa o cierra cuando quieras. Auto-guardado al pasar.",
+      toast(t("tourEntryToast"), {
+        description: t("tourEntryDesc"),
       });
     }
-  }, [allCompleteOnEntry]);
+  }, [allCompleteOnEntry, t]);
 
   // URL ↔ step: refrescar el ?step= sin recargar.
   useEffect(() => {
@@ -95,7 +97,7 @@ export function GroupsTourClient({
       pos4TeamId: order[3],
     });
     if (!res.ok) {
-      toast.error(res.error ?? "No se pudo guardar.");
+      toast.error(res.error ?? t("saveError"));
       return false;
     }
     flashSavedToast();
@@ -129,13 +131,13 @@ export function GroupsTourClient({
 
   return (
     <InteractiveTourShell
-      title="Posiciones por grupo"
+      title={t("title")}
       currentStep={step}
       totalSteps={items.length}
       onPrev={onPrev}
       onNext={onNext}
       direction={direction}
-      finishLabel="Finalizar"
+      finishLabel={t("finish")}
       pending={pending}
     >
       <GroupStep
@@ -158,6 +160,7 @@ function GroupStep({
   order: number[];
   onChange: (order: number[]) => void;
 }) {
+  const t = useTranslations("predGroups");
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
@@ -179,10 +182,10 @@ function GroupStep({
     <div className="space-y-6">
       <header className="text-center">
         <h1 className="font-display text-3xl tracking-tight sm:text-4xl">
-          Ordena del 1º al 4º
+          {t("tourTitle")}
         </h1>
         <p className="mt-2 font-editorial text-sm italic leading-snug text-[var(--color-muted-foreground)]">
-          Arrastra cada selección a su posición. Los dos primeros pasan a la fase eliminatoria.
+          {t("tourDesc")}
         </p>
       </header>
 
@@ -195,7 +198,7 @@ function GroupStep({
           {group.code}
         </span>
         <p className="relative font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-          Grupo
+          {t("groupLabel")}
         </p>
         <p className="relative mt-0.5 font-display text-5xl leading-none tracking-tight text-[var(--color-arena)] glow-arena sm:text-6xl">
           {group.code}
@@ -228,10 +231,12 @@ function SortableRow({
   team: TeamLite;
   position: number;
 }) {
+  const t = useTranslations("predGroups");
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id });
   const advances = position <= 2;
-  const positionLabel = position === 1 ? "1º" : position === 2 ? "2º" : position === 3 ? "3º" : "4º";
+  const positionLabel =
+    position === 1 ? t("ord1") : position === 2 ? t("ord2") : position === 3 ? t("ord3") : t("ord4");
   return (
     <li
       ref={setNodeRef}
@@ -245,7 +250,7 @@ function SortableRow({
           ? "border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface))]"
           : "border-[var(--color-border)] bg-[var(--color-surface-2)]"
       }`}
-      aria-label={`${team.name}, posición ${positionLabel}. Arrastra para reordenar.`}
+      aria-label={t("ariaRow", { name: team.name, pos: positionLabel })}
       {...attributes}
       {...listeners}
     >
@@ -256,7 +261,7 @@ function SortableRow({
       {advances ? (
         <Badge variant="default" className="gap-1 text-[0.6rem]">
           <Trophy className="size-3" />
-          Pasa
+          {t("advances")}
         </Badge>
       ) : null}
     </li>

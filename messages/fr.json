@@ -703,5 +703,31 @@
     "closeMeta": "Clôture · {date}",
     "jornadasNotPublished": "Les journées ne sont pas encore publiées.",
     "upcoming": "Prochaine"
+  },
+  "predGroups": {
+    "eyebrow": "Catégorie 1",
+    "title": "Classements de groupe",
+    "descShort": "Classe de la 1re à la 4e. Clôture au coup d'envoi.",
+    "emptyTitle": "Équipes pas encore affectées aux groupes",
+    "emptyDesc": "Disponible une fois les 48 équipes définies.",
+    "descOpen": "Clôture {date}. Classe les 4 équipes de chaque groupe de la 1re à la 4e place.",
+    "descClosed": "Pronostic fermé. Tu peux seulement consulter ce que tu as envoyé.",
+    "bannerHint": "Passe groupe par groupe.",
+    "savedTitle": "Classements enregistrés",
+    "savedDesc": "Tes 12 groupes sont validés. Tu peux modifier jusqu'à la clôture.",
+    "closedBanner": "Ce pronostic est fermé.",
+    "ariaRow": "{name}, position {pos}. Fais glisser pour réordonner.",
+    "advances": "Qualifié",
+    "ord1": "1re",
+    "ord2": "2e",
+    "ord3": "3e",
+    "ord4": "4e",
+    "tourEntryToast": "Tu as déjà pronostiqué les 12 groupes.",
+    "tourEntryDesc": "Revois ou termine quand tu veux. Enregistré automatiquement.",
+    "saveError": "Impossible d'enregistrer.",
+    "finish": "Terminer",
+    "tourTitle": "Classe de la 1re à la 4e",
+    "tourDesc": "Fais glisser chaque équipe à sa place. Les deux premières passent en phase finale.",
+    "groupLabel": "Groupe"
   }
 }

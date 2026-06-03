@@ -703,5 +703,31 @@
     "closeMeta": "Fecha · {date}",
     "jornadasNotPublished": "As rodadas ainda não foram publicadas.",
     "upcoming": "Próxima"
+  },
+  "predGroups": {
+    "eyebrow": "Categoria 1",
+    "title": "Classificações de grupo",
+    "descShort": "Ordene do 1º ao 4º. Fecha no pontapé inicial.",
+    "emptyTitle": "Seleções ainda não atribuídas aos grupos",
+    "emptyDesc": "Disponível quando as 48 seleções estiverem definidas.",
+    "descOpen": "Fecha {date}. Ordene as 4 seleções de cada grupo do 1º ao 4º.",
+    "descClosed": "Palpite fechado. Você só pode consultar o que enviou.",
+    "bannerHint": "Vá grupo a grupo.",
+    "savedTitle": "Classificações salvas",
+    "savedDesc": "Seus 12 grupos estão registrados. Você pode editar até o prazo.",
+    "closedBanner": "Este palpite está fechado.",
+    "ariaRow": "{name}, posição {pos}. Arraste para reordenar.",
+    "advances": "Avança",
+    "ord1": "1º",
+    "ord2": "2º",
+    "ord3": "3º",
+    "ord4": "4º",
+    "tourEntryToast": "Você já palpitou os 12 grupos.",
+    "tourEntryDesc": "Revise ou finalize quando quiser. Salvo automaticamente.",
+    "saveError": "Não foi possível salvar.",
+    "finish": "Finalizar",
+    "tourTitle": "Ordene do 1º ao 4º",
+    "tourDesc": "Arraste cada seleção para sua posição. As duas primeiras avançam ao mata-mata.",
+    "groupLabel": "Grupo"
   }
 }

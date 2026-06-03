@@ -1,6 +1,7 @@
 "use client";
 
 import { TeamFlag } from "@/components/brand/team-flag";
+import { useTranslations } from "next-intl";
 import { useActionState, useState } from "react";
 import {
   DndContext,
@@ -46,14 +47,15 @@ export function GroupRankingForm({
   groups: GroupInput[];
   open: boolean;
 }) {
+  const t = useTranslations("predGroups");
   const [orders, setOrders] = useState<Record<number, number[]>>(
     Object.fromEntries(groups.map((g) => [g.id, g.initialOrder])),
   );
   const [state, action, pending] = useActionState(saveGroupPredictions, initial);
 
   usePredictionSaveToast(state, {
-    successTitle: "Posiciones guardadas",
-    successDescription: "Tus 12 grupos quedaron anotados. Puedes editar hasta el cierre.",
+    successTitle: t("savedTitle"),
+    successDescription: t("savedDesc"),
   });
 
   const payload = {
@@ -75,7 +77,7 @@ export function GroupRankingForm({
       {!open ? (
         <div className="flex items-center gap-2 rounded-lg border border-[var(--color-warning)]/40 bg-[var(--color-warning)]/10 p-3 text-sm text-[var(--color-warning)]">
           <Lock className="size-4" />
-          La predicción está cerrada.
+          {t("closedBanner")}
         </div>
       ) : null}
       <div className="grid gap-4 lg:grid-cols-2">
@@ -183,16 +185,17 @@ function SortableRow({
   position: number;
   disabled: boolean;
 }) {
+  const t = useTranslations("predGroups");
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id, disabled });
   const positionLabel =
     position === 1
-      ? "1º"
+      ? t("ord1")
       : position === 2
-        ? "2º"
+        ? t("ord2")
         : position === 3
-          ? "3º"
-          : "4º";
+          ? t("ord3")
+          : t("ord4");
   const advances = position <= 2;
   return (
     <li
@@ -209,7 +212,7 @@ function SortableRow({
           ? "border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5"
           : "border-[var(--color-border)] bg-[var(--color-surface-2)]"
       }`}
-      aria-label={`${team.name}, posición ${positionLabel}. Arrastra para reordenar.`}
+      aria-label={t("ariaRow", { name: team.name, pos: positionLabel })}
       {...attributes}
       {...(disabled ? {} : listeners)}
     >
@@ -221,7 +224,7 @@ function SortableRow({
       <span className="flex-1 truncate text-sm font-medium">{team.name}</span>
       {advances ? (
         <Badge variant="success" className="text-[0.6rem]">
-          Pasa
+          {t("advances")}
         </Badge>
       ) : null}
     </li>

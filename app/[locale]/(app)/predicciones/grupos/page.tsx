@@ -23,6 +23,7 @@ const KICKOFF = new Date(
 export default async function PredictGroupsPage() {
   const me = await requireUser();
   const t = await getTranslations("scoring");
+  const tg = await getTranslations("predGroups");
   const leagueId = (await currentLeagueId(me))!;
   // Solo el modo "completo" tiene pre-torneo. Marcador / Solo Ganador no
   // predicen grupos: cortamos el acceso directo por URL.
@@ -68,14 +69,14 @@ export default async function PredictGroupsPage() {
     return (
       <div className="space-y-6">
         <PageHeader
-          eyebrow="Categoría 1"
-          title="Posiciones por grupo"
-          description="Ordena del 1º al 4º. Cierra al kickoff."
+          eyebrow={tg("eyebrow")}
+          title={tg("title")}
+          description={tg("descShort")}
         />
         <EmptyState
           icon={<Users className="size-5" />}
-          title="Selecciones aún sin asignar a grupos"
-          description="Disponible cuando estén las 48 selecciones."
+          title={tg("emptyTitle")}
+          description={tg("emptyDesc")}
         />
       </div>
     );
@@ -107,18 +108,18 @@ export default async function PredictGroupsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Categoría 1"
-        title="Posiciones por grupo"
+        eyebrow={tg("eyebrow")}
+        title={tg("title")}
         description={
           open
-            ? `Cierra ${formatDateTime(KICKOFF)}. Ordena las 4 selecciones de cada grupo del 1º al 4º.`
-            : "Predicción cerrada. Sólo puedes consultar lo que enviaste."
+            ? tg("descOpen", { date: formatDateTime(KICKOFF) })
+            : tg("descClosed")
         }
       />
       {open ? (
         <InteractiveModeBanner
           href="/predicciones/grupos/tour"
-          hint="Repasa grupo a grupo."
+          hint={tg("bannerHint")}
         />
       ) : null}
       <ScoringBox sections={groupsScoring(t)} footnote={groupsFootnote(t)} />

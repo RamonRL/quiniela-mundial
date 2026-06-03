@@ -703,5 +703,31 @@
     "closeMeta": "Closes · {date}",
     "jornadasNotPublished": "Matchdays aren't published yet.",
     "upcoming": "Upcoming"
+  },
+  "predGroups": {
+    "eyebrow": "Category 1",
+    "title": "Group standings",
+    "descShort": "Rank 1st to 4th. Closes at kickoff.",
+    "emptyTitle": "Teams not assigned to groups yet",
+    "emptyDesc": "Available once all 48 teams are set.",
+    "descOpen": "Closes {date}. Rank the 4 teams in each group from 1st to 4th.",
+    "descClosed": "Prediction closed. You can only review what you submitted.",
+    "bannerHint": "Go group by group.",
+    "savedTitle": "Standings saved",
+    "savedDesc": "Your 12 groups are locked in. You can edit until the deadline.",
+    "closedBanner": "This prediction is closed.",
+    "ariaRow": "{name}, position {pos}. Drag to reorder.",
+    "advances": "Through",
+    "ord1": "1st",
+    "ord2": "2nd",
+    "ord3": "3rd",
+    "ord4": "4th",
+    "tourEntryToast": "You've already predicted all 12 groups.",
+    "tourEntryDesc": "Review or finish whenever you want. Auto-saved as you go.",
+    "saveError": "Couldn't save.",
+    "finish": "Finish",
+    "tourTitle": "Rank 1st to 4th",
+    "tourDesc": "Drag each team to its position. The top two advance to the knockout stage.",
+    "groupLabel": "Group"
   }
 }

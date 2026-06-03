@@ -703,5 +703,31 @@
     "closeMeta": "Cierre · {date}",
     "jornadasNotPublished": "Las jornadas aún no están publicadas.",
     "upcoming": "Próxima"
+  },
+  "predGroups": {
+    "eyebrow": "Categoría 1",
+    "title": "Posiciones por grupo",
+    "descShort": "Ordena del 1º al 4º. Cierra al kickoff.",
+    "emptyTitle": "Selecciones aún sin asignar a grupos",
+    "emptyDesc": "Disponible cuando estén las 48 selecciones.",
+    "descOpen": "Cierra {date}. Ordena las 4 selecciones de cada grupo del 1º al 4º.",
+    "descClosed": "Predicción cerrada. Sólo puedes consultar lo que enviaste.",
+    "bannerHint": "Repasa grupo a grupo.",
+    "savedTitle": "Posiciones guardadas",
+    "savedDesc": "Tus 12 grupos quedaron anotados. Puedes editar hasta el cierre.",
+    "closedBanner": "La predicción está cerrada.",
+    "ariaRow": "{name}, posición {pos}. Arrastra para reordenar.",
+    "advances": "Pasa",
+    "ord1": "1º",
+    "ord2": "2º",
+    "ord3": "3º",
+    "ord4": "4º",
+    "tourEntryToast": "Ya predijiste los 12 grupos.",
+    "tourEntryDesc": "Revisa o cierra cuando quieras. Auto-guardado al pasar.",
+    "saveError": "No se pudo guardar.",
+    "finish": "Finalizar",
+    "tourTitle": "Ordena del 1º al 4º",
+    "tourDesc": "Arrastra cada selección a su posición. Los dos primeros pasan a la fase eliminatoria.",
+    "groupLabel": "Grupo"
   }
 }
