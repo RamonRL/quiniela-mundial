@@ -963,5 +963,18 @@
     "catTopScorerDesc": "Meilleur buteur du tournoi.",
     "catSpecial": "Spéciaux",
     "catSpecialDesc": "Pronostics spéciaux du tournoi."
+  },
+  "chat": {
+    "eyebrowPublic": "Grille publique",
+    "eyebrowPrivate": "Grille privée",
+    "threadTitle": "Fil · {name}",
+    "defaultLeague": "Ta ligue",
+    "startConversation": "Lance la conversation.",
+    "messageCount": "{n, plural, one {# message.} other {# messages.}}",
+    "noMessages": "Pas encore de messages. Sois le premier.",
+    "deletedMessage": "(message supprimé)",
+    "delete": "Supprimer",
+    "placeholder": "Écris un message…",
+    "send": "Envoyer"
   }
 }

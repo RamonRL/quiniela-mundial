@@ -2,6 +2,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { chatMessages, leagues, profiles } from "@/lib/db/schema";
 import { PageHeader } from "@/components/shell/page-header";
+import { getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId } from "@/lib/leagues";
 import { ChatThread } from "./chat-thread";
@@ -10,6 +11,7 @@ export const metadata = { title: "Chat" };
 
 export default async function ChatPage() {
   const me = await requireUser();
+  const t = await getTranslations("chat");
   const leagueId = await currentLeagueId(me);
   const [league] = leagueId
     ? await db.select().from(leagues).where(eq(leagues.id, leagueId)).limit(1)
@@ -35,18 +37,18 @@ export default async function ChatPage() {
     : [];
 
   const activeMessages = messages.filter((m) => m.deletedAt == null).length;
-  const leagueName = league?.name ?? "Tu liga";
-  const eyebrow = league?.isPublic ? "Quiniela pública" : "Quiniela privada";
+  const leagueName = league?.name ?? t("defaultLeague");
+  const eyebrow = league?.isPublic ? t("eyebrowPublic") : t("eyebrowPrivate");
 
   return (
     <div className="space-y-6">
       <PageHeader
         eyebrow={eyebrow}
-        title={`Hilo · ${leagueName}`}
+        title={t("threadTitle", { name: leagueName })}
         description={
           activeMessages === 0
-            ? "Empieza tú la conversación."
-            : `${activeMessages} ${activeMessages === 1 ? "mensaje" : "mensajes"}.`
+            ? t("startConversation")
+            : t("messageCount", { n: activeMessages })
         }
       />
       <ChatThread

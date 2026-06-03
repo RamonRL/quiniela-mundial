@@ -963,5 +963,18 @@
     "catTopScorerDesc": "Artilheiro do torneio.",
     "catSpecial": "Especiais",
     "catSpecialDesc": "Palpites especiais do torneio."
+  },
+  "chat": {
+    "eyebrowPublic": "Bolão público",
+    "eyebrowPrivate": "Bolão privado",
+    "threadTitle": "Tópico · {name}",
+    "defaultLeague": "Sua liga",
+    "startConversation": "Comece a conversa.",
+    "messageCount": "{n, plural, one {# mensagem.} other {# mensagens.}}",
+    "noMessages": "Ainda sem mensagens. Seja o primeiro.",
+    "deletedMessage": "(mensagem excluída)",
+    "delete": "Excluir",
+    "placeholder": "Escreva uma mensagem…",
+    "send": "Enviar"
   }
 }

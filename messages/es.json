@@ -963,5 +963,18 @@
     "catTopScorerDesc": "Goleador del torneo.",
     "catSpecial": "Especiales",
     "catSpecialDesc": "Predicciones especiales del torneo."
+  },
+  "chat": {
+    "eyebrowPublic": "Quiniela pública",
+    "eyebrowPrivate": "Quiniela privada",
+    "threadTitle": "Hilo · {name}",
+    "defaultLeague": "Tu liga",
+    "startConversation": "Empieza tú la conversación.",
+    "messageCount": "{n, plural, one {# mensaje.} other {# mensajes.}}",
+    "noMessages": "Aún sin mensajes. Sé el primero.",
+    "deletedMessage": "(mensaje eliminado)",
+    "delete": "Eliminar",
+    "placeholder": "Escribe un mensaje…",
+    "send": "Enviar"
   }
 }

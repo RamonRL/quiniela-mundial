@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { Send, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,7 @@ export function ChatThread({
   currentUserId: string;
   isAdmin: boolean;
 }) {
+  const t = useTranslations("chat");
   const [state, action, pending] = useActionState(sendMessage, initial);
   const formRef = useRef<HTMLFormElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -64,7 +66,7 @@ export function ChatThread({
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4">
         {messages.length === 0 ? (
           <p className="py-12 text-center font-editorial text-base italic text-[var(--color-muted-foreground)]">
-            Aún sin mensajes. Sé el primero.
+            {t("noMessages")}
           </p>
         ) : (
           <ul className="space-y-3">
@@ -106,7 +108,7 @@ export function ChatThread({
                             : "bg-[var(--color-surface-2)] text-[var(--color-foreground)]"
                       }`}
                     >
-                      {deleted ? "(mensaje eliminado)" : m.body}
+                      {deleted ? t("deletedMessage") : m.body}
                     </div>
                     {isAdmin && !deleted ? (
                       <form
@@ -117,7 +119,7 @@ export function ChatThread({
                         className="opacity-0 transition group-hover:opacity-100"
                       >
                         <Button type="submit" variant="ghost" size="sm" className="h-6 px-1.5">
-                          <Trash2 className="size-3" /> Eliminar
+                          <Trash2 className="size-3" /> {t("delete")}
                         </Button>
                       </form>
                     ) : null}
@@ -135,12 +137,12 @@ export function ChatThread({
       >
         <Input
           name="body"
-          placeholder="Escribe un mensaje…"
+          placeholder={t("placeholder")}
           required
           maxLength={1000}
           disabled={pending}
         />
-        <Button type="submit" size="icon" disabled={pending} aria-label="Enviar">
+        <Button type="submit" size="icon" disabled={pending} aria-label={t("send")}>
           <Send className="size-4" />
         </Button>
       </form>

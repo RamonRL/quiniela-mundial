@@ -963,5 +963,18 @@
     "catTopScorerDesc": "Tournament top scorer.",
     "catSpecial": "Specials",
     "catSpecialDesc": "Tournament special predictions."
+  },
+  "chat": {
+    "eyebrowPublic": "Public pool",
+    "eyebrowPrivate": "Private pool",
+    "threadTitle": "Thread · {name}",
+    "defaultLeague": "Your league",
+    "startConversation": "Start the conversation.",
+    "messageCount": "{n, plural, one {# message.} other {# messages.}}",
+    "noMessages": "No messages yet. Be the first.",
+    "deletedMessage": "(message deleted)",
+    "delete": "Delete",
+    "placeholder": "Type a message…",
+    "send": "Send"
   }
 }
