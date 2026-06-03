@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { and, asc, eq, gt, inArray, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
+import { withDbRetry } from "@/lib/db/retry";
 import { matchdays, matches, predMatchResult } from "@/lib/db/schema";
 import { computeMatchdayStates, type Stage } from "@/lib/matchday-state";
 
@@ -68,7 +69,12 @@ export const loadOpenMatchdays = cache(
         );
         resolve([]);
       }, DEADLINE_TIMEOUT_MS);
-      loadOpenMatchdaysUnsafe(userId, leagueId).then(
+      // 1 solo reintento: la función hace 4 queries secuenciales; un re-run
+      // completo ante un blip de conexión cabe dentro del presupuesto de 4s.
+      withDbRetry(() => loadOpenMatchdaysUnsafe(userId, leagueId), {
+        label: "loadOpenMatchdays",
+        retries: 1,
+      }).then(
         (v) => {
           if (settled) return;
           settled = true;

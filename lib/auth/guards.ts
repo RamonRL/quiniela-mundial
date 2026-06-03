@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { and, eq, ne } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { leagueMemberships, leagues, profiles } from "@/lib/db/schema";
+import { withDbRetry } from "@/lib/db/retry";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { PENDING_INVITE_COOKIE } from "@/lib/leagues";
 import { notifyNewUser } from "@/lib/telegram/events";
@@ -69,7 +70,13 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
 
   const expectedRole: "user" | "admin" = isAdminEmail(user.email) ? "admin" : "user";
 
-  const [existing] = await db.select().from(profiles).where(eq(profiles.id, user.id)).limit(1);
+  // Lectura por-request más caliente: es donde pega el socket muerto tras un
+  // cold start / freeze de Vercel. Reintentar la convierte en un hipo invisible
+  // en vez de un 500 en cada navegación.
+  const [existing] = await withDbRetry(
+    () => db.select().from(profiles).where(eq(profiles.id, user.id)).limit(1),
+    { label: "getCurrentUser:profile" },
+  );
 
   if (!existing) {
     // Primer login. Liga activa:

@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/nextjs";
+import { withDbRetry } from "@/lib/db/retry";
 
 /**
  * Mensaje genérico para fallos inesperados de BD (timeout, pool agotado,
@@ -39,7 +40,11 @@ export async function runAction<T, E = T>(
   onError: (message: string) => E,
 ): Promise<T | E> {
   try {
-    return await fn();
+    // Reintenta hipos transitorios de conexión (socket stale tras cold start /
+    // freeze de Vercel) antes de rendirse. Las mutaciones envueltas son
+    // transaccionales o idempotentes (upsert/`onConflictDo*`), así que el
+    // reintento no duplica trabajo. Ver lib/db/retry.ts.
+    return await withDbRetry(fn, { label: context.action });
   } catch (err) {
     Sentry.withScope((scope) => {
       scope.setTag("action", context.action);
