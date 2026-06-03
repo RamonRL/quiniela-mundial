@@ -5,6 +5,8 @@ import { TeamFlag } from "@/components/brand/team-flag";
 import { EmptyState } from "@/components/shell/empty-state";
 import { PageHeader } from "@/components/shell/page-header";
 import { BarChart3, Shield, Target } from "lucide-react";
+import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import { formatRemaining } from "@/lib/deadlines";
 
 export const metadata = { title: "Estadísticas" };
@@ -13,17 +15,18 @@ const KICKOFF = new Date(
   process.env.NEXT_PUBLIC_TOURNAMENT_KICKOFF_AT ?? "2026-06-11T19:00:00Z",
 );
 
-const STAGE_LABEL: Record<string, string> = {
-  group: "Fase de grupos",
-  r32: "Dieciseisavos",
-  r16: "Octavos",
-  qf: "Cuartos",
-  sf: "Semifinales",
-  third: "Tercer puesto",
-  final: "Final",
+const STAGE_LABEL_KEY: Record<string, string> = {
+  group: "stGroup",
+  r32: "stR32",
+  r16: "stR16",
+  qf: "stQf",
+  sf: "stSf",
+  third: "stThird",
+  final: "stFinal",
 };
 
 export default async function StatsPage() {
+  const t = await getTranslations("stats");
   const [matchAgg] = await db
     .select({
       played: sql<number>`count(*) filter (where status = 'finished')::int`,
@@ -36,14 +39,14 @@ export default async function StatsPage() {
     return (
       <div className="space-y-6">
         <PageHeader
-          eyebrow="Datos del torneo"
-          title="Estadísticas"
-          description="El pulso del torneo."
+          eyebrow={t("eyebrow")}
+          title={t("title")}
+          description={t("desc")}
         />
         <EmptyState
           icon={<BarChart3 className="size-5" />}
-          title="Sin datos todavía"
-          description={`Aparecerán aquí cuando se juegue el primer partido. El torneo arranca en ${formatRemaining(ms)}.`}
+          title={t("emptyTitle")}
+          description={t("emptyDesc", { remaining: formatRemaining(ms) })}
         />
       </div>
     );
@@ -130,24 +133,24 @@ export default async function StatsPage() {
   const avg = (scorerCount.goals / matchAgg.played).toFixed(2);
 
   const headlineStats = [
-    { label: "Partidos jugados", value: matchAgg.played.toString(), hint: `de ${matchAgg.total}` },
+    { label: t("hsPlayed"), value: matchAgg.played.toString(), hint: t("hsPlayedHint", { total: matchAgg.total }) },
     {
-      label: "Goles totales",
+      label: t("hsGoals"),
       value: scorerCount.goals.toString(),
-      hint: `${avg} por partido`,
+      hint: t("hsGoalsHint", { avg }),
       accent: true,
     },
-    { label: "Empates en 90'", value: drawsRow.draws.toString(), hint: "antes de prórroga" },
-    { label: "Tandas de penaltis", value: drawsRow.penalties.toString(), hint: "decididas en 11m" },
-    { label: "Festival de gol", value: drawsRow.over6.toString(), hint: "partidos +6 goles" },
+    { label: t("hsDraws"), value: drawsRow.draws.toString(), hint: t("hsDrawsHint") },
+    { label: t("hsPens"), value: drawsRow.penalties.toString(), hint: t("hsPensHint") },
+    { label: t("hsFestival"), value: drawsRow.over6.toString(), hint: t("hsFestivalHint") },
   ];
 
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="Datos del torneo"
-        title="Estadísticas"
-        description="El pulso del torneo."
+        eyebrow={t("eyebrow")}
+        title={t("title")}
+        description={t("desc")}
       />
 
       {/* Headline stats */}
@@ -181,26 +184,26 @@ export default async function StatsPage() {
       {/* Best attack / best defense */}
       <section className="grid gap-4 lg:grid-cols-2">
         <RankPanel
-          title="Mejores ataques"
-          subtitle="Goles a favor en lo que va de torneo"
+          title={t("attackTitle")}
+          subtitle={t("attackSubtitle")}
           icon={<Target className="size-4" />}
           rows={bestAttack.map((r) => ({
             team: r.team,
             primary: r.scored,
-            hint: `${r.played} ${r.played === 1 ? "partido" : "partidos"}`,
+            hint: t("matchesCount", { n: r.played }),
           }))}
-          unitLabel="goles"
+          unitLabel={t("attackUnit")}
         />
         <RankPanel
-          title="Mejores defensas"
-          subtitle="Menor promedio de goles encajados"
+          title={t("defenseTitle")}
+          subtitle={t("defenseSubtitle")}
           icon={<Shield className="size-4" />}
           rows={bestDefense.map((r) => ({
             team: r.team,
             primary: (r.conceded / Math.max(1, r.played)).toFixed(2),
-            hint: `${r.conceded} GC en ${r.played} ${r.played === 1 ? "partido" : "partidos"}`,
+            hint: t("defenseHint", { conceded: r.conceded, n: r.played }),
           }))}
-          unitLabel="GC/partido"
+          unitLabel={t("defenseUnit")}
         />
       </section>
 
@@ -210,7 +213,7 @@ export default async function StatsPage() {
           <header className="flex items-center gap-3 pb-4">
             <span className="h-px w-6 bg-[var(--color-arena)]" />
             <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-              Goles por fase
+              {t("goalsByStage")}
             </p>
           </header>
           <ul className="space-y-2">
@@ -224,21 +227,21 @@ export default async function StatsPage() {
                     key={s.stage}
                     className="flex items-center justify-between gap-3 rounded-md border border-[var(--color-border)] bg-[var(--color-surface-2)] px-4 py-2.5"
                   >
-                    <span className="text-sm font-medium">{STAGE_LABEL[s.stage] ?? s.stage}</span>
+                    <span className="text-sm font-medium">{STAGE_LABEL_KEY[s.stage] ? t(STAGE_LABEL_KEY[s.stage]) : s.stage}</span>
                     <span className="flex items-baseline gap-3 font-mono text-[0.65rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
                       <span>
                         <span className="font-display tabular text-base text-[var(--color-foreground)]">
                           {s.played}
                         </span>{" "}
-                        partidos
+                        {t("stageMatches")}
                       </span>
                       <span>
                         <span className="font-display tabular text-base text-[var(--color-arena)] glow-arena">
                           {s.goals}
                         </span>{" "}
-                        goles
+                        {t("stageGoals")}
                       </span>
-                      <span className="hidden sm:inline">· {avgPerMatch}/p</span>
+                      <span className="hidden sm:inline">· {avgPerMatch}{t("perMatch")}</span>
                     </span>
                   </li>
                 );
@@ -263,6 +266,7 @@ function RankPanel({
   rows: { team: { code: string; name: string } | null; primary: number | string; hint: string }[];
   unitLabel: string;
 }) {
+  const t = useTranslations("stats");
   return (
     <article className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
       <header className="flex items-center justify-between gap-3 pb-4">
@@ -281,7 +285,7 @@ function RankPanel({
       </header>
       {rows.length === 0 ? (
         <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-          Aún sin datos suficientes.
+          {t("noEnoughData")}
         </p>
       ) : (
         <ol className="space-y-1.5">
