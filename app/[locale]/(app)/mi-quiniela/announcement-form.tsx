@@ -2,7 +2,7 @@
 
 import { useActionState, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Megaphone, Save, Trash2 } from "lucide-react";
+import { Save, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnnouncementBanner } from "@/components/shell/announcement-banner";
 import {
@@ -36,19 +36,10 @@ export function AnnouncementForm({ leagueId, leagueName, initialValue }: Props) 
   const hadValue = (initialValue ?? "").trim().length > 0;
 
   return (
-    <section className="space-y-4 rounded-2xl border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface))] p-5 sm:p-6">
-      <header className="space-y-1">
-        <div className="flex items-center gap-2 font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-          <Megaphone className="size-3.5" />
-          <span>{t("annHeader")}</span>
-          <span className="rounded-full bg-[var(--color-arena)] px-1.5 py-px text-[0.55rem] font-semibold tracking-[0.12em] text-white">
-            PREMIUM
-          </span>
-        </div>
-        <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-          {t("annValueProp")}
-        </p>
-      </header>
+    <div className="space-y-4">
+      <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
+        {t("annValueProp")}
+      </p>
 
       {/* Vista previa EXACTA de lo que verán los miembros */}
       <div className="space-y-1.5">
@@ -118,6 +109,6 @@ export function AnnouncementForm({ leagueId, leagueName, initialValue }: Props) 
           <p className="text-sm text-[var(--color-success)]">{state.message}</p>
         ) : null}
       </form>
-    </section>
+    </div>
   );
 }

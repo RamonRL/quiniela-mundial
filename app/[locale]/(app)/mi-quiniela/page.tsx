@@ -2,7 +2,7 @@ import { Link } from "@/i18n/navigation";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { useTranslations } from "next-intl";
-import { ArrowRight, Building2, Crown, Download, Mail, Sparkles, ShieldCheck, Users } from "lucide-react";
+import { ArrowRight, Building2, Crown, Download, Mail, Megaphone, Sparkles, ShieldCheck, Users } from "lucide-react";
 import { asc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { leagues, pointsLedger, profiles } from "@/lib/db/schema";
@@ -21,7 +21,7 @@ import { EmptyState } from "@/components/shell/empty-state";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, inLeagueFilter, isPremiumTier } from "@/lib/leagues";
 import { formatDateTime, initials } from "@/lib/utils";
-import { InviteLinkCopy } from "@/app/[locale]/admin/ligas/invite-link-copy";
+import { CollapsibleSection } from "@/components/shell/collapsible-section";
 import { CodeDisplay } from "./code-display";
 import { DeleteLeagueDialog } from "./delete-league-dialog";
 import { EditLeagueDialog } from "./edit-league-dialog";
@@ -144,15 +144,9 @@ export default async function MyLeaguePage() {
         </div>
       </div>
 
-      {isOwner && isPremium ? (
-        <AnnouncementForm
-          leagueId={league.id}
-          leagueName={league.name}
-          initialValue={league.announcement}
-        />
+      {league.joinCode ? (
+        <CodeDisplay code={league.joinCode} inviteToken={league.inviteToken} />
       ) : null}
-
-      {league.joinCode ? <CodeDisplay code={league.joinCode} /> : null}
 
       <section className="grid gap-3 sm:grid-cols-3">
         <StatTile
@@ -187,7 +181,27 @@ export default async function MyLeaguePage() {
       ) : null}
 
       {isOwner && isPremium ? (
-        <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <section className="space-y-4">
+          <hr className="border-[var(--color-border)]" />
+          <h2 className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
+            {t("premiumSection")}
+          </h2>
+
+          {/* Anuncio fijado — plegable, cerrado por defecto */}
+          <CollapsibleSection
+            title={t("annTitle")}
+            description={t("annShort")}
+            badge="PREMIUM"
+            icon={<Megaphone className="size-4" />}
+          >
+            <AnnouncementForm
+              leagueId={league.id}
+              leagueName={league.name}
+              initialValue={league.announcement}
+            />
+          </CollapsibleSection>
+
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Link
             href="/mi-quiniela/departamentos"
             className="flex items-center gap-3 rounded-xl border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_4%,var(--color-surface))] p-4 transition hover:border-[var(--color-arena)]/60"
@@ -235,18 +249,9 @@ export default async function MyLeaguePage() {
               </p>
             </div>
           </a>
+          </div>
         </section>
       ) : null}
-
-      <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
-        <header className="flex items-center justify-between gap-3 pb-3 font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-          <span>{t("inviteLink")}</span>
-        </header>
-        <InviteLinkCopy token={league.inviteToken} />
-        <p className="pt-3 font-editorial text-xs italic leading-relaxed text-[var(--color-muted-foreground)]">
-          {t("inviteHint")}
-        </p>
-      </div>
 
       <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]">
         <header className="flex items-center justify-between gap-3 border-b border-[var(--color-border)] px-5 py-3 font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
