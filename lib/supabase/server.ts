@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { fetchWithTimeout } from "./fetch";
 
 type CookieToSet = { name: string; value: string; options?: CookieOptions };
 
@@ -11,6 +12,9 @@ export async function createSupabaseServerClient() {
     throw new Error("Supabase URL/anon key missing in env.");
   }
   return createServerClient(url, key, {
+    // Timeout duro en las llamadas a Auth: que un GoTrue lento no cuelgue el
+    // render autenticado (getCurrentUser) sin límite. Ver lib/supabase/fetch.ts.
+    global: { fetch: fetchWithTimeout },
     cookies: {
       getAll() {
         return cookieStore.getAll();

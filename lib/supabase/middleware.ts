@@ -1,7 +1,9 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 
 import { routing } from "@/i18n/routing";
+import { fetchWithTimeout } from "./fetch";
 
 type CookieToSet = { name: string; value: string; options?: CookieOptions };
 
@@ -130,6 +132,9 @@ export async function updateSession(
   }
 
   const supabase = createServerClient(url, key, {
+    // Timeout duro: que un GoTrue lento/caído no cuelgue ESTA request (corre
+    // en cada navegación protegida). Ver lib/supabase/fetch.ts.
+    global: { fetch: fetchWithTimeout },
     cookies: {
       getAll() {
         return request.cookies.getAll();
@@ -145,9 +150,26 @@ export async function updateSession(
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Validación de sesión contra Auth. Si la llamada se cuelga o falla (GoTrue
+  // lento/caído/rate-limit), el fetch con timeout la aborta y FALLAMOS ABIERTO:
+  // dejamos pasar la request con las cookies que ya trae en vez de colgarla o
+  // echar a /login a un usuario legítimo. El guard de la página (requireUser →
+  // getCurrentUser, que también tiene timeout) revalida en el render. Así un
+  // hipo de Auth degrada en vez de tumbar la navegación.
+  let user = null;
+  try {
+    ({
+      data: { user },
+    } = await supabase.auth.getUser());
+  } catch (err) {
+    Sentry.addBreadcrumb({
+      category: "auth.middleware",
+      level: "warning",
+      message: "supabase.auth.getUser() falló/timeout en middleware → fail-open",
+    });
+    Sentry.captureException(err);
+    return response;
+  }
 
   // En `/`: si la sesión es válida, mandamos a /dashboard. Si la cookie
   // estaba pero ya expiró (user=null), servimos la landing igualmente.
