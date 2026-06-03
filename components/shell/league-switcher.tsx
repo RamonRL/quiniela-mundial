@@ -33,7 +33,7 @@ export function LeagueSwitcher({
           type="button"
           data-tutorial-id="league-switcher"
           aria-label={t("changeActive")}
-          className="group inline-flex max-w-[26rem] items-center gap-2 rounded-sm transition hover:opacity-80 focus:outline-none focus-visible:ring-1 focus-visible:ring-[var(--color-arena)]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)]"
+          className="group inline-flex min-w-0 max-w-[55vw] items-center gap-2 rounded-sm transition hover:opacity-80 focus:outline-none focus-visible:ring-1 focus-visible:ring-[var(--color-arena)]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg)] sm:max-w-[26rem]"
         >
           {active && !active.isPublic ? (
             <Avatar className="size-7 shrink-0 border border-[var(--color-border)]">
@@ -45,7 +45,7 @@ export function LeagueSwitcher({
               </AvatarFallback>
             </Avatar>
           ) : null}
-          <span className="truncate font-display text-xl uppercase tracking-[0.06em] text-[var(--color-foreground)] sm:text-2xl">
+          <span className="min-w-0 truncate font-display text-xl uppercase tracking-[0.06em] text-[var(--color-foreground)] sm:text-2xl">
             {active?.name ?? t("selectPool")}
           </span>
           <ChevronsUpDown

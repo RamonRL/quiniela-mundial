@@ -6,6 +6,20 @@ import { LeagueSwitcher } from "./league-switcher";
 import { LanguageSwitcher } from "./language-switcher";
 import type { Membership } from "@/lib/leagues";
 
+/**
+ * Separador vertical sutil entre los elementos de la derecha del header
+ * (idioma · EMPRESAS · ENTRAR / avatar). Solo en sm+ porque en móvil el
+ * idioma y EMPRESAS están ocultos y no habría nada que separar.
+ */
+function HeaderDivider() {
+  return (
+    <span
+      aria-hidden
+      className="hidden h-4 w-px shrink-0 bg-[var(--color-border)] sm:block"
+    />
+  );
+}
+
 type Props = {
   email: string | null;
   nickname: string | null;
@@ -32,7 +46,9 @@ export function AppHeader({
     // Desktop (lg+): grid 1fr_auto_1fr → centro geométrico para alinear
     //   con el logo FWC26 que vive centrado en la columna de contenido.
     <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b border-[var(--color-border)] bg-[color-mix(in_oklch,var(--color-bg)_88%,transparent)] px-4 backdrop-blur-md lg:grid lg:grid-cols-[1fr_auto_1fr] lg:px-8">
-      <div className="flex items-center">
+      {/* Logo: shrink-0 para que NUNCA se achate cuando el nombre de liga
+          es largo. El que cede/trunca es el LeagueSwitcher (min-w-0). */}
+      <div className="flex shrink-0 items-center">
         <Link
           // Si no hay sesión (visitante en pages públicas), el logo lleva
           // a la landing en /. Con sesión activa, sigue siendo el atajo a
@@ -44,7 +60,7 @@ export function AppHeader({
           <BrandWordmark priority className="h-9 w-auto" />
         </Link>
       </div>
-      <div className="flex flex-1 justify-center lg:flex-initial">
+      <div className="flex min-w-0 flex-1 justify-center lg:flex-initial">
         {isAuthenticated && memberships.length > 0 ? (
           <LeagueSwitcher
             memberships={memberships}
@@ -52,27 +68,32 @@ export function AppHeader({
           />
         ) : null}
       </div>
-      <div className="flex items-center justify-end gap-3">
+      <div className="flex shrink-0 items-center justify-end gap-3">
         {/* El selector de idioma se oculta en móvil: rompía la barra
             superior. En móvil el idioma se cambia desde Ajustes. */}
         <span className="hidden sm:inline-flex">
           <LanguageSwitcher />
         </span>
         {isAuthenticated && email ? (
-          <UserMenu
-            email={email}
-            nickname={nickname}
-            avatarUrl={avatarUrl}
-            isAdmin={isAdmin}
-          />
+          <>
+            <HeaderDivider />
+            <UserMenu
+              email={email}
+              nickname={nickname}
+              avatarUrl={avatarUrl}
+              isAdmin={isAdmin}
+            />
+          </>
         ) : (
           <>
+            <HeaderDivider />
             <Link
               href="/precios"
               className="hidden text-xs font-mono uppercase tracking-[0.18em] text-[var(--color-muted-foreground)] transition hover:text-[var(--color-arena)] sm:inline-flex"
             >
               {t("companies")}
             </Link>
+            <HeaderDivider />
             <Link
               href="/login"
               className="text-xs font-mono uppercase tracking-[0.18em] text-[var(--color-muted-foreground)] transition hover:text-[var(--color-foreground)]"
