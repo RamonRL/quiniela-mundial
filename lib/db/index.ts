@@ -24,22 +24,26 @@ declare global {
 //     que una conexión muerta envenene el pool para futuras requests.
 //   - idle_in_transaction_session_timeout=7s → mata transacciones colgadas.
 //   - connect_timeout=5s → fallar rápido en handshake TCP/TLS roto.
-//   - idle_timeout=20s → reciclar conexiones idle (evita stale connections
-//     entre invocations de Lambda).
-//   - max_lifetime=30 min → reciclar duro periódicamente.
+//   - idle_timeout=8s → reciclar conexiones idle pronto. Es la principal
+//     defensa contra `CONNECTION_CLOSED`: si el CLIENTE cierra la conexión
+//     idle antes de que la mate Supavisor (o la red entre freezes de la
+//     Lambda), evitamos reutilizar sockets zombie y escribir sobre ellos.
+//   - max_lifetime=15 min → reciclar duro periódicamente.
 //
-// Pool: `max: 25` — Supabase free permite 15 conexiones simultáneas en el
-// transaction pooler. Subimos a 25 para tener headroom cuando el dashboard
-// dispara su `Promise.all` de ~14 queries; el cliente abre conexiones
-// perezosamente hasta el límite de Supabase y encola más allá sin caer.
+// Pool: `max: 10` — con el transaction pooler (6543) Supavisor MULTIPLEXA
+// muchos clientes sobre pocas conexiones backend, así que no hace falta un
+// pool grande por instancia. 10 cubre de sobra el `Promise.all` de ~14
+// queries del dashboard (las que sobran se encolan unos ms) y, sobre todo,
+// deja muchas menos conexiones idle sueltas → menos sockets que se quedan
+// stale (causa de CONNECTION_CLOSED) y menos presión de memoria/conexiones.
 const client =
   globalThis.__pg ??
   postgres(connectionString, {
-    max: 25,
+    max: 10,
     prepare: false,
     connect_timeout: 5,
-    idle_timeout: 20,
-    max_lifetime: 60 * 30,
+    idle_timeout: 8,
+    max_lifetime: 60 * 15,
     connection: {
       statement_timeout: 7000,
       idle_in_transaction_session_timeout: 7000,
