@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
 import { TeamFlag } from "@/components/brand/team-flag";
 import { ArrowRight, ArrowUpRight, CalendarDays, Crown, Flame, Trophy } from "lucide-react";
 import { and, asc, desc, eq, gt, sql } from "drizzle-orm";
@@ -42,24 +43,15 @@ import {
 
 const KICKOFF = process.env.NEXT_PUBLIC_TOURNAMENT_KICKOFF_AT ?? "2026-06-11T19:00:00Z";
 
-const MARQUEE_TOKENS = [
-  "MUNDIAL FIFA 26",
-  "CANADÁ",
-  "MÉXICO",
-  "USA",
-  "11 JUN — 19 JUL",
-  "48 SELECCIONES",
-  "104 PARTIDOS",
-];
-
+// Claves i18n (namespace "dashboard") por fase — se traducen en el render.
 const STAGE_BADGE: Record<string, string> = {
-  group: "GRUPOS",
-  r32: "R32",
-  r16: "OCTAVOS",
-  qf: "CUARTOS",
-  sf: "SEMIS",
-  third: "3ER",
-  final: "FINAL",
+  group: "stageGroup",
+  r32: "stageR32",
+  r16: "stageR16",
+  qf: "stageQf",
+  sf: "stageSf",
+  third: "stageThird",
+  final: "stageFinal",
 };
 
 const QUERY_TIMEOUT_MS = 5000;
@@ -103,6 +95,16 @@ function safe<T>(
 
 export default async function DashboardPage() {
   const me = await requireUser();
+  const t = await getTranslations("dashboard");
+  const MARQUEE_TOKENS = [
+    t("mqWorldCup"),
+    t("mqCanada"),
+    t("mqMexico"),
+    t("mqUsa"),
+    t("mqDates"),
+    t("mqTeams"),
+    t("mqMatches"),
+  ];
   const leagueId = (await currentLeagueId(me))!;
   // Modo de la liga activa. Marcador / Solo Ganador NO tienen pre-torneo
   // (grupos, bota, especiales) ni bracket: solo se predicen partidos. El
@@ -318,7 +320,7 @@ export default async function DashboardPage() {
           "teamRows",
         )
       : [];
-  const teamById = new Map(teamRows.map((t) => [t.id, t]));
+  const teamById = new Map(teamRows.map((tm) => [tm.id, tm]));
   const next = nextMatch[0];
   const nextHome = next?.homeTeamId ? teamById.get(next.homeTeamId) ?? null : null;
   const nextAway = next?.awayTeamId ? teamById.get(next.awayTeamId) ?? null : null;
@@ -394,6 +396,7 @@ export default async function DashboardPage() {
         }
       : buildRunningHubProps({
           openMatchdays,
+          bracketLabel: t("bracketDeadline"),
           bracket:
             !onlyMatches &&
             (bracketStatus.state === "open" || bracketStatus.state === "closed")
@@ -429,7 +432,7 @@ export default async function DashboardPage() {
           className="h-14 w-auto sm:h-16"
         />
         <p className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)] sm:text-[0.6rem]">
-          Copa Mundial de la FIFA 2026
+          {t("fifaWorldCup")}
         </p>
       </div>
 
@@ -438,9 +441,9 @@ export default async function DashboardPage() {
         <div className="marquee flex w-max items-center gap-8 whitespace-nowrap font-display text-xs uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
           {[...Array(2)].map((_, dup) => (
             <div key={dup} className="flex items-center gap-8 pr-8">
-              {MARQUEE_TOKENS.map((t, i) => (
+              {MARQUEE_TOKENS.map((token, i) => (
                 <span key={`${dup}-${i}`} className="flex items-center gap-8">
-                  <span>{t}</span>
+                  <span>{token}</span>
                   <span className="size-1 rounded-full bg-[var(--color-arena)]" />
                 </span>
               ))}
@@ -473,7 +476,7 @@ export default async function DashboardPage() {
                   <span className="relative inline-flex size-2 rounded-full bg-[var(--color-arena)]" />
                 </span>
                 <span className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-                  En vivo · {liveMatch.code}
+                  {t("live")} · {liveMatch.code}
                 </span>
               </div>
               {liveMinute != null ? (
@@ -495,22 +498,22 @@ export default async function DashboardPage() {
             {liveScorerRows.length > 0 ? (
               <div className="flex flex-wrap items-center gap-2 border-t border-dashed border-[var(--color-arena)]/30 pt-3">
                 <span className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                  Goles
+                  {t("goals")}
                 </span>
                 {[...liveScorerRows]
                   .sort((a, b) => (a.minute ?? 999) - (b.minute ?? 999))
                   .map((s) => {
                     const p = livePlayerById.get(s.playerId);
-                    const t = teamById.get(s.teamId);
+                    const scorerTeam = teamById.get(s.teamId);
                     return (
                       <span
                         key={s.id}
                         className="flex items-center gap-1.5 rounded-md border border-[var(--color-border)] bg-[var(--color-surface-2)] px-2 py-1 text-xs"
                       >
                         <Badge variant="outline" className="text-[0.55rem]">
-                          {t?.code ?? "?"}
+                          {scorerTeam?.code ?? "?"}
                         </Badge>
-                        <span className="font-medium">{p?.name ?? "Jugador"}</span>
+                        <span className="font-medium">{p?.name ?? t("player")}</span>
                         {s.minute != null ? (
                           <span className="font-mono text-[0.6rem] text-[var(--color-muted-foreground)]">
                             {s.minute}′
@@ -535,11 +538,11 @@ export default async function DashboardPage() {
               <div className="flex items-center gap-3">
                 <span className="h-px w-8 bg-[var(--color-arena)]" />
                 <span className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                  Hola · {greeting}
+                  {t("hi")} · {greeting}
                 </span>
               </div>
               <p className="font-editorial text-lg italic leading-snug text-[var(--color-muted-foreground)]">
-                Faltan
+                {t("countdownLead")}
               </p>
             </div>
             <div className="-my-2 flex items-end gap-4">
@@ -548,10 +551,10 @@ export default async function DashboardPage() {
               </span>
               <div className="mb-4 flex flex-col gap-1">
                 <span className="font-display text-3xl tracking-tight">
-                  DÍAS
+                  {t("days")}
                 </span>
                 <span className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                  AL KICKOFF
+                  {t("toKickoff")}
                 </span>
               </div>
             </div>
@@ -578,7 +581,7 @@ export default async function DashboardPage() {
                 />
                 <div className="pointer-events-none relative flex items-center justify-between gap-3 border-b border-[var(--color-border)] bg-[var(--color-surface-3)]/40 px-4 py-2">
                   <span className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                    Próximo partido · {next.code}
+                    {t("nextMatch")} · {next.code}
                   </span>
                   <ArrowUpRight className="size-3.5 text-[var(--color-muted-foreground)] transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
                 </div>
@@ -586,7 +589,7 @@ export default async function DashboardPage() {
                   <div className="flex items-center justify-between gap-2">
                     <TeamCell team={nextHome} align="start" />
                     <span className="font-display text-2xl text-[var(--color-muted-foreground)]">
-                      vs
+                      {t("vs")}
                     </span>
                     <TeamCell team={nextAway} align="end" />
                   </div>
@@ -609,7 +612,7 @@ export default async function DashboardPage() {
               </div>
             ) : (
               <div className="rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface-2)] p-6 text-center text-sm text-[var(--color-muted-foreground)]">
-                Sin partidos próximos.
+                {t("noUpcoming")}
               </div>
             )}
 
@@ -625,10 +628,10 @@ export default async function DashboardPage() {
                 <Flame className="size-5 text-[var(--color-arena)]" />
                 <div>
                   <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                    Próximo cierre
+                    {t("nextDeadline")}
                   </p>
                   <p className="font-display text-xl tracking-tight">
-                    {upcomingMatchdays[0]?.name ?? "Sin jornada activa"}
+                    {upcomingMatchdays[0]?.name ?? t("noActiveMatchday")}
                   </p>
                   {upcomingMatchdays[0] ? (
                     <p className="text-xs text-[var(--color-muted-foreground)]">
@@ -658,12 +661,12 @@ export default async function DashboardPage() {
       <section data-tutorial-id="progress-hub" className="space-y-6">
         <header className="space-y-1">
           <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Puesto de mando
+            {t("commandPost")}
           </p>
           <h2 className="font-display text-2xl tracking-tight sm:text-3xl">
             {tournamentStarted || onlyMatches
-              ? "Tu próxima jugada"
-              : "Lo que te falta por predecir"}
+              ? t("nextPlay")
+              : t("whatsLeft")}
           </h2>
         </header>
         <div className="space-y-10">
@@ -680,29 +683,29 @@ export default async function DashboardPage() {
       {tournamentStarted ? (
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Stat
-          label="TU POSICIÓN"
+          label={t("statPosition")}
           value={myPosition != null ? `${myPosition.toString().padStart(2, "0")}` : "--"}
           prefix={myPosition != null ? "#" : null}
           hint={
             myPosition != null
-              ? `de ${totalParticipants}`
+              ? t("statPositionOf", { n: totalParticipants })
               : totalParticipants > 1
-                ? `${totalParticipants} jugadores · sin puntos aún`
-                : "Esperando primer resultado"
+                ? t("statWaitingPlayers", { n: totalParticipants })
+                : t("statWaitingFirst")
           }
           accent
           href={`/ranking/${me.id}`}
         />
-        <Stat label="PUNTOS" value={myPoints.toString()} hint="acumulados" />
+        <Stat label={t("statPoints")} value={myPoints.toString()} hint={t("statPointsHint")} />
         <Stat
-          label="GOLEADORES PEND."
+          label={t("statScorersPending")}
           value={pendingScorers.toString()}
-          hint="próximos sin pick"
+          hint={t("statScorersHint")}
         />
         <Stat
-          label="EXACTOS"
+          label={t("statExact")}
           value={exactScores.toString()}
-          hint="marcadores clavados"
+          hint={t("statExactHint")}
         />
       </section>
       ) : null}
@@ -733,14 +736,14 @@ export default async function DashboardPage() {
             <div className="flex items-center gap-2">
               <CalendarDays className="size-4 text-[var(--color-arena)]" />
               <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                Resultados · últimos pitidos
+                {t("recentResults")}
               </p>
             </div>
             <Link
               href="/calendario"
               className="font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)] transition hover:text-[var(--color-arena)]"
             >
-              Calendario →
+              {t("calendarArrow")}
             </Link>
           </header>
           <div className="relative flex-1 p-3">
@@ -750,13 +753,13 @@ export default async function DashboardPage() {
                   <CalendarDays className="size-5" />
                 </span>
                 <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-                  Aún sin pitidos finales.
+                  {t("noWhistles")}
                 </p>
                 <Link
                   href="/calendario"
                   className="inline-flex items-center gap-1 font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-arena)] hover:underline"
                 >
-                  Mira el calendario <ArrowRight className="size-3" />
+                  {t("seeCalendar")} <ArrowRight className="size-3" />
                 </Link>
               </div>
             ) : (
@@ -788,7 +791,7 @@ export default async function DashboardPage() {
                       />
                       <div className="pointer-events-none relative flex items-center justify-between gap-2 border-b border-[var(--color-border)] bg-[var(--color-surface-3)]/40 px-3 py-1">
                         <span className="font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
-                          {STAGE_BADGE[m.stage] ?? m.stage.toUpperCase()} · {m.code}
+                          {STAGE_BADGE[m.stage] ? t(STAGE_BADGE[m.stage]) : m.stage.toUpperCase()} · {m.code}
                         </span>
                         <span className="font-mono text-[0.55rem] uppercase tracking-[0.22em] text-[var(--color-muted-foreground)]">
                           {formatDateTime(m.scheduledAt, {
@@ -839,7 +842,7 @@ export default async function DashboardPage() {
                       </div>
                       {m.wentToPens ? (
                         <p className="relative border-t border-dashed border-[var(--color-border)] bg-[var(--color-surface-3)]/30 px-3 py-1 text-center font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
-                          Penaltis · {m.homeScorePen ?? 0}–{m.awayScorePen ?? 0}
+                          {t("penalties")} · {m.homeScorePen ?? 0}–{m.awayScorePen ?? 0}
                         </p>
                       ) : null}
                     </li>
@@ -857,14 +860,14 @@ export default async function DashboardPage() {
             <div className="flex items-center gap-2">
               <Trophy className="size-4 text-[var(--color-arena)]" />
               <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                Top 5 · cabeza de tabla
+                {t("top5")}
               </p>
             </div>
             <Link
               href="/ranking"
               className="font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)] transition hover:text-[var(--color-arena)]"
             >
-              Ranking →
+              {t("rankingArrow")}
             </Link>
           </header>
           <div className="relative flex-1 p-3">
@@ -875,14 +878,14 @@ export default async function DashboardPage() {
                 </span>
                 <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
                   {totalParticipants > 1
-                    ? `${totalParticipants} jugadores · sin puntos aún. Que empiece.`
-                    : "Esperando más participantes."}
+                    ? t("waitingPlayersStart", { n: totalParticipants })
+                    : t("waitingMoreParticipants")}
                 </p>
                 <Link
                   href="/ranking"
                   className="inline-flex items-center gap-1 font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-arena)] hover:underline"
                 >
-                  Ver participantes <ArrowRight className="size-3" />
+                  {t("seeParticipants")} <ArrowRight className="size-3" />
                 </Link>
               </div>
             ) : (
@@ -934,7 +937,7 @@ export default async function DashboardPage() {
                         {p.exactScoresCount > 0 || p.knockoutPoints > 0 ? (
                           <p className="mt-1 font-mono text-[0.55rem] uppercase tracking-[0.22em] text-[var(--color-muted-foreground)]">
                             {p.exactScoresCount > 0
-                              ? `${p.exactScoresCount} exacto${p.exactScoresCount === 1 ? "" : "s"}`
+                              ? t("podiumExact", { count: p.exactScoresCount })
                               : null}
                             {p.exactScoresCount > 0 && p.knockoutPoints > 0 ? " · " : ""}
                             {p.knockoutPoints > 0 ? `${p.knockoutPoints} KO` : null}
@@ -1153,6 +1156,7 @@ function TeamSide({
 function buildRunningHubProps({
   openMatchdays,
   bracket,
+  bracketLabel,
   preTorneoComplete,
   preTorneoTotal,
   compact = false,
@@ -1165,6 +1169,8 @@ function buildRunningHubProps({
     filled: number;
     total: number;
   };
+  /** Etiqueta localizada para la deadline del bracket. */
+  bracketLabel: string;
   preTorneoComplete: number;
   preTorneoTotal: number;
 }): ProgressHubProps {
@@ -1235,7 +1241,7 @@ function buildRunningHubProps({
     if (missing > 0) {
       candidates.push({
         kind: "bracket",
-        label: "Bracket eliminatorio",
+        label: bracketLabel,
         href: "/predicciones/bracket",
         closesAt: bracket.closesAt,
         missing,
