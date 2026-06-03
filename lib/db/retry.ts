@@ -56,9 +56,45 @@ type RetryOpts = {
   retries?: number;
   /** Backoff base en ms; crece exponencial: base, base*2, … Default 80ms. */
   baseDelayMs?: number;
+  /**
+   * Tope duro por intento. Si una query tarda más, abortamos con error en vez
+   * de colgarnos sin límite. CLAVE: postgres.js no tiene timeout de adquisición
+   * de conexión — si el pool está agotado (p. ej. por conexiones huérfanas en
+   * `ClientRead`), un `await sql\`…\`` espera una conexión libre PARA SIEMPRE, y
+   * el `statement_timeout` no lo salva porque la query ni ha empezado. Este
+   * timeout convierte ese cuelgue infinito en un fallo rápido (8s) que, en una
+   * página con fallback (`safe()`/`withTimeout`), degrada en vez de tumbarla.
+   * Default 8000ms (por encima del statement_timeout de 7s, así para queries que
+   * SÍ ejecutan salta antes el de Postgres).
+   */
+  timeoutMs?: number;
   /** Etiqueta para el breadcrumb de Sentry / logs. */
   label?: string;
 };
+
+/** Error de timeout de `withDbRetry`. No es transitorio → no se reintenta. */
+export class DbTimeoutError extends Error {
+  constructor(label: string, ms: number) {
+    super(`db op '${label}' superó el timeout de ${ms}ms`);
+    this.name = "DbTimeoutError";
+  }
+}
+
+function withDeadline<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new DbTimeoutError(label, ms)), ms);
+    promise.then(
+      (v) => {
+        clearTimeout(timer);
+        resolve(v);
+      },
+      (e) => {
+        clearTimeout(timer);
+        reject(e);
+      },
+    );
+  });
+}
 
 /**
  * Ejecuta `fn`, reintentando solo si lanza un error de conexión transitorio
@@ -74,12 +110,17 @@ export async function withDbRetry<T>(
 ): Promise<T> {
   const retries = opts.retries ?? 2;
   const base = opts.baseDelayMs ?? 80;
+  const timeoutMs = opts.timeoutMs ?? 8000;
+  const label = opts.label ?? "query";
   let lastErr: unknown;
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      return await fn();
+      return await withDeadline(fn(), timeoutMs, label);
     } catch (err) {
       lastErr = err;
+      // Un timeout NO se reintenta: si el pool está agotado, reintentar solo
+      // añade más presión. Falla rápido y deja que el caller degrade.
+      if (err instanceof DbTimeoutError) throw err;
       if (attempt === retries || !isTransientDbError(err)) throw err;
       const delay = base * 2 ** attempt;
       Sentry.addBreadcrumb({

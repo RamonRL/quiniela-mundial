@@ -24,26 +24,26 @@ declare global {
 //     que una conexión muerta envenene el pool para futuras requests.
 //   - idle_in_transaction_session_timeout=7s → mata transacciones colgadas.
 //   - connect_timeout=5s → fallar rápido en handshake TCP/TLS roto.
-//   - idle_timeout=8s → reciclar conexiones idle pronto. Es la principal
-//     defensa contra `CONNECTION_CLOSED`: si el CLIENTE cierra la conexión
-//     idle antes de que la mate Supavisor (o la red entre freezes de la
-//     Lambda), evitamos reutilizar sockets zombie y escribir sobre ellos.
-//   - max_lifetime=15 min → reciclar duro periódicamente.
+//   - idle_timeout=20s → reciclar conexiones idle sin churn excesivo.
+//   - max_lifetime=30 min → reciclar duro periódicamente.
 //
-// Pool: `max: 10` — con el transaction pooler (6543) Supavisor MULTIPLEXA
-// muchos clientes sobre pocas conexiones backend, así que no hace falta un
-// pool grande por instancia. 10 cubre de sobra el `Promise.all` de ~14
-// queries del dashboard (las que sobran se encolan unos ms) y, sobre todo,
-// deja muchas menos conexiones idle sueltas → menos sockets que se quedan
-// stale (causa de CONNECTION_CLOSED) y menos presión de memoria/conexiones.
+// Pool: `max: 25` — HEADROOM es lo importante. Cuando una Lambda se congela
+// o Vercel la mata a mitad de query, esa conexión queda "ocupada" en el pool
+// (y huérfana en `ClientRead` en Postgres) hasta que Supavisor la recicla.
+// Con un pool pequeño (probamos 10), unas pocas huérfanas AGOTAN el pool: las
+// queries nuevas esperan una conexión libre PARA SIEMPRE (postgres.js no tiene
+// timeout de adquisición) y el dashboard se cuelga sin que el statement_timeout
+// lo salve (la query ni empezó). 25 da margen de sobra para absorber huérfanas
+// mientras Supavisor las limpia. El `CONNECTION_CLOSED` que motivó bajarlo lo
+// cubre ahora `withDbRetry`, y las rutas críticas tienen timeout (ver retry.ts).
 const client =
   globalThis.__pg ??
   postgres(connectionString, {
-    max: 10,
+    max: 25,
     prepare: false,
     connect_timeout: 5,
-    idle_timeout: 8,
-    max_lifetime: 60 * 15,
+    idle_timeout: 20,
+    max_lifetime: 60 * 30,
     connection: {
       statement_timeout: 7000,
       idle_in_transaction_session_timeout: 7000,

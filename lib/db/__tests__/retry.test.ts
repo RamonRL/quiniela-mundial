@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { isTransientDbError, withDbRetry } from "@/lib/db/retry";
+import { DbTimeoutError, isTransientDbError, withDbRetry } from "@/lib/db/retry";
 
 describe("isTransientDbError", () => {
   it("reconoce códigos de conexión transitorios", () => {
@@ -58,5 +58,20 @@ describe("withDbRetry", () => {
       withDbRetry(fn, { retries: 2, baseDelayMs: 0 }),
     ).rejects.toEqual(err);
     expect(fn).toHaveBeenCalledTimes(3); // 1 inicial + 2 reintentos
+  });
+
+  it("lanza DbTimeoutError si fn cuelga más que timeoutMs", async () => {
+    const fn = vi.fn(() => new Promise(() => {})); // nunca resuelve (cuelga)
+    await expect(
+      withDbRetry(fn, { timeoutMs: 20, baseDelayMs: 0 }),
+    ).rejects.toBeInstanceOf(DbTimeoutError);
+  });
+
+  it("NO reintenta tras un timeout (evita añadir presión al pool)", async () => {
+    const fn = vi.fn(() => new Promise(() => {}));
+    await expect(
+      withDbRetry(fn, { timeoutMs: 20, retries: 3, baseDelayMs: 0 }),
+    ).rejects.toBeInstanceOf(DbTimeoutError);
+    expect(fn).toHaveBeenCalledTimes(1);
   });
 });

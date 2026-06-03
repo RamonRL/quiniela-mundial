@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { and, asc, eq, inArray, sql, type SQL } from "drizzle-orm";
 import { db } from "@/lib/db";
+import { withDbRetry } from "@/lib/db/retry";
 import { leagueMemberships, leagues, profiles } from "@/lib/db/schema";
 import type { CurrentUser } from "@/lib/auth/guards";
 import type { PredictionMode } from "@/lib/prediction-modes";
@@ -32,11 +33,15 @@ export {
 let publicLeagueCache: { id: number; slug: string } | null = null;
 export async function getPublicLeague(): Promise<{ id: number; slug: string } | null> {
   if (publicLeagueCache) return publicLeagueCache;
-  const [row] = await db
-    .select({ id: leagues.id, slug: leagues.slug })
-    .from(leagues)
-    .where(eq(leagues.slug, PUBLIC_LEAGUE_SLUG))
-    .limit(1);
+  const [row] = await withDbRetry(
+    () =>
+      db
+        .select({ id: leagues.id, slug: leagues.slug })
+        .from(leagues)
+        .where(eq(leagues.slug, PUBLIC_LEAGUE_SLUG))
+        .limit(1),
+    { label: "getPublicLeague" },
+  );
   if (!row) return null;
   publicLeagueCache = row;
   return row;
@@ -83,10 +88,14 @@ export async function getLeagueModes(
   leagueIds: number[],
 ): Promise<Map<number, PredictionMode>> {
   if (leagueIds.length === 0) return new Map();
-  const rows = await db
-    .select({ id: leagues.id, predictionMode: leagues.predictionMode })
-    .from(leagues)
-    .where(inArray(leagues.id, leagueIds));
+  const rows = await withDbRetry(
+    () =>
+      db
+        .select({ id: leagues.id, predictionMode: leagues.predictionMode })
+        .from(leagues)
+        .where(inArray(leagues.id, leagueIds)),
+    { label: "getLeagueModes" },
+  );
   return new Map(rows.map((r) => [r.id, r.predictionMode as PredictionMode]));
 }
 
