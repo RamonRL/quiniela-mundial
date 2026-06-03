@@ -1042,6 +1042,10 @@
     "compareAgainst": "Compare against:",
     "pickerPlaceholder": "Select a participant"
   },
+  "announcementBar": {
+    "label": "Announcement",
+    "dismiss": "Dismiss announcement"
+  },
   "myPool": {
     "fullBanner": "<b>Pool full ({limit}/{limit} members).</b> To let more in, get a Pase Mundial 2026 — no data migration, same group.",
     "seePlans": "See plans",
@@ -1083,8 +1087,13 @@
     "promoFrom": "from €19",
     "promoOneTime": "One-time payment · no renewal",
     "annHeader": "Pinned announcement · Pase Mundial 2026",
+    "annValueProp": "Pin a standout message for your team —prizes, dates, rules— that shows at the top of every page in the league. Impossible to miss.",
+    "annPreview": "Preview · this is what they'll see",
+    "annEmptyPreview": "Write an announcement to preview how your members will see it.",
+    "annRemove": "Remove",
+    "annPublish": "Publish announcement",
     "annPlaceholder": "E.g. 'The winner gets €200 in Amazon. Prize date: 25/07.'",
-    "annHint": "All members will see it as a banner on /mi-quiniela.",
+    "annHint": "All members will see it, on every page of the league.",
     "save": "Save",
     "saving": "Saving…",
     "cancel": "Cancel",

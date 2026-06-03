@@ -1042,6 +1042,10 @@
     "compareAgainst": "Comparar contra:",
     "pickerPlaceholder": "Selecciona un participante"
   },
+  "announcementBar": {
+    "label": "Anuncio",
+    "dismiss": "Descartar anuncio"
+  },
   "myPool": {
     "fullBanner": "<b>Quiniela completa ({limit}/{limit} miembros).</b> Para que entren más, contrata un Pase Mundial 2026 — sin migrar datos, mismo grupo.",
     "seePlans": "Ver planes",
@@ -1083,8 +1087,13 @@
     "promoFrom": "desde 19 €",
     "promoOneTime": "Pago único · sin renovación",
     "annHeader": "Anuncio fijado · Pase Mundial 2026",
+    "annValueProp": "Fija un mensaje destacado para tu equipo —premios, fechas, normas— que aparece arriba en todas las páginas de la liga. Imposible de ignorar.",
+    "annPreview": "Vista previa · así lo verán",
+    "annEmptyPreview": "Escribe un anuncio para ver aquí cómo lo verán tus miembros.",
+    "annRemove": "Quitar",
+    "annPublish": "Publicar anuncio",
     "annPlaceholder": "Ej. 'El ganador se lleva 200€ en Amazon. Fecha de entrega: 25/07.'",
-    "annHint": "Lo verán todos los miembros como banner en /mi-quiniela.",
+    "annHint": "Lo verán todos los miembros, en todas las páginas de la liga.",
     "save": "Guardar",
     "saving": "Guardando…",
     "cancel": "Cancelar",

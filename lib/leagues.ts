@@ -139,6 +139,10 @@ export type Membership = {
   joinedAt: Date;
   logoUrl: string | null;
   predictionMode: PredictionMode;
+  /** Anuncio fijado del owner (premium). Null = sin anuncio. */
+  announcement: string | null;
+  /** Creador de la liga — para saber si el usuario actual es el owner. */
+  createdBy: string | null;
 };
 
 /**
@@ -157,6 +161,8 @@ export async function getMembershipsForUser(userId: string): Promise<Membership[
       joinedAt: leagueMemberships.joinedAt,
       logoUrl: leagues.logoUrl,
       predictionMode: leagues.predictionMode,
+      announcement: leagues.announcement,
+      createdBy: leagues.createdBy,
     })
     .from(leagueMemberships)
     .innerJoin(leagues, eq(leagueMemberships.leagueId, leagues.id))

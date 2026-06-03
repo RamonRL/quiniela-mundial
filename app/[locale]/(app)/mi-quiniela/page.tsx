@@ -2,7 +2,7 @@ import { Link } from "@/i18n/navigation";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { useTranslations } from "next-intl";
-import { ArrowRight, Building2, Crown, Download, Mail, Megaphone, Sparkles, ShieldCheck, Users } from "lucide-react";
+import { ArrowRight, Building2, Crown, Download, Mail, Sparkles, ShieldCheck, Users } from "lucide-react";
 import { asc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { leagues, pointsLedger, profiles } from "@/lib/db/schema";
@@ -72,17 +72,6 @@ export default async function MyLeaguePage() {
 
   return (
     <div className="space-y-8">
-      {league.announcement ? (
-        <aside className="flex items-start gap-3 rounded-xl border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_8%,var(--color-surface))] p-4">
-          <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]">
-            <Megaphone className="size-4" />
-          </span>
-          <p className="font-editorial text-sm italic leading-relaxed text-[var(--color-foreground)]">
-            {league.announcement}
-          </p>
-        </aside>
-      ) : null}
-
       {isOwner && isFull ? (
         <aside className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--color-danger)]/40 bg-[var(--color-danger)]/5 p-4">
           <p className="font-editorial text-sm italic leading-relaxed">
@@ -156,7 +145,11 @@ export default async function MyLeaguePage() {
       </div>
 
       {isOwner && isPremium ? (
-        <AnnouncementForm leagueId={league.id} initialValue={league.announcement} />
+        <AnnouncementForm
+          leagueId={league.id}
+          leagueName={league.name}
+          initialValue={league.announcement}
+        />
       ) : null}
 
       {league.joinCode ? <CodeDisplay code={league.joinCode} /> : null}

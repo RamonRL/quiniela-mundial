@@ -9,6 +9,7 @@ import {
   type Membership,
 } from "@/lib/leagues";
 import { AppHeader } from "@/components/shell/header";
+import { LeagueAnnouncementBar } from "@/components/shell/league-announcement-bar";
 import { Sidebar } from "@/components/shell/sidebar";
 import { MobileBottomNav } from "@/components/shell/mobile-nav";
 import { DeadlineSlot } from "@/components/shell/deadline-slot";
@@ -98,6 +99,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             memberships={memberships}
             activeLeagueId={currentView}
           />
+          {activeMembership?.announcement ? (
+            <LeagueAnnouncementBar
+              leagueId={activeMembership.id}
+              leagueName={activeMembership.name}
+              message={activeMembership.announcement}
+            />
+          ) : null}
           <main className="flex-1 px-4 pb-[calc(env(safe-area-inset-bottom)+6rem)] pt-6 lg:px-8 lg:pb-12">
             <div className="mx-auto w-full max-w-6xl">{children}</div>
           </main>

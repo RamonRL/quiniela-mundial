@@ -529,7 +529,9 @@ export async function updateLeagueAnnouncement(
   }
   const value = parsed.data.announcement.length > 0 ? parsed.data.announcement : null;
   await db.update(leagues).set({ announcement: value }).where(eq(leagues.id, target.id));
-  revalidatePath("/mi-quiniela");
+  // El anuncio se pinta en el layout (visible en toda la liga), así que
+  // revalidamos el layout completo, no solo /mi-quiniela.
+  revalidatePath("/", "layout");
   return {
     ok: true,
     message: value ? "Anuncio actualizado." : "Anuncio eliminado.",
