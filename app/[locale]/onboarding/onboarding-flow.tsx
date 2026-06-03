@@ -1,6 +1,7 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations, useLocale } from "next-intl";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -77,6 +78,7 @@ export function OnboardingFlow({
   userAvatarUrl: string | null;
   paddle: PaddleConfig;
 }) {
+  const t = useTranslations("onboarding");
   const router = useRouter();
   // Si el usuario llegó al onboarding desde el gateway de compra (p. ej.
   // pulsó "Comprar" sin tener liga), `?next=/precios/comprar/team-100`
@@ -104,35 +106,35 @@ export function OnboardingFlow({
     return (
       <div className="space-y-6 sm:space-y-10">
         {!fresh ? <BackButton href="/dashboard" /> : null}
-        <Eyebrow>Onboarding</Eyebrow>
+        <Eyebrow>{t("ebOnboarding")}</Eyebrow>
         <header className="space-y-4">
           <h1 className="font-display text-4xl tracking-tight sm:text-6xl xl:text-7xl">
-            Bienvenido a Quiniela Mundial
+            {t("rootTitle")}
           </h1>
           <p className="font-editorial text-lg italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-xl">
-            ¿Dónde quieres jugar?
+            {t("rootSubtitle")}
           </p>
         </header>
 
         <div className="grid gap-5 sm:grid-cols-2">
           <ChoiceCard
             icon={<Globe className="size-6" />}
-            label="Quiniela Pública"
-            description="Donde compite todo el mundo. Elige el modo."
+            label={t("publicLabel")}
+            description={t("publicDesc")}
             primary
             onClick={() => {
               router.push(`/onboarding?step=publica-elegir${nextQuery}`);
             }}
-            actionLabel="Continuar"
+            actionLabel={t("continue")}
           />
           <ChoiceCard
             icon={<Lock className="size-6" />}
-            label="Quiniela Privada"
-            description="Para tu grupo. Sólo los tuyos."
+            label={t("privateLabel")}
+            description={t("privateDesc")}
             onClick={() => {
               router.push(`/onboarding?step=privada-elegir${nextQuery}`);
             }}
-            actionLabel="Continuar"
+            actionLabel={t("continue")}
           />
         </div>
       </div>
@@ -143,13 +145,13 @@ export function OnboardingFlow({
     return (
       <div className="space-y-6 sm:space-y-10">
         <BackButton href={`/onboarding?step=root${nextQuery}`} />
-        <Eyebrow>Quiniela pública</Eyebrow>
+        <Eyebrow>{t("ebPublic")}</Eyebrow>
         <header className="space-y-4">
           <h1 className="font-display text-3xl tracking-tight sm:text-5xl xl:text-6xl">
-            Elige el modo de juego
+            {t("publicModeTitle")}
           </h1>
           <p className="font-editorial text-lg italic leading-relaxed text-[var(--color-muted-foreground)]">
-            Tres quinielas públicas, una por modo. Puedes entrar a las que quieras.
+            {t("publicModeSubtitle")}
           </p>
         </header>
         <div className="grid gap-4 sm:grid-cols-3">
@@ -165,7 +167,7 @@ export function OnboardingFlow({
                 onClick={async () => {
                   await joinPublicByMode(m);
                 }}
-                actionLabel="Entrar"
+                actionLabel={t("enter")}
               />
             );
           })}
@@ -178,32 +180,32 @@ export function OnboardingFlow({
     return (
       <div className="space-y-6 sm:space-y-10">
         <BackButton href={fresh ? "/onboarding" : "/dashboard"} />
-        <Eyebrow>Quiniela privada</Eyebrow>
+        <Eyebrow>{t("ebPrivate")}</Eyebrow>
         <header className="space-y-4">
           <h1 className="font-display text-3xl tracking-tight sm:text-5xl xl:text-6xl">
-            Crear o unirte.
+            {t("privateChooseTitle")}
           </h1>
         </header>
 
         <div className="grid gap-5 sm:grid-cols-2">
           <ChoiceCard
             icon={<Plus className="size-6" />}
-            label="Crear una quiniela"
-            description="Le pones nombre y la lanzas."
+            label={t("createLabel")}
+            description={t("createDesc")}
             primary
             onClick={() => {
               router.push(`/onboarding?step=privada-crear${nextQuery}`);
             }}
-            actionLabel="Crear"
+            actionLabel={t("create")}
           />
           <ChoiceCard
             icon={<Users className="size-6" />}
-            label="Unirse a una quiniela"
-            description="Pega el código y entras."
+            label={t("joinLabel")}
+            description={t("joinDesc")}
             onClick={() => {
               router.push(`/onboarding?step=privada-unirse${nextQuery}`);
             }}
-            actionLabel="Unirse"
+            actionLabel={t("join")}
           />
         </div>
       </div>
@@ -239,12 +241,13 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
 }
 
 function BackButton({ href }: { href: string }) {
+  const t = useTranslations("onboarding");
   return (
     <Link
       href={href}
       className="inline-flex items-center gap-2 font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)] transition hover:text-[var(--color-foreground)]"
     >
-      <ArrowLeft className="size-3.5" /> Volver
+      <ArrowLeft className="size-3.5" /> {t("back")}
     </Link>
   );
 }
@@ -336,6 +339,7 @@ function CreateLeagueForm({
   fresh: boolean;
   paddle: PaddleConfig;
 }) {
+  const t = useTranslations("onboarding");
   const [phase, setPhase] = useState<"form" | "plan">("form");
   const [nameValue, setNameValue] = useState("");
   const [mode, setMode] = useState<PredictionMode>("completo");
@@ -366,13 +370,13 @@ function CreateLeagueForm({
 
   return (
     <div className="space-y-6 sm:space-y-10">
-      <Eyebrow>Crear quiniela</Eyebrow>
+      <Eyebrow>{t("ebCreate")}</Eyebrow>
       <header className="space-y-4">
         <h1 className="font-display text-3xl tracking-tight sm:text-5xl xl:text-6xl">
-          Ponle nombre.
+          {t("createNameTitle")}
         </h1>
         <p className="font-editorial text-lg italic text-[var(--color-muted-foreground)]">
-          El que tu grupo reconozca al verlo.
+          {t("createNameSubtitle")}
         </p>
       </header>
 
@@ -381,7 +385,7 @@ function CreateLeagueForm({
           e.preventDefault();
           const trimmed = nameValue.trim();
           if (trimmed.length < 2) {
-            setNameError("El nombre debe tener al menos 2 caracteres.");
+            setNameError(t("nameMinError"));
             return;
           }
           setNameError(null);
@@ -391,8 +395,8 @@ function CreateLeagueForm({
       >
         <FloatingField
           name="name"
-          label="Nombre de la quiniela · máx 25 caracteres"
-          placeholder="QUINIELA MUNDIAL 2026"
+          label={t("nameLabel")}
+          placeholder={t("namePlaceholder")}
           required
           maxLength={25}
           autoComplete="off"
@@ -404,7 +408,7 @@ function CreateLeagueForm({
 
         <div className="space-y-2">
           <p className="font-mono text-[0.6rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Modo de predicción
+            {t("predictionMode")}
           </p>
           <div className="grid gap-2 sm:grid-cols-3">
             {PREDICTION_MODES.map((m) => {
@@ -434,7 +438,7 @@ function CreateLeagueForm({
 
         <div className="space-y-2">
           <p className="font-mono text-[0.6rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Logo
+            {t("logo")}
           </p>
           <LeagueLogoGalleryPicker initialLogoUrl={null} onChange={setLogoPresetId} />
         </div>
@@ -445,12 +449,12 @@ function CreateLeagueForm({
 
         <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center">
           <Button type="submit" size="lg" className="h-14 px-8 text-base sm:flex-1">
-            Continuar
+            {t("continue")}
             <ArrowRight />
           </Button>
           {!fresh ? (
             <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)] sm:max-w-[18rem]">
-              Pasará a ser tu liga activa.
+              {t("willBeActive")}
             </p>
           ) : null}
         </div>
@@ -465,6 +469,8 @@ function CreateLeagueForm({
  * `onCompleted`; `checkout.closed` dispara `onClosed` (cerró sin pagar).
  */
 function useInlineCheckout(config: PaddleConfig) {
+  const t = useTranslations("onboarding");
+  const locale = useLocale();
   const [paddle, setPaddle] = useState<Paddle | null>(null);
   const [error, setError] = useState<string | null>(null);
   const onCompletedRef = useRef<(() => void) | null>(null);
@@ -489,9 +495,9 @@ function useInlineCheckout(config: PaddleConfig) {
         if (instance) setPaddle(instance);
       })
       .catch((err: unknown) => {
-        setError(err instanceof Error ? err.message : "No se pudo cargar el pago.");
+        setError(err instanceof Error ? err.message : t("payLoadFailed"));
       });
-  }, [config.token, config.env]);
+  }, [config.token, config.env, t]);
 
   function open(
     transactionId: string,
@@ -500,12 +506,12 @@ function useInlineCheckout(config: PaddleConfig) {
     onCompletedRef.current = cbs.onCompleted;
     onClosedRef.current = cbs.onClosed;
     if (!paddle) {
-      setError("El pago aún se está cargando. Prueba de nuevo en un segundo.");
+      setError(t("payLoading"));
       return false;
     }
     paddle.Checkout.open({
       transactionId,
-      settings: { displayMode: "overlay", theme: "dark", locale: "es" },
+      settings: { displayMode: "overlay", theme: "dark", locale },
     });
     return true;
   }
@@ -586,6 +592,7 @@ function PlanStep({
   onBack: () => void;
   onCreated: (league: CreatedLeague, plan: PlanKey) => void;
 }) {
+  const t = useTranslations("onboarding");
   const [selected, setSelected] = useState<PlanKey>("free");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -611,7 +618,7 @@ function PlanStep({
         plan,
       );
     } else {
-      setError(res.error ?? "No se pudo crear la quiniela.");
+      setError(res.error ?? t("createFailed"));
       setBusy(false);
     }
   }
@@ -628,7 +635,7 @@ function PlanStep({
       await new Promise((r) => setTimeout(r, 1500));
       return finalizeWithRetry(txId, attempt + 1);
     }
-    toast.success("Pago recibido. Estamos creando tu quiniela…");
+    toast.success(t("payReceived"));
     window.location.href = "/dashboard";
   }
 
@@ -671,30 +678,30 @@ function PlanStep({
 
   const ctaLabel =
     selected === "free"
-      ? "Crear quiniela gratis"
+      ? t("ctaFree")
       : selected === "enterprise"
-        ? "Continuar"
-        : `Pagar ${selectedPlan.priceLabel} y crear`;
+        ? t("continue")
+        : t("ctaPay", { price: selectedPlan.priceLabel });
 
   return (
     <div className="space-y-5 sm:space-y-8">
       <div className="flex items-center justify-between gap-3">
-        <Eyebrow>Elige plan</Eyebrow>
+        <Eyebrow>{t("ebPlan")}</Eyebrow>
         <button
           type="button"
           onClick={onBack}
           disabled={busy}
           className="inline-flex items-center gap-1.5 font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)] transition hover:text-[var(--color-foreground)] disabled:opacity-50"
         >
-          <ArrowLeft className="size-3.5" /> Volver
+          <ArrowLeft className="size-3.5" /> {t("back")}
         </button>
       </div>
       <header className="space-y-3">
         <h1 className="font-display text-3xl tracking-tight sm:text-5xl">
-          El plan de tu quiniela
+          {t("planTitle")}
         </h1>
         <p className="font-editorial text-lg italic text-[var(--color-muted-foreground)]">
-          Empieza gratis o elige un Pase; el pago se hace aquí mismo.
+          {t("planSubtitle")}
         </p>
       </header>
 
@@ -720,10 +727,10 @@ function PlanStep({
         >
           {paying ? (
             <>
-              <Loader2 className="size-4 animate-spin" /> Pago en marcha…
+              <Loader2 className="size-4 animate-spin" /> {t("payInProgress")}
             </>
           ) : busy ? (
-            "Creando…"
+            t("creating")
           ) : (
             <>
               {ctaLabel} <ArrowRight />
@@ -733,7 +740,7 @@ function PlanStep({
         {selected !== "free" && selected !== "enterprise" ? (
           <p className="inline-flex items-center gap-1.5 font-editorial text-xs italic text-[var(--color-muted-foreground)] sm:max-w-[18rem]">
             <ShieldCheck className="size-3.5 text-[var(--color-arena)]" />
-            Pago seguro con Paddle. Si no pagas, no se crea la liga.
+            {t("payNote")}
           </p>
         ) : null}
       </div>
@@ -750,6 +757,7 @@ function PlanColumn({
   active: boolean;
   onSelect: () => void;
 }) {
+  const t = useTranslations("onboarding");
   return (
     <button
       type="button"
@@ -764,7 +772,7 @@ function PlanColumn({
     >
       {plan.popular ? (
         <span className="absolute -top-2 right-3 rounded-full bg-[var(--color-arena)] px-2 py-0.5 font-mono text-[0.5rem] uppercase tracking-[0.18em] text-white shadow-[var(--shadow-arena)]">
-          Más popular
+          {t("mostPopular")}
         </span>
       ) : null}
 
@@ -806,7 +814,7 @@ function PlanColumn({
 
       {plan.key === "free" ? (
         <p className="mt-auto pt-1 font-mono text-[0.5rem] uppercase leading-relaxed tracking-[0.14em] text-[var(--color-muted-foreground)]">
-          Podrás ampliar el tope más tarde desde «Mi Quiniela».
+          {t("freeUpgradeNote")}
         </p>
       ) : null}
 
@@ -818,10 +826,10 @@ function PlanColumn({
       >
         {active ? (
           <>
-            <Check className="size-3" /> Seleccionado
+            <Check className="size-3" /> {t("selected")}
           </>
         ) : (
-          "Elegir"
+          t("choose")
         )}
       </span>
     </button>
@@ -835,6 +843,7 @@ function CreatedSuccess({
   league: CreatedLeague;
   plan: PlanKey;
 }) {
+  const t = useTranslations("onboarding");
   const router = useRouter();
   const { name, joinCode, inviteToken } = league;
   const isEnterprise = plan === "enterprise";
@@ -849,7 +858,7 @@ function CreatedSuccess({
       <div className="flex items-center gap-3">
         <Sparkles className="size-4 text-[var(--color-arena)]" />
         <p className="font-mono text-[0.65rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-arena)]">
-          {isPaid ? `Liga creada · ${planMeta?.name}` : "Liga creada"}
+          {isPaid ? t("createdWithPlan", { plan: planMeta?.name ?? "" }) : t("created")}
         </p>
       </div>
       <header className="space-y-4">
@@ -857,9 +866,7 @@ function CreatedSuccess({
           {name}
         </h1>
         <p className="font-editorial text-lg italic text-[var(--color-muted-foreground)]">
-          {isPaid
-            ? "Pago confirmado y tope ampliado. Comparte el código y a por ello."
-            : "Comparte el código y a por ello."}
+          {isPaid ? t("createdPaidDesc") : t("createdDesc")}
         </p>
       </header>
 
@@ -867,7 +874,7 @@ function CreatedSuccess({
         <div className="rounded-2xl border border-[var(--color-arena)]/50 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface))] p-5 sm:p-8">
           <div className="flex items-center justify-between gap-4">
             <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-              Código de 4 dígitos
+              {t("code4")}
             </p>
             <CopyButton value={joinCode ?? "—"} disabled={!joinCode} />
           </div>
@@ -880,7 +887,7 @@ function CreatedSuccess({
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0 flex-1">
               <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                Invite link
+                {t("inviteLink")}
               </p>
               <p className="mt-1 truncate font-mono text-sm text-[var(--color-foreground)]">
                 {inviteUrl}
@@ -895,16 +902,14 @@ function CreatedSuccess({
         <div className="space-y-4 rounded-2xl border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface))] p-5 sm:p-6">
           <div className="space-y-1">
             <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-              Plan Enterprise
+              {t("enterprisePlan")}
             </p>
             <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-              Tu liga ya está activa en Estándar. Cuéntanos las necesidades de
-              tu organización y te preparamos el plan a medida (sin tope de
-              miembros).
+              {t("enterpriseDesc")}
             </p>
           </div>
           <CommercialLeadForm
-            defaultMessagePlaceholder="Nº de empleados, fechas, datos de facturación, lo que necesites…"
+            defaultMessagePlaceholder={t("enterprisePlaceholder")}
           />
         </div>
       ) : null}
@@ -915,13 +920,13 @@ function CreatedSuccess({
           onClick={() => router.push("/dashboard")}
           className="h-14 px-8 text-base sm:flex-1"
         >
-          Ir al dashboard <ArrowRight />
+          {t("goDashboard")} <ArrowRight />
         </Button>
         <Link
           href="/onboarding?step=privada-elegir"
           className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)]"
         >
-          Crear otra
+          {t("createAnother")}
         </Link>
       </div>
     </div>
@@ -929,16 +934,17 @@ function CreatedSuccess({
 }
 
 function CopyButton({ value, disabled }: { value: string; disabled?: boolean }) {
+  const t = useTranslations("onboarding");
   const [copied, setCopied] = useState(false);
   const copy = async () => {
     if (disabled) return;
     try {
       await navigator.clipboard.writeText(value);
       setCopied(true);
-      toast.success("Copiado al portapapeles");
+      toast.success(t("copiedClipboard"));
       setTimeout(() => setCopied(false), 1500);
     } catch {
-      toast.error("No se pudo copiar");
+      toast.error(t("copyFailed"));
     }
   };
   return (
@@ -950,7 +956,7 @@ function CopyButton({ value, disabled }: { value: string; disabled?: boolean }) 
       disabled={disabled}
     >
       {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-      {copied ? "Copiado" : "Copiar"}
+      {copied ? t("copied") : t("copy")}
     </Button>
   );
 }
@@ -958,6 +964,7 @@ function CopyButton({ value, disabled }: { value: string; disabled?: boolean }) 
 // ──────────────────────── Unirse ────────────────────────
 
 function JoinLeagueForm() {
+  const t = useTranslations("onboarding");
   const [state, action, pending] = useActionState(joinLeagueByCode, initialJoin);
   const [digits, setDigits] = useState<string[]>(["", "", "", ""]);
   const refs = useRef<Array<HTMLInputElement | null>>([null, null, null, null]);
@@ -1002,13 +1009,13 @@ function JoinLeagueForm() {
 
   return (
     <div className="space-y-6 sm:space-y-10">
-      <Eyebrow>Unirse a quiniela</Eyebrow>
+      <Eyebrow>{t("ebJoin")}</Eyebrow>
       <header className="space-y-4">
         <h1 className="font-display text-3xl tracking-tight sm:text-5xl xl:text-6xl">
-          Cuatro dígitos.
+          {t("joinTitle")}
         </h1>
         <p className="font-editorial text-lg italic text-[var(--color-muted-foreground)]">
-          Los que te ha pasado quien la creó.
+          {t("joinSubtitle")}
         </p>
       </header>
 
@@ -1040,7 +1047,7 @@ function JoinLeagueForm() {
                 onChange={(e) => handleChange(i, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(i, e)}
                 onFocus={(e) => e.target.select()}
-                aria-label={`Dígito ${i + 1}`}
+                aria-label={t("digitAria", { n: i + 1 })}
                 className="size-20 rounded-2xl border-2 border-[var(--color-border)] bg-[var(--color-surface)] text-center font-display text-5xl tabular tracking-tight text-[var(--color-foreground)] outline-none transition-all focus:-translate-y-0.5 focus:border-[var(--color-arena)] focus:shadow-[var(--shadow-arena)] sm:size-24 sm:text-6xl xl:size-28 xl:text-7xl"
               />
             ))}
@@ -1059,11 +1066,11 @@ function JoinLeagueForm() {
               className="h-14 px-8 text-base sm:flex-1"
               disabled={pending || !ready}
             >
-              {pending ? "Comprobando…" : "Unirme"}
+              {pending ? t("checking") : t("joinSubmit")}
               <ArrowRight />
             </Button>
             <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)] sm:max-w-[18rem]">
-              ¿Tienes el invite link? Pulsa y entras directo.
+              {t("inviteLinkHint")}
             </p>
           </div>
         </div>
@@ -1100,6 +1107,7 @@ function NicknameStep({
   email: string;
   nextValue: string | null;
 }) {
+  const t = useTranslations("onboarding");
   const [state, action, pending] = useActionState(
     saveInitialNickname,
     initialProfile,
@@ -1109,14 +1117,13 @@ function NicknameStep({
 
   return (
     <div className="space-y-6 sm:space-y-10">
-      <Eyebrow>Tu perfil · paso 1 de 2</Eyebrow>
+      <Eyebrow>{t("ebProfile1")}</Eyebrow>
       <header className="space-y-4">
         <h1 className="font-display text-4xl tracking-tight sm:text-6xl xl:text-7xl">
-          ¿Cómo te llamamos?
+          {t("nicknameTitle")}
         </h1>
         <p className="font-editorial text-lg italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-xl">
-          Esto es lo que verán los demás en el ranking y el chat. Lo puedes
-          cambiar luego.
+          {t("nicknameSubtitle")}
         </p>
       </header>
 
@@ -1124,7 +1131,7 @@ function NicknameStep({
         {nextValue ? <input type="hidden" name="next" value={nextValue} /> : null}
         <label className="group block space-y-2">
           <span className="block font-mono text-[0.6rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-muted-foreground)] transition-colors group-focus-within:text-[var(--color-arena)]">
-            Apodo · máx 40 caracteres
+            {t("nicknameLabel")}
           </span>
           <input
             type="text"
@@ -1138,7 +1145,7 @@ function NicknameStep({
             className="w-full border-0 border-b-2 border-[var(--color-border)] bg-transparent px-0 pb-3 pt-1 font-display text-3xl tracking-tight text-[var(--color-foreground)] outline-none transition-colors placeholder:text-[var(--color-muted-foreground)]/50 focus:border-[var(--color-arena)] sm:text-4xl"
           />
           <span className="block font-editorial text-xs italic text-[var(--color-muted-foreground)]">
-            Por defecto, la primera parte de tu email ({email}).
+            {t("nicknameDefault", { email })}
           </span>
         </label>
 
@@ -1153,11 +1160,11 @@ function NicknameStep({
             className="h-14 px-8 text-base sm:flex-1"
             disabled={pending}
           >
-            {pending ? "Guardando…" : "Continuar"}
+            {pending ? t("saving") : t("continue")}
             <ArrowRight />
           </Button>
           <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)] sm:max-w-[18rem]">
-            Después, una foto (opcional).
+            {t("thenPhoto")}
           </p>
         </div>
       </form>
@@ -1181,6 +1188,7 @@ function PhotoStep({
   nextValue: string | null;
   skipHref: string;
 }) {
+  const t = useTranslations("onboarding");
   const [state, action, pending] = useActionState(
     saveInitialAvatar,
     initialProfile,
@@ -1195,9 +1203,7 @@ function PhotoStep({
   function pickFile(file: File) {
     setError(null);
     if (file.size > MAX_RAW_INPUT_BYTES) {
-      setError(
-        `La imagen pesa ${formatBytes(file.size)}. Demasiado grande, prueba con otra.`,
-      );
+      setError(t("photoTooBig", { size: formatBytes(file.size) }));
       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
@@ -1231,14 +1237,13 @@ function PhotoStep({
 
   return (
     <div className="space-y-6 sm:space-y-10">
-      <Eyebrow>Tu perfil · paso 2 de 2</Eyebrow>
+      <Eyebrow>{t("ebProfile2")}</Eyebrow>
       <header className="space-y-4">
         <h1 className="font-display text-4xl tracking-tight sm:text-6xl xl:text-7xl">
-          Ponle cara, {nickname}.
+          {t("photoTitle", { nickname })}
         </h1>
         <p className="font-editorial text-lg italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-xl">
-          Una foto hace tu quiniela más tuya — y te reconocen en el ranking y el
-          chat. Es opcional: puedes añadirla ahora o más tarde desde tu perfil.
+          {t("photoSubtitle")}
         </p>
       </header>
 
@@ -1258,7 +1263,7 @@ function PhotoStep({
               const file = e.dataTransfer.files?.[0];
               if (file) pickFile(file);
             }}
-            aria-label="Subir avatar"
+            aria-label={t("uploadAvatar")}
             className="group relative size-40 shrink-0"
           >
             <Avatar className="size-40 border-2 border-[var(--color-border-strong)] shadow-[var(--shadow-elev-1)] transition-all group-hover:border-[var(--color-arena)] group-hover:shadow-[var(--shadow-arena)]">
@@ -1274,7 +1279,7 @@ function PhotoStep({
               <span className="flex flex-col items-center gap-1 text-white">
                 <Camera className="size-6" />
                 <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em]">
-                  {hasFile ? "Cambiar" : "Subir"}
+                  {hasFile ? t("change") : t("upload")}
                 </span>
               </span>
             </span>
@@ -1285,7 +1290,7 @@ function PhotoStep({
 
           <div className="space-y-2 text-center sm:text-left">
             <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-              Pulsa o arrastra una imagen sobre el avatar.{" "}
+              {t("photoHint")}{" "}
               <span className="font-mono not-italic uppercase tracking-[0.18em]">
                 PNG/JPG
               </span>
@@ -1320,7 +1325,7 @@ function PhotoStep({
             className="h-14 px-8 text-base sm:flex-1"
             disabled={pending}
           >
-            {pending ? "Guardando…" : hasFile ? "Guardar y continuar" : "Continuar"}
+            {pending ? t("saving") : hasFile ? t("saveAndContinue") : t("continue")}
             <ArrowRight />
           </Button>
           <Button
@@ -1330,7 +1335,7 @@ function PhotoStep({
             size="lg"
             className="h-14 px-6 text-base text-[var(--color-muted-foreground)]"
           >
-            <Link href={skipHref}>Saltar por ahora</Link>
+            <Link href={skipHref}>{t("skipForNow")}</Link>
           </Button>
         </div>
       </form>

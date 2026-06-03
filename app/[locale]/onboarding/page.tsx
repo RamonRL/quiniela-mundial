@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/auth/guards";
 import { paddleClientToken, paddlePublicEnv } from "@/lib/paddle";
 import { BrandWordmark } from "@/components/brand/brand-wordmark";
@@ -35,6 +36,7 @@ export default async function OnboardingPage({
   searchParams: Promise<{ step?: string }>;
 }) {
   const me = await requireUser();
+  const t = await getTranslations("onboarding");
   const fresh = me.leagueId == null;
   const needsProfile = me.nickname == null;
 
@@ -104,7 +106,7 @@ export default async function OnboardingPage({
                 href="/dashboard"
                 className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)] transition hover:text-[var(--color-foreground)] sm:hidden"
               >
-                ← Dashboard
+                {t("dashboardLink")}
               </Link>
             ) : null}
           </div>
@@ -121,7 +123,7 @@ export default async function OnboardingPage({
               className="h-12 w-auto sm:h-14"
             />
             <p className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)] sm:text-[0.6rem]">
-              Copa Mundial de la FIFA 2026
+              {t("worldCupCaption")}
             </p>
           </div>
 
@@ -136,7 +138,7 @@ export default async function OnboardingPage({
                 <span className="relative inline-flex size-2 rounded-full bg-[var(--color-arena)]" />
               </span>
               <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                T-{days.toString().padStart(2, "0")} días al kickoff
+                {t("countdown", { days: days.toString().padStart(2, "0") })}
               </p>
             </div>
             {!fresh ? (
@@ -144,7 +146,7 @@ export default async function OnboardingPage({
                 href="/dashboard"
                 className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)] transition hover:text-[var(--color-foreground)]"
               >
-                ← Dashboard
+                {t("dashboardLink")}
               </Link>
             ) : null}
           </div>
