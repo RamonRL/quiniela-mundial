@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { ArrowRight, Crown, Sparkles, Swords, Trophy } from "lucide-react";
 import { ProgressDonut } from "./progress-donut";
 import { CategoryCard, type CategoryStatus, type CategoryBadge } from "./category-card";
@@ -72,6 +73,7 @@ function PreHub({
   specialsFilled,
   specialsTotal,
 }: Extract<ProgressHubProps, { phase: "pre" }>) {
+  const t = useTranslations("progressHub");
   const groupsDone = groupsFilled >= groupsTotal && groupsTotal > 0;
   const specialsDone = specialsTotal > 0 && specialsFilled >= specialsTotal;
   const categories: PreSatellite[] = [
@@ -96,20 +98,20 @@ function PreHub({
   const isFresh = completed === 0 && categories.every((c) => c.status !== "in-progress");
   const isDone = completed === visibleTotal && visibleTotal > 0;
 
-  const centerTop = isDone ? "¡LISTO!" : `${completed}/${visibleTotal}`;
+  const centerTop = isDone ? t("ready") : `${completed}/${visibleTotal}`;
   const centerBottom = isFresh
-    ? "EMPIEZA"
+    ? t("centerEmpieza")
     : isDone
-      ? "PICKS COMPLETOS"
-      : "COMPLETADO";
+      ? t("centerPicksCompletos")
+      : t("centerCompletado");
 
   const headline = isDone
-    ? `${nickname ?? "Tu pre-torneo"} está listo`
+    ? t("headlineDone", { name: nickname ?? t("yourPretournament") })
     : isFresh
-      ? `Hola${nickname ? `, ${nickname}` : ""}. Cierra tus 3 picks pre-torneo`
-      : `Te quedan ${visibleTotal - completed} ${
-          visibleTotal - completed === 1 ? "categoría" : "categorías"
-        } por cerrar`;
+      ? nickname
+        ? t("headlineFreshNamed", { name: nickname })
+        : t("headlineFreshAnon")
+      : t("headlineRemaining", { count: visibleTotal - completed });
 
   const ctaTarget = firstIncomplete
     ? hrefFor(firstIncomplete.key)
@@ -119,12 +121,16 @@ function PreHub({
   // el usuario: empezar → seguir → acabar.
   const remaining = visibleTotal - completed;
   const ctaVerb =
-    completed === 0 ? "Empezar por" : remaining === 1 ? "Acaba con" : "Sigue con";
+    completed === 0
+      ? t("ctaVerbStart")
+      : remaining === 1
+        ? t("ctaVerbFinish")
+        : t("ctaVerbContinue");
   const ctaLabel = isDone
-    ? "Revisar mis picks"
+    ? t("ctaReview")
     : firstIncomplete
-      ? `${ctaVerb} ${labelFor(firstIncomplete.key)}`
-      : "Ver todas las categorías";
+      ? t("ctaCombined", { verb: ctaVerb, category: labelFor(t, firstIncomplete.key) })
+      : t("ctaAll");
 
   return (
     <section className="rise-in relative overflow-hidden rounded-2xl border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface))]">
@@ -138,7 +144,7 @@ function PreHub({
         >
           <div className="flex items-center gap-2 font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
             <Sparkles className="size-3.5" />
-            {isDone ? "Pre-torneo listo" : isFresh ? "Bienvenido al Mundial" : "Continúa donde lo dejaste"}
+            {isDone ? t("eyebrowDone") : isFresh ? t("eyebrowFresh") : t("eyebrowContinue")}
           </div>
           <ProgressDonut
             value={completed}
@@ -163,9 +169,7 @@ function PreHub({
               {headline}
             </h2>
             <p className="font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-base">
-              {isDone
-                ? "Puedes seguir editando tus picks hasta el kickoff."
-                : "Tres picks ahora. Se cierran al kickoff del torneo."}
+              {isDone ? t("subDone") : t("subDefault")}
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
@@ -197,6 +201,7 @@ function RunningHub({
   preTorneoTotal,
   compact = false,
 }: Extract<ProgressHubProps, { phase: "running" }>) {
+  const t = useTranslations("progressHub");
   const hasNothing = !nextDeadline && openMatchdays.length === 0 && !bracket;
 
   if (hasNothing) {
@@ -207,20 +212,20 @@ function RunningHub({
       >
         <span aria-hidden className="halftone pointer-events-none absolute inset-0 opacity-[0.04]" />
         <p className="relative font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-          Tu quiniela
+          {t("yourPool")}
         </p>
         <p className="relative mt-2 font-display text-2xl tracking-tight sm:text-3xl">
-          Nada que predecir ahora
+          {t("nothingToPredict")}
         </p>
         <p className="relative mt-1 font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-          Vuelve cuando se acerque el próximo cierre.
+          {t("comeBack")}
         </p>
         {preTorneoTotal > 0 ? (
           <Link
             href="/predicciones"
             className="relative mt-4 inline-flex items-center gap-1 font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-arena)] hover:underline"
           >
-            Ver mis picks pre-torneo <ArrowRight className="size-3" />
+            {t("seePretournamentPicks")} <ArrowRight className="size-3" />
           </Link>
         ) : null}
       </section>
@@ -267,10 +272,10 @@ function RunningHub({
                 label={m.label}
                 href={`/predicciones/jornada/${m.id}`}
                 status={status}
-                valueText={`${filled}/${total} partidos`}
-                hintText={`Cierre ${formatShort(m.closesAt)}`}
+                valueText={t("matchesFraction", { filled, total })}
+                hintText={t("deadlineShort", { date: formatShort(m.closesAt) })}
                 fraction={{ done: filled, total }}
-                cta={status === "complete" ? "Revisar" : "Predecir"}
+                cta={status === "complete" ? t("review") : t("predict")}
                 badge={!compact && status === "not-started" ? "start" : null}
               />
             );
@@ -278,7 +283,7 @@ function RunningHub({
           {bracket && bracket.state === "open" ? (
             <CategoryCard
               icon={Trophy}
-              label="Bracket eliminatorio"
+              label={t("bracketLabel")}
               href="/predicciones/bracket"
               status={
                 bracket.filled === 0
@@ -287,14 +292,14 @@ function RunningHub({
                     ? "complete"
                     : "in-progress"
               }
-              valueText={`${bracket.filled}/${bracket.total} slots`}
+              valueText={t("slotsFraction", { filled: bracket.filled, total: bracket.total })}
               hintText={
                 bracket.closesAt
-                  ? `Cierre ${formatShort(bracket.closesAt)}`
-                  : "Cierra al primer dieciseisavos"
+                  ? t("deadlineShort", { date: formatShort(bracket.closesAt) })
+                  : t("bracketClosesFirst")
               }
               fraction={{ done: bracket.filled, total: bracket.total }}
-              cta={bracket.filled >= bracket.total ? "Revisar" : "Predecir"}
+              cta={bracket.filled >= bracket.total ? t("review") : t("predict")}
               badge={
                 bracket.closesAt &&
                 new Date(bracket.closesAt).getTime() - Date.now() < 24 * 60 * 60 * 1000
@@ -314,7 +319,7 @@ function RunningHub({
             href="/predicciones"
             className="inline-flex items-center gap-1 font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)] hover:text-[var(--color-arena)]"
           >
-            Ver mis picks pre-torneo · {preTorneoComplete}/{preTorneoTotal}
+            {t("seePretournamentPicksCount", { complete: preTorneoComplete, total: preTorneoTotal })}
             <ArrowRight className="size-3" />
           </Link>
         </div>
@@ -342,18 +347,19 @@ function CategoryCardWrapper({
   specialsFilled: number;
   specialsTotal: number;
 }) {
+  const t = useTranslations("progressHub");
   if (kind === "groups") {
     return (
       <CategoryCard
         icon={Trophy}
-        label="Grupos"
+        label={t("groups")}
         href="/predicciones/grupos"
         status={status}
-        valueText={`${groupsFilled}/${groupsTotal} grupos`}
-        hintText="Quién pasa de cada grupo"
+        valueText={t("groupsFraction", { filled: groupsFilled, total: groupsTotal })}
+        hintText={t("groupsHint")}
         badge={badge}
         fraction={{ done: groupsFilled, total: groupsTotal }}
-        cta={status === "complete" ? "Revisar" : "Predecir"}
+        cta={status === "complete" ? t("review") : t("predict")}
       />
     );
   }
@@ -361,13 +367,13 @@ function CategoryCardWrapper({
     return (
       <CategoryCard
         icon={Crown}
-        label="Bota de Oro"
+        label={t("bota")}
         href="/predicciones/goleador-torneo"
         status={status}
-        valueText={topScorerDone ? "Pick enviado" : "Sin elegir"}
-        hintText="Tu candidato al máximo goleador"
+        valueText={topScorerDone ? t("botaSent") : t("botaNone")}
+        hintText={t("botaHint")}
         badge={badge}
-        cta={status === "complete" ? "Revisar" : "Elegir"}
+        cta={status === "complete" ? t("review") : t("choose")}
       />
     );
   }
@@ -375,25 +381,25 @@ function CategoryCardWrapper({
     return (
       <CategoryCard
         icon={Sparkles}
-        label="Especiales"
+        label={t("specials")}
         href="/predicciones/especiales"
         status="locked"
-        valueText="Aún no publicadas"
-        hintText="El admin las publicará en breve"
+        valueText={t("specialsLockedValue")}
+        hintText={t("specialsLockedHint")}
       />
     );
   }
   return (
     <CategoryCard
       icon={Sparkles}
-      label="Especiales"
+      label={t("specials")}
       href="/predicciones/especiales"
       status={status}
-      valueText={`${specialsFilled}/${specialsTotal} respondidas`}
-      hintText="Balón / Guante / Anfitrión…"
+      valueText={t("specialsFraction", { filled: specialsFilled, total: specialsTotal })}
+      hintText={t("specialsHint")}
       badge={badge}
       fraction={{ done: specialsFilled, total: specialsTotal }}
-      cta={status === "complete" ? "Revisar" : "Responder"}
+      cta={status === "complete" ? t("review") : t("answer")}
     />
   );
 }
@@ -410,10 +416,13 @@ function hrefFor(kind: "groups" | "topscorer" | "specials"): string {
   return "/predicciones/especiales";
 }
 
-function labelFor(kind: "groups" | "topscorer" | "specials"): string {
-  if (kind === "groups") return "Grupos";
-  if (kind === "topscorer") return "Bota de Oro";
-  return "Especiales";
+function labelFor(
+  t: (k: string) => string,
+  kind: "groups" | "topscorer" | "specials",
+): string {
+  if (kind === "groups") return t("groups");
+  if (kind === "topscorer") return t("bota");
+  return t("specials");
 }
 
 function formatShort(iso: string): string {

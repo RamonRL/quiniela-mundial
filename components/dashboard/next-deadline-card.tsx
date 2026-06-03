@@ -1,6 +1,7 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { ArrowRight, Flame } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -23,6 +24,7 @@ export function NextDeadlineCard({
   eyebrow?: string;
   ctaText?: string;
 }) {
+  const t = useTranslations("progressHub");
   const [now, setNow] = useState<number>(() => Date.now());
 
   useEffect(() => {
@@ -44,20 +46,20 @@ export function NextDeadlineCard({
   const blocks: Array<{ value: string; unit: string }> = (() => {
     if (closed) {
       return [
-        { value: "00", unit: "Cerrado" },
+        { value: "00", unit: t("ndClosed") },
       ];
     }
     if (days > 0) {
       return [
-        { value: days.toString().padStart(2, "0"), unit: days === 1 ? "día" : "días" },
-        { value: hours.toString().padStart(2, "0"), unit: "horas" },
-        { value: minutes.toString().padStart(2, "0"), unit: "min" },
+        { value: days.toString().padStart(2, "0"), unit: days === 1 ? t("ndDay") : t("ndDays") },
+        { value: hours.toString().padStart(2, "0"), unit: t("ndHours") },
+        { value: minutes.toString().padStart(2, "0"), unit: t("ndMin") },
       ];
     }
     return [
-      { value: hours.toString().padStart(2, "0"), unit: "horas" },
-      { value: minutes.toString().padStart(2, "0"), unit: "min" },
-      { value: seconds.toString().padStart(2, "0"), unit: "seg" },
+      { value: hours.toString().padStart(2, "0"), unit: t("ndHours") },
+      { value: minutes.toString().padStart(2, "0"), unit: t("ndMin") },
+      { value: seconds.toString().padStart(2, "0"), unit: t("ndSec") },
     ];
   })();
 
@@ -113,7 +115,7 @@ export function NextDeadlineCard({
       {/* Label + missing */}
       <div className="relative space-y-1.5">
         <p className={`font-mono text-[0.6rem] uppercase tracking-[0.32em] ${headColor}`}>
-          {eyebrow ?? (closed ? "Predicción cerrada" : "Próximo cierre")}
+          {eyebrow ?? (closed ? t("ndClosedEyebrow") : t("ndNextDeadline"))}
         </p>
         <p className="font-display text-2xl leading-none tracking-tight sm:text-3xl">
           {label}
@@ -121,15 +123,15 @@ export function NextDeadlineCard({
         {!closed && total > 0 ? (
           <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
             {missing > 0
-              ? `${missing} de ${total} ${total === 1 ? "pick pendiente" : "picks pendientes"}`
-              : "Todo cubierto · puedes ajustar hasta el cierre"}
+              ? t("ndPicksPending", { missing, total })
+              : t("ndAllCovered")}
           </p>
         ) : null}
       </div>
 
       {/* CTA */}
       <div className="relative flex shrink-0 items-center gap-2 self-end justify-self-end font-mono text-xs uppercase tracking-[0.28em] text-[var(--color-arena)]">
-        {ctaText ?? (missing > 0 ? "Completar" : "Revisar")}
+        {ctaText ?? (missing > 0 ? t("ndComplete") : t("review"))}
         <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
       </div>
     </Link>
