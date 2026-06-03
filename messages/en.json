@@ -1058,6 +1058,7 @@
     "planPremium": "Pase Mundial 2026",
     "planFree": "Free",
     "statCreated": "Created",
+    "statMode": "Mode",
     "deptCardTitle": "Departments",
     "deptCardDesc": "Sub-groups with ranking by average points.",
     "exportCardTitle": "Export CSV",

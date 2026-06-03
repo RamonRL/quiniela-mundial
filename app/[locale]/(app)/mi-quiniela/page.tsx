@@ -34,6 +34,7 @@ export const dynamic = "force-dynamic";
 export default async function MyLeaguePage() {
   const me = await requireUser();
   const t = await getTranslations("myPool");
+  const tModes = await getTranslations("modes");
   const leagueId = await currentLeagueId(me);
   if (leagueId == null) redirect("/onboarding");
 
@@ -163,12 +164,8 @@ export default async function MyLeaguePage() {
           textValue
         />
         <StatTile
-          label={t("statCreated")}
-          value={formatDateTime(league.createdAt, {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-          })}
+          label={t("statMode")}
+          value={tModes(league.predictionMode)}
           textValue
         />
       </section>
