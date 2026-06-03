@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { Building2, User } from "lucide-react";
 
 /**
@@ -8,15 +9,16 @@ import { Building2, User } from "lucide-react";
  * `/ranking/departamentos`, ambas server components.
  */
 export function RankingTabs({ active }: { active: "individual" | "departamentos" }) {
+  const t = useTranslations("ranking");
   return (
     <nav className="inline-flex items-center gap-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-2)] p-1">
       <TabLink href="/ranking" active={active === "individual"}>
         <User className="size-3.5" />
-        Individuales
+        {t("tabIndividual")}
       </TabLink>
       <TabLink href="/ranking/departamentos" active={active === "departamentos"}>
         <Building2 className="size-3.5" />
-        Departamentos
+        {t("tabDepartments")}
       </TabLink>
     </nav>
   );

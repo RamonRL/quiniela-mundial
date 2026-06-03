@@ -1,4 +1,6 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import { Award, Building2, Crown, Medal } from "lucide-react";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
@@ -16,6 +18,7 @@ export const metadata = { title: "Ranking · Departamentos" };
 
 export default async function DepartmentsRankingPage() {
   const me = await requireUser();
+  const t = await getTranslations("ranking");
   const leagueId = (await currentLeagueId(me))!;
 
   const [league] = await db
@@ -42,14 +45,14 @@ export default async function DepartmentsRankingPage() {
     return (
       <div className="space-y-6">
         <PageHeader
-          eyebrow="Quiniela"
-          title="Ranking de departamentos"
-          description="Aún no hay departamentos creados en esta liga."
+          eyebrow={t("eyebrow")}
+          title={t("deptTitle")}
+          description={t("deptDescEmpty")}
         />
         <EmptyState
           icon={<Building2 className="size-5" />}
-          title="Sin departamentos"
-          description="El admin puede crearlos desde Mi Quiniela → Departamentos."
+          title={t("deptEmptyTitle")}
+          description={t("deptEmptyDesc")}
         />
       </div>
     );
@@ -62,16 +65,16 @@ export default async function DepartmentsRankingPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="Quiniela"
-        title="Ranking de departamentos"
-        description="Compiten por media de puntos sobre miembros activos — un dept. pequeño puede ganar a uno grande."
+        eyebrow={t("eyebrow")}
+        title={t("deptTitle")}
+        description={t("deptDesc")}
       />
 
       <RankingTabs active="departamentos" />
 
       {allZero ? (
         <div className="rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface)]/60 px-4 py-3 text-center font-editorial text-xs italic text-[var(--color-muted-foreground)]">
-          Sin resultados aún. El primer pitido lo cambia todo.
+          {t("noResultsYet")}
         </div>
       ) : null}
 
@@ -89,16 +92,16 @@ export default async function DepartmentsRankingPage() {
           <div className="flex items-center gap-3">
             <span className="h-px w-6 bg-[var(--color-arena)]" />
             <h2 className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-              Posiciones · 4 y siguientes
+              {t("positionsRest")}
             </h2>
             <span className="h-px flex-1 bg-[var(--color-border)]" />
           </div>
           <div className="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]">
             <div className="grid grid-cols-[56px_1fr_80px_72px] gap-2 border-b border-[var(--color-border)] bg-[var(--color-surface-2)] px-4 py-2.5 font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
-              <span>Pos</span>
-              <span>Departamento</span>
-              <span className="text-right">Media</span>
-              <span className="text-right">Activos</span>
+              <span>{t("thPos")}</span>
+              <span>{t("thDepartment")}</span>
+              <span className="text-right">{t("thAvg")}</span>
+              <span className="text-right">{t("thActive")}</span>
             </div>
             <ul>
               {rest.map((d, i) => {
@@ -139,10 +142,11 @@ function DeptPodiumCard({
   position: 1 | 2 | 3;
   entry: DepartmentRankingEntry;
 }) {
+  const t = useTranslations("ranking");
   const layout = {
-    1: { order: "sm:order-2", height: "h-48", icon: Crown, label: "ORO" },
-    2: { order: "sm:order-1", height: "h-40", icon: Medal, label: "PLATA" },
-    3: { order: "sm:order-3", height: "h-36", icon: Award, label: "BRONCE" },
+    1: { order: "sm:order-2", height: "h-48", icon: Crown, labelKey: "gold" },
+    2: { order: "sm:order-1", height: "h-40", icon: Medal, labelKey: "silver" },
+    3: { order: "sm:order-3", height: "h-36", icon: Award, labelKey: "bronze" },
   }[position];
   const Icon = layout.icon;
   return (
@@ -153,7 +157,7 @@ function DeptPodiumCard({
       <div className="flex items-center justify-between">
         <Icon className="size-4 text-[var(--color-arena)]" />
         <Badge variant="outline" className="text-[0.55rem]">
-          #{position} · {layout.label}
+          #{position} · {t(layout.labelKey)}
         </Badge>
       </div>
       <div>
@@ -162,12 +166,12 @@ function DeptPodiumCard({
           <p className="font-display text-xl leading-tight tracking-tight">{entry.name}</p>
         </div>
         <p className="mt-1 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-[var(--color-muted-foreground)]">
-          {entry.activeMembers} activos · {entry.exactScoresCount} exactos
+          {t("deptStats", { active: entry.activeMembers, exact: entry.exactScoresCount })}
         </p>
       </div>
       <div className="flex items-baseline justify-between">
         <span className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-          Media
+          {t("avg")}
         </span>
         <span className="font-display text-3xl tabular">{entry.avgPoints}</span>
       </div>

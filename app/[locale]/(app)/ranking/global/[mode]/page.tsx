@@ -1,5 +1,6 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { Globe2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { EmptyState } from "@/components/shell/empty-state";
@@ -18,6 +19,7 @@ export default async function GlobalRankingPage({
   params: Promise<{ mode: string }>;
 }) {
   const me = await requireUser();
+  const t = await getTranslations("ranking");
   const { mode: modeRaw } = await params;
   if (!isPredictionMode(modeRaw)) notFound();
   const mode = modeRaw;
@@ -28,9 +30,9 @@ export default async function GlobalRankingPage({
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Ranking global"
-        title={`Mundial · ${PREDICTION_MODE_META[mode].label}`}
-        description="Tu mejor liga de este modo compite aquí — públicas y privadas juntas."
+        eyebrow={t("globalEyebrow")}
+        title={t("globalTitle", { mode: PREDICTION_MODE_META[mode].label })}
+        description={t("globalDesc")}
       />
 
       {/* Tabs por modo */}
@@ -58,8 +60,8 @@ export default async function GlobalRankingPage({
       {ranked.length === 0 ? (
         <EmptyState
           icon={<Globe2 className="size-5" />}
-          title="Sin participantes aún"
-          description="Nadie ha puntuado todavía en este modo. Sé el primero."
+          title={t("globalEmptyTitle")}
+          description={t("globalEmptyDesc")}
         />
       ) : (
         <div className="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]">
@@ -92,7 +94,7 @@ export default async function GlobalRankingPage({
                     {display}
                     {isMe ? (
                       <span className="ml-1.5 font-mono text-[0.5rem] uppercase tracking-[0.18em] text-[var(--color-arena)]">
-                        tú
+                        {t("youLower")}
                       </span>
                     ) : null}
                   </span>
@@ -106,8 +108,7 @@ export default async function GlobalRankingPage({
 
       {myIndex < 0 ? (
         <p className="text-center font-editorial text-xs italic text-[var(--color-muted-foreground)]">
-          Aún no apareces en este ranking — únete a una quiniela de modo{" "}
-          {PREDICTION_MODE_META[mode].label} y empieza a predecir.
+          {t("notInRanking", { mode: PREDICTION_MODE_META[mode].label })}
         </p>
       ) : null}
     </div>

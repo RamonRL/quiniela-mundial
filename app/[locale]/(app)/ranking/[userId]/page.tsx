@@ -1,5 +1,6 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import {
   ArrowLeft,
   Award,
@@ -33,8 +34,8 @@ const KNOCKOUT_SOURCES = [
 
 type CategoryGroup = {
   key: string;
-  label: string;
-  description: string;
+  labelKey: string;
+  descKey: string;
   sources: string[];
   icon: typeof Target;
 };
@@ -42,29 +43,29 @@ type CategoryGroup = {
 const CATEGORY_GROUPS: CategoryGroup[] = [
   {
     key: "match",
-    label: "Marcadores",
-    description: "Resultados exactos y ganador del partido.",
+    labelKey: "catMatch",
+    descKey: "catMatchDesc",
     sources: ["match_exact_score", "match_outcome"],
     icon: Target,
   },
   {
     key: "scorer",
-    label: "Goleadores del partido",
-    description: "Quién marca y quién abre el partido.",
+    labelKey: "catScorer",
+    descKey: "catScorerDesc",
     sources: ["match_scorer", "match_first_scorer"],
     icon: Footprints,
   },
   {
     key: "group",
-    label: "Fase de grupos",
-    description: "Posiciones finales de los 12 grupos.",
+    labelKey: "catGroup",
+    descKey: "catGroupDesc",
     sources: ["group_position", "group_top2_swap"],
     icon: Layers,
   },
   {
     key: "bracket",
-    label: "Bracket",
-    description: "Equipos que avanzan en cada ronda y resultados de eliminatoria.",
+    labelKey: "catBracket",
+    descKey: "catBracketDesc",
     sources: [
       "bracket_slot",
       "knockout_qualifier",
@@ -75,15 +76,15 @@ const CATEGORY_GROUPS: CategoryGroup[] = [
   },
   {
     key: "topScorer",
-    label: "Bota de Oro",
-    description: "Goleador del torneo.",
+    labelKey: "catTopScorer",
+    descKey: "catTopScorerDesc",
     sources: ["tournament_top_scorer"],
     icon: Crown,
   },
   {
     key: "special",
-    label: "Especiales",
-    description: "Predicciones especiales del torneo.",
+    labelKey: "catSpecial",
+    descKey: "catSpecialDesc",
     sources: ["special_prediction"],
     icon: Sparkles,
   },
@@ -93,7 +94,7 @@ type PodiumStyle = {
   ringClass: string;
   badgeBg: string;
   badgeIcon: typeof Crown;
-  badgeLabel: string;
+  badgeLabelKey: string;
   glowClass: string;
 };
 
@@ -102,14 +103,14 @@ const PODIUM: Record<number, PodiumStyle> = {
     ringClass: "ring-4 ring-[var(--color-arena)]",
     badgeBg: "bg-[var(--color-arena)] text-white",
     badgeIcon: Crown,
-    badgeLabel: "Líder",
+    badgeLabelKey: "leaderBadge",
     glowClass: "shadow-[0_0_60px_-10px_color-mix(in_oklch,var(--color-arena)_70%,transparent)]",
   },
   1: {
     ringClass: "ring-4 ring-[var(--color-border-strong)]",
     badgeBg: "bg-[var(--color-surface-2)] text-[var(--color-foreground)] border border-[var(--color-border-strong)]",
     badgeIcon: Medal,
-    badgeLabel: "Plata",
+    badgeLabelKey: "silver",
     glowClass: "",
   },
   2: {
@@ -118,7 +119,7 @@ const PODIUM: Record<number, PodiumStyle> = {
     badgeBg:
       "bg-[color-mix(in_oklch,var(--color-arena)_15%,var(--color-surface-2))] text-[color-mix(in_oklch,var(--color-arena)_60%,var(--color-foreground))] border border-[color-mix(in_oklch,var(--color-arena)_25%,var(--color-border))]",
     badgeIcon: Award,
-    badgeLabel: "Bronce",
+    badgeLabelKey: "bronze",
     glowClass: "",
   },
 };
@@ -131,6 +132,7 @@ export default async function ParticipantDetailPage({
   params: Promise<{ userId: string }>;
 }) {
   const me = await requireUser();
+  const t = await getTranslations("ranking");
   const { userId } = await params;
   const leagueId = await currentLeagueId(me);
 
@@ -241,7 +243,7 @@ export default async function ParticipantDetailPage({
       <Button asChild variant="ghost" size="sm" className="px-0 text-[var(--color-muted-foreground)]">
         <Link href="/ranking">
           <ArrowLeft />
-          Volver al ranking
+          {t("backToRanking")}
         </Link>
       </Button>
 
@@ -281,28 +283,28 @@ export default async function ParticipantDetailPage({
                   className={`absolute -bottom-1 -right-1 flex items-center gap-1 rounded-full px-2.5 py-1 font-mono text-[0.55rem] uppercase tracking-[0.18em] ${podium.badgeBg}`}
                 >
                   <PodiumIcon className="size-3" />
-                  {podium.badgeLabel}
+                  {t(podium.badgeLabelKey)}
                 </span>
               ) : null}
             </div>
 
             <div className="text-center lg:text-left">
               <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                Participante
+                {t("participant")}
               </p>
               <h1 className="mt-1 font-display text-3xl tracking-tight sm:text-4xl">
                 {display}
               </h1>
               <div className="mt-3 flex flex-wrap items-center justify-center gap-2 lg:justify-start">
-                {isMe ? <Badge variant="default">Tú</Badge> : null}
+                {isMe ? <Badge variant="default">{t("you")}</Badge> : null}
                 {user.role === "admin" ? (
                   <Badge variant="outline" className="gap-1">
                     <ShieldCheck className="size-3" />
-                    Admin
+                    {t("admin")}
                   </Badge>
                 ) : null}
                 <span className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-                  Alta {formatDate(user.createdAt, { day: "2-digit", month: "short", year: "numeric" })}
+                  {t("joined", { date: formatDate(user.createdAt, { day: "2-digit", month: "short", year: "numeric" }) })}
                 </span>
               </div>
             </div>
@@ -313,20 +315,20 @@ export default async function ParticipantDetailPage({
             <div className="grid gap-6 sm:grid-cols-2">
               <div className="rounded-xl border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_4%,var(--color-surface))] p-5">
                 <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                  Puntos totales
+                  {t("totalPoints")}
                 </p>
                 <p className="mt-1 font-display tabular text-6xl tracking-tight text-[var(--color-arena)] glow-arena sm:text-7xl">
                   {myStats.totalPoints}
                 </p>
                 <p className="mt-1 font-editorial text-xs italic text-[var(--color-muted-foreground)]">
                   {theirLedger.length === 0
-                    ? "Sin entradas en el ledger todavía."
-                    : `${theirLedger.length} ${theirLedger.length === 1 ? "entrada" : "entradas"} en el ledger`}
+                    ? t("noLedgerYet")
+                    : t("ledgerEntries", { n: theirLedger.length })}
                 </p>
               </div>
               <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
                 <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                  Posición
+                  {t("positionLabel")}
                 </p>
                 <p className="mt-1 font-display tabular text-6xl tracking-tight sm:text-7xl">
                   {idx >= 0 ? `#${(idx + 1).toString().padStart(2, "0")}` : "—"}
@@ -336,10 +338,10 @@ export default async function ParticipantDetailPage({
                 </p>
                 <p className="mt-1 font-editorial text-xs italic text-[var(--color-muted-foreground)]">
                   {idx === 0
-                    ? "Líder de la clasificación."
+                    ? t("leaderOfStandings")
                     : idx > 0
-                      ? `A ${lead} ${lead === 1 ? "punto" : "puntos"} del líder.`
-                      : "Sin clasificar."}
+                      ? t("behindLeaderPts", { lead })
+                      : t("unranked")}
                 </p>
               </div>
             </div>
@@ -347,7 +349,7 @@ export default async function ParticipantDetailPage({
             {idx > 0 && leaderPoints > 0 ? (
               <div>
                 <div className="flex items-center justify-between font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
-                  <span>Distancia al líder</span>
+                  <span>{t("distanceToLeader")}</span>
                   <span className="text-[var(--color-arena)]">{leaderPct}%</span>
                 </div>
                 <div className="mt-2 h-2 overflow-hidden rounded-full bg-[var(--color-surface-2)]">
@@ -360,9 +362,9 @@ export default async function ParticipantDetailPage({
             ) : null}
 
             <div className="grid grid-cols-3 gap-3">
-              <SubStat label="Marcadores ex." value={myStats.exactScoresCount} />
-              <SubStat label="Pts en KO" value={myStats.knockoutPoints} />
-              <SubStat label="Aciertos" value={theirLedger.length} />
+              <SubStat label={t("subExact")} value={myStats.exactScoresCount} />
+              <SubStat label={t("subKO")} value={myStats.knockoutPoints} />
+              <SubStat label={t("subHits")} value={theirLedger.length} />
             </div>
           </div>
         </div>
@@ -373,7 +375,7 @@ export default async function ParticipantDetailPage({
         <header className="flex items-center gap-3">
           <span className="h-px w-6 bg-[var(--color-arena)]" />
           <h2 className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Desglose por categoría
+            {t("categoryBreakdown")}
           </h2>
           <span className="h-px flex-1 bg-[var(--color-border)]" />
         </header>
@@ -424,14 +426,14 @@ export default async function ParticipantDetailPage({
                       {earned ? `+${total}` : "0"}
                     </p>
                     <p className="mt-1 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-                      {count} {count === 1 ? "acierto" : "aciertos"}
+                      {t("hitsCount", { n: count })}
                     </p>
                   </div>
                 </header>
                 <div className="mt-3">
-                  <h3 className="font-display text-lg tracking-tight">{g.label}</h3>
+                  <h3 className="font-display text-lg tracking-tight">{t(g.labelKey)}</h3>
                   <p className="mt-0.5 font-editorial text-xs italic text-[var(--color-muted-foreground)]">
-                    {g.description}
+                    {t(g.descKey)}
                   </p>
                 </div>
                 <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[var(--color-surface-2)]">
@@ -441,7 +443,7 @@ export default async function ParticipantDetailPage({
                   />
                 </div>
                 <p className="mt-1 text-right font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-                  {earned ? `${pct}% del total` : "Sin puntos aún"}
+                  {earned ? t("pctOfTotal", { pct }) : t("noPointsYet")}
                 </p>
               </article>
             );
@@ -455,7 +457,7 @@ export default async function ParticipantDetailPage({
           <header className="flex items-center gap-3">
             <span className="h-px w-6 bg-[var(--color-arena)]" />
             <h2 className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-              Aciertos recientes
+              {t("recentHits")}
             </h2>
             <span className="h-px flex-1 bg-[var(--color-border)]" />
           </header>

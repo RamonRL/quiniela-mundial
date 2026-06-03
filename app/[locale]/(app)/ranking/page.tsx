@@ -1,5 +1,7 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import { Award, Crown, Globe2, ListOrdered, Medal } from "lucide-react";
 import { eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
@@ -18,6 +20,7 @@ export const metadata = { title: "Ranking" };
 
 export default async function RankingPage() {
   const me = await requireUser();
+  const t = await getTranslations("ranking");
   const leagueId = (await currentLeagueId(me))!;
   // Las quinielas públicas no tienen ranking propio: redirigimos al ranking
   // global del modo de esa pública.
@@ -52,14 +55,14 @@ export default async function RankingPage() {
     return (
       <div className="space-y-6">
         <PageHeader
-          eyebrow="Quiniela"
-          title="Clasificación general"
-          description="Quien mejor lea el torneo, gana."
+          eyebrow={t("eyebrow")}
+          title={t("title")}
+          description={t("desc")}
         />
         <EmptyState
           icon={<ListOrdered className="size-5" />}
-          title="Sin participantes todavía"
-          description="Comparte el código y empieza la batalla."
+          title={t("emptyTitle")}
+          description={t("emptyDesc")}
         />
       </div>
     );
@@ -72,9 +75,9 @@ export default async function RankingPage() {
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="Quiniela"
-        title="Clasificación general"
-        description="Quien mejor lea el torneo, gana."
+        eyebrow={t("eyebrow")}
+        title={t("title")}
+        description={t("desc")}
       />
 
       {hasDepartments ? <RankingTabs active="individual" /> : null}
@@ -82,7 +85,7 @@ export default async function RankingPage() {
       {/* Accesos directos a los rankings globales por modo. */}
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-          Rankings globales:
+          {t("globalRankings")}
         </span>
         {PREDICTION_MODES.map((m) => (
           <Link
@@ -98,7 +101,7 @@ export default async function RankingPage() {
 
       {allZero ? (
         <div className="rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface)]/60 px-4 py-3 text-center font-editorial text-xs italic text-[var(--color-muted-foreground)]">
-          Sin resultados aún. El primer pitido lo cambia todo.
+          {t("noResultsYet")}
         </div>
       ) : null}
 
@@ -146,7 +149,7 @@ export default async function RankingPage() {
             </span>
             <div>
               <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                Tu posición
+                {t("myPosition")}
               </p>
               <p className="font-display text-xl tracking-tight">
                 {myEntry.nickname || myEntry.email.split("@")[0]}
@@ -155,7 +158,7 @@ export default async function RankingPage() {
           </div>
           <div className="text-right">
             <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-              A {lead} del líder
+              {t("behindLeader", { lead })}
             </p>
             <p className="font-display text-3xl tabular">{myEntry.totalPoints}</p>
           </div>
@@ -168,17 +171,17 @@ export default async function RankingPage() {
           <div className="flex items-center gap-3">
             <span className="h-px w-6 bg-[var(--color-arena)]" />
             <h2 className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-              Posiciones · 4 y siguientes
+              {t("positionsRest")}
             </h2>
             <span className="h-px flex-1 bg-[var(--color-border)]" />
           </div>
           <div className="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]">
             <div className="grid grid-cols-[56px_1fr_72px_56px_56px] gap-2 border-b border-[var(--color-border)] bg-[var(--color-surface-2)] px-4 py-2.5 font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)] sm:grid-cols-[56px_1fr_72px_64px_64px]">
-              <span>Pos</span>
-              <span>Participante</span>
-              <span className="text-right">Pts</span>
-              <span className="hidden text-right sm:inline">Ex.</span>
-              <span className="hidden text-right sm:inline">KO</span>
+              <span>{t("thPos")}</span>
+              <span>{t("thParticipant")}</span>
+              <span className="text-right">{t("thPts")}</span>
+              <span className="hidden text-right sm:inline">{t("thExact")}</span>
+              <span className="hidden text-right sm:inline">{t("thKO")}</span>
             </div>
             <ul>
               {rest.map((r, i) => {
@@ -206,7 +209,7 @@ export default async function RankingPage() {
                         <span className="truncate text-sm font-medium">{display}</span>
                         {isMe ? (
                           <Badge variant="default" className="ml-1">
-                            Tú
+                            {t("you")}
                           </Badge>
                         ) : null}
                       </span>
@@ -243,7 +246,7 @@ const PODIUM_LAYOUT: Record<
     icon: typeof Crown;
     iconClass: string;
     medalRing: string;
-    label: string;
+    labelKey: string;
   }
 > = {
   1: {
@@ -255,7 +258,7 @@ const PODIUM_LAYOUT: Record<
     icon: Crown,
     iconClass: "text-[var(--color-arena)]",
     medalRing: "ring-4 ring-[var(--color-arena)]",
-    label: "Oro",
+    labelKey: "gold",
   },
   2: {
     order: "sm:order-1",
@@ -266,7 +269,7 @@ const PODIUM_LAYOUT: Record<
     icon: Medal,
     iconClass: "text-[var(--color-foreground)]/70",
     medalRing: "ring-2 ring-[var(--color-border-strong)]",
-    label: "Plata",
+    labelKey: "silver",
   },
   3: {
     order: "sm:order-3",
@@ -278,7 +281,7 @@ const PODIUM_LAYOUT: Record<
       "text-[color-mix(in_oklch,var(--color-arena)_50%,var(--color-muted-foreground))]",
     medalRing:
       "ring-2 ring-[color-mix(in_oklch,var(--color-arena)_40%,var(--color-border-strong))]",
-    label: "Bronce",
+    labelKey: "bronze",
   },
 };
 
@@ -291,6 +294,7 @@ function PodiumCard({
   entry: PodiumEntry;
   isMe: boolean;
 }) {
+  const t = useTranslations("ranking");
   const layout = PODIUM_LAYOUT[position]!;
   const Icon = layout.icon;
   const display = entry.nickname || entry.email.split("@")[0];
@@ -336,7 +340,7 @@ function PodiumCard({
         <span
           className={`font-mono text-[0.55rem] uppercase tracking-[0.28em] ${layout.iconClass}`}
         >
-          {layout.label}
+          {t(layout.labelKey)}
         </span>
       </div>
 
@@ -356,7 +360,7 @@ function PodiumCard({
           </p>
           {isMe ? (
             <p className="mt-0.5 font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-              Tú
+              {t("you")}
             </p>
           ) : null}
         </div>
@@ -366,7 +370,7 @@ function PodiumCard({
       <div className="relative flex items-end justify-between gap-2 border-t border-dashed border-[var(--color-border)] pt-3">
         <div>
           <p className="font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
-            Puntos
+            {t("points")}
           </p>
           <p
             className={`font-display tabular tracking-tight ${pointsSize} ${layout.accent}`}
@@ -375,8 +379,8 @@ function PodiumCard({
           </p>
         </div>
         <div className="text-right font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-          <p>{entry.exactScoresCount} exactos</p>
-          <p>{entry.knockoutPoints} en KO</p>
+          <p>{t("exactCount", { n: entry.exactScoresCount })}</p>
+          <p>{t("koCount", { n: entry.knockoutPoints })}</p>
         </div>
       </div>
     </Link>
