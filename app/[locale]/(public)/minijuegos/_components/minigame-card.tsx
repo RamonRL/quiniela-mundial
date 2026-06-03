@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { Clock, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { MinigameDef } from "../_lib/games";
@@ -15,6 +16,7 @@ type Props = {
  * uppercase imitando un botón de máquina arcade.
  */
 export function MinigameCard({ game, myBestScore, totalParticipants }: Props) {
+  const t = useTranslations("minigames");
   const Icon = game.icon;
   const soon = game.status === "soon";
 
@@ -43,13 +45,13 @@ export function MinigameCard({ game, myBestScore, totalParticipants }: Props) {
         {soon ? (
           <span className="flex items-center gap-1 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-2)] px-2.5 py-0.5 font-mono text-[0.55rem] uppercase tracking-[0.24em] text-[var(--color-muted-foreground)]">
             <Clock className="size-3" />
-            Próximamente
+            {t("soon")}
           </span>
         ) : (
           <span className="flex items-center gap-1.5 rounded-full border border-[var(--color-pitch)]/40 bg-[color-mix(in_oklch,var(--color-pitch)_6%,transparent)] px-2.5 py-0.5">
             <span className="size-1.5 rounded-full bg-[var(--color-pitch)] mj-led-blink" />
             <span className="font-mono text-[0.55rem] uppercase tracking-[0.24em] text-[var(--color-pitch)]">
-              Online
+              {t("online")}
             </span>
           </span>
         )}
@@ -57,11 +59,11 @@ export function MinigameCard({ game, myBestScore, totalParticipants }: Props) {
 
       <div className="space-y-1.5">
         <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-          {game.tagline}
+          {t(game.taglineKey)}
         </p>
-        <h3 className="font-display text-3xl tracking-tight">{game.name}</h3>
+        <h3 className="font-display text-3xl tracking-tight">{t(game.nameKey)}</h3>
         <p className="font-editorial text-sm italic leading-snug text-[var(--color-muted-foreground)]">
-          {game.description}
+          {t(game.descKey)}
         </p>
       </div>
 
@@ -70,7 +72,7 @@ export function MinigameCard({ game, myBestScore, totalParticipants }: Props) {
           {myBestScore != null ? (
             <>
               <p className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                Tu mejor
+                {t("yourBest")}
               </p>
               <p className="font-display text-2xl tabular text-[var(--color-pitch)] glow-pitch">
                 {myBestScore}
@@ -79,7 +81,7 @@ export function MinigameCard({ game, myBestScore, totalParticipants }: Props) {
           ) : totalParticipants != null && totalParticipants > 0 ? (
             <>
               <p className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                Jugadores
+                {t("players")}
               </p>
               <p className="font-display text-2xl tabular">{totalParticipants}</p>
             </>
@@ -88,7 +90,7 @@ export function MinigameCard({ game, myBestScore, totalParticipants }: Props) {
         {!soon ? (
           <span className="inline-flex items-center justify-end gap-1.5 font-mono text-[0.65rem] uppercase tracking-[0.28em] text-[var(--color-pitch)]">
             <Play className="size-3.5" />
-            Jugar
+            {t("play")}
           </span>
         ) : null}
       </div>

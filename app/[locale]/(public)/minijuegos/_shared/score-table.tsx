@@ -1,4 +1,5 @@
 import { Award, Crown, Medal } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn, initials } from "@/lib/utils";
 
@@ -27,13 +28,14 @@ type Props = {
 export function MinigameScoreTable({
   rows,
   highlightIdentityKey,
-  emptyMessage = "Aún no hay puntuaciones. Sé el primero.",
+  emptyMessage,
 }: Props) {
+  const t = useTranslations("minigames");
   if (rows.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface)]/60 px-6 py-10 text-center">
         <p className="font-editorial italic text-[var(--color-muted-foreground)]">
-          {emptyMessage}
+          {emptyMessage ?? t("emptyDefault")}
         </p>
       </div>
     );
@@ -79,15 +81,15 @@ export function MinigameScoreTable({
           <div className="flex items-center gap-3">
             <span className="h-px w-6 bg-[var(--color-arena)]" />
             <h2 className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-              Posiciones · 4 y siguientes
+              {t("positionsRest")}
             </h2>
             <span className="h-px flex-1 bg-[var(--color-border)]" />
           </div>
           <div className="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]">
             <div className="grid grid-cols-[56px_1fr_72px] gap-2 border-b border-[var(--color-border)] bg-[var(--color-surface-2)] px-4 py-2.5 font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
-              <span>Pos</span>
-              <span>Jugador</span>
-              <span className="text-right">Pts</span>
+              <span>{t("thPos")}</span>
+              <span>{t("thPlayer")}</span>
+              <span className="text-right">{t("thPts")}</span>
             </div>
             <ul>
               {rest.map((r, i) => {
@@ -116,7 +118,7 @@ export function MinigameScoreTable({
                       <span className="truncate text-sm font-medium">{r.displayName}</span>
                       {isMe ? (
                         <span className="rounded bg-[var(--color-arena)] px-1.5 py-0.5 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-white">
-                          Tú
+                          {t("you")}
                         </span>
                       ) : null}
                     </span>
@@ -144,7 +146,7 @@ const PODIUM_LAYOUT: Record<
     icon: typeof Crown;
     iconClass: string;
     ring: string;
-    label: string;
+    labelKey: string;
   }
 > = {
   1: {
@@ -156,7 +158,7 @@ const PODIUM_LAYOUT: Record<
     icon: Crown,
     iconClass: "text-[var(--color-arena)]",
     ring: "ring-4 ring-[var(--color-arena)]",
-    label: "Oro",
+    labelKey: "gold",
   },
   2: {
     order: "sm:order-1",
@@ -167,7 +169,7 @@ const PODIUM_LAYOUT: Record<
     icon: Medal,
     iconClass: "text-[var(--color-foreground)]/70",
     ring: "ring-2 ring-[var(--color-border-strong)]",
-    label: "Plata",
+    labelKey: "silver",
   },
   3: {
     order: "sm:order-3",
@@ -178,7 +180,7 @@ const PODIUM_LAYOUT: Record<
     iconClass:
       "text-[color-mix(in_oklch,var(--color-arena)_50%,var(--color-muted-foreground))]",
     ring: "ring-2 ring-[color-mix(in_oklch,var(--color-arena)_40%,var(--color-border-strong))]",
-    label: "Bronce",
+    labelKey: "bronze",
   },
 };
 
@@ -191,6 +193,7 @@ function PodiumCard({
   entry: MinigameScoreRow;
   isMe: boolean;
 }) {
+  const t = useTranslations("minigames");
   const layout = PODIUM_LAYOUT[position]!;
   const Icon = layout.icon;
   const avatarSize =
@@ -224,7 +227,7 @@ function PodiumCard({
             layout.iconClass,
           )}
         >
-          {layout.label}
+          {t(layout.labelKey)}
         </span>
       </div>
 
@@ -247,7 +250,7 @@ function PodiumCard({
           </p>
           {isMe ? (
             <p className="mt-0.5 font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-              Tú
+              {t("you")}
             </p>
           ) : null}
         </div>
@@ -255,7 +258,7 @@ function PodiumCard({
 
       <div className="relative flex items-end justify-between gap-2 border-t border-dashed border-[var(--color-border)] pt-3">
         <p className="font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
-          Mejor
+          {t("best")}
         </p>
         <p
           className={cn(

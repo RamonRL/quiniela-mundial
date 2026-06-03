@@ -1,4 +1,5 @@
 import { Gamepad2 } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { getCurrentUser } from "@/lib/auth/guards";
 import { MINIGAMES } from "./_lib/games";
 import { MinigameCard } from "./_components/minigame-card";
@@ -13,6 +14,7 @@ export const metadata = {
 export const revalidate = 60;
 
 export default async function MinijuegosHubPage() {
+  const t = await getTranslations("minigames");
   const me = await getCurrentUser();
   const myIdentityKey = me?.id ?? null;
 
@@ -46,21 +48,20 @@ export default async function MinijuegosHubPage() {
             <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-pitch)]/40 bg-[color-mix(in_oklch,var(--color-pitch)_8%,transparent)] px-3 py-1">
               <Gamepad2 className="size-3.5 text-[var(--color-pitch)]" />
               <span className="font-mono text-[0.55rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-pitch)]">
-                Arcade · Comunidad
+                {t("arcadeBadge")}
               </span>
             </div>
             <h1 className="font-display text-5xl leading-[0.92] tracking-tight sm:text-6xl">
-              Minijuegos
+              {t("title")}
             </h1>
             <p className="max-w-xl font-editorial text-base italic text-[var(--color-muted-foreground)]">
-              Partidas rápidas para matar tiempo. Ranking global por juego, en
-              vivo entre todos los que se atrevan.
+              {t("subtitle")}
             </p>
           </div>
           {/* Marcador decorativo: número de juegos disponibles */}
           <div className="hidden self-end rounded-md border border-[var(--color-pitch)]/40 bg-[color-mix(in_oklch,var(--color-pitch)_5%,transparent)] px-4 py-2 text-right sm:block">
             <p className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-              Juegos
+              {t("gamesLabel")}
             </p>
             <p className="font-display text-3xl tabular text-[var(--color-pitch)] glow-pitch">
               {MINIGAMES.filter((g) => g.status === "live").length
@@ -91,8 +92,7 @@ export default async function MinijuegosHubPage() {
 
       {!me ? (
         <p className="rounded-md border border-dashed border-[var(--color-border)] bg-[var(--color-surface)]/60 px-4 py-3 text-center font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-          Sin sesión también puedes jugar — solo te pedimos un apodo para
-          aparecer en el ranking.
+          {t("guestNote")}
         </p>
       ) : null}
     </div>

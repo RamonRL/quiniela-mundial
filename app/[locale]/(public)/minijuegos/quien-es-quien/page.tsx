@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
 import { ArrowLeft } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth/guards";
 import { findGame } from "../_lib/games";
@@ -16,6 +17,7 @@ export const metadata = {
 export const revalidate = 30;
 
 export default async function QuienEsQuienPage() {
+  const t = await getTranslations("minigames");
   const game = findGame(SLUG)!;
   const me = await getCurrentUser();
   const myIdentityKey = me?.id ?? null;
@@ -33,7 +35,7 @@ export default async function QuienEsQuienPage() {
         className="inline-flex items-center gap-1.5 font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)] transition hover:text-[var(--color-pitch)]"
       >
         <ArrowLeft className="size-3.5" />
-        Volver al lobby
+        {t("backToLobby")}
       </Link>
 
       {/* Game header: icono cabinet + tagline + título */}
@@ -48,13 +50,13 @@ export default async function QuienEsQuienPage() {
           </div>
           <div className="space-y-2">
             <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-              {game.tagline}
+              {t(game.taglineKey)}
             </p>
             <h1 className="font-display text-4xl leading-[0.92] tracking-tight sm:text-5xl">
-              {game.name}
+              {t(game.nameKey)}
             </h1>
             <p className="max-w-xl font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-              {game.description}
+              {t(game.descKey)}
             </p>
           </div>
         </div>
@@ -66,17 +68,17 @@ export default async function QuienEsQuienPage() {
         <div className="flex items-center gap-3">
           <span className="size-1.5 rounded-full bg-[var(--color-pitch)] mj-led-blink" />
           <h2 className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Ranking global · top {rows.length}
+            {t("globalRanking", { n: rows.length })}
           </h2>
           <span className="h-px flex-1 bg-[var(--color-border)]" />
         </div>
         <MinigameScoreTable
           rows={rows}
           highlightIdentityKey={myIdentityKey}
-          emptyMessage="Aún no hay puntuaciones. Sé el primero en jugar."
+          emptyMessage={t("emptyScores")}
         />
         <p className="text-center font-mono text-[0.55rem] uppercase tracking-[0.24em] text-[var(--color-muted-foreground)]">
-          Solo se guarda tu mejor puntuación
+          {t("onlyBest")}
         </p>
       </section>
     </div>

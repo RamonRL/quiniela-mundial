@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -42,6 +43,7 @@ type Props = {
  * caller con el apodo final.
  */
 export function NicknameGate({ enabled, open, onConfirm, onCancel }: Props) {
+  const t = useTranslations("minigames");
   const [value, setValue] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -56,9 +58,7 @@ export function NicknameGate({ enabled, open, onConfirm, onCancel }: Props) {
   const handleSubmit = () => {
     const cleaned = value.trim().replace(/\s+/g, " ");
     if (!NICKNAME_REGEX.test(cleaned)) {
-      setError(
-        `Usa ${NICKNAME_MIN_LEN}-${NICKNAME_MAX_LEN} caracteres (letras, números, espacios, _ o -).`,
-      );
+      setError(t("nickError", { min: NICKNAME_MIN_LEN, max: NICKNAME_MAX_LEN }));
       return;
     }
     setError(null);
@@ -70,10 +70,9 @@ export function NicknameGate({ enabled, open, onConfirm, onCancel }: Props) {
     <Dialog open={open} onOpenChange={(o) => (!o ? onCancel() : null)}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Pon un apodo para el ranking</DialogTitle>
+          <DialogTitle>{t("nickTitle")}</DialogTitle>
           <DialogDescription>
-            Apareces así en la clasificación global. Lo guardamos en este
-            navegador para que no tengas que repetirlo cada vez.
+            {t("nickDesc")}
           </DialogDescription>
         </DialogHeader>
         <form
@@ -85,7 +84,7 @@ export function NicknameGate({ enabled, open, onConfirm, onCancel }: Props) {
         >
           <Input
             autoFocus
-            placeholder="Ej. Pichichi23"
+            placeholder={t("nickPlaceholder")}
             value={value}
             maxLength={NICKNAME_MAX_LEN + 5}
             onChange={(e) => setValue(e.target.value)}
@@ -96,14 +95,14 @@ export function NicknameGate({ enabled, open, onConfirm, onCancel }: Props) {
             </p>
           ) : (
             <p className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-              {NICKNAME_MIN_LEN}-{NICKNAME_MAX_LEN} caracteres · letras, números, _ o -
+              {t("nickHint", { min: NICKNAME_MIN_LEN, max: NICKNAME_MAX_LEN })}
             </p>
           )}
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={onCancel}>
-              Cancelar
+              {t("cancel")}
             </Button>
-            <Button type="submit">Empezar</Button>
+            <Button type="submit">{t("start")}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

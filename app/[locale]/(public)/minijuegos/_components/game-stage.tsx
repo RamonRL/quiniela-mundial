@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
@@ -41,6 +42,7 @@ export function GameStage({
   exitLabel,
   children,
 }: Props) {
+  const t = useTranslations("minigames");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -81,7 +83,7 @@ export function GameStage({
     onClose?.();
   }
 
-  const label = exitLabel ?? (onAbandon ? "Abandonar" : "Cerrar");
+  const label = exitLabel ?? (onAbandon ? t("abandon") : t("close"));
 
   return createPortal(
     <div
@@ -89,7 +91,7 @@ export function GameStage({
       // overlay como modal y dejen el resto inerte.
       role="dialog"
       aria-modal="true"
-      aria-label="Partida en curso"
+      aria-label={t("inProgress")}
       className="mj-arcade mj-scanlines mj-stage-in fixed inset-0 z-[100] overflow-y-auto"
     >
       {/* Decoración: línea de césped horizontal centro-campo */}

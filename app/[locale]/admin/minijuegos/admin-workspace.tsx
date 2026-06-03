@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import {
   AlertTriangle,
   ChevronDown,
@@ -39,6 +40,7 @@ type Props = {
 };
 
 export function MinigamesAdminWorkspace({ overview, topByGame }: Props) {
+  const tg = useTranslations("minigames");
   const [pending, start] = useTransition();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [selected, setSelected] = useState<Record<string, Set<number>>>({});
@@ -95,7 +97,7 @@ export function MinigamesAdminWorkspace({ overview, topByGame }: Props) {
                       <Icon className="size-5 text-[var(--color-arena)]" />
                     </span>
                     <div>
-                      <CardTitle className="text-base">{game.name}</CardTitle>
+                      <CardTitle className="text-base">{tg(game.nameKey)}</CardTitle>
                       <CardDescription className="text-xs">
                         {game.gameKey}
                       </CardDescription>
@@ -159,8 +161,8 @@ export function MinigamesAdminWorkspace({ overview, topByGame }: Props) {
                   onClick={() =>
                     run(
                       () => resetGame(game.gameKey),
-                      `Reset ${game.name}`,
-                      `Vas a borrar TODAS las puntuaciones de "${game.name}". ¿Continuar?`,
+                      `Reset ${tg(game.nameKey)}`,
+                      `Vas a borrar TODAS las puntuaciones de "${tg(game.nameKey)}". ¿Continuar?`,
                     )
                   }
                 >
