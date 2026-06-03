@@ -1013,5 +1013,31 @@
     "stSf": "Semifinales",
     "stThird": "Tercer puesto",
     "stFinal": "Final"
+  },
+  "compare": {
+    "eyebrow": "Cara a cara",
+    "title": "Compara predicciones",
+    "descEmpty": "Hace falta alguien con quien medirte.",
+    "emptyTitle": "Aún sólo estás tú",
+    "emptyDesc": "Comparte el enlace y a por ello.",
+    "desc": "Tus picks contra las suyas.",
+    "noOpponentTitle": "Selecciona un oponente",
+    "noOpponentDesc": "Elige rival en el desplegable.",
+    "sectionGroups": "Posiciones por grupo",
+    "matchCount": "{n}/4 coinciden",
+    "pos": "{n}º",
+    "sectionBotaChamp": "Bota de Oro & Campeón",
+    "champRevealNote": "El campeón se desvelará cuando empiecen los dieciseisavos.",
+    "you": "Tú",
+    "botaLabel": "Bota de Oro",
+    "champLabel": "Campeón",
+    "privateUntilR32": "(privado hasta R32)",
+    "tip": "Tip: ve también al <link>ranking</link> para ver puntos vs tus amigos.",
+    "teaserPrivate": "Aún privadas",
+    "teaserTitle": "Las predicciones de <b>{name}</b> se desvelan al kickoff",
+    "teaserDesc": "Posiciones de grupo y Bota de Oro se publican el {date}. El bracket queda privado hasta el primer partido de dieciseisavos.",
+    "teaserCountdownLabel": "Faltan",
+    "compareAgainst": "Comparar contra:",
+    "pickerPlaceholder": "Selecciona un participante"
   }
 }

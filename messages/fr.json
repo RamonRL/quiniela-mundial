@@ -1013,5 +1013,31 @@
     "stSf": "Demi-finales",
     "stThird": "3e place",
     "stFinal": "Finale"
+  },
+  "compare": {
+    "eyebrow": "Face à face",
+    "title": "Compare les pronostics",
+    "descEmpty": "Il te faut quelqu'un à qui te mesurer.",
+    "emptyTitle": "Pour l'instant il n'y a que toi",
+    "emptyDesc": "Partage le lien et c'est parti.",
+    "desc": "Tes pronostics contre les siens.",
+    "noOpponentTitle": "Choisis un adversaire",
+    "noOpponentDesc": "Choisis un rival dans la liste.",
+    "sectionGroups": "Classements de groupe",
+    "matchCount": "{n}/4 identiques",
+    "pos": "{n}e",
+    "sectionBotaChamp": "Soulier d'Or & Champion",
+    "champRevealNote": "Le champion sera dévoilé au début des seizièmes.",
+    "you": "Toi",
+    "botaLabel": "Soulier d'Or",
+    "champLabel": "Champion",
+    "privateUntilR32": "(privé jusqu'aux seizièmes)",
+    "tip": "Astuce : va aussi au <link>classement</link> pour voir les points face à tes amis.",
+    "teaserPrivate": "Encore privés",
+    "teaserTitle": "Les pronostics de <b>{name}</b> se dévoilent au coup d'envoi",
+    "teaserDesc": "Les classements de groupe et le Soulier d'Or sont publiés le {date}. Le tableau reste privé jusqu'au premier match des seizièmes.",
+    "teaserCountdownLabel": "Il reste",
+    "compareAgainst": "Comparer contre :",
+    "pickerPlaceholder": "Sélectionne un participant"
   }
 }

@@ -1013,5 +1013,31 @@
     "stSf": "Semi-finals",
     "stThird": "Third place",
     "stFinal": "Final"
+  },
+  "compare": {
+    "eyebrow": "Head to head",
+    "title": "Compare predictions",
+    "descEmpty": "You need someone to measure up against.",
+    "emptyTitle": "It's just you so far",
+    "emptyDesc": "Share the link and go for it.",
+    "desc": "Your picks against theirs.",
+    "noOpponentTitle": "Pick an opponent",
+    "noOpponentDesc": "Choose a rival from the dropdown.",
+    "sectionGroups": "Group standings",
+    "matchCount": "{n}/4 match",
+    "pos": "{n}",
+    "sectionBotaChamp": "Golden Boot & Champion",
+    "champRevealNote": "The champion will be revealed when the round of 32 starts.",
+    "you": "You",
+    "botaLabel": "Golden Boot",
+    "champLabel": "Champion",
+    "privateUntilR32": "(private until R32)",
+    "tip": "Tip: also check the <link>ranking</link> to see points vs your friends.",
+    "teaserPrivate": "Still private",
+    "teaserTitle": "<b>{name}</b>'s predictions are revealed at kickoff",
+    "teaserDesc": "Group standings and Golden Boot are published on {date}. The bracket stays private until the first round-of-32 match.",
+    "teaserCountdownLabel": "Time left",
+    "compareAgainst": "Compare against:",
+    "pickerPlaceholder": "Select a participant"
   }
 }

@@ -1013,5 +1013,31 @@
     "stSf": "Semifinais",
     "stThird": "Terceiro lugar",
     "stFinal": "Final"
+  },
+  "compare": {
+    "eyebrow": "Frente a frente",
+    "title": "Compare os palpites",
+    "descEmpty": "Você precisa de alguém para se medir.",
+    "emptyTitle": "Por enquanto só tem você",
+    "emptyDesc": "Compartilhe o link e vá em frente.",
+    "desc": "Seus palpites contra os dele.",
+    "noOpponentTitle": "Escolha um oponente",
+    "noOpponentDesc": "Escolha um rival na lista.",
+    "sectionGroups": "Classificações de grupo",
+    "matchCount": "{n}/4 coincidem",
+    "pos": "{n}º",
+    "sectionBotaChamp": "Chuteira de Ouro & Campeão",
+    "champRevealNote": "O campeão será revelado quando começarem os 16-avos.",
+    "you": "Você",
+    "botaLabel": "Chuteira de Ouro",
+    "champLabel": "Campeão",
+    "privateUntilR32": "(privado até os 16-avos)",
+    "tip": "Dica: veja também o <link>ranking</link> para ver os pontos contra seus amigos.",
+    "teaserPrivate": "Ainda privados",
+    "teaserTitle": "Os palpites de <b>{name}</b> são revelados no pontapé inicial",
+    "teaserDesc": "As classificações de grupo e a Chuteira de Ouro são publicadas em {date}. A chave fica privada até o primeiro jogo dos 16-avos.",
+    "teaserCountdownLabel": "Faltam",
+    "compareAgainst": "Comparar contra:",
+    "pickerPlaceholder": "Selecione um participante"
   }
 }

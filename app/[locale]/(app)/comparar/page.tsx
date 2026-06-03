@@ -1,6 +1,8 @@
 import { TeamFlag } from "@/components/brand/team-flag";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import { and, asc, eq, inArray, ne } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
@@ -36,6 +38,7 @@ export default async function CompararPage({
   searchParams: Promise<{ vs?: string }>;
 }) {
   const me = await requireUser();
+  const t = await getTranslations("compare");
   const leagueId = (await currentLeagueId(me))!;
   // Comparar solo aplica a quinielas privadas. Si el usuario está en la
   // pública (caso típico: aterriza por URL guardada o tras abandonar la
@@ -63,14 +66,14 @@ export default async function CompararPage({
     return (
       <div className="space-y-6">
         <PageHeader
-          eyebrow="Cara a cara"
-          title="Compara predicciones"
-          description="Hace falta alguien con quien medirte."
+          eyebrow={t("eyebrow")}
+          title={t("title")}
+          description={t("descEmpty")}
         />
         <EmptyState
           icon={<Trophy className="size-5" />}
-          title="Aún sólo estás tú"
-          description="Comparte el enlace y a por ello."
+          title={t("emptyTitle")}
+          description={t("emptyDesc")}
         />
       </div>
     );
@@ -180,9 +183,9 @@ export default async function CompararPage({
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Cara a cara"
-        title="Compara predicciones"
-        description="Tus picks contra las suyas."
+        eyebrow={t("eyebrow")}
+        title={t("title")}
+        description={t("desc")}
       />
       <OpponentPicker
         currentUserId={me.id}
@@ -198,8 +201,8 @@ export default async function CompararPage({
       {!opponent ? (
         <EmptyState
           icon={<Trophy className="size-5" />}
-          title="Selecciona un oponente"
-          description="Elige rival en el desplegable."
+          title={t("noOpponentTitle")}
+          description={t("noOpponentDesc")}
         />
       ) : !tournamentPredsPublic ? (
         <PreKickoffTeaser
@@ -208,7 +211,7 @@ export default async function CompararPage({
       ) : (
         <>
           <section className="space-y-3">
-            <h2 className="font-display text-2xl">Posiciones por grupo</h2>
+            <h2 className="font-display text-2xl">{t("sectionGroups")}</h2>
             <div className="grid gap-3 lg:grid-cols-2">
               {allGroups.map((g) => {
                 const m = findGroupPred(myGroups, g.id);
@@ -223,7 +226,7 @@ export default async function CompararPage({
                     <CardHeader className="flex flex-row items-baseline justify-between gap-2">
                       <CardTitle className="text-base">{g.name}</CardTitle>
                       <span className="font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-arena)]">
-                        {matchCount}/4 coinciden
+                        {t("matchCount", { n: matchCount })}
                       </span>
                     </CardHeader>
                     <CardContent>
@@ -242,7 +245,7 @@ export default async function CompararPage({
                               }`}
                             >
                               <span className="font-display tabular text-base text-[var(--color-muted-foreground)]">
-                                {i + 1}º
+                                {t("pos", { n: i + 1 })}
                               </span>
                               <ComparisonCell team={myTeam} match={match} />
                               <span
@@ -267,28 +270,28 @@ export default async function CompararPage({
           </section>
 
           <section className="space-y-3">
-            <h2 className="font-display text-2xl">Bota de Oro & Campeón</h2>
+            <h2 className="font-display text-2xl">{t("sectionBotaChamp")}</h2>
             {!bracketPublic ? (
               <p className="text-xs text-[var(--color-muted-foreground)]">
-                El campeón se desvelará cuando empiecen los dieciseisavos.
+                {t("champRevealNote")}
               </p>
             ) : null}
             <div className="grid gap-3 sm:grid-cols-2">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Tú</CardTitle>
+                  <CardTitle className="text-base">{t("you")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">
                   <Pair
-                    label="Bota de Oro"
+                    label={t("botaLabel")}
                     value={myTop[0] ? playerById.get(myTop[0].playerId ?? -1)?.name ?? "—" : "—"}
                   />
                   <Pair
-                    label="Campeón"
+                    label={t("champLabel")}
                     value={
                       bracketPublic
                         ? teamById.get(myChampionTeamId ?? -1)?.name ?? "—"
-                        : "(privado hasta R32)"
+                        : t("privateUntilR32")
                     }
                   />
                 </CardContent>
@@ -301,17 +304,17 @@ export default async function CompararPage({
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">
                   <Pair
-                    label="Bota de Oro"
+                    label={t("botaLabel")}
                     value={
                       oppTop[0] ? playerById.get(oppTop[0].playerId ?? -1)?.name ?? "—" : "—"
                     }
                   />
                   <Pair
-                    label="Campeón"
+                    label={t("champLabel")}
                     value={
                       bracketPublic
                         ? teamById.get(oppChampionTeamId ?? -1)?.name ?? "—"
-                        : "(privado hasta R32)"
+                        : t("privateUntilR32")
                     }
                   />
                 </CardContent>
@@ -322,11 +325,13 @@ export default async function CompararPage({
       )}
 
       <p className="text-xs text-[var(--color-muted-foreground)]">
-        Tip: ve también al{" "}
-        <Link href="/ranking" className="underline">
-          ranking
-        </Link>{" "}
-        para ver puntos vs tus amigos.
+        {t.rich("tip", {
+          link: (chunks) => (
+            <Link href="/ranking" className="underline">
+              {chunks}
+            </Link>
+          ),
+        })}
       </p>
     </div>
   );
@@ -382,6 +387,7 @@ function Pair({ label, value }: { label: string; value: string }) {
 }
 
 function PreKickoffTeaser({ opponentName }: { opponentName: string }) {
+  const t = useTranslations("compare");
   const ms = Math.max(0, KICKOFF.getTime() - Date.now());
   return (
     <div className="relative overflow-hidden rounded-2xl border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface))]">
@@ -390,19 +396,21 @@ function PreKickoffTeaser({ opponentName }: { opponentName: string }) {
         <div className="space-y-3">
           <div className="flex items-center gap-2 font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
             <Lock className="size-3" />
-            Aún privadas
+            {t("teaserPrivate")}
           </div>
           <h3 className="font-display text-3xl tracking-tight">
-            Las predicciones de <span className="font-medium">{opponentName}</span> se desvelan al kickoff
+            {t.rich("teaserTitle", {
+              name: opponentName,
+              b: (chunks) => <span className="font-medium">{chunks}</span>,
+            })}
           </h3>
           <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-            Posiciones de grupo y Bota de Oro se publican el {formatDateTime(KICKOFF)}.
-            El bracket queda privado hasta el primer partido de dieciseisavos.
+            {t("teaserDesc", { date: formatDateTime(KICKOFF) })}
           </p>
         </div>
         <div className="flex flex-col items-start gap-1 lg:items-end lg:text-right">
           <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Faltan
+            {t("teaserCountdownLabel")}
           </p>
           <p className="font-display tabular text-5xl leading-none tracking-tighter text-[var(--color-arena)] glow-arena sm:text-6xl">
             {formatRemaining(ms)}
