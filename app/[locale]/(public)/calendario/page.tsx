@@ -1,4 +1,6 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import { TeamFlag } from "@/components/brand/team-flag";
 import { CalendarDays, Clock, MapPin } from "lucide-react";
 import { asc } from "drizzle-orm";
@@ -30,14 +32,14 @@ export const metadata = {
 // en cada navegación; ISR a 5 min refresca de sobra y libera el pool.
 export const revalidate = 300;
 
-const STAGE_LABEL: Record<string, string> = {
-  group: "Fase de grupos",
-  r32: "Dieciseisavos",
-  r16: "Octavos",
-  qf: "Cuartos",
-  sf: "Semifinales",
-  third: "Tercer puesto",
-  final: "Final",
+const STAGE_LABEL_KEY: Record<string, string> = {
+  group: "stGroup",
+  r32: "stR32",
+  r16: "stR16",
+  qf: "stQf",
+  sf: "stSf",
+  third: "stThird",
+  final: "stFinal",
 };
 
 const VALID_STAGE_FILTERS = new Set(["r32", "r16", "qf", "sf", "final"] as const);
@@ -47,6 +49,8 @@ export default async function CalendarPage({
 }: {
   searchParams: Promise<{ group?: string; team?: string; stage?: string }>;
 }) {
+  const t = await getTranslations("calendarPage");
+  const tt = await getTranslations("tournament");
   const sp = await searchParams;
 
   const [days, matchRows, allTeams, allGroups] = await Promise.all([
@@ -117,11 +121,11 @@ export default async function CalendarPage({
   // Etiqueta humana del filtro para el header pequeño.
   const filterLabel = ((): string | null => {
     if (active.kind === "team") {
-      const t = allTeams.find((x) => x.code === active.code);
-      return t ? `${t.name}` : `Selección ${active.code}`;
+      const tm = allTeams.find((x) => x.code === active.code);
+      return tm ? `${tm.name}` : t("teamFallback", { code: active.code });
     }
-    if (active.kind === "group") return `Grupo ${active.code}`;
-    if (active.kind === "stage") return STAGE_LABEL[active.stage] ?? active.stage;
+    if (active.kind === "group") return tt("groupWithCode", { code: active.code });
+    if (active.kind === "stage") return STAGE_LABEL_KEY[active.stage] ? tt(STAGE_LABEL_KEY[active.stage]) : active.stage;
     return null;
   })();
 
@@ -130,8 +134,8 @@ export default async function CalendarPage({
       <SportsEventLD />
       <BreadcrumbLD
         items={[
-          { name: "Inicio", href: "/" },
-          { name: "Calendario", href: "/calendario" },
+          { name: tt("home"), href: "/" },
+          { name: t("breadcrumb"), href: "/calendario" },
         ]}
       />
       <header className="relative border-b border-[var(--color-border)] pb-8">
@@ -139,14 +143,14 @@ export default async function CalendarPage({
           <div className="flex items-center gap-3">
             <span className="h-px w-10 bg-[var(--color-arena)]" />
             <p className="text-[0.65rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-              Mundial 2026
+              {t("eyebrow")}
             </p>
           </div>
           <h1 className="font-display text-5xl leading-[0.92] tracking-tight sm:text-6xl">
-            Calendario del Mundial 2026
+            {t("title")}
           </h1>
           <p className="max-w-2xl font-editorial text-base italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-lg">
-            Los 104 partidos del Mundial 2026, del 11 de junio al 19 de julio, en USA, México y Canadá.
+            {t("subtitle")}
           </p>
         </div>
         <span
@@ -159,10 +163,10 @@ export default async function CalendarPage({
 
       {filterLabel ? (
         <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-          Filtro · <span className="text-[var(--color-arena)]">{filterLabel}</span>
+          {t("filterPrefix")} <span className="text-[var(--color-arena)]">{filterLabel}</span>
           {filteredMatches.length > 0 ? (
             <span className="ml-2 text-[var(--color-muted-foreground)]">
-              · {filteredMatches.length} {filteredMatches.length === 1 ? "partido" : "partidos"}
+              · {t("matchCount", { n: filteredMatches.length })}
             </span>
           ) : null}
         </p>
@@ -171,14 +175,14 @@ export default async function CalendarPage({
       {days.length === 0 ? (
         <EmptyState
           icon={<CalendarDays className="size-5" />}
-          title="Calendario aún sin cargar"
-          description="Pendiente."
+          title={t("emptyNotLoadedTitle")}
+          description={t("emptyNotLoadedDesc")}
         />
       ) : visibleDays.length === 0 ? (
         <EmptyState
           icon={<CalendarDays className="size-5" />}
-          title="Sin partidos para este filtro"
-          description="Prueba con otro grupo o ronda."
+          title={t("emptyFilterTitle")}
+          description={t("emptyFilterDesc")}
         />
       ) : (
         <div className="space-y-12">
@@ -193,7 +197,7 @@ export default async function CalendarPage({
                     </span>
                     <div>
                       <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                        {STAGE_LABEL[d.stage] ?? d.stage}
+                        {STAGE_LABEL_KEY[d.stage] ? tt(STAGE_LABEL_KEY[d.stage]) : d.stage}
                       </p>
                       <h2 className="font-display text-3xl leading-tight tracking-tight">
                         {d.name}
@@ -201,14 +205,14 @@ export default async function CalendarPage({
                     </div>
                   </div>
                   <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-                    Cierre predicción · {formatDateTime(d.predictionDeadlineAt)}
+                    {t("deadline", { date: formatDateTime(d.predictionDeadlineAt) })}
                   </p>
                 </header>
 
                 <div className="grid gap-3 sm:grid-cols-2">
                   {dayMatches.length === 0 ? (
                     <p className="col-span-full font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-                      Sin partidos cargados en esta jornada.
+                      {t("noMatchesDay")}
                     </p>
                   ) : (
                     dayMatches.map((m) => {
@@ -236,7 +240,7 @@ export default async function CalendarPage({
         </div>
       )}
 
-      <BrandCTA hint="Sigue los 104 partidos del Mundial 2026 dentro de tu liga, con marcador exacto y goleador." />
+      <BrandCTA hint={t("ctaHint")} />
     </div>
   );
 }
@@ -262,6 +266,7 @@ function MatchCard({
   away: { name: string; code: string; flagUrl: string | null } | null | undefined;
   groupCode: string | null;
 }) {
+  const tt = useTranslations("tournament");
   const isFinished = m.status === "finished";
   const isLive = m.status === "live";
   const winnerHome =
@@ -279,7 +284,7 @@ function MatchCard({
           <span>{m.code}</span>
           {groupCode ? (
             <span className="rounded-sm border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_8%,transparent)] px-1.5 py-0.5 text-[0.55rem] tracking-[0.18em] text-[var(--color-arena)]">
-              Grupo {groupCode}
+              {tt("groupWithCode", { code: groupCode })}
             </span>
           ) : null}
         </div>
@@ -329,10 +334,11 @@ function MatchCard({
 }
 
 function StatusPill({ status }: { status: MatchRow["status"] }) {
+  const tt = useTranslations("tournament");
   if (status === "finished") {
     return (
       <Badge variant="success" className="text-[0.55rem]">
-        Final
+        {tt("statusFinal")}
       </Badge>
     );
   }
@@ -346,13 +352,13 @@ function StatusPill({ status }: { status: MatchRow["status"] }) {
           />
           <span className="relative inline-flex size-1.5 rounded-full bg-[var(--color-arena)]" />
         </span>
-        En vivo
+        {tt("statusLive")}
       </span>
     );
   }
   return (
     <Badge variant="outline" className="text-[0.55rem]">
-      Programado
+      {tt("statusScheduled")}
     </Badge>
   );
 }
@@ -366,6 +372,7 @@ function TeamSide({
   side: "home" | "away";
   winner: boolean;
 }) {
+  const tt = useTranslations("tournament");
   const isHome = side === "home";
   return (
     <div
@@ -398,7 +405,7 @@ function TeamSide({
             wordBreak: "break-word",
           }}
         >
-          {team?.name ?? "TBD"}
+          {team?.name ?? tt("tbd")}
         </p>
         <p className="mt-0.5 font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
           {team?.code ?? "—"}
@@ -419,11 +426,12 @@ function ScoreCenter({
   status: MatchRow["status"];
   scheduledAt: Date;
 }) {
+  const tt = useTranslations("tournament");
   if (status === "scheduled") {
     return (
       <div className="flex flex-col items-center gap-0.5 px-1 sm:px-2">
         <span className="font-display text-xl tracking-tight text-[var(--color-muted-foreground)]/70 sm:text-2xl">
-          vs
+          {tt("vs")}
         </span>
         <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
           {formatDateTime(scheduledAt, { hour: "2-digit", minute: "2-digit" })}

@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
 import { MapPin } from "lucide-react";
 import { isNotNull, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
@@ -28,6 +29,8 @@ export const metadata = {
 };
 
 export default async function VenuesPage() {
+  const t = await getTranslations("venuesPage");
+  const tt = await getTranslations("tournament");
   // Agregamos por venue contando partidos. La tabla de matches incluye el
   // venue como text, así que sumamos por DISTINCT venue. Se enriquecerá si
   // en el futuro se añade tabla `venues` con lat/long y capacidad.
@@ -45,14 +48,14 @@ export default async function VenuesPage() {
     <div className="space-y-10">
       <BreadcrumbLD
         items={[
-          { name: "Inicio", href: "/" },
-          { name: "Sedes", href: "/sedes" },
+          { name: tt("home"), href: "/" },
+          { name: t("breadcrumb"), href: "/sedes" },
         ]}
       />
       <PageHeader
-        eyebrow="Mundial 2026"
-        title="Las 16 sedes del Mundial 2026"
-        description="Once estadios en Estados Unidos, tres en México y dos en Canadá. La final, en Nueva York/Nueva Jersey. La inauguración, en el Estadio Azteca."
+        eyebrow={t("eyebrow")}
+        title={t("title")}
+        description={t("desc")}
       />
 
       {/* Recorremos VENUES (catálogo curado de las 16 sedes oficiales) en
@@ -63,8 +66,8 @@ export default async function VenuesPage() {
       {VENUES.length === 0 ? (
         <EmptyState
           icon={<MapPin className="size-5" />}
-          title="Sedes pendientes de asignar"
-          description="El fixture oficial todavía no marca estadios."
+          title={t("emptyTitle")}
+          description={t("emptyDesc")}
         />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -84,7 +87,7 @@ export default async function VenuesPage() {
                     {venue.country}
                   </span>
                   <Badge variant="outline" className="text-[0.55rem]">
-                    {matchCount} {matchCount === 1 ? "partido" : "partidos"}
+                    {t("matchCount", { n: matchCount })}
                   </Badge>
                 </header>
                 <div className="p-5">
@@ -97,10 +100,10 @@ export default async function VenuesPage() {
                     {venue.capacity.toLocaleString("es-ES")}
                   </p>
                   <p className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-                    Capacidad
+                    {t("capacity")}
                   </p>
                   <p className="mt-3 inline-flex items-center gap-1.5 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-arena)] transition group-hover:translate-x-0.5">
-                    Ver detalle →
+                    {t("seeDetail")}
                   </p>
                 </div>
               </Link>
@@ -109,7 +112,7 @@ export default async function VenuesPage() {
         </div>
       )}
 
-      <BrandCTA hint="Sigue los partidos en cada una de las 16 sedes del Mundial 2026 desde tu liga." />
+      <BrandCTA hint={t("ctaHint")} />
     </div>
   );
 }

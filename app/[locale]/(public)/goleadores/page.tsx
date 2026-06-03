@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
 import { Crown, Target } from "lucide-react";
 import { inArray, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
@@ -27,6 +28,8 @@ export const metadata = {
 };
 
 export default async function ScorersPage() {
+  const t = await getTranslations("scorersPage");
+  const tt = await getTranslations("tournament");
   const rows = await db
     .select({
       playerId: matchScorers.playerId,
@@ -58,34 +61,34 @@ export default async function ScorersPage() {
     <div className="space-y-8">
       <BreadcrumbLD
         items={[
-          { name: "Inicio", href: "/" },
-          { name: "Goleadores", href: "/goleadores" },
+          { name: tt("home"), href: "/" },
+          { name: t("breadcrumb"), href: "/goleadores" },
         ]}
       />
       <PageHeader
-        eyebrow="Bota de Oro"
-        title="Goleadores del Mundial 2026"
-        description="Top de máximos artilleros del Mundial 2026 en directo. La Bota de Oro la gana quien acabe el torneo con más goles."
+        eyebrow={t("eyebrow")}
+        title={t("title")}
+        description={t("desc")}
       />
       {rows.length === 0 ? (
         <EmptyState
           icon={<Target className="size-5" />}
-          title="Sin goles aún"
-          description="Esperando los primeros partidos."
+          title={t("emptyTitle")}
+          description={t("emptyDesc")}
         />
       ) : (
         <>
           <section className="grid gap-3 sm:grid-cols-3">
-            <SummaryStat label="Goleadores" value={rows.length.toString()} />
-            <SummaryStat label="Goles totales" value={totalGoals.toString()} accent />
-            <SummaryStat label="Máxima goleador" value={topGoals.toString()} hint="goles del líder" />
+            <SummaryStat label={t("statScorers")} value={rows.length.toString()} />
+            <SummaryStat label={t("statTotalGoals")} value={totalGoals.toString()} accent />
+            <SummaryStat label={t("statTop")} value={topGoals.toString()} hint={t("statTopHint")} />
           </section>
 
           <section className="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]">
             <header className="hidden grid-cols-[56px_1fr_56px] items-center gap-3 border-b border-[var(--color-border)] bg-[var(--color-surface-2)] px-4 py-3 font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)] sm:grid">
-              <span>Pos</span>
-              <span>Jugador</span>
-              <span className="text-right">Goles</span>
+              <span>{t("thPos")}</span>
+              <span>{t("thPlayer")}</span>
+              <span className="text-right">{t("thGoals")}</span>
             </header>
             <ul>
               {rows.map((r, i) => {
@@ -167,7 +170,7 @@ export default async function ScorersPage() {
         </>
       )}
 
-      <BrandCTA hint="Predice quién se llevará la Bota de Oro del Mundial 2026 y suma puntos por cada gol acertado partido a partido." />
+      <BrandCTA hint={t("ctaHint")} />
     </div>
   );
 }

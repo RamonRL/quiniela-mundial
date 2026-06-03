@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
 import { asc, sql } from "drizzle-orm";
 import { ChevronRight, Globe, Users } from "lucide-react";
 import { db } from "@/lib/db";
@@ -27,6 +28,8 @@ export const metadata = {
 };
 
 export default async function TeamsPage() {
+  const t = await getTranslations("teamsPage");
+  const tt = await getTranslations("tournament");
   const [allGroups, allTeams, squadCounts] = await Promise.all([
     db.select().from(groups).orderBy(asc(groups.code)),
     db.select().from(teams).orderBy(asc(teams.name)),
@@ -52,28 +55,28 @@ export default async function TeamsPage() {
     <div className="space-y-10">
       <BreadcrumbLD
         items={[
-          { name: "Inicio", href: "/" },
-          { name: "Selecciones", href: "/equipos" },
+          { name: tt("home"), href: "/" },
+          { name: t("breadcrumb"), href: "/equipos" },
         ]}
       />
       <PageHeader
-        eyebrow="Mundial 2026"
-        title="Las 48 selecciones del Mundial 2026"
-        description="Primera edición ampliada del Mundial. 48 selecciones repartidas en 12 grupos, con representantes de las 6 confederaciones."
+        eyebrow={t("eyebrow")}
+        title={t("title")}
+        description={t("desc")}
       />
 
       {totalSquadPlayers > 0 ? (
         <p className="-mt-4 inline-flex items-center gap-2 font-mono text-[0.6rem] uppercase tracking-[0.24em] text-[var(--color-muted-foreground)]">
           <Users className="size-3.5 text-[var(--color-arena)]" />
-          {totalSquadPlayers.toLocaleString("es-ES")} jugadores convocados
+          {t("playersCalledUp", { count: totalSquadPlayers.toLocaleString("es-ES") })}
         </p>
       ) : null}
 
       {allTeams.length === 0 ? (
         <EmptyState
           icon={<Globe className="size-5" />}
-          title="Selecciones aún sin cargar"
-          description="Pendiente."
+          title={t("emptyTitle")}
+          description={t("emptyDesc")}
         />
       ) : (
         <div className="space-y-10">
@@ -89,7 +92,7 @@ export default async function TeamsPage() {
                     {g.code}
                   </span>
                   <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                    Grupo {g.code}
+                    {tt("groupWithCode", { code: g.code })}
                   </p>
                 </header>
                 <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
@@ -130,7 +133,7 @@ export default async function TeamsPage() {
 
       <BrandCTA
         brandVariant="bare"
-        hint="Elige al campeón y a las 32 selecciones que pasan de la fase de grupos."
+        hint={t("ctaHint")}
       />
     </div>
   );

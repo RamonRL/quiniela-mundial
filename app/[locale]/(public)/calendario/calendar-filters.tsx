@@ -1,6 +1,7 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { TeamFlag } from "@/components/brand/team-flag";
 import { cn } from "@/lib/utils";
 
@@ -14,11 +15,11 @@ type Group = { id: number; code: string };
 type Team = { id: number; code: string; name: string; groupId: number | null };
 
 const ROUNDS = [
-  { stage: "r32", label: "Dieciseisavos" },
-  { stage: "r16", label: "Octavos" },
-  { stage: "qf", label: "Cuartos" },
-  { stage: "sf", label: "Semifinales" },
-  { stage: "final", label: "Final" },
+  { stage: "r32", labelKey: "stR32" },
+  { stage: "r16", labelKey: "stR16" },
+  { stage: "qf", labelKey: "stQf" },
+  { stage: "sf", labelKey: "stSf" },
+  { stage: "final", labelKey: "stFinal" },
 ] as const;
 
 export function CalendarFilters({
@@ -30,12 +31,14 @@ export function CalendarFilters({
   teamsByGroup: Map<number, Team[]>;
   active: ActiveFilter;
 }) {
+  const t = useTranslations("calendarPage");
+  const tt = useTranslations("tournament");
   return (
     <section className="space-y-5 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 sm:p-6">
       {/* ─── "Calendario completo" arriba, pill central ─── */}
       <div className="flex justify-center">
         <FilterPill href="/calendario" active={active.kind === "all"}>
-          Calendario completo
+          {t("fullCalendar")}
         </FilterPill>
       </div>
 
@@ -48,6 +51,8 @@ export function CalendarFilters({
               group={g}
               teams={teamsByGroup.get(g.id) ?? []}
               active={active}
+              filterTeamAria={(name) => t("filterTeamAria", { name })}
+              filterGroupAria={(code) => t("filterGroupAria", { code })}
             />
           ))}
         </div>
@@ -61,7 +66,7 @@ export function CalendarFilters({
             href={`/calendario?stage=${r.stage}`}
             active={active.kind === "stage" && active.stage === r.stage}
           >
-            {r.label}
+            {tt(r.labelKey)}
           </FilterPill>
         ))}
       </div>
@@ -73,10 +78,14 @@ function GroupCell({
   group,
   teams,
   active,
+  filterTeamAria,
+  filterGroupAria,
 }: {
   group: Group;
   teams: Team[];
   active: ActiveFilter;
+  filterTeamAria: (name: string) => string;
+  filterGroupAria: (code: string) => string;
 }) {
   const groupActive = active.kind === "group" && active.code === group.code;
   const sorted = [...teams].slice(0, 4);
@@ -97,7 +106,7 @@ function GroupCell({
             ? "text-[var(--color-arena)] glow-arena"
             : "text-[var(--color-foreground)] hover:text-[var(--color-arena)]",
         )}
-        aria-label={`Filtrar grupo ${group.code}`}
+        aria-label={filterGroupAria(group.code)}
       >
         {group.code}
       </Link>
@@ -119,7 +128,7 @@ function GroupCell({
               key={team.code}
               href={`/calendario?team=${team.code}`}
               title={team.name}
-              aria-label={`Filtrar ${team.name}`}
+              aria-label={filterTeamAria(team.name)}
               className={cn(
                 "block size-5 rounded-full transition",
                 teamActive
