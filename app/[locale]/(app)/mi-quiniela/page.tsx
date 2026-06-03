@@ -23,8 +23,7 @@ import { currentLeagueId, inLeagueFilter, isPremiumTier } from "@/lib/leagues";
 import { formatDateTime, initials } from "@/lib/utils";
 import { CollapsibleSection } from "@/components/shell/collapsible-section";
 import { CodeDisplay } from "./code-display";
-import { DeleteLeagueDialog } from "./delete-league-dialog";
-import { EditLeagueDialog } from "./edit-league-dialog";
+import { LeagueSettingsDialog } from "./league-settings-dialog";
 import { KickButton, LeaveButton } from "./member-actions";
 import { AnnouncementForm } from "./announcement-form";
 
@@ -106,44 +105,26 @@ export default async function MyLeaguePage() {
         </aside>
       ) : null}
 
-      <div className="flex items-start gap-5">
-        {league.logoUrl ? (
-          <Avatar className="size-20 shrink-0 border-2 border-[var(--color-border-strong)] shadow-[var(--shadow-elev-1)] sm:size-24">
-            <AvatarImage src={league.logoUrl} alt={league.name} />
-            <AvatarFallback className="font-display text-2xl tracking-tight">
-              {initials(league.name)}
-            </AvatarFallback>
-          </Avatar>
-        ) : null}
-        <div className="min-w-0 flex-1">
-          <PageHeader
-            eyebrow={t("eyebrowPrivate")}
-            title={league.name}
-            description={isOwner ? t("descOwner") : t("descMember")}
-            actions={
-              isOwner ? (
-                <div className="flex items-center gap-2">
-                  <EditLeagueDialog
-                    league={{
-                      id: league.id,
-                      name: league.name,
-                      logoUrl: league.logoUrl,
-                      isPremium,
-                    }}
-                  />
-                  <DeleteLeagueDialog
-                    leagueId={league.id}
-                    leagueName={league.name}
-                    memberCount={members.length}
-                  />
-                </div>
-              ) : (
-                <LeaveButton leagueId={league.id} leagueName={league.name} />
-              )
-            }
-          />
-        </div>
-      </div>
+      <PageHeader
+        eyebrow={t("eyebrowPrivate")}
+        title={league.name}
+        description={isOwner ? t("descOwner") : t("descMember")}
+        actions={
+          isOwner ? (
+            <LeagueSettingsDialog
+              league={{
+                id: league.id,
+                name: league.name,
+                logoUrl: league.logoUrl,
+                isPremium,
+              }}
+              memberCount={members.length}
+            />
+          ) : (
+            <LeaveButton leagueId={league.id} leagueName={league.name} />
+          )
+        }
+      />
 
       {league.joinCode ? (
         <CodeDisplay code={league.joinCode} inviteToken={league.inviteToken} />
