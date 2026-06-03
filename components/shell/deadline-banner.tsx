@@ -1,9 +1,11 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { Clock } from "lucide-react";
 import type { PendingDeadline } from "@/lib/deadlines";
 import { formatRemaining } from "@/lib/deadlines";
 
 export function DeadlineBanner({ deadline }: { deadline: PendingDeadline | null }) {
+  const t = useTranslations("shellExtra");
   if (!deadline) return null;
   const remaining = formatRemaining(deadline.msRemaining);
   const urgent = deadline.msRemaining < 60 * 60 * 1000;
@@ -21,19 +23,22 @@ export function DeadlineBanner({ deadline }: { deadline: PendingDeadline | null 
       </span>
       <div className="min-w-0 flex-1">
         <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-          Cierra en {remaining}
+          {t("closesIn", { remaining })}
         </p>
         <p className="truncate text-sm font-semibold">
-          Predicción de <span className="font-display text-base">{deadline.label}</span>
+          {t.rich("predictionOf", {
+            label: deadline.label,
+            s: (chunks) => <span className="font-display text-base">{chunks}</span>,
+          })}
           {deadline.missing > 1 ? (
             <span className="ml-2 font-mono text-[0.65rem] uppercase tracking-[0.2em] text-[var(--color-muted-foreground)]">
-              · {deadline.missing} sin enviar
+              {t("unsent", { n: deadline.missing })}
             </span>
           ) : null}
         </p>
       </div>
       <span className="shrink-0 font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)] group-hover:text-[var(--color-arena)]">
-        Ir →
+        {t("go")}
       </span>
     </Link>
   );

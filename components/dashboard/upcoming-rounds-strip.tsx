@@ -1,4 +1,6 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { Lock } from "lucide-react";
 import { db } from "@/lib/db";
@@ -29,14 +31,15 @@ import { RoundsStripScroller } from "./rounds-strip-scroller";
 
 const VISIBLE_COUNT = 3;
 
+// Claves i18n (namespace "dashboard").
 const STAGE_LABEL: Record<Stage, string> = {
-  group: "Grupos",
-  r32: "Dieciseisavos",
-  r16: "Octavos",
-  qf: "Cuartos",
-  sf: "Semifinales",
-  third: "Tercer puesto",
-  final: "Final",
+  group: "urStageGroup",
+  r32: "urStageR32",
+  r16: "urStageR16",
+  qf: "urStageQf",
+  sf: "urStageSf",
+  third: "urStageThird",
+  final: "urStageFinal",
 };
 
 export type Round = {
@@ -57,6 +60,7 @@ export async function UpcomingRoundsStrip({
   userId: string;
   leagueId: number;
 }) {
+  const t = await getTranslations("dashboard");
   const all = await db
     .select({
       id: matchdays.id,
@@ -159,10 +163,10 @@ export async function UpcomingRoundsStrip({
       <header className="flex items-end justify-between gap-3">
         <div className="space-y-1">
           <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Marcadores · próximas rondas
+            {t("urEyebrow")}
           </p>
           <h2 className="font-display text-2xl tracking-tight sm:text-3xl">
-            Tu siguiente jornada
+            {t("urTitle")}
           </h2>
         </div>
       </header>
@@ -176,9 +180,10 @@ export async function UpcomingRoundsStrip({
 }
 
 function RoundCard({ round }: { round: Round }) {
+  const t = useTranslations("dashboard");
   const isOpen = round.state === "open";
   const isClosed = round.state === "closed";
-  const stageText = STAGE_LABEL[round.stage] ?? round.stage;
+  const stageText = STAGE_LABEL[round.stage] ? t(STAGE_LABEL[round.stage]) : round.stage;
 
   const cardBase = "flex h-full flex-col gap-2.5 rounded-xl border p-4 transition";
   const cardClass = isOpen
@@ -196,11 +201,11 @@ function RoundCard({ round }: { round: Round }) {
         {isOpen ? (
           <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-arena)]/15 px-2 py-0.5 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-arena)]">
             <span className="size-1.5 rounded-full bg-[var(--color-arena)] shadow-[0_0_6px_var(--color-arena)]" />
-            Abierta
+            {t("urOpen")}
           </span>
         ) : isClosed ? (
           <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-            Cerrada
+            {t("urClosedBadge")}
           </span>
         ) : (
           <Lock className="size-3.5 text-[var(--color-muted-foreground)]" />
@@ -211,8 +216,8 @@ function RoundCard({ round }: { round: Round }) {
       </h3>
       <p className="text-xs text-[var(--color-muted-foreground)]">
         {round.total > 0
-          ? `${round.filled}/${round.total} ${round.total === 1 ? "partido" : "partidos"} predichos`
-          : "Calendario pendiente"}
+          ? t("urPredicted", { filled: round.filled, total: round.total })
+          : t("urCalendarPending")}
       </p>
       <p
         className={`mt-auto font-mono text-[0.55rem] uppercase tracking-[0.18em] ${
@@ -222,19 +227,23 @@ function RoundCard({ round }: { round: Round }) {
         }`}
       >
         {isOpen
-          ? `Cierra · ${formatDateTime(round.deadline, {
-              weekday: "short",
-              day: "2-digit",
-              month: "short",
-              hour: "2-digit",
-              minute: "2-digit",
-            })}`
-          : isClosed
-            ? `Cerró · ${formatDateTime(round.deadline, {
+          ? t("urCloses", {
+              date: formatDateTime(round.deadline, {
+                weekday: "short",
                 day: "2-digit",
                 month: "short",
-              })}`
-            : round.reason ?? "Bloqueada"}
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+            })
+          : isClosed
+            ? t("urClosedAt", {
+                date: formatDateTime(round.deadline, {
+                  day: "2-digit",
+                  month: "short",
+                }),
+              })
+            : round.reason ?? t("urLocked")}
       </p>
     </article>
   );
@@ -244,7 +253,7 @@ function RoundCard({ round }: { round: Round }) {
       <Link
         href={`/predicciones/jornada/${round.id}`}
         className="block h-full"
-        aria-label={`Predecir ${round.name}`}
+        aria-label={t("urPredictAria", { name: round.name })}
       >
         {inner}
       </Link>

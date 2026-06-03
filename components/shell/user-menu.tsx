@@ -1,6 +1,7 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { LogOut, Settings, ShieldCheck, UserCog } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -21,6 +22,7 @@ type UserMenuProps = {
 };
 
 export function UserMenu({ email, nickname, avatarUrl, isAdmin }: UserMenuProps) {
+  const t = useTranslations("shell");
   const display = nickname || email.split("@")[0];
   return (
     <DropdownMenu>
@@ -46,20 +48,20 @@ export function UserMenu({ email, nickname, avatarUrl, isAdmin }: UserMenuProps)
         <DropdownMenuItem asChild>
           <Link href="/perfil">
             <UserCog className="size-4" />
-            <span>Mi perfil</span>
+            <span>{t("myProfile")}</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href="/ajustes">
             <Settings className="size-4" />
-            <span>Ajustes</span>
+            <span>{t("settings")}</span>
           </Link>
         </DropdownMenuItem>
         {isAdmin ? (
           <DropdownMenuItem asChild>
             <Link href="/admin">
               <ShieldCheck className="size-4" />
-              <span>Admin</span>
+              <span>{t("admin")}</span>
             </Link>
           </DropdownMenuItem>
         ) : null}
@@ -71,7 +73,7 @@ export function UserMenu({ email, nickname, avatarUrl, isAdmin }: UserMenuProps)
               className="flex w-full items-center gap-2 text-[var(--color-danger)]"
             >
               <LogOut className="size-4" />
-              <span>Cerrar sesión</span>
+              <span>{t("logout")}</span>
             </button>
           </form>
         </DropdownMenuItem>

@@ -1,12 +1,13 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   submitCommercialLead,
   type CommercialLeadFormState,
-} from "@/app/(public)/precios/actions";
+} from "@/app/[locale]/(public)/precios/actions";
 
 const initialState: CommercialLeadFormState = { ok: false };
 
@@ -32,6 +33,7 @@ export function CommercialLeadForm({
   defaultMessagePlaceholder?: string;
 }) {
   const [state, action, pending] = useActionState(submitCommercialLead, initialState);
+  const t = useTranslations("leadForm");
 
   if (state.ok) {
     return (
@@ -41,10 +43,9 @@ export function CommercialLeadForm({
           <span className="mx-auto grid size-12 place-items-center rounded-full bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]">
             <CheckCircle2 className="size-6" />
           </span>
-          <h3 className="font-display text-2xl tracking-tight">¡Gracias!</h3>
+          <h3 className="font-display text-2xl tracking-tight">{t("thanks")}</h3>
           <p className="font-editorial text-base italic text-[var(--color-muted-foreground)]">
-            {state.message ??
-              "Te respondo en menos de 24 h con presupuesto y siguiente paso."}
+            {state.message ?? t("thanksDefault")}
           </p>
         </div>
       </div>
@@ -56,26 +57,26 @@ export function CommercialLeadForm({
       {/* Honeypot — los humanos no lo ven, los bots lo rellenan. */}
       <div className="absolute -left-[9999px]" aria-hidden>
         <label>
-          ¿Tu web? <input type="text" name="website" tabIndex={-1} autoComplete="off" />
+          {t("honeypot")} <input type="text" name="website" tabIndex={-1} autoComplete="off" />
         </label>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field name="name" label="Tu nombre" required autoComplete="name" />
-        <Field name="company" label="Empresa / grupo" autoComplete="organization" />
+        <Field name="name" label={t("name")} required autoComplete="name" />
+        <Field name="company" label={t("company")} autoComplete="organization" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field
           name="email"
           type="email"
-          label="Email de contacto"
+          label={t("email")}
           required
           autoComplete="email"
         />
         <Field
           name="expectedMembers"
           type="number"
-          label="Miembros previstos"
+          label={t("members")}
           defaultValue={defaultMembers ? String(defaultMembers) : undefined}
           inputMode="numeric"
         />
@@ -83,17 +84,14 @@ export function CommercialLeadForm({
 
       <label className="block space-y-2">
         <span className="block font-mono text-[0.6rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-          Mensaje · opcional
+          {t("messageLabel")}
         </span>
         <textarea
           name="message"
           rows={4}
           maxLength={1500}
           defaultValue={defaultMessage}
-          placeholder={
-            defaultMessagePlaceholder ??
-            "Cuéntame brevemente para qué la queréis, plazos, dudas…"
-          }
+          placeholder={defaultMessagePlaceholder ?? t("messagePlaceholder")}
           className="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2.5 text-sm text-[var(--color-foreground)] outline-none transition focus:border-[var(--color-arena)]"
         />
       </label>
@@ -104,10 +102,10 @@ export function CommercialLeadForm({
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
-          Te respondo en menos de 24 h.
+          {t("replyNote")}
         </p>
         <Button type="submit" size="lg" disabled={pending}>
-          {pending ? "Enviando…" : "Enviar consulta"}
+          {pending ? t("sending") : t("submit")}
           <ArrowRight />
         </Button>
       </div>

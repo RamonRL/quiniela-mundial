@@ -2,10 +2,11 @@
 
 import Image from "next/image";
 import { BrandWordmark } from "@/components/brand/brand-wordmark";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { ChevronsLeft, ChevronsRight, Globe2, LogOut, Settings, UserCog } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { ADMIN_NAV, buildNavItems, type NavItem } from "./nav-data";
 
@@ -37,6 +38,8 @@ export function Sidebar({
   isAuthenticated = true,
 }: Props) {
   const pathname = usePathname();
+  const t = useTranslations("nav");
+  const ts = useTranslations("shell");
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
   const items = buildNavItems(myId, { showMyLeague, isAuthenticated });
   const main = items.filter((i) => i.group === "main");
@@ -76,7 +79,7 @@ export function Sidebar({
               collapsed ? "justify-center" : "min-w-0 flex-1",
             )}
             aria-label="Quiniela Mundial"
-            title={collapsed ? "Inicio" : undefined}
+            title={collapsed ? ts("homeTitle") : undefined}
           >
             {collapsed ? (
               // Colapsado: mark cuadrado de Quiniela Mundial
@@ -97,8 +100,8 @@ export function Sidebar({
           <button
             type="button"
             onClick={toggle}
-            aria-label={collapsed ? "Expandir barra lateral" : "Contraer barra lateral"}
-            title={collapsed ? "Expandir" : "Contraer"}
+            aria-label={collapsed ? ts("expandSidebar") : ts("collapseSidebar")}
+            title={collapsed ? ts("expand") : ts("collapse")}
             className="grid size-8 shrink-0 place-items-center rounded-md border border-[var(--color-border)] bg-[var(--color-surface-2)] text-[var(--color-muted-foreground)] transition hover:border-[var(--color-arena)]/40 hover:text-[var(--color-foreground)]"
           >
             {collapsed ? (
@@ -121,14 +124,14 @@ export function Sidebar({
             <AccountQuickLinks activeHref={activeHref} collapsed={collapsed} />
           ) : null}
           <NavGroup
-            title="Torneo"
+            title={t("group.main")}
             items={main}
             activeHref={activeHref}
             collapsed={collapsed}
           />
           <div data-tutorial-id="nav-predicciones">
             <NavGroup
-              title="Predicciones"
+              title={t("group.predicciones")}
               items={preds}
               activeHref={activeHref}
               badgeFor="/predicciones"
@@ -137,7 +140,7 @@ export function Sidebar({
             />
           </div>
           <NavGroup
-            title="Comunidad"
+            title={t("group.social")}
             items={social}
             activeHref={activeHref}
             collapsed={collapsed}
@@ -146,23 +149,23 @@ export function Sidebar({
                 <VisitorCTA
                   collapsed={collapsed}
                   icon={<Globe2 className="size-5" />}
-                  title="Quiniela Pública"
-                  copy="Compite contra todos sin necesitar código."
-                  ctaLabel="Unirme"
+                  title={ts("visitorCtaTitle")}
+                  copy={ts("visitorCtaCopy")}
+                  ctaLabel={ts("visitorCtaButton")}
                   href="/login?next=%2Fonboarding"
                 />
               ) : null
             }
           />
           <NavGroup
-            title="Ayuda"
+            title={t("group.ayuda")}
             items={ayuda}
             activeHref={activeHref}
             collapsed={collapsed}
           />
           {admin.length > 0 ? (
             <NavGroup
-              title="Admin"
+              title={t("group.admin")}
               items={admin}
               activeHref={activeHref}
               collapsed={collapsed}
@@ -172,9 +175,9 @@ export function Sidebar({
         {!collapsed ? (
           <div className="border-t border-[var(--color-border)] px-5 py-4">
             <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-              Canadá · México · USA
+              {ts("hostCountries")}
             </p>
-            <p className="font-display text-base tracking-tight">11 jun — 19 jul</p>
+            <p className="font-display text-base tracking-tight">{ts("tournamentDates")}</p>
           </div>
         ) : null}
       </div>
@@ -204,6 +207,7 @@ function NavGroup({
    */
   fallback?: React.ReactNode;
 }) {
+  const t = useTranslations("nav");
   // Si no hay items y tampoco fallback, escondemos el grupo entero (el
   // eyebrow sin items se ve "roto"). Si hay fallback (CTA visitante),
   // renderizamos eyebrow + fallback.
@@ -231,8 +235,8 @@ function NavGroup({
           <Link
             key={item.href}
             href={item.href}
-            title={collapsed ? item.label : undefined}
-            aria-label={collapsed ? item.label : undefined}
+            title={collapsed ? t(item.label) : undefined}
+            aria-label={collapsed ? t(item.label) : undefined}
             className={cn(
               "group relative flex items-center transition",
               collapsed
@@ -259,7 +263,7 @@ function NavGroup({
             <item.icon
               className={cn("size-5", active ? "text-[var(--color-arena)]" : "")}
             />
-            {!collapsed ? <span>{item.label}</span> : null}
+            {!collapsed ? <span>{t(item.label)}</span> : null}
             {showBadge ? (
               <span
                 className={cn(
@@ -353,11 +357,12 @@ function AccountQuickLinks({
   activeHref: string | null;
   collapsed: boolean;
 }) {
+  const ts = useTranslations("shell");
   if (collapsed) return null;
 
   const links = [
-    { href: "/perfil", label: "Perfil", icon: UserCog },
-    { href: "/ajustes", label: "Ajustes", icon: Settings },
+    { href: "/perfil", label: ts("profile"), icon: UserCog },
+    { href: "/ajustes", label: ts("settings"), icon: Settings },
   ] as const;
 
   const cellBase =
@@ -400,7 +405,7 @@ function AccountQuickLinks({
             )}
           >
             <LogOut className="size-4" />
-            <span className={cellLabel}>Cerrar sesión</span>
+            <span className={cellLabel}>{ts("logout")}</span>
           </button>
         </form>
       </div>

@@ -2,7 +2,7 @@ from PIL import Image
 import numpy as np
 
 # --- Ruta de la imagen ---
-img_path = "/home/ramon.romero/workspace/personal/world-cup-championship/favicon/favicon2.png"
+img_path = "/home/ramon.romero/workspace/personal/quiniela-mundial/favicon/output.png"
 
 img = Image.open(img_path).convert("RGBA")
 data = np.array(img)
@@ -27,7 +27,7 @@ y_max, x_max = coords.max(axis=0)
 cropped = img.crop((x_min, y_min, x_max + 1, y_max + 1))
 
 # --- Guardar ---
-out_path = "/home/ramon.romero/workspace/personal/world-cup-championship/favicon/croppedalpha.png"
+out_path = "/home/ramon.romero/workspace/personal/quiniela-mundial/favicon/output_black.png"
 cropped.save(out_path)
 
 print(f"✔ Imagen recortada guardada en: {out_path}")

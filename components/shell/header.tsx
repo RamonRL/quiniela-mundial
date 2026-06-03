@@ -1,7 +1,9 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { BrandWordmark } from "@/components/brand/brand-wordmark";
 import { UserMenu } from "./user-menu";
 import { LeagueSwitcher } from "./league-switcher";
+import { LanguageSwitcher } from "./language-switcher";
 import type { Membership } from "@/lib/leagues";
 
 type Props = {
@@ -22,6 +24,7 @@ export function AppHeader({
   activeLeagueId,
 }: Props) {
   const isAuthenticated = !!email;
+  const t = useTranslations("shell");
   return (
     // Mobile: flex con LeagueSwitcher en flex-1 → se centra en el espacio
     //   entre logo y UserMenu (no en el centro geométrico de la pantalla).
@@ -50,6 +53,7 @@ export function AppHeader({
         ) : null}
       </div>
       <div className="flex items-center justify-end gap-3">
+        <LanguageSwitcher />
         {isAuthenticated && email ? (
           <UserMenu
             email={email}
@@ -63,19 +67,19 @@ export function AppHeader({
               href="/precios"
               className="hidden text-xs font-mono uppercase tracking-[0.18em] text-[var(--color-muted-foreground)] transition hover:text-[var(--color-arena)] sm:inline-flex"
             >
-              Empresas
+              {t("companies")}
             </Link>
             <Link
               href="/login"
               className="text-xs font-mono uppercase tracking-[0.18em] text-[var(--color-muted-foreground)] transition hover:text-[var(--color-foreground)]"
             >
-              Entrar
+              {t("login")}
             </Link>
             <Link
               href="/login?next=%2Fonboarding"
               className="inline-flex items-center gap-1.5 rounded-md border border-[var(--color-arena)] bg-[var(--color-arena)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-white shadow-[var(--shadow-arena)] transition hover:opacity-90"
             >
-              Crear quiniela
+              {t("createPool")}
             </Link>
           </>
         )}

@@ -54,14 +54,14 @@ export function buildNavItems(myId: string, opts: BuildOptions = {}): NavItem[] 
     {
       // Visitante → landing pública. Autenticado → dashboard de su liga.
       href: isAuthed ? "/dashboard" : "/",
-      label: "Inicio",
+      label: "inicio",
       icon: Home,
       group: "main",
       primaryMobile: true,
     },
     {
       href: "/calendario",
-      label: "Calendario",
+      label: "calendario",
       icon: CalendarDays,
       group: "main",
       // Para visitantes lo sacamos a la barra inferior — sin sesión no
@@ -71,25 +71,25 @@ export function buildNavItems(myId: string, opts: BuildOptions = {}): NavItem[] 
     },
     {
       href: "/grupos",
-      label: "Grupos",
+      label: "grupos",
       icon: Users,
       group: "main",
       primaryMobile: !isAuthed,
     },
-    { href: "/bracket", label: "Bracket", icon: Swords, group: "main" },
-    { href: "/goleadores", label: "Goleadores", icon: Target, group: "main" },
-    { href: "/noticias", label: "Noticias", icon: Newspaper, group: "main" },
+    { href: "/bracket", label: "bracket", icon: Swords, group: "main" },
+    { href: "/goleadores", label: "goleadores", icon: Target, group: "main" },
+    { href: "/noticias", label: "noticias", icon: Newspaper, group: "main" },
     {
       href: "/estadisticas",
-      label: "Estadísticas",
+      label: "estadisticas",
       icon: BarChart3,
       group: "main",
       requiresAuth: true,
     },
     {
       href: "/predicciones",
-      label: "Mis predicciones",
-      mobileLabel: "Predicciones",
+      label: "predicciones",
+      mobileLabel: "prediccionesMobile",
       icon: ClipboardList,
       group: "predicciones",
       primaryMobile: isAuthed,
@@ -97,7 +97,7 @@ export function buildNavItems(myId: string, opts: BuildOptions = {}): NavItem[] 
     },
     {
       href: `/ranking/${myId}`,
-      label: "Mis resultados",
+      label: "misResultados",
       icon: CircleUser,
       group: "predicciones",
       requiresAuth: true,
@@ -106,7 +106,7 @@ export function buildNavItems(myId: string, opts: BuildOptions = {}): NavItem[] 
   if (opts.showMyLeague) {
     all.push({
       href: "/mi-quiniela",
-      label: "Mi Quiniela",
+      label: "miQuiniela",
       icon: UsersRound,
       group: "predicciones",
       requiresAuth: true,
@@ -116,7 +116,7 @@ export function buildNavItems(myId: string, opts: BuildOptions = {}): NavItem[] 
   // solo si la liga activa es privada).
   all.push({
     href: "/ranking",
-    label: "Ranking",
+    label: "ranking",
     icon: ListOrdered,
     group: "social",
     primaryMobile: isAuthed,
@@ -124,7 +124,7 @@ export function buildNavItems(myId: string, opts: BuildOptions = {}): NavItem[] 
   });
   all.push({
     href: "/chat",
-    label: "Chat",
+    label: "chat",
     icon: MessagesSquare,
     group: "social",
     requiresAuth: true,
@@ -133,7 +133,7 @@ export function buildNavItems(myId: string, opts: BuildOptions = {}): NavItem[] 
   // permite jugar como invitado tras introducir un apodo. Sin requiresAuth.
   all.push({
     href: "/minijuegos",
-    label: "Minijuegos",
+    label: "minijuegos",
     icon: Gamepad2,
     group: "social",
   });
@@ -143,7 +143,7 @@ export function buildNavItems(myId: string, opts: BuildOptions = {}): NavItem[] 
   if (opts.showMyLeague) {
     all.push({
       href: "/comparar",
-      label: "Comparar",
+      label: "comparar",
       icon: Trophy,
       group: "social",
       requiresAuth: true,
@@ -155,8 +155,8 @@ export function buildNavItems(myId: string, opts: BuildOptions = {}): NavItem[] 
   // así que las sacamos de su navegación para no saturarle el menú.
   if (!isAuthed) {
     all.push(
-      { href: "/equipos", label: "Selecciones", icon: Flag, group: "main" },
-      { href: "/sedes", label: "Sedes", icon: MapPin, group: "main" },
+      { href: "/equipos", label: "selecciones", icon: Flag, group: "main" },
+      { href: "/sedes", label: "sedes", icon: MapPin, group: "main" },
     );
   }
   // Ayuda — públicas para que también las indexen Googlebot y compañía.
@@ -165,13 +165,13 @@ export function buildNavItems(myId: string, opts: BuildOptions = {}): NavItem[] 
   all.push(
     {
       href: "/faq",
-      label: "FAQs",
+      label: "faqs",
       icon: HelpCircle,
       group: "ayuda",
     },
     {
       href: "/contacto",
-      label: "Contacto",
+      label: "contacto",
       icon: Mail,
       group: "ayuda",
     },
@@ -183,5 +183,5 @@ export function buildNavItems(myId: string, opts: BuildOptions = {}): NavItem[] 
 }
 
 export const ADMIN_NAV: NavItem[] = [
-  { href: "/admin", label: "Admin", icon: Settings2, group: "main" },
+  { href: "/admin", label: "admin", icon: Settings2, group: "main" },
 ];

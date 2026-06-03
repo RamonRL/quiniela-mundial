@@ -1,7 +1,7 @@
 from PIL import Image
 import numpy as np
 
-img = Image.open("/home/ramon.romero/workspace/personal/world-cup-championship/favicon/hlogo.png").convert("RGBA")
+img = Image.open("/home/ramon.romero/workspace/powens/repos/connectors-cockpit-es/imgs/logo.png").convert("RGBA")
 data = np.array(img)
 
 # Separar canales
@@ -14,4 +14,4 @@ white = (r < 30) & (g < 30) & (b < 30)
 data[..., :-1][white.T] = (255, 255, 255)
 data[..., -1][white.T] = 0
 
-Image.fromarray(data).save("/home/ramon.romero/workspace/personal/world-cup-championship/favicon/hlogo_alpha.png")
+Image.fromarray(data).save("/home/ramon.romero/workspace/powens/repos/connectors-cockpit-es/imgs/alphalogo.png")

@@ -1,4 +1,5 @@
 import { desc, isNotNull } from "drizzle-orm";
+import { getTranslations } from "next-intl/server";
 import { Bug, Megaphone, Sparkles, Wrench } from "lucide-react";
 import { db } from "@/lib/db";
 import { patchNotes } from "@/lib/db/schema";
@@ -21,25 +22,25 @@ const TYPE_META: Record<
   { label: string; icon: typeof Sparkles; className: string }
 > = {
   feature: {
-    label: "Nuevo",
+    label: "pnTypeFeature",
     icon: Sparkles,
     className:
       "border-[var(--color-arena)]/50 bg-[color-mix(in_oklch,var(--color-arena)_10%,transparent)] text-[var(--color-arena)]",
   },
   improvement: {
-    label: "Mejora",
+    label: "pnTypeImprovement",
     icon: Wrench,
     className:
       "border-[var(--color-pitch)]/50 bg-[color-mix(in_oklch,var(--color-pitch)_10%,transparent)] text-[var(--color-pitch)]",
   },
   fix: {
-    label: "Bug fix",
+    label: "pnTypeFix",
     icon: Bug,
     className:
       "border-[var(--color-success)]/50 bg-[color-mix(in_oklch,var(--color-success)_10%,transparent)] text-[var(--color-success)]",
   },
   note: {
-    label: "Aviso",
+    label: "pnTypeNote",
     icon: Megaphone,
     className:
       "border-[var(--color-border-strong)] bg-[var(--color-surface-2)] text-[var(--color-muted-foreground)]",
@@ -63,15 +64,16 @@ export async function PatchNotesBoard() {
     .limit(MAX_NOTES);
 
   if (rows.length === 0) return null;
+  const t = await getTranslations("dashboard");
 
   return (
     <section className="space-y-3">
       <header className="space-y-1">
         <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-          Novedades de la app
+          {t("pnEyebrow")}
         </p>
         <h2 className="font-display text-2xl tracking-tight sm:text-3xl">
-          Tablón de Quiniela Mundial
+          {t("pnTitle")}
         </h2>
       </header>
       <ol className="space-y-2">
@@ -91,7 +93,7 @@ export async function PatchNotesBoard() {
                   )}
                 >
                   <Icon className="size-3" />
-                  {meta.label}
+                  {t(meta.label)}
                 </span>
                 {n.publishedAt ? (
                   <time

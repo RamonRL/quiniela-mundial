@@ -1,9 +1,10 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Menu } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   Sheet,
   SheetContent,
@@ -17,11 +18,12 @@ import { ADMIN_NAV, buildNavItems, type NavItem } from "./nav-data";
 
 // Mismos títulos y orden que la Sidebar PC para que la navegación se sienta
 // coherente en cualquier viewport.
+// Claves i18n (namespace "nav") por grupo — se traducen en el render.
 const GROUP_TITLE: Record<NavItem["group"], string> = {
-  main: "Torneo",
-  predicciones: "Predicciones",
-  social: "Comunidad",
-  ayuda: "Ayuda",
+  main: "group.main",
+  predicciones: "group.predicciones",
+  social: "group.social",
+  ayuda: "group.ayuda",
 };
 const GROUP_ORDER: NavItem["group"][] = ["main", "predicciones", "social", "ayuda"];
 
@@ -41,6 +43,8 @@ export function MobileBottomNav({
   isAuthenticated = true,
 }: Props) {
   const pathname = usePathname();
+  const t = useTranslations("nav");
+  const ts = useTranslations("shell");
   const items = buildNavItems(myId, { showMyLeague, isAuthenticated });
   const primary = items.filter((i) => i.primaryMobile);
   // El sheet "Más" lista todos los items por grupo, no sólo los que no
@@ -49,7 +53,7 @@ export function MobileBottomNav({
   // y los atajos de la barra siguen siendo el acceso rápido pulgar-friendly.
   const itemsByGroup = GROUP_ORDER.map((g) => ({
     group: g,
-    title: GROUP_TITLE[g],
+    title: t(GROUP_TITLE[g]),
     items: items.filter((i) => i.group === g),
   })).filter((g) => g.items.length > 0);
   const adminItems = isAdmin ? ADMIN_NAV : [];
@@ -102,19 +106,19 @@ export function MobileBottomNav({
                 </span>
               ) : null}
             </span>
-            <span>{item.mobileLabel ?? item.label}</span>
+            <span>{t(item.mobileLabel ?? item.label)}</span>
           </Link>
         );
       })}
       <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
         <SheetTrigger className="flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-mono uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
           <Menu className="size-5" />
-          <span>Más</span>
+          <span>{ts("more")}</span>
         </SheetTrigger>
         <SheetContent side="bottom" className="flex h-[80dvh] flex-col rounded-t-xl">
           <SheetHeader>
-            <SheetTitle>Navegación</SheetTitle>
-            <SheetDescription>Todas las secciones</SheetDescription>
+            <SheetTitle>{ts("navigation")}</SheetTitle>
+            <SheetDescription>{ts("allSections")}</SheetDescription>
           </SheetHeader>
           <div className="mt-2 flex-1 space-y-6 overflow-y-auto pr-1">
             {itemsByGroup.map(({ group, title, items }) => (
@@ -128,7 +132,7 @@ export function MobileBottomNav({
             ))}
             {adminItems.length > 0 ? (
               <NavGroup
-                title="Admin"
+                title={t("group.admin")}
                 items={adminItems}
                 activeHref={activeHref}
                 onSelect={() => setMoreOpen(false)}
@@ -185,6 +189,7 @@ function OverflowLink({
   active: boolean;
   onSelect: () => void;
 }) {
+  const t = useTranslations("nav");
   return (
     <Link
       href={item.href}
@@ -197,7 +202,7 @@ function OverflowLink({
       )}
     >
       <item.icon className="size-4" />
-      <span>{item.label}</span>
+      <span>{t(item.label)}</span>
     </Link>
   );
 }
