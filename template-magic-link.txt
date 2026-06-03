@@ -1,0 +1,147 @@
+Plantilla del email "Magic Link" para Supabase
+(Authentication → Email Templates → Magic Link)
+
+========================================================================
+SUBJECT HEADING
+========================================================================
+
+Tu código {{ .Token }} · Quiniela Mundial
+
+
+========================================================================
+MESSAGE BODY (pegar tal cual en el editor de plantilla)
+========================================================================
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="color-scheme" content="light" />
+  <meta name="supported-color-schemes" content="light" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=DM+Sans:wght@400;500;600;700&family=Mona+Sans:ital,wght@1,400;1,500&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body style="margin:0; padding:0; background-color:#f4f1eb; color:#1f1b17; font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f4f1eb; padding:48px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:480px;">
+
+          <!-- Top brand bar: arena rule + mono eyebrow -->
+          <tr>
+            <td align="center" style="padding:0 0 28px 0;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+                <tr>
+                  <td style="width:32px; height:2px; background-color:#c2562a; line-height:2px; font-size:0;">&nbsp;</td>
+                  <td style="padding:0 14px; font-family:'JetBrains Mono','SF Mono',Menlo,Consolas,monospace; font-size:11px; letter-spacing:0.32em; color:#c2562a; text-transform:uppercase; font-weight:600;">
+                    Quiniela&nbsp;·&nbsp;Mundial&nbsp;·&nbsp;2026
+                  </td>
+                  <td style="width:32px; height:2px; background-color:#c2562a; line-height:2px; font-size:0;">&nbsp;</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Wordmark display -->
+          <tr>
+            <td align="center" style="padding:0 0 32px 0;">
+              <p style="margin:0; font-family:'Big Shoulders Display','Arial Narrow',Impact,sans-serif; font-size:38px; font-weight:800; letter-spacing:0.02em; line-height:1; color:#1f1b17; text-transform:uppercase;">
+                Tu llave de acceso
+              </p>
+              <p style="margin:10px 0 0 0; font-family:'Mona Sans',Georgia,serif; font-style:italic; font-size:14px; color:#7a7066;">
+                Un código y ya estás dentro.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Card -->
+          <tr>
+            <td style="background-color:#fefdfc; border-radius:12px; padding:36px 32px; border:1px solid #ddd8cc;">
+
+              <!-- Eyebrow -->
+              <p style="margin:0 0 10px 0; font-family:'JetBrains Mono','SF Mono',Menlo,Consolas,monospace; font-size:10px; letter-spacing:0.32em; color:#7a7066; text-transform:uppercase; font-weight:600; text-align:center;">
+                Código de un solo uso
+              </p>
+
+              <!-- The code -->
+              <p style="margin:14px 0 10px 0; font-family:'JetBrains Mono','SF Mono',Menlo,Consolas,monospace; font-size:44px; letter-spacing:0.32em; text-align:center; color:#1f1b17; font-weight:700; line-height:1;">
+                {{ .Token }}
+              </p>
+
+              <p style="margin:0 0 28px 0; font-family:'Mona Sans',Georgia,serif; font-style:italic; font-size:13px; color:#7a7066; text-align:center; line-height:1.5;">
+                Cópialo y pégalo en la pantalla de acceso.<br/>Caduca en una hora.
+              </p>
+
+              <!-- Divider con punto arena -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 0 28px 0;">
+                <tr>
+                  <td style="width:80px; height:1px; background-color:#ddd8cc; line-height:1px; font-size:0;">&nbsp;</td>
+                  <td style="padding:0 10px; font-family:'JetBrains Mono','SF Mono',Menlo,Consolas,monospace; font-size:10px; letter-spacing:0.32em; color:#c2562a; text-transform:uppercase; font-weight:700;">
+                    o
+                  </td>
+                  <td style="width:80px; height:1px; background-color:#ddd8cc; line-height:1px; font-size:0;">&nbsp;</td>
+                </tr>
+              </table>
+
+              <p style="margin:0 0 16px 0; font-family:'DM Sans',Helvetica,Arial,sans-serif; font-size:13px; color:#1f1b17; text-align:center;">
+                ¿Prefieres no escribir el código?
+              </p>
+
+              <!-- Button arena -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto;">
+                <tr>
+                  <td align="center" style="background-color:#c2562a; border-radius:8px;">
+                    <a href="{{ .ConfirmationURL }}" target="_blank" style="display:inline-block; padding:14px 30px; color:#ffffff; text-decoration:none; font-family:'Big Shoulders Display','Arial Narrow',Impact,sans-serif; font-size:15px; font-weight:800; letter-spacing:0.18em; text-transform:uppercase;">
+                      Entrar a la liga →
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Security disclaimer -->
+              <p style="margin:32px 0 0 0; font-family:'Mona Sans',Georgia,serif; font-style:italic; font-size:12px; color:#7a7066; text-align:center; line-height:1.6;">
+                Si no fuiste tú quien pidió este código, ignóralo —<br/>tu cuenta sigue segura.
+              </p>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td align="center" style="padding:32px 0 0 0;">
+              <p style="margin:0; font-family:'JetBrains Mono','SF Mono',Menlo,Consolas,monospace; font-size:10px; letter-spacing:0.32em; color:#7a7066; text-transform:uppercase; font-weight:600;">
+                Quiniela&nbsp;del&nbsp;Mundial&nbsp;2026
+              </p>
+              <p style="margin:8px 0 0 0; font-family:'DM Sans',Helvetica,Arial,sans-serif; font-size:11px;">
+                <a href="https://quinielamundial.es" style="color:#c2562a; text-decoration:none; letter-spacing:0.02em;">quinielamundial.es</a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+
+
+========================================================================
+NOTAS
+========================================================================
+
+- Variables Supabase: {{ .Token }} (código de 6 dígitos) y
+  {{ .ConfirmationURL }} (magic link). Funcionan también en el Subject.
+- Colores traducidos de los tokens OKLCH del proyecto a hex (los clientes
+  de email no entienden OKLCH):
+    arena         #c2562a    (--color-arena)
+    foreground    #1f1b17    (--color-foreground)
+    muted-fg      #7a7066    (--color-muted-foreground)
+    bg crema      #f4f1eb    (--color-bg)
+    surface       #fefdfc    (--color-surface)
+    border        #ddd8cc    (--color-border)
+- Tipografía cargada desde Google Fonts en <head>: Big Shoulders Display,
+  DM Sans, Mona Sans, JetBrains Mono. Apple Mail y Gmail web las cargan;
+  Outlook cae a Arial Narrow / Helvetica y sigue siendo legible y branded
+  gracias al color y la maquetación.

@@ -1,0 +1,39 @@
+Asunto: ¡Listo! Ya puedes entrar a Quiniela Mundial
+
+Hola Salvador,
+
+Como te prometí, ya tienes habilitado el inicio de sesión por código por email en Quiniela Mundial. Lo acabamos de desplegar y está funcionando.
+
+
+Cómo entrar (te lleva 2 minutos):
+
+1. Entra a https://quinielamundial.es/login.
+
+2. Bajo el botón de Google verás un campo "Email". Mete tu correo (smalave@somago.com.ve) y pulsa "Enviarme un código".
+
+3. En menos de un minuto recibirás un email con un código de 6 dígitos.
+
+4. Pégalo en la pantalla y entrarás directamente — sin contraseña, sin instalar nada.
+
+
+Cuando estés dentro:
+
+5. Ve a "Mi Quiniela" y crea tu liga privada (nombre, logo si quieres). Déjala en el plan gratuito por ahora — yo aplico el pase ya pagado a mano en el siguiente paso.
+
+6. Respóndeme a este correo con el NOMBRE y el CÓDIGO de la liga que acabas de crear (el código aparece en la pantalla de la liga, son 6 caracteres tipo "ABC123").
+
+
+Yo me encargo:
+
+7. En cuanto me llegue tu mensaje, aplico el pase que ya tienes pagado a esa liga manualmente. Suelo tardar menos de una hora en horario europeo (UTC+1).
+
+8. A partir de ahí puedes empezar a invitar a tus compañeros con el código de la liga. Cada uno entrará exactamente igual que tú: pone su @somago.com.ve, recibe un código, lo pega, y dentro.
+
+
+Gracias por la paciencia con el rodeo de los primeros días. Si en cualquier paso algo no encaja, dímelo y lo resolvemos.
+
+Un saludo,
+
+Ramón Romero
+Quiniela Mundial 2026
+admin@quinielamundial.es

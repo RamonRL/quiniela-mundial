@@ -1,4 +1,6 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import {
   ArrowUpRight,
   Calculator,
@@ -38,6 +40,7 @@ const KICKOFF = new Date(
 );
 
 export default async function PrediccionesHub() {
+  const t = await getTranslations("predHub");
   const me = await requireUser();
   const now = new Date();
   const leagueId = (await currentLeagueId(me))!;
@@ -142,9 +145,9 @@ export default async function PrediccionesHub() {
   return (
     <div className="space-y-12">
       <PageHeader
-        eyebrow="Tus apuestas"
-        title="Predicciones"
-        description="Tus apuestas. Privadas hasta cada cierre."
+        eyebrow={t("headerEyebrow")}
+        title={t("headerTitle")}
+        description={t("headerDesc")}
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <Link
@@ -152,7 +155,7 @@ export default async function PrediccionesHub() {
               className="inline-flex h-9 items-center gap-2 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-foreground)] transition hover:border-[var(--color-arena)]/40 hover:text-[var(--color-arena)]"
             >
               <Calculator className="size-3.5" />
-              Cómo se puntúa
+              {t("howScored")}
             </Link>
             <TutorialReplayButton />
           </div>
@@ -167,19 +170,21 @@ export default async function PrediccionesHub() {
       {!onlyMatches ? (
       <Section
         index="I"
-        title="Pre-torneo"
-        subtitle="Una vez por torneo · cierra en el kickoff"
+        title={t("preTitle")}
+        subtitle={t("preSubtitle")}
         dataTutorialId="cat-pre-torneo"
         dataTutorialIdMobile="cat-pre-torneo-mobile"
         meta={
           preTorneoOpen
-            ? `Cierre · ${formatDateTime(KICKOFF, {
-                day: "2-digit",
-                month: "short",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}`
-            : "Cerrado al kickoff"
+            ? t("closeMeta", {
+                date: formatDateTime(KICKOFF, {
+                  day: "2-digit",
+                  month: "short",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+              })
+            : t("preClosedAtKickoff")
         }
       >
         <div className="grid gap-4 lg:grid-cols-3">
@@ -187,12 +192,12 @@ export default async function PrediccionesHub() {
             cat="01"
             href="/predicciones/grupos"
             icon={<Users className="size-5" />}
-            label="Posiciones por grupo"
-            description="Ordena del 1º al 4º."
+            label={t("groupsLabel")}
+            description={t("groupsDesc")}
             statusBadge={
               groupPredCount === 12
-                ? { variant: "success", text: "Completo" }
-                : { variant: "warning", text: `${groupPredCount}/12 grupos` }
+                ? { variant: "success", text: t("complete") }
+                : { variant: "warning", text: t("groupsCount", { n: groupPredCount }) }
             }
             done={groupPredCount === 12}
             locked={!preTorneoOpen}
@@ -201,12 +206,12 @@ export default async function PrediccionesHub() {
             cat="02"
             href="/predicciones/goleador-torneo"
             icon={<Target className="size-5" />}
-            label="Bota de Oro"
-            description="Tu candidato."
+            label={t("botaLabel")}
+            description={t("botaDesc")}
             statusBadge={
               topScorerPred
-                ? { variant: "success", text: "Pick enviado" }
-                : { variant: "warning", text: "Pendiente" }
+                ? { variant: "success", text: t("botaSent") }
+                : { variant: "warning", text: t("pending") }
             }
             done={!!topScorerPred}
             locked={!preTorneoOpen}
@@ -215,14 +220,17 @@ export default async function PrediccionesHub() {
             cat="03"
             href="/predicciones/especiales"
             icon={<Sparkles className="size-5" />}
-            label="Especiales"
-            description="Balón, Guante, anfitrión…"
+            label={t("specialsLabel")}
+            description={t("specialsDesc")}
             statusBadge={
               answeredSpecials >= totalSpecials && totalSpecials > 0
-                ? { variant: "success", text: "Completo" }
+                ? { variant: "success", text: t("complete") }
                 : {
                     variant: "warning",
-                    text: `${answeredSpecials}/${totalSpecials || "—"} resueltas`,
+                    text: t("specialsCount", {
+                      answered: answeredSpecials,
+                      total: totalSpecials || "—",
+                    }),
                   }
             }
             done={answeredSpecials >= totalSpecials && totalSpecials > 0}
@@ -235,27 +243,27 @@ export default async function PrediccionesHub() {
       {/* SECTION 2 — Por jornada (en todos los modos) */}
       <Section
         index={onlyMatches ? "I" : "II"}
-        title="Jornada a jornada"
+        title={t("jornadasTitle")}
         subtitle={
           mode === "solo_ganador"
-            ? "Solo el ganador (o empate) de cada partido"
+            ? t("jornadasDescSolo")
             : mode === "marcador"
-              ? "Marcador exacto de cada partido"
-              : "Marcador y goleador del partido en una sola jugada"
+              ? t("jornadasDescMarcador")
+              : t("jornadasDescCompleto")
         }
         dataTutorialId="cat-jornadas"
         dataTutorialIdMobile="cat-jornadas-mobile"
         meta={
           openDays.length > 0
-            ? `${openDays.length} ${openDays.length === 1 ? "jornada abierta" : "jornadas abiertas"}`
+            ? t("jornadasOpen", { count: openDays.length })
             : waitingDays.length > 0
-              ? "Próxima jornada bloqueada"
-              : "Sin jornadas abiertas"
+              ? t("jornadasNextBlocked")
+              : t("jornadasNoneOpen")
         }
       >
         {dayCards.length === 0 ? (
           <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-            Las jornadas aún no están publicadas.
+            {t("jornadasNotPublished")}
           </p>
         ) : (
           <div className="space-y-4">
@@ -286,20 +294,22 @@ export default async function PrediccionesHub() {
       {!onlyMatches ? (
       <Section
         index="III"
-        title="Eliminatoria"
-        subtitle="Se desbloquea al cerrar la fase de grupos"
+        title={t("eliminatoriaTitle")}
+        subtitle={t("eliminatoriaSubtitle")}
         dataTutorialId="cat-eliminatoria"
         meta={
           bracketStatus.state === "open" && bracketStatus.closesAt
-            ? `Cierre · ${formatDateTime(bracketStatus.closesAt, {
-                day: "2-digit",
-                month: "short",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}`
+            ? t("closeMeta", {
+                date: formatDateTime(bracketStatus.closesAt, {
+                  day: "2-digit",
+                  month: "short",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+              })
             : bracketStatus.state === "waiting"
-              ? "Aún no disponible"
-              : "Cerrado"
+              ? t("bracketNotYet")
+              : t("bracketClosed")
         }
       >
         <BracketCard status={bracketStatus.state} closesAt={bracketStatus.closesAt} />
@@ -435,6 +445,7 @@ function BracketCard({
   status: "waiting" | "open" | "closed";
   closesAt: Date | null;
 }) {
+  const t = useTranslations("predHub");
   const baseInner = (
     <article
       className={`group relative overflow-hidden rounded-xl border p-6 transition-all duration-200 ${
@@ -459,34 +470,34 @@ function BracketCard({
               <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
                 Cat. 04
               </p>
-              <h3 className="font-display text-3xl tracking-tight">Fase final</h3>
+              <h3 className="font-display text-3xl tracking-tight">{t("bracketFinalPhase")}</h3>
             </div>
           </header>
           {status === "waiting" ? (
             <Badge variant="warning" className="gap-1">
-              <Lock className="size-3" /> Bloqueado
+              <Lock className="size-3" /> {t("bracketBlocked")}
             </Badge>
           ) : status === "open" ? (
-            <Badge variant="success">Abierto</Badge>
+            <Badge variant="success">{t("bracketOpen")}</Badge>
           ) : (
-            <Badge variant="outline">Cerrado</Badge>
+            <Badge variant="outline">{t("bracketClosed")}</Badge>
           )}
         </div>
         <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
           {status === "waiting"
-            ? "Se desbloquea al cerrar la fase de grupos."
+            ? t("bracketWaitingDesc")
             : status === "open"
-              ? `Cierre: ${
-                  closesAt
+              ? t("bracketClosesPrefix", {
+                  date: closesAt
                     ? formatDateTime(closesAt, {
                         day: "2-digit",
                         month: "short",
                         hour: "2-digit",
                         minute: "2-digit",
                       })
-                    : "primer partido de R32"
-                }.`
-              : "Bracket cerrado. Los dieciseisavos ya arrancaron."}
+                    : t("bracketClosesFirst"),
+                })
+              : t("bracketClosedDesc")}
         </p>
       </div>
     </article>
@@ -511,6 +522,7 @@ type DayCard = {
 };
 
 function FeaturedMatchday({ day }: { day: DayCard }) {
+  const t = useTranslations("predHub");
   const remaining = day.total - day.filled;
   return (
     <Link
@@ -520,21 +532,20 @@ function FeaturedMatchday({ day }: { day: DayCard }) {
       <div className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
         <div className="space-y-3">
           <div className="flex items-center gap-3">
-            <Badge variant="success">Abierta</Badge>
+            <Badge variant="success">{t("open")}</Badge>
             <span className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
               {day.stage} · Cat. 04
             </span>
           </div>
           <h3 className="font-display text-4xl tracking-tight">{day.name}</h3>
           <p className="font-editorial text-base italic text-[var(--color-muted-foreground)]">
-            {day.filled}/{day.total}{" "}
-            {day.total === 1 ? "partido predicho" : "partidos predichos"}.
+            {t("matchesPredicted", { filled: day.filled, total: day.total })}
           </p>
         </div>
         <div className="flex flex-col items-start gap-3 lg:items-end">
           <div className="space-y-0.5 lg:text-right">
             <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-              Arranca
+              {t("starts")}
             </p>
             <p className="font-display text-2xl tracking-tight">
               {formatDateTime(day.predictionDeadlineAt, {
@@ -546,11 +557,11 @@ function FeaturedMatchday({ day }: { day: DayCard }) {
               })}
             </p>
             <p className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-              Cada partido cierra a su pitido
+              {t("eachMatchCloses")}
             </p>
           </div>
           <p className="flex items-center gap-1.5 font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)] group-hover:underline">
-            {remaining > 0 ? `${remaining} sin enviar` : "Ya enviada"}{" "}
+            {remaining > 0 ? t("unsent", { remaining }) : t("alreadySent")}{" "}
             <ArrowUpRight className="size-3" />
           </p>
         </div>
@@ -560,6 +571,7 @@ function FeaturedMatchday({ day }: { day: DayCard }) {
 }
 
 function WaitingMatchday({ day }: { day: DayCard }) {
+  const t = useTranslations("predHub");
   return (
     <article className="grid gap-3 rounded-2xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface)] p-6 lg:grid-cols-[auto_1fr_auto] lg:items-center">
       <span className="grid size-12 place-items-center rounded-md border border-[var(--color-border)] bg-[var(--color-surface-2)] text-[var(--color-muted-foreground)]">
@@ -567,21 +579,22 @@ function WaitingMatchday({ day }: { day: DayCard }) {
       </span>
       <div className="space-y-1">
         <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-          Próxima · {day.stage}
+          {t("upcoming")} · {day.stage}
         </p>
         <h3 className="font-display text-2xl tracking-tight">{day.name}</h3>
         <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-          {day.reason ?? "Esperando que termine la ronda anterior."}
+          {day.reason ?? t("waitingReason")}
         </p>
       </div>
       <Badge variant="warning" className="self-start">
-        Bloqueada
+        {t("blocked")}
       </Badge>
     </article>
   );
 }
 
 function MatchdayMini({ day }: { day: DayCard }) {
+  const t = useTranslations("predHub");
   const inner = (
     <article
       className={`flex h-full flex-col justify-between gap-3 rounded-md border p-4 transition ${
@@ -608,10 +621,10 @@ function MatchdayMini({ day }: { day: DayCard }) {
             className="text-[0.6rem]"
           >
             {day.state === "open"
-              ? "Abierta"
+              ? t("open")
               : day.state === "waiting"
-                ? "Bloqueada"
-                : "Cerrada"}
+                ? t("blocked")
+                : t("closedFem")}
           </Badge>
         </div>
         <h4 className="font-display text-base tracking-tight">{day.name}</h4>
@@ -619,9 +632,9 @@ function MatchdayMini({ day }: { day: DayCard }) {
       <div className="flex items-center justify-between gap-2">
         <span className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
           {day.state === "waiting"
-            ? "Esperando"
+            ? t("waiting")
             : day.state === "closed"
-              ? "Cerrada"
+              ? t("closedFem")
               : `${day.filled}/${day.total}`}
         </span>
         <span className="text-[0.6rem] text-[var(--color-muted-foreground)]">
