@@ -150,22 +150,30 @@ export async function updateSession(
     },
   });
 
-  // Validación de sesión contra Auth. Si la llamada se cuelga o falla (GoTrue
-  // lento/caído/rate-limit), el fetch con timeout la aborta y FALLAMOS ABIERTO:
-  // dejamos pasar la request con las cookies que ya trae en vez de colgarla o
-  // echar a /login a un usuario legítimo. El guard de la página (requireUser →
-  // getCurrentUser, que también tiene timeout) revalida en el render. Así un
-  // hipo de Auth degrada en vez de tumbar la navegación.
+  // Resolución de sesión para el GATE de enrutado del middleware. Usamos
+  // getSession() a propósito, NO getUser():
+  //   - getSession() decodifica la sesión de las cookies en LOCAL (sin red)
+  //     mientras el access token siga válido. Solo va a la red para REFRESCAR
+  //     cuando ha caducado, y en ese caso escribe las cookies nuevas vía
+  //     setAll. Resultado: quitamos una llamada de red a GoTrue por CADA
+  //     navegación autenticada — la duplicación (middleware + getCurrentUser)
+  //     que estaba saturando Auth y provocando los cuelgues.
+  //   - Seguridad: esta decisión es solo un gate de enrutado (redirigir o
+  //     dejar pasar). La validación AUTORITATIVA contra el servidor la hace
+  //     getCurrentUser() (getUser) en el render de cada página protegida, así
+  //     que un token falsificado pasaría el gate pero lo rechazaría la página.
+  // Si la llamada (solo cuando refresca) se cuelga/falla, el fetch con timeout
+  // la aborta y FALLAMOS ABIERTO: dejamos pasar con las cookies actuales en vez
+  // de colgar o echar a /login a un usuario legítimo; la página revalida.
   let user = null;
   try {
-    ({
-      data: { user },
-    } = await supabase.auth.getUser());
+    const { data } = await supabase.auth.getSession();
+    user = data.session?.user ?? null;
   } catch (err) {
     Sentry.addBreadcrumb({
       category: "auth.middleware",
       level: "warning",
-      message: "supabase.auth.getUser() falló/timeout en middleware → fail-open",
+      message: "supabase.auth.getSession() falló/timeout en middleware → fail-open",
     });
     Sentry.captureException(err);
     return response;
