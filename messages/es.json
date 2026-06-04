@@ -29,6 +29,7 @@
     }
   },
   "shell": {
+    "toggleTheme": "Cambiar tema",
     "expandSidebar": "Expandir barra lateral",
     "collapseSidebar": "Contraer barra lateral",
     "expand": "Expandir",

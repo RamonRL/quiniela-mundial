@@ -4,6 +4,7 @@ import { BrandWordmark } from "@/components/brand/brand-wordmark";
 import { UserMenu } from "./user-menu";
 import { LeagueSwitcher } from "./league-switcher";
 import { LanguageSwitcher } from "./language-switcher";
+import { ThemeToggle } from "./theme-toggle";
 import type { Membership } from "@/lib/leagues";
 
 /**
@@ -105,6 +106,11 @@ export function AppHeader({
         </span>
         {isAuthenticated && email ? (
           <>
+            <HeaderDivider />
+            {/* Toggle de tema — solo desktop; en móvil se cambia en Ajustes */}
+            <span className="hidden sm:inline-flex">
+              <ThemeToggle />
+            </span>
             <HeaderDivider />
             <UserMenu
               email={email}

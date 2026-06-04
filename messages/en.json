@@ -29,6 +29,7 @@
     }
   },
   "shell": {
+    "toggleTheme": "Toggle theme",
     "expandSidebar": "Expand sidebar",
     "collapseSidebar": "Collapse sidebar",
     "expand": "Expand",
