@@ -71,7 +71,7 @@ export function AppHeader({
               <img
                 src={brandLogoUrl}
                 alt=""
-                className={`h-8 w-auto max-w-[6.5rem] object-contain${
+                className={`h-8 w-auto max-w-[6.5rem] rounded-md object-contain${
                   brandLogoLightUrl ? " hidden dark:block" : ""
                 }`}
               />
@@ -80,7 +80,7 @@ export function AppHeader({
                 <img
                   src={brandLogoLightUrl}
                   alt=""
-                  className="block h-8 w-auto max-w-[6.5rem] object-contain dark:hidden"
+                  className="block h-8 w-auto max-w-[6.5rem] rounded-md object-contain dark:hidden"
                 />
               ) : null}
             </>

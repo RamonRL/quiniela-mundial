@@ -1084,6 +1084,14 @@
     "cropDragHint": "Arrasta para mover · pinça ou roda para zoom",
     "cropAspectLabel": "Largura"
   },
+  "invite": {
+    "eyebrow": "Convite para um bolão privado",
+    "code": "Código",
+    "members": "Membros",
+    "note": "Ao aceitar, vais competir com os restantes participantes deste bolão privado.",
+    "accept": "Aceitar convite",
+    "haveAccount": "Já tens conta? <link>Inicia sessão</link> e volta a este link."
+  },
   "myPool": {
     "fullBanner": "<b>Bolão cheio ({limit}/{limit} membros).</b> Para entrarem mais, contrate um Pase Mundial 2026 — sem migrar dados, mesmo grupo.",
     "seePlans": "Ver planos",

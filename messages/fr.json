@@ -1084,6 +1084,14 @@
     "cropDragHint": "Glisse pour déplacer · pince ou molette pour zoomer",
     "cropAspectLabel": "Largeur"
   },
+  "invite": {
+    "eyebrow": "Invitation à une grille privée",
+    "code": "Code",
+    "members": "Membres",
+    "note": "En acceptant, tu joueras contre les autres participants de cette grille privée.",
+    "accept": "Accepter l'invitation",
+    "haveAccount": "Déjà un compte ? <link>Connecte-toi</link> et reviens sur ce lien."
+  },
   "myPool": {
     "fullBanner": "<b>Grille complète ({limit}/{limit} membres).</b> Pour en accueillir plus, prends un Pase Mundial 2026 — sans migration de données, même groupe.",
     "seePlans": "Voir les offres",

@@ -393,7 +393,7 @@ function ShellPreview({
             <div className="flex min-w-0 flex-1 items-center justify-center">
               {src ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={src} alt="" className="h-10 w-auto max-w-[11rem] object-contain" />
+                <img src={src} alt="" className="h-10 w-auto max-w-[11rem] rounded-md object-contain" />
               ) : (
                 <QmPlaceholder theme={theme} />
               )}
@@ -413,7 +413,7 @@ function ShellPreview({
             <div className={`flex items-center gap-2 border-b px-3 py-2.5 ${divider}`}>
               {src ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={src} alt="" className="h-8 w-auto max-w-[6.5rem] object-contain" />
+                <img src={src} alt="" className="h-8 w-auto max-w-[6.5rem] rounded-md object-contain" />
               ) : (
                 <QmPlaceholder theme={theme} />
               )}

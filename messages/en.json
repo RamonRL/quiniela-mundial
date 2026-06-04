@@ -1084,6 +1084,14 @@
     "cropDragHint": "Drag to move · pinch or scroll to zoom",
     "cropAspectLabel": "Width"
   },
+  "invite": {
+    "eyebrow": "Invitation to a private pool",
+    "code": "Code",
+    "members": "Members",
+    "note": "By accepting, you'll compete with the rest of the participants in this private pool.",
+    "accept": "Accept invitation",
+    "haveAccount": "Already have an account? <link>Log in</link> and come back to this link."
+  },
   "myPool": {
     "fullBanner": "<b>Pool full ({limit}/{limit} members).</b> To let more in, get a Pase Mundial 2026 — no data migration, same group.",
     "seePlans": "See plans",

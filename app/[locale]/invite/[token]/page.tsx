@@ -1,13 +1,14 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
 import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { leagueMemberships, leagues } from "@/lib/db/schema";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { BrandWordmark } from "@/components/brand/brand-wordmark";
 import { acceptInvite } from "@/lib/league-actions";
-import { ArrowRight, Trophy, Users } from "lucide-react";
-import { initials } from "@/lib/utils";
+import { isPremiumTier } from "@/lib/league-tiers";
+import { ArrowRight, Users } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,7 @@ export default async function InviteLandingPage({
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
+  const t = await getTranslations("invite");
 
   const [league] = await db
     .select()
@@ -29,6 +31,10 @@ export default async function InviteLandingPage({
     .select({ count: sql<number>`count(*)::int` })
     .from(leagueMemberships)
     .where(eq(leagueMemberships.leagueId, league.id));
+
+  // Premium con branding → su marca (variante oscura/única) en vez del
+  // wordmark de Quiniela Mundial.
+  const brandUrl = isPremiumTier(league.tier) ? league.brandLogoUrl : null;
 
   // Server action wrapper. acceptInvite redirige por sí solo en los casos
   // OK; si devuelve `private_limit_reached` lanzamos un error con el copy
@@ -53,25 +59,29 @@ export default async function InviteLandingPage({
       <div className="halftone pointer-events-none absolute inset-0 opacity-[0.04]" aria-hidden />
       <div className="relative w-full max-w-md space-y-8 rounded-2xl border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_4%,var(--color-surface))] p-8 shadow-[var(--shadow-elev-2)] sm:p-10">
         <header className="space-y-3 text-center">
-          {league.logoUrl ? (
-            <Avatar className="mx-auto size-20 border-2 border-[var(--color-arena)]/40 shadow-[var(--shadow-arena)]">
-              <AvatarImage src={league.logoUrl} alt={league.name} />
-              <AvatarFallback className="font-display text-2xl tracking-tight">
-                {initials(league.name)}
-              </AvatarFallback>
-            </Avatar>
-          ) : (
-            <span className="mx-auto inline-flex size-12 place-items-center rounded-full bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]">
-              <Trophy className="size-5" />
-            </span>
-          )}
-          <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-            Invitación a una quiniela privada
+          {/* Wordmark de QM, o la marca de la empresa si es premium con branding */}
+          <div className="mb-5 flex justify-center">
+            {brandUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={brandUrl}
+                alt={league.name}
+                className="h-12 w-auto max-w-[15rem] rounded-md object-contain"
+              />
+            ) : (
+              <BrandWordmark priority className="h-12 w-auto" />
+            )}
+          </div>
+          <p className="font-mono text-[0.68rem] uppercase tracking-[0.24em] text-[var(--color-arena)]">
+            {t("eyebrow")}
           </p>
           <h1 className="font-display text-4xl tracking-tight">{league.name}</h1>
           {league.joinCode ? (
-            <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-              Código · <span className="text-[var(--color-arena)]">{league.joinCode}</span>
+            <p className="font-mono text-sm uppercase tracking-[0.26em] text-[var(--color-muted-foreground)]">
+              {t("code")} ·{" "}
+              <span className="font-semibold text-[var(--color-arena)]">
+                {league.joinCode}
+              </span>
             </p>
           ) : null}
         </header>
@@ -80,29 +90,38 @@ export default async function InviteLandingPage({
           <div className="flex items-center justify-between gap-3 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2.5">
             <span className="flex items-center gap-2 text-[var(--color-muted-foreground)]">
               <Users className="size-3.5" />
-              Miembros
+              {t("members")}
             </span>
-            <span className="font-display tabular text-base">{memberCount?.count ?? 0}</span>
+            <span className="font-display tabular text-base">
+              {memberCount?.count ?? 0}
+              {league.memberLimit != null ? (
+                <span className="text-[var(--color-muted-foreground)]">
+                  {" "}
+                  / {league.memberLimit}
+                </span>
+              ) : null}
+            </span>
           </div>
           <p className="font-editorial text-xs italic leading-relaxed text-[var(--color-muted-foreground)]">
-            Al aceptar verás solo a los participantes y al ranking de esta liga. El resto del
-            Mundial 26 (calendario, partidos, jugadores) es el mismo que ve todo el mundo.
+            {t("note")}
           </p>
         </div>
 
         <form action={accept}>
           <Button type="submit" size="lg" className="w-full">
-            Aceptar invitación
+            {t("accept")}
             <ArrowRight />
           </Button>
         </form>
 
         <p className="text-center font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-          ¿Ya tienes cuenta?{" "}
-          <Link href="/login" className="underline">
-            Inicia sesión
-          </Link>{" "}
-          y vuelve a este enlace.
+          {t.rich("haveAccount", {
+            link: (chunks) => (
+              <Link href="/login" className="underline">
+                {chunks}
+              </Link>
+            ),
+          })}
         </p>
       </div>
     </div>

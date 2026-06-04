@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { routing } from "@/i18n/routing";
 
 /**
  * Caja única de "cómo invitar": el código de 4 dígitos (tiles estilo OTP) y,
@@ -19,9 +20,16 @@ export function CodeDisplay({
   inviteToken: string;
 }) {
   const t = useTranslations("myPool");
+  const locale = useLocale();
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const digits = code.padStart(4, "0").slice(0, 4).split("");
+  // El link copiado lleva el PREFIJO DE IDIOMA de quien lo copia (es → sin
+  // prefijo), así el invitado ve la página de invitación en ese idioma.
+  const invitePath =
+    locale === routing.defaultLocale
+      ? `/invite/${inviteToken}`
+      : `/${locale}/invite/${inviteToken}`;
 
   function copyCode() {
     navigator.clipboard
@@ -35,12 +43,12 @@ export function CodeDisplay({
   }
 
   function copyLink() {
-    // Display estable (/invite/token) para no romper hidratación; copiamos la
-    // URL absoluta real.
+    // Display estable (path relativo) para no romper hidratación; copiamos la
+    // URL absoluta real con el prefijo de idioma del que copia.
     const url =
       typeof window === "undefined"
-        ? `/invite/${inviteToken}`
-        : `${window.location.origin}/invite/${inviteToken}`;
+        ? invitePath
+        : `${window.location.origin}${invitePath}`;
     navigator.clipboard
       .writeText(url)
       .then(() => {
@@ -108,7 +116,7 @@ export function CodeDisplay({
         </p>
         <div className="flex items-center gap-2">
           <code className="min-w-0 flex-1 truncate rounded-md border border-[var(--color-arena)]/30 bg-[var(--color-bg)] px-3 py-2 font-mono text-[0.72rem] text-[var(--color-foreground)]">
-            /invite/{inviteToken}
+            {invitePath}
           </code>
           <Button
             type="button"

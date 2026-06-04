@@ -123,7 +123,7 @@ export function Sidebar({
                   src={brandLogoUrl}
                   alt=""
                   className={cn(
-                    "h-14 max-h-14 w-auto max-w-full object-contain",
+                    "h-14 max-h-14 w-auto max-w-full rounded-md object-contain",
                     brandLogoLightUrl ? "hidden dark:block" : null,
                   )}
                 />
@@ -132,7 +132,7 @@ export function Sidebar({
                   <img
                     src={brandLogoLightUrl}
                     alt=""
-                    className="block h-14 max-h-14 w-auto max-w-full object-contain dark:hidden"
+                    className="block h-14 max-h-14 w-auto max-w-full rounded-md object-contain dark:hidden"
                   />
                 ) : null}
               </>
