@@ -26,6 +26,7 @@ export type DeptCardData = DeptBasic & {
   totalPoints: number;
   activeMembers: number;
   totalMembers: number;
+  exactScoresCount: number;
   /** Miembros del dept ordenados por puntos desc. */
   members: DeptCardMember[];
 };
@@ -66,6 +67,7 @@ export function buildDeptCards(
       avgPoints: r?.avgPoints ?? 0,
       totalPoints: r?.totalPoints ?? 0,
       activeMembers: r?.activeMembers ?? 0,
+      exactScoresCount: r?.exactScoresCount ?? 0,
       totalMembers: deptMembers.length,
       members: deptMembers,
     };

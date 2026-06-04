@@ -928,7 +928,7 @@
     "deptDescEmpty": "Aucun département créé dans cette ligue pour l'instant.",
     "deptEmptyTitle": "Aucun département",
     "deptEmptyDesc": "L'admin peut les créer depuis Ma Grille → Départements.",
-    "deptDesc": "Ils concourent sur la moyenne de points par membre actif — un petit dept peut battre un grand.",
+    "deptDesc": "La bataille entre les équipes de ta grille.",
     "thDepartment": "Département",
     "thAvg": "Moyenne",
     "thActive": "Actifs",

@@ -176,8 +176,9 @@ export function DeptCards({
   );
 }
 
-/** Diálogo inmersivo: cabecera con el color del dept + ranking completo paginado. */
-function DeptDetailDialog({
+/** Diálogo inmersivo: cabecera con el color del dept + ranking completo
+ *  paginado. Exportado: lo reutiliza el ranking de departamentos. */
+export function DeptDetailDialog({
   card,
   onClose,
 }: {
