@@ -377,8 +377,9 @@ function FeaturesPanel({
             <Building2 className="size-4" />
           </span>
           <div className="min-w-0">
-            <p className="flex items-center gap-1.5 font-display text-sm tracking-tight">
-              {t("deptCardTitle")} <PremiumPill />
+            <p className="flex items-center gap-2">
+              <span className="font-display text-sm tracking-tight">{t("deptCardTitle")}</span>
+              <PremiumPill />
             </p>
             <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
               {t("deptCardDesc")}
@@ -394,8 +395,9 @@ function FeaturesPanel({
             <Download className="size-4" />
           </span>
           <div className="min-w-0">
-            <p className="flex items-center gap-1.5 font-display text-sm tracking-tight">
-              {t("exportCardTitle")} <PremiumPill />
+            <p className="flex items-center gap-2">
+              <span className="font-display text-sm tracking-tight">{t("exportCardTitle")}</span>
+              <PremiumPill />
             </p>
             <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
               {t("exportCardDesc")}
@@ -410,8 +412,11 @@ function FeaturesPanel({
             <Mail className="size-4" />
           </span>
           <div className="min-w-0">
-            <p className="flex items-center gap-1.5 font-display text-sm tracking-tight">
-              {t("supportCardTitle")} <Sparkles className="size-3" /> <PremiumPill />
+            <p className="flex items-center gap-2">
+              <span className="flex items-center gap-1.5 font-display text-sm tracking-tight">
+                {t("supportCardTitle")} <Sparkles className="size-3" />
+              </span>
+              <PremiumPill />
             </p>
             <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
               {t("supportCardDesc")}
