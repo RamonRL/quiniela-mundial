@@ -2,13 +2,13 @@ import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Globe2 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { EmptyState } from "@/components/shell/empty-state";
 import { PageHeader } from "@/components/shell/page-header";
 import { requireUser } from "@/lib/auth/guards";
 import { isPredictionMode, PREDICTION_MODES, PREDICTION_MODE_META } from "@/lib/leagues";
 import { loadGlobalLeaderboard } from "@/lib/leaderboard";
-import { cn, initials } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { GlobalStandings } from "./global-standings";
 
 export const metadata = { title: "Ranking global" };
 export const dynamic = "force-dynamic";
@@ -57,6 +57,27 @@ export default async function GlobalRankingPage({
         })}
       </nav>
 
+      {/* Mi posición — con paginación puede que mi fila no esté a la
+          vista; este resumen la mantiene siempre presente. */}
+      {myIndex >= 0 ? (
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_6%,var(--color-surface))] px-4 py-2.5">
+          <span className="font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
+            {t("myPosition")}
+          </span>
+          <span className="flex items-baseline gap-3">
+            <span className="font-display text-2xl tabular text-[var(--color-arena)] glow-arena">
+              #{myIndex + 1}
+            </span>
+            <span className="font-display text-lg tabular">
+              {ranked[myIndex]!.totalPoints}{" "}
+              <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+                {t("thPts")}
+              </span>
+            </span>
+          </span>
+        </div>
+      ) : null}
+
       {ranked.length === 0 ? (
         <EmptyState
           icon={<Globe2 className="size-5" />}
@@ -64,46 +85,7 @@ export default async function GlobalRankingPage({
           description={t("globalEmptyDesc")}
         />
       ) : (
-        <div className="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]">
-          <ul className="divide-y divide-[var(--color-border)]">
-            {ranked.map((r, i) => {
-              const display = r.nickname || r.email.split("@")[0];
-              const isMe = r.userId === me.id;
-              const pos = i + 1;
-              return (
-                <li
-                  key={r.userId}
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-2.5",
-                    isMe ? "bg-[color-mix(in_oklch,var(--color-arena)_6%,transparent)]" : "",
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "w-6 text-center font-display tabular text-base",
-                      pos <= 3 ? "text-[var(--color-arena)] glow-arena" : "text-[var(--color-muted-foreground)]",
-                    )}
-                  >
-                    {pos}
-                  </span>
-                  <Avatar className="size-8 border border-[var(--color-border)]">
-                    {r.avatarUrl ? <AvatarImage src={r.avatarUrl} alt="" /> : null}
-                    <AvatarFallback className="text-[0.6rem]">{initials(display)}</AvatarFallback>
-                  </Avatar>
-                  <span className="min-w-0 flex-1 truncate text-sm font-medium">
-                    {display}
-                    {isMe ? (
-                      <span className="ml-1.5 font-mono text-[0.5rem] uppercase tracking-[0.18em] text-[var(--color-arena)]">
-                        {t("youLower")}
-                      </span>
-                    ) : null}
-                  </span>
-                  <span className="font-display tabular text-base">{r.totalPoints}</span>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+        <GlobalStandings entries={ranked} meId={me.id} />
       )}
 
       {myIndex < 0 ? (

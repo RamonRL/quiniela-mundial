@@ -7,12 +7,12 @@ import { eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { leagueDepartments, leagues } from "@/lib/db/schema";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/shell/empty-state";
 import { PageHeader } from "@/components/shell/page-header";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, PREDICTION_MODES, PREDICTION_MODE_META } from "@/lib/leagues";
 import { loadLeaderboard, type LeaderboardEntry } from "@/lib/leaderboard";
+import { LeagueStandings } from "./league-standings";
 import { RankingTabs } from "./ranking-tabs";
 import { initials } from "@/lib/utils";
 
@@ -70,7 +70,6 @@ export default async function RankingPage() {
 
   const allZero = ranked.every((r) => r.totalPoints === 0);
   const top3 = ranked.slice(0, 3);
-  const rest = ranked.slice(3);
 
   return (
     <div className="space-y-8">
@@ -165,71 +164,10 @@ export default async function RankingPage() {
         </Link>
       ) : null}
 
-      {/* Rest of the leaderboard */}
-      {rest.length > 0 ? (
-        <section className="space-y-3">
-          <div className="flex items-center gap-3">
-            <span className="h-px w-6 bg-[var(--color-arena)]" />
-            <h2 className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-              {t("positionsRest")}
-            </h2>
-            <span className="h-px flex-1 bg-[var(--color-border)]" />
-          </div>
-          <div className="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]">
-            <div className="grid grid-cols-[56px_1fr_72px_56px_56px] gap-2 border-b border-[var(--color-border)] bg-[var(--color-surface-2)] px-4 py-2.5 font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)] sm:grid-cols-[56px_1fr_72px_64px_64px]">
-              <span>{t("thPos")}</span>
-              <span>{t("thParticipant")}</span>
-              <span className="text-right">{t("thPts")}</span>
-              <span className="hidden text-right sm:inline">{t("thExact")}</span>
-              <span className="hidden text-right sm:inline">{t("thKO")}</span>
-            </div>
-            <ul>
-              {rest.map((r, i) => {
-                const position = i + 4;
-                const isMe = r.userId === me.id;
-                const display = r.nickname || r.email.split("@")[0];
-                return (
-                  <li key={r.userId}>
-                    <Link
-                      href={`/ranking/${r.userId}`}
-                      className={`grid grid-cols-[56px_1fr_72px] items-center gap-2 border-b border-[var(--color-border)] px-4 py-3 last:border-b-0 transition hover:bg-[var(--color-surface-2)] sm:grid-cols-[56px_1fr_72px_64px_64px] ${
-                        isMe
-                          ? "bg-[color-mix(in_oklch,var(--color-arena)_6%,transparent)]"
-                          : ""
-                      }`}
-                    >
-                      <span className="font-display text-2xl tabular text-[var(--color-muted-foreground)]">
-                        {position.toString().padStart(2, "0")}
-                      </span>
-                      <span className="flex items-center gap-3 truncate">
-                        <Avatar className="size-8 border border-[var(--color-border)]">
-                          {r.avatarUrl ? <AvatarImage src={r.avatarUrl} alt="" /> : null}
-                          <AvatarFallback>{initials(display)}</AvatarFallback>
-                        </Avatar>
-                        <span className="truncate text-sm font-medium">{display}</span>
-                        {isMe ? (
-                          <Badge variant="default" className="ml-1">
-                            {t("you")}
-                          </Badge>
-                        ) : null}
-                      </span>
-                      <span className="text-right font-display tabular text-xl">
-                        {r.totalPoints}
-                      </span>
-                      <span className="hidden text-right text-sm tabular text-[var(--color-muted-foreground)] sm:inline">
-                        {r.exactScoresCount}
-                      </span>
-                      <span className="hidden text-right text-sm tabular text-[var(--color-muted-foreground)] sm:inline">
-                        {r.knockoutPoints}
-                      </span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        </section>
-      ) : null}
+      {/* Tabla de posiciones completa — incluye también al podio (además
+          de sus tarjetas de arriba) y pagina de 10 en 10: las quinielas
+          premium pueden tener cientos de miembros. */}
+      <LeagueStandings entries={ranked} meId={me.id} />
     </div>
   );
 }
