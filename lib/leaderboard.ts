@@ -95,6 +95,10 @@ async function loadGlobalLeaderboardRaw(mode: PredictionMode): Promise<GlobalRow
         b."exactScoresCount"  AS "exactScoresCount"
       FROM best b
       JOIN profiles p ON p.id = b."userId"
+      -- Usuarios dummy de la liga de demostración de empresas: nunca deben
+      -- aparecer en el ranking global (sus puntos simulados viven solo en su
+      -- liga privada de pruebas).
+      WHERE p.email NOT LIKE '%@demo.invalid'
       ORDER BY b."totalPoints" DESC, b."exactScoresCount" DESC, p.created_at ASC
     `);
     return rows as GlobalRow[];
