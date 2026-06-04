@@ -83,6 +83,9 @@ export function Sidebar({
             className={cn(
               "flex items-center transition-opacity hover:opacity-80",
               collapsed ? "justify-center" : "min-w-0 flex-1",
+              // El brand de empresa se centra en su zona (sin pisar la flecha);
+              // el wordmark de QM se queda alineado a la izquierda como siempre.
+              !collapsed && brandLogoUrl ? "justify-center" : null,
             )}
             aria-label="Quiniela Mundial"
             title={collapsed ? ts("homeTitle") : undefined}
@@ -108,12 +111,14 @@ export function Sidebar({
                 />
               )
             ) : brandLogoUrl ? (
-              // Premium: logo de marca de la empresa.
+              // Premium: logo de marca de la empresa. Aprovecha todo el ancho
+              // de su zona (centrado) y un pelín más de alto que el wordmark
+              // para que no quede pequeño cuando la marca es ancha.
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={brandLogoUrl}
                 alt=""
-                className="h-12 w-auto max-w-[12rem] object-contain"
+                className="h-14 max-h-14 w-auto max-w-full object-contain"
               />
             ) : (
               // Expandido: logo horizontal "Quiniela Mundial".

@@ -1,1 +1,1 @@
-ALTER TABLE "leagues" ADD COLUMN "brand_logo_url" text;
+ALTER TABLE "leagues" ADD COLUMN IF NOT EXISTS "brand_logo_url" text;
