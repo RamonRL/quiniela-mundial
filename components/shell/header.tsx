@@ -27,6 +27,8 @@ type Props = {
   isAdmin: boolean;
   memberships: Membership[];
   activeLeagueId: number | null;
+  /** Logo de marca de la liga activa (premium) — sustituye el wordmark QM. */
+  brandLogoUrl?: string | null;
 };
 
 export function AppHeader({
@@ -36,6 +38,7 @@ export function AppHeader({
   isAdmin,
   memberships,
   activeLeagueId,
+  brandLogoUrl,
 }: Props) {
   const isAuthenticated = !!email;
   const t = useTranslations("shell");
@@ -57,7 +60,17 @@ export function AppHeader({
           aria-label="Quiniela Mundial"
           className="block transition-opacity hover:opacity-80 lg:hidden"
         >
-          <BrandWordmark priority className="h-9 w-auto" />
+          {brandLogoUrl ? (
+            // Logo de marca de la liga (premium). Remota → <img> normal.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={brandLogoUrl}
+              alt=""
+              className="h-9 w-auto max-w-[9rem] object-contain"
+            />
+          ) : (
+            <BrandWordmark priority className="h-9 w-auto" />
+          )}
         </Link>
       </div>
       <div className="flex min-w-0 flex-1 justify-center lg:flex-initial">

@@ -12,7 +12,8 @@ import { requireAdmin, requireUser } from "@/lib/auth/guards";
 import { createSupabaseServerClient, createSupabaseServiceClient } from "@/lib/supabase/server";
 import { logAdminAction } from "@/lib/admin/audit";
 import { notifyNewPrivateLeague } from "@/lib/telegram/events";
-import { uploadImage } from "@/lib/storage";
+import { uploadImage, deleteImage } from "@/lib/storage";
+import { rateLimit } from "@/lib/ratelimit";
 import {
   MEMBER_LIMIT_FREE,
   PENDING_INVITE_COOKIE,
@@ -1016,4 +1017,97 @@ export async function finalizePaidLeague(
       inviteToken: res.inviteToken,
     },
   };
+}
+
+// ─────────────────── BRANDING (premium) ───────────────────
+
+const MAX_BRAND_BYTES = 2 * 1024 * 1024; // 2 MB — el cliente ya recorta a PNG pequeño.
+
+type ImgResult = { ok: boolean; error?: string; url?: string };
+
+/** Valida que `me` es el owner de una liga premium. Devuelve la liga o un error. */
+async function requireOwnerPremiumLeague(
+  leagueId: number,
+  meId: string,
+): Promise<{ tier: string } | { error: string }> {
+  const [target] = await db
+    .select({ createdBy: leagues.createdBy, tier: leagues.tier })
+    .from(leagues)
+    .where(eq(leagues.id, leagueId))
+    .limit(1);
+  if (!target) return { error: "Liga no encontrada." };
+  if (target.createdBy !== meId) return { error: "Solo el creador puede editar el branding." };
+  if (!isPremiumTier(target.tier)) return { error: "El branding forma parte de los Pases Mundial 2026." };
+  return { tier: target.tier };
+}
+
+/**
+ * Sube el logo CUADRADO de la liga (premium). Recibe un PNG ya recortado por el
+ * cliente (LogoCropDialog). Lo guarda en `leagues.logoUrl`.
+ */
+export async function uploadLeagueSquareLogo(formData: FormData): Promise<ImgResult> {
+  const me = await requireUser();
+  const id = Number(formData.get("id"));
+  const file = formData.get("logo");
+  if (!Number.isFinite(id)) return { ok: false, error: "Liga inválida." };
+  if (!(file instanceof File) || file.size === 0) return { ok: false, error: "Falta la imagen." };
+  if (file.size > MAX_BRAND_BYTES) return { ok: false, error: "La imagen es demasiado grande." };
+  const limited = await rateLimit(`league-logo:${me.id}`, 10, 60_000);
+  if (!limited.ok) return { ok: false, error: "Demasiados intentos. Espera un momento." };
+  const guard = await requireOwnerPremiumLeague(id, me.id);
+  if ("error" in guard) return { ok: false, error: guard.error };
+  try {
+    const url = await uploadImage({ kind: "league", path: `${id}.png`, file });
+    await db.update(leagues).set({ logoUrl: url }).where(eq(leagues.id, id));
+    revalidatePath("/mi-quiniela");
+    revalidatePath("/", "layout");
+    return { ok: true, url };
+  } catch {
+    return { ok: false, error: "No se pudo subir el logo. Reinténtalo." };
+  }
+}
+
+/**
+ * Sube el logo de MARCA (premium) — sustituye el wordmark "Quiniela Mundial" en
+ * el shell para todos los miembros. PNG rectangular ya recortado por el cliente.
+ */
+export async function uploadLeagueBrandLogo(formData: FormData): Promise<ImgResult> {
+  const me = await requireUser();
+  const id = Number(formData.get("id"));
+  const file = formData.get("logo");
+  if (!Number.isFinite(id)) return { ok: false, error: "Liga inválida." };
+  if (!(file instanceof File) || file.size === 0) return { ok: false, error: "Falta la imagen." };
+  if (file.size > MAX_BRAND_BYTES) return { ok: false, error: "La imagen es demasiado grande." };
+  const limited = await rateLimit(`league-brand:${me.id}`, 10, 60_000);
+  if (!limited.ok) return { ok: false, error: "Demasiados intentos. Espera un momento." };
+  const guard = await requireOwnerPremiumLeague(id, me.id);
+  if ("error" in guard) return { ok: false, error: guard.error };
+  try {
+    const url = await uploadImage({ kind: "league", path: `${id}-brand.png`, file });
+    await db.update(leagues).set({ brandLogoUrl: url }).where(eq(leagues.id, id));
+    revalidatePath("/mi-quiniela");
+    revalidatePath("/", "layout");
+    return { ok: true, url };
+  } catch {
+    return { ok: false, error: "No se pudo subir la marca. Reinténtalo." };
+  }
+}
+
+/** Quita el logo de marca → vuelve al branding de Quiniela Mundial. */
+export async function removeLeagueBrandLogo(formData: FormData): Promise<ImgResult> {
+  const me = await requireUser();
+  const id = Number(formData.get("id"));
+  if (!Number.isFinite(id)) return { ok: false, error: "Liga inválida." };
+  const guard = await requireOwnerPremiumLeague(id, me.id);
+  if ("error" in guard) return { ok: false, error: guard.error };
+  await db.update(leagues).set({ brandLogoUrl: null }).where(eq(leagues.id, id));
+  // Borrado best-effort del fichero (no bloqueante para la UX).
+  try {
+    await deleteImage({ kind: "league", path: `${id}-brand.png` });
+  } catch {
+    /* el fichero puede no existir; da igual */
+  }
+  revalidatePath("/mi-quiniela");
+  revalidatePath("/", "layout");
+  return { ok: true };
 }

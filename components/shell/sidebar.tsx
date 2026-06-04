@@ -23,6 +23,10 @@ type Props = {
    * Comparar, Chat, Mi Quiniela). Quedan solo los públicos del torneo.
    */
   isAuthenticated?: boolean;
+  /** Logo de marca de la liga activa (premium) — sustituye el wordmark QM expandido. */
+  brandLogoUrl?: string | null;
+  /** Logo cuadrado de la liga activa (premium) — sustituye el qm-mark plegado. */
+  squareLogoUrl?: string | null;
 };
 
 // Cookie name compartido con el server-side reader del layout para que el
@@ -36,6 +40,8 @@ export function Sidebar({
   defaultCollapsed = false,
   showMyLeague = false,
   isAuthenticated = true,
+  brandLogoUrl,
+  squareLogoUrl,
 }: Props) {
   const pathname = usePathname();
   const t = useTranslations("nav");
@@ -82,15 +88,32 @@ export function Sidebar({
             title={collapsed ? ts("homeTitle") : undefined}
           >
             {collapsed ? (
-              // Colapsado: mark cuadrado de Quiniela Mundial
-              // (favicon/croppedalpha.png).
-              <Image
-                src="/qm-mark.png"
-                alt="Quiniela Mundial"
-                width={940}
-                height={973}
-                priority
-                className="size-12 object-contain"
+              squareLogoUrl ? (
+                // Premium: logo cuadrado de la liga.
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={squareLogoUrl}
+                  alt=""
+                  className="size-12 rounded-md object-contain"
+                />
+              ) : (
+                // Colapsado: mark cuadrado de Quiniela Mundial.
+                <Image
+                  src="/qm-mark.png"
+                  alt="Quiniela Mundial"
+                  width={940}
+                  height={973}
+                  priority
+                  className="size-12 object-contain"
+                />
+              )
+            ) : brandLogoUrl ? (
+              // Premium: logo de marca de la empresa.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={brandLogoUrl}
+                alt=""
+                className="h-12 w-auto max-w-[12rem] object-contain"
               />
             ) : (
               // Expandido: logo horizontal "Quiniela Mundial".

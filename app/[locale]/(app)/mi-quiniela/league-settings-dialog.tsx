@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { LeagueLogoDropzone } from "@/components/leagues/league-logo-dropzone";
 import { LeagueLogoGalleryPicker } from "@/components/leagues/league-logo-gallery-picker";
 import {
   updateLeague,
@@ -44,7 +43,6 @@ export function LeagueSettingsDialog({ league, memberCount }: Props) {
   const [open, setOpen] = useState(false);
   const [state, action, pending] = useActionState(updateLeague, initial);
   const [name, setName] = useState(league.name);
-  const [logoBusy, setLogoBusy] = useState(false);
 
   // Zona peligrosa (eliminar)
   const confirmWord = t("confirmWord");
@@ -109,27 +107,12 @@ export function LeagueSettingsDialog({ league, memberCount }: Props) {
             />
           </div>
 
-          <div className="space-y-1.5">
-            <Label>{t("logoLabel")}</Label>
-            <LeagueLogoGalleryPicker initialLogoUrl={league.logoUrl} />
-          </div>
-
-          {league.isPremium ? (
-            <div className="rounded-md border border-[var(--color-border)] p-3">
-              <div className="pb-2 font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
-                {t("customLogo")}
-              </div>
-              <div className="flex items-center gap-3">
-                <LeagueLogoDropzone
-                  initialLogoUrl={league.logoUrl}
-                  fallbackName={name}
-                  sizeClass="size-14 sm:size-16"
-                  onCompressingChange={setLogoBusy}
-                />
-                <p className="font-editorial text-xs italic leading-snug text-[var(--color-muted-foreground)]">
-                  {t("customLogoHint")}
-                </p>
-              </div>
+          {/* Logo: solo en no-premium. En premium se gestiona desde la tab
+              BRANDING (logo cuadrado + marca con cropper). */}
+          {!league.isPremium ? (
+            <div className="space-y-1.5">
+              <Label>{t("logoLabel")}</Label>
+              <LeagueLogoGalleryPicker initialLogoUrl={league.logoUrl} />
             </div>
           ) : null}
 
@@ -141,7 +124,7 @@ export function LeagueSettingsDialog({ league, memberCount }: Props) {
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               {t("cancel")}
             </Button>
-            <Button type="submit" disabled={pending || logoBusy}>
+            <Button type="submit" disabled={pending}>
               <Save />
               {pending ? t("saving") : t("save")}
             </Button>

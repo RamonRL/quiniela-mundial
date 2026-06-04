@@ -143,6 +143,10 @@ export type Membership = {
   announcement: string | null;
   /** Creador de la liga — para saber si el usuario actual es el owner. */
   createdBy: string | null;
+  /** Logo de marca (premium): sustituye el wordmark QM en el shell. */
+  brandLogoUrl: string | null;
+  /** Tier de la liga — para gating premium en el shell. */
+  tier: LeagueTier;
 };
 
 /**
@@ -163,6 +167,8 @@ export async function getMembershipsForUser(userId: string): Promise<Membership[
       predictionMode: leagues.predictionMode,
       announcement: leagues.announcement,
       createdBy: leagues.createdBy,
+      brandLogoUrl: leagues.brandLogoUrl,
+      tier: leagues.tier,
     })
     .from(leagueMemberships)
     .innerJoin(leagues, eq(leagueMemberships.leagueId, leagues.id))
@@ -170,7 +176,11 @@ export async function getMembershipsForUser(userId: string): Promise<Membership[
     .orderBy(asc(leagueMemberships.joinedAt));
   // Pública primero, luego por antigüedad de la membresía.
   return rows
-    .map((r) => ({ ...r, predictionMode: r.predictionMode as PredictionMode }))
+    .map((r) => ({
+      ...r,
+      predictionMode: r.predictionMode as PredictionMode,
+      tier: r.tier as LeagueTier,
+    }))
     .sort((a, b) => {
       if (a.isPublic !== b.isPublic) return a.isPublic ? -1 : 1;
       return a.joinedAt.getTime() - b.joinedAt.getTime();

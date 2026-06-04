@@ -22,7 +22,9 @@ import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, inLeagueFilter, isPremiumTier } from "@/lib/leagues";
 import { formatDateTime, initials } from "@/lib/utils";
 import { CollapsibleSection } from "@/components/shell/collapsible-section";
+import { LeagueTabs } from "@/components/shell/league-tabs";
 import { CodeDisplay } from "./code-display";
+import { LeagueBrandingPanel } from "./league-branding-panel";
 import { LeagueSettingsDialog } from "./league-settings-dialog";
 import { KickButton, LeaveButton } from "./member-actions";
 import { AnnouncementForm } from "./announcement-form";
@@ -33,7 +35,7 @@ export const dynamic = "force-dynamic";
 export default async function MyLeaguePage() {
   const me = await requireUser();
   const t = await getTranslations("myPool");
-  const tModes = await getTranslations("modes");
+  const tBranding = await getTranslations("branding");
   const leagueId = await currentLeagueId(me);
   if (leagueId == null) redirect("/onboarding");
 
@@ -126,6 +128,92 @@ export default async function MyLeaguePage() {
         }
       />
 
+      {isOwner && isPremium ? (
+        <LeagueTabs
+          tabs={[
+            {
+              id: "info",
+              label: tBranding("tabInfo"),
+              content: (
+                <LeagueInfoContent
+                  league={league}
+                  members={members}
+                  pointsByUser={pointsByUser}
+                  isOwner={isOwner}
+                  meId={me.id}
+                  memberLimit={memberLimit}
+                  isPremium={isPremium}
+                  showUpgrade={false}
+                />
+              ),
+            },
+            {
+              id: "branding",
+              label: tBranding("tabBranding"),
+              content: (
+                <LeagueBrandingPanel
+                  leagueId={league.id}
+                  initialLogoUrl={league.logoUrl}
+                  initialBrandUrl={league.brandLogoUrl}
+                />
+              ),
+            },
+            {
+              id: "features",
+              label: tBranding("tabFeatures"),
+              content: (
+                <FeaturesPanel
+                  leagueId={league.id}
+                  leagueName={league.name}
+                  announcement={league.announcement}
+                />
+              ),
+            },
+          ]}
+        />
+      ) : (
+        <LeagueInfoContent
+          league={league}
+          members={members}
+          pointsByUser={pointsByUser}
+          isOwner={isOwner}
+          meId={me.id}
+          memberLimit={memberLimit}
+          isPremium={isPremium}
+          showUpgrade={isOwner && !isPremium}
+        />
+      )}
+    </div>
+  );
+}
+
+/**
+ * Panel INFO: invitación (código + link) + stats + participantes + footer.
+ * Compartido por la tab INFO (premium) y la vista secuencial (no-premium).
+ */
+function LeagueInfoContent({
+  league,
+  members,
+  pointsByUser,
+  isOwner,
+  meId,
+  memberLimit,
+  isPremium,
+  showUpgrade,
+}: {
+  league: typeof leagues.$inferSelect;
+  members: (typeof profiles.$inferSelect)[];
+  pointsByUser: Map<string, number>;
+  isOwner: boolean;
+  meId: string;
+  memberLimit: number | null;
+  isPremium: boolean;
+  showUpgrade: boolean;
+}) {
+  const t = useTranslations("myPool");
+  const tModes = useTranslations("modes");
+  return (
+    <div className="space-y-8">
       {league.joinCode ? (
         <CodeDisplay code={league.joinCode} inviteToken={league.inviteToken} />
       ) : null}
@@ -134,7 +222,9 @@ export default async function MyLeaguePage() {
         <StatTile
           label={t("statMembers")}
           value={
-            memberLimit != null ? `${members.length} / ${memberLimit}` : String(members.length)
+            memberLimit != null
+              ? `${members.length} / ${memberLimit}`
+              : String(members.length)
           }
           accent
           textValue
@@ -151,84 +241,8 @@ export default async function MyLeaguePage() {
         />
       </section>
 
-      {isOwner && !isPremium ? (
-        <UpgradePromo
-          currentMembers={members.length}
-          currentLimit={memberLimit}
-        />
-      ) : null}
-
-      {isOwner && isPremium ? (
-        <section className="space-y-4">
-          <hr className="border-[var(--color-border)]" />
-          <h2 className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-            {t("premiumSection")}
-          </h2>
-
-          {/* Anuncio fijado — plegable, cerrado por defecto */}
-          <CollapsibleSection
-            title={t("annTitle")}
-            description={t("annShort")}
-            badge="PREMIUM"
-            icon={<Megaphone className="size-4" />}
-          >
-            <AnnouncementForm
-              leagueId={league.id}
-              leagueName={league.name}
-              initialValue={league.announcement}
-            />
-          </CollapsibleSection>
-
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <Link
-            href="/mi-quiniela/departamentos"
-            className="flex items-center gap-3 rounded-xl border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_4%,var(--color-surface))] p-4 transition hover:border-[var(--color-arena)]/60"
-          >
-            <span className="grid size-9 place-items-center rounded-md bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]">
-              <Building2 className="size-4" />
-            </span>
-            <div className="min-w-0">
-              <p className="font-display text-sm tracking-tight">{t("deptCardTitle")}</p>
-              <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
-                {t("deptCardDesc")}
-              </p>
-            </div>
-          </Link>
-          {/* Descarga de fichero vía route handler — el <a> es deliberado
-              (queremos navegación real, no Link). */}
-          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-          <a
-            href="/mi-quiniela/export"
-            className="flex items-center gap-3 rounded-xl border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_4%,var(--color-surface))] p-4 transition hover:border-[var(--color-arena)]/60"
-          >
-            <span className="grid size-9 place-items-center rounded-md bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]">
-              <Download className="size-4" />
-            </span>
-            <div className="min-w-0">
-              <p className="font-display text-sm tracking-tight">{t("exportCardTitle")}</p>
-              <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
-                {t("exportCardDesc")}
-              </p>
-            </div>
-          </a>
-          <a
-            href="mailto:admin@quinielamundial.es?subject=Soporte%20Pase%20Mundial%202026"
-            className="flex items-center gap-3 rounded-xl border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_4%,var(--color-surface))] p-4 transition hover:border-[var(--color-arena)]/60"
-          >
-            <span className="grid size-9 place-items-center rounded-md bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]">
-              <Mail className="size-4" />
-            </span>
-            <div className="min-w-0">
-              <p className="flex items-center gap-1.5 font-display text-sm tracking-tight">
-                {t("supportCardTitle")} <Sparkles className="size-3" />
-              </p>
-              <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
-                {t("supportCardDesc")}
-              </p>
-            </div>
-          </a>
-          </div>
-        </section>
+      {showUpgrade ? (
+        <UpgradePromo currentMembers={members.length} currentLimit={memberLimit} />
       ) : null}
 
       <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]">
@@ -259,7 +273,7 @@ export default async function MyLeaguePage() {
                 const display = m.nickname || m.email.split("@")[0];
                 const points = pointsByUser.get(m.id) ?? 0;
                 const isCreator = m.id === league.createdBy;
-                const isMe = m.id === me.id;
+                const isMe = m.id === meId;
                 return (
                   <TableRow key={m.id}>
                     <TableCell>
@@ -328,6 +342,83 @@ export default async function MyLeaguePage() {
           })}
         </p>
       ) : null}
+    </div>
+  );
+}
+
+/** Panel FUNCIONALIDADES: anuncio fijado (plegable) + cards de features. */
+function FeaturesPanel({
+  leagueId,
+  leagueName,
+  announcement,
+}: {
+  leagueId: number;
+  leagueName: string;
+  announcement: string | null;
+}) {
+  const t = useTranslations("myPool");
+  return (
+    <div className="space-y-4">
+      <CollapsibleSection
+        title={t("annTitle")}
+        description={t("annShort")}
+        badge="PREMIUM"
+        icon={<Megaphone className="size-4" />}
+      >
+        <AnnouncementForm
+          leagueId={leagueId}
+          leagueName={leagueName}
+          initialValue={announcement}
+        />
+      </CollapsibleSection>
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <Link
+          href="/mi-quiniela/departamentos"
+          className="flex items-center gap-3 rounded-xl border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_4%,var(--color-surface))] p-4 transition hover:border-[var(--color-arena)]/60"
+        >
+          <span className="grid size-9 place-items-center rounded-md bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]">
+            <Building2 className="size-4" />
+          </span>
+          <div className="min-w-0">
+            <p className="font-display text-sm tracking-tight">{t("deptCardTitle")}</p>
+            <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
+              {t("deptCardDesc")}
+            </p>
+          </div>
+        </Link>
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+        <a
+          href="/mi-quiniela/export"
+          className="flex items-center gap-3 rounded-xl border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_4%,var(--color-surface))] p-4 transition hover:border-[var(--color-arena)]/60"
+        >
+          <span className="grid size-9 place-items-center rounded-md bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]">
+            <Download className="size-4" />
+          </span>
+          <div className="min-w-0">
+            <p className="font-display text-sm tracking-tight">{t("exportCardTitle")}</p>
+            <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
+              {t("exportCardDesc")}
+            </p>
+          </div>
+        </a>
+        <a
+          href="mailto:admin@quinielamundial.es?subject=Soporte%20Pase%20Mundial%202026"
+          className="flex items-center gap-3 rounded-xl border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_4%,var(--color-surface))] p-4 transition hover:border-[var(--color-arena)]/60"
+        >
+          <span className="grid size-9 place-items-center rounded-md bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]">
+            <Mail className="size-4" />
+          </span>
+          <div className="min-w-0">
+            <p className="flex items-center gap-1.5 font-display text-sm tracking-tight">
+              {t("supportCardTitle")} <Sparkles className="size-3" />
+            </p>
+            <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
+              {t("supportCardDesc")}
+            </p>
+          </div>
+        </a>
+      </div>
     </div>
   );
 }

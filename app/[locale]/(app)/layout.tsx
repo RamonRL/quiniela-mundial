@@ -6,6 +6,7 @@ import {
   currentLeagueId,
   getLeagueModes,
   getMembershipsForUser,
+  isPremiumTier,
   type Membership,
 } from "@/lib/leagues";
 import { AppHeader } from "@/components/shell/header";
@@ -72,6 +73,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // no se sale).
   const activeMembership = memberships.find((m) => m.id === currentView);
   const showMyLeague = activeMembership ? !activeMembership.isPublic : false;
+  // Branding premium: la marca de la liga activa sustituye el logo de QM en el
+  // shell (header móvil + sidebar). Solo si la liga es premium y tiene logos.
+  const activeIsPremium = activeMembership
+    ? isPremiumTier(activeMembership.tier)
+    : false;
+  const brandLogoUrl = activeIsPremium ? (activeMembership?.brandLogoUrl ?? null) : null;
+  const squareLogoUrl = activeIsPremium ? (activeMembership?.logoUrl ?? null) : null;
   const activeLeagueId = currentView ?? me.leagueId!;
   // Modo de la liga activa → decide qué variante del tutorial se dispara
   // (Completo / Marcador / Solo Ganador), tanto en el primer login como en
@@ -86,6 +94,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           myId={me.id}
           defaultCollapsed={sidebarCollapsed}
           showMyLeague={showMyLeague}
+          brandLogoUrl={brandLogoUrl}
+          squareLogoUrl={squareLogoUrl}
         />
         <div className="flex min-w-0 flex-1 flex-col">
           <Suspense fallback={<div aria-hidden />}>
@@ -98,6 +108,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             isAdmin={isAdmin}
             memberships={memberships}
             activeLeagueId={currentView}
+            brandLogoUrl={brandLogoUrl}
           />
           {activeMembership?.announcement ? (
             <LeagueAnnouncementBar

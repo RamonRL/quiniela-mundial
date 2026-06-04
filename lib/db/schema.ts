@@ -183,6 +183,12 @@ export const leagues = pgTable(
     paidTxId: text("paid_tx_id").unique(),
     // Anuncio fijado del owner — banner en /mi-quiniela. Premium-only.
     announcement: text("announcement"),
+    // Logo de MARCA de la empresa (premium): sustituye el wordmark "Quiniela
+    // Mundial" arriba a la izquierda (header móvil + sidebar expandida) para
+    // todos los miembros de la liga. Rectangular, fondo transparente recomendado.
+    // El logo cuadrado de la liga sigue en `logoUrl` (se usa en la sidebar
+    // plegada y el switcher).
+    brandLogoUrl: text("brand_logo_url"),
   },
   (t) => [
     index("leagues_invite_token_idx").on(t.inviteToken),

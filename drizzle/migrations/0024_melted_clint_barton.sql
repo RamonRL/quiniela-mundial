@@ -1,0 +1,1 @@
+ALTER TABLE "leagues" ADD COLUMN "brand_logo_url" text;
