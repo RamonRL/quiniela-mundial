@@ -20,6 +20,7 @@ import { PageHeader } from "@/components/shell/page-header";
 import { EmptyState } from "@/components/shell/empty-state";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, inLeagueFilter, isPremiumTier } from "@/lib/leagues";
+import { canUseBranding } from "@/lib/league-tiers";
 import { formatDateTime, initials } from "@/lib/utils";
 import { CollapsibleSection } from "@/components/shell/collapsible-section";
 import { LeagueTabs } from "@/components/shell/league-tabs";
@@ -67,6 +68,9 @@ export default async function MyLeaguePage() {
   const pointsByUser = new Map(pointsRows.map((r) => [r.userId, r.total]));
   const isOwner = league.createdBy === me.id;
   const isPremium = isPremiumTier(league.tier);
+  // Branding personalizado: solo Pase Empresa (100) o superior. El team-50
+  // ve únicamente INFO y FUNCIONALIDADES.
+  const canBrand = canUseBranding(league.tier);
   const memberLimit = league.memberLimit;
   const ratio = memberLimit != null ? members.length / memberLimit : 0;
   const isFull = memberLimit != null && members.length >= memberLimit;
@@ -147,18 +151,22 @@ export default async function MyLeaguePage() {
                 />
               ),
             },
-            {
-              id: "branding",
-              label: tBranding("tabBranding"),
-              content: (
-                <LeagueBrandingPanel
-                  leagueId={league.id}
-                  initialLogoUrl={league.logoUrl}
-                  initialBrandUrl={league.brandLogoUrl}
-                  initialBrandLightUrl={league.brandLogoLightUrl}
-                />
-              ),
-            },
+            ...(canBrand
+              ? [
+                  {
+                    id: "branding",
+                    label: tBranding("tabBranding"),
+                    content: (
+                      <LeagueBrandingPanel
+                        leagueId={league.id}
+                        initialLogoUrl={league.logoUrl}
+                        initialBrandUrl={league.brandLogoUrl}
+                        initialBrandLightUrl={league.brandLogoLightUrl}
+                      />
+                    ),
+                  },
+                ]
+              : []),
             {
               id: "features",
               label: tBranding("tabFeatures"),
@@ -360,19 +368,6 @@ function FeaturesPanel({
   const t = useTranslations("myPool");
   return (
     <div className="space-y-4">
-      <CollapsibleSection
-        title={t("annTitle")}
-        description={t("annShort")}
-        badge="PREMIUM"
-        icon={<Megaphone className="size-4" />}
-      >
-        <AnnouncementForm
-          leagueId={leagueId}
-          leagueName={leagueName}
-          initialValue={announcement}
-        />
-      </CollapsibleSection>
-
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Link
           href="/mi-quiniela/departamentos"
@@ -382,7 +377,9 @@ function FeaturesPanel({
             <Building2 className="size-4" />
           </span>
           <div className="min-w-0">
-            <p className="font-display text-sm tracking-tight">{t("deptCardTitle")}</p>
+            <p className="flex items-center gap-1.5 font-display text-sm tracking-tight">
+              {t("deptCardTitle")} <PremiumPill />
+            </p>
             <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
               {t("deptCardDesc")}
             </p>
@@ -397,7 +394,9 @@ function FeaturesPanel({
             <Download className="size-4" />
           </span>
           <div className="min-w-0">
-            <p className="font-display text-sm tracking-tight">{t("exportCardTitle")}</p>
+            <p className="flex items-center gap-1.5 font-display text-sm tracking-tight">
+              {t("exportCardTitle")} <PremiumPill />
+            </p>
             <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
               {t("exportCardDesc")}
             </p>
@@ -412,7 +411,7 @@ function FeaturesPanel({
           </span>
           <div className="min-w-0">
             <p className="flex items-center gap-1.5 font-display text-sm tracking-tight">
-              {t("supportCardTitle")} <Sparkles className="size-3" />
+              {t("supportCardTitle")} <Sparkles className="size-3" /> <PremiumPill />
             </p>
             <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
               {t("supportCardDesc")}
@@ -420,7 +419,30 @@ function FeaturesPanel({
           </div>
         </a>
       </div>
+
+      {/* Anuncio fijado — debajo de los otros 3 features, plegado por defecto */}
+      <CollapsibleSection
+        title={t("annTitle")}
+        description={t("annShort")}
+        badge="PREMIUM"
+        icon={<Megaphone className="size-4" />}
+      >
+        <AnnouncementForm
+          leagueId={leagueId}
+          leagueName={leagueName}
+          initialValue={announcement}
+        />
+      </CollapsibleSection>
     </div>
+  );
+}
+
+/** Pill "PREMIUM" — mismo estilo que el badge del plegable. */
+function PremiumPill() {
+  return (
+    <span className="rounded-full bg-[var(--color-arena)] px-1.5 py-px text-[0.55rem] font-semibold tracking-[0.12em] text-white">
+      PREMIUM
+    </span>
   );
 }
 

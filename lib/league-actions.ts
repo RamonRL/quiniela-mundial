@@ -26,7 +26,7 @@ import {
   isPremiumTier,
   joinLeagueByInviteToken,
 } from "@/lib/leagues";
-import { TIER_LABEL } from "@/lib/league-tiers";
+import { TIER_LABEL, canUseBranding } from "@/lib/league-tiers";
 import { PREDICTION_MODE_META, type PredictionMode } from "@/lib/prediction-modes";
 import { presetUrlById, DEFAULT_PRESET_LOGO_URL } from "@/lib/league-logos";
 import {
@@ -1037,7 +1037,9 @@ async function requireOwnerPremiumLeague(
     .limit(1);
   if (!target) return { error: "Liga no encontrada." };
   if (target.createdBy !== meId) return { error: "Solo el creador puede editar el branding." };
-  if (!isPremiumTier(target.tier)) return { error: "El branding forma parte de los Pases Mundial 2026." };
+  if (!canUseBranding(target.tier)) {
+    return { error: "El branding personalizado está disponible a partir del Pase Empresa (100)." };
+  }
   return { tier: target.tier };
 }
 

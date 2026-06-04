@@ -60,3 +60,20 @@ export function canUseDepartments(
 ): boolean {
   return !!tier && DEPARTMENTS_ENABLED_TIERS.includes(tier as LeagueTier);
 }
+
+/**
+ * Tiers que desbloquean el BRANDING personalizado (tab Branding: logo cuadrado
+ * con cropper + marca que sustituye el wordmark QM en el shell). Solo a partir
+ * del Pase Empresa (100). El team-50 ve INFO y FUNCIONALIDADES.
+ */
+export const BRANDING_ENABLED_TIERS: readonly LeagueTier[] = [
+  "team-100",
+  "team-250",
+  "enterprise",
+];
+
+export function canUseBranding(
+  tier: LeagueTier | string | null | undefined,
+): boolean {
+  return !!tier && BRANDING_ENABLED_TIERS.includes(tier as LeagueTier);
+}

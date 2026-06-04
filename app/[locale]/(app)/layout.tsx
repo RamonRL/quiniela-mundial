@@ -6,9 +6,9 @@ import {
   currentLeagueId,
   getLeagueModes,
   getMembershipsForUser,
-  isPremiumTier,
   type Membership,
 } from "@/lib/leagues";
+import { canUseBranding } from "@/lib/league-tiers";
 import { AppHeader } from "@/components/shell/header";
 import { LeagueAnnouncementBar } from "@/components/shell/league-announcement-bar";
 import { Sidebar } from "@/components/shell/sidebar";
@@ -73,16 +73,16 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // no se sale).
   const activeMembership = memberships.find((m) => m.id === currentView);
   const showMyLeague = activeMembership ? !activeMembership.isPublic : false;
-  // Branding premium: la marca de la liga activa sustituye el logo de QM en el
-  // shell (header móvil + sidebar). Solo si la liga es premium y tiene logos.
-  const activeIsPremium = activeMembership
-    ? isPremiumTier(activeMembership.tier)
+  // Branding personalizado: la marca de la liga activa sustituye el logo de QM
+  // en el shell (header móvil + sidebar). Solo para Pase Empresa (100) o más.
+  const activeCanBrand = activeMembership
+    ? canUseBranding(activeMembership.tier)
     : false;
-  const brandLogoUrl = activeIsPremium ? (activeMembership?.brandLogoUrl ?? null) : null;
-  const brandLogoLightUrl = activeIsPremium
+  const brandLogoUrl = activeCanBrand ? (activeMembership?.brandLogoUrl ?? null) : null;
+  const brandLogoLightUrl = activeCanBrand
     ? (activeMembership?.brandLogoLightUrl ?? null)
     : null;
-  const squareLogoUrl = activeIsPremium ? (activeMembership?.logoUrl ?? null) : null;
+  const squareLogoUrl = activeCanBrand ? (activeMembership?.logoUrl ?? null) : null;
   const activeLeagueId = currentView ?? me.leagueId!;
   // Modo de la liga activa → decide qué variante del tutorial se dispara
   // (Completo / Marcador / Solo Ganador), tanto en el primer login como en
