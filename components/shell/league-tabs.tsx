@@ -15,7 +15,7 @@ export function LeagueTabs({ tabs, defaultTab }: { tabs: Tab[]; defaultTab?: str
     <div className="space-y-6">
       <div
         role="tablist"
-        className="flex gap-1 border-b border-[var(--color-border)]"
+        className="flex justify-center gap-1 border-b border-[var(--color-border)]"
       >
         {tabs.map((tab) => {
           const selected = tab.id === active;
@@ -26,7 +26,7 @@ export function LeagueTabs({ tabs, defaultTab }: { tabs: Tab[]; defaultTab?: str
               type="button"
               aria-selected={selected}
               onClick={() => setActive(tab.id)}
-              className={`relative -mb-px px-3 py-2.5 font-mono text-[0.62rem] uppercase tracking-[0.22em] transition sm:px-4 ${
+              className={`relative -mb-px px-4 py-3 font-mono text-[0.72rem] uppercase tracking-[0.2em] transition sm:px-5 ${
                 selected
                   ? "text-[var(--color-arena)]"
                   : "text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)]"

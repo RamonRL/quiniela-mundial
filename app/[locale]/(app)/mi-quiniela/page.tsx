@@ -5,7 +5,13 @@ import { useTranslations } from "next-intl";
 import { ArrowRight, Building2, Crown, Download, Mail, Megaphone, Sparkles, ShieldCheck, Users } from "lucide-react";
 import { asc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { leagues, pointsLedger, profiles } from "@/lib/db/schema";
+import {
+  leagueDepartments,
+  leagueMemberships,
+  leagues,
+  pointsLedger,
+  profiles,
+} from "@/lib/db/schema";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -20,7 +26,10 @@ import { PageHeader } from "@/components/shell/page-header";
 import { EmptyState } from "@/components/shell/empty-state";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, inLeagueFilter, isPremiumTier } from "@/lib/leagues";
-import { canUseBranding } from "@/lib/league-tiers";
+import { canUseBranding, canUseDepartments } from "@/lib/league-tiers";
+import { loadDepartmentRankings } from "@/lib/leaderboard";
+import { buildDeptCards, type DeptCardData } from "./departamentos/dept-data";
+import { MemberDepartmentsPanel } from "./departamentos/member-departments-panel";
 import { formatDateTime, initials } from "@/lib/utils";
 import { CollapsibleSection } from "@/components/shell/collapsible-section";
 import { LeagueTabs } from "@/components/shell/league-tabs";
@@ -71,6 +80,46 @@ export default async function MyLeaguePage() {
   // Branding personalizado: solo Pase Empresa (100) o superior. El team-50
   // ve únicamente INFO y FUNCIONALIDADES.
   const canBrand = canUseBranding(league.tier);
+
+  // Tab DEPARTAMENTOS/EQUIPOS para MIEMBROS (no-owner): solo si la liga es
+  // premium con la feature y el admin ya creó departamentos.
+  let memberDeptCards: DeptCardData[] | null = null;
+  let myDeptId: number | null = null;
+  if (!isOwner && canUseDepartments(league.tier)) {
+    const [depts, rankings, memberships] = await Promise.all([
+      db
+        .select()
+        .from(leagueDepartments)
+        .where(eq(leagueDepartments.leagueId, league.id))
+        .orderBy(asc(leagueDepartments.createdAt)),
+      loadDepartmentRankings(league.id),
+      db
+        .select({
+          userId: leagueMemberships.userId,
+          departmentId: leagueMemberships.departmentId,
+          joinedAt: leagueMemberships.joinedAt,
+        })
+        .from(leagueMemberships)
+        .where(eq(leagueMemberships.leagueId, league.id)),
+    ]);
+    if (depts.length > 0) {
+      const mById = new Map(memberships.map((m) => [m.userId, m]));
+      memberDeptCards = buildDeptCards(
+        depts,
+        rankings,
+        members.map((p) => ({
+          userId: p.id,
+          email: p.email,
+          nickname: p.nickname,
+          avatarUrl: p.avatarUrl,
+          departmentId: mById.get(p.id)?.departmentId ?? null,
+          joinedAt: (mById.get(p.id)?.joinedAt ?? p.createdAt).toISOString(),
+          points: pointsByUser.get(p.id) ?? 0,
+        })),
+      );
+      myDeptId = mById.get(me.id)?.departmentId ?? null;
+    }
+  }
   const memberLimit = league.memberLimit;
   const ratio = memberLimit != null ? members.length / memberLimit : 0;
   const isFull = memberLimit != null && members.length >= memberLimit;
@@ -175,6 +224,38 @@ export default async function MyLeaguePage() {
                   leagueId={league.id}
                   leagueName={league.name}
                   announcement={league.announcement}
+                />
+              ),
+            },
+          ]}
+        />
+      ) : memberDeptCards ? (
+        <LeagueTabs
+          tabs={[
+            {
+              id: "info",
+              label: tBranding("tabInfo"),
+              content: (
+                <LeagueInfoContent
+                  league={league}
+                  members={members}
+                  pointsByUser={pointsByUser}
+                  isOwner={isOwner}
+                  meId={me.id}
+                  memberLimit={memberLimit}
+                  isPremium={isPremium}
+                  showUpgrade={false}
+                />
+              ),
+            },
+            {
+              id: "depts",
+              label: t("deptCardTitle"),
+              content: (
+                <MemberDepartmentsPanel
+                  leagueId={league.id}
+                  myDeptId={myDeptId}
+                  cards={memberDeptCards}
                 />
               ),
             },

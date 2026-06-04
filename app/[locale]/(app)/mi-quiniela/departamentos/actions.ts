@@ -277,3 +277,73 @@ export async function assignMemberToDepartment(
   revalidatePath("/ranking");
   return { ok: true };
 }
+
+/**
+ * El propio MIEMBRO elige su departamento (una sola vez — queda bloqueado;
+ * después solo el admin puede moverlo desde la tab Miembros). No requiere ser
+ * owner: solo ser miembro de la liga, con la feature activa.
+ */
+export async function selfAssignDepartment(
+  formData: FormData,
+): Promise<DepartmentFormState> {
+  const me = await requireUser();
+  const leagueId = Number(formData.get("leagueId"));
+  const deptId = Number(formData.get("deptId"));
+  if (!Number.isFinite(leagueId) || !Number.isFinite(deptId)) {
+    return { ok: false, error: "Datos inválidos." };
+  }
+
+  const [league] = await db
+    .select({ id: leagues.id, isPublic: leagues.isPublic, tier: leagues.tier })
+    .from(leagues)
+    .where(eq(leagues.id, leagueId))
+    .limit(1);
+  if (!league || league.isPublic) return { ok: false, error: "Liga no encontrada." };
+  if (!canUseDepartments(league.tier)) {
+    return { ok: false, error: "Esta quiniela no tiene departamentos activos." };
+  }
+
+  // Debe ser miembro y NO tener departamento aún (elección única).
+  const [membership] = await db
+    .select({ departmentId: leagueMemberships.departmentId })
+    .from(leagueMemberships)
+    .where(
+      and(
+        eq(leagueMemberships.leagueId, leagueId),
+        eq(leagueMemberships.userId, me.id),
+      ),
+    )
+    .limit(1);
+  if (!membership) return { ok: false, error: "No eres miembro de esta quiniela." };
+  if (membership.departmentId != null) {
+    return {
+      ok: false,
+      error: "Ya tienes equipo. Solo el admin puede cambiarte de departamento.",
+    };
+  }
+
+  // El departamento debe pertenecer a ESTA liga.
+  const [dept] = await db
+    .select({ id: leagueDepartments.id })
+    .from(leagueDepartments)
+    .where(
+      and(
+        eq(leagueDepartments.id, deptId),
+        eq(leagueDepartments.leagueId, leagueId),
+      ),
+    )
+    .limit(1);
+  if (!dept) return { ok: false, error: "Departamento no encontrado." };
+
+  await db
+    .update(leagueMemberships)
+    .set({ departmentId: deptId })
+    .where(
+      and(
+        eq(leagueMemberships.leagueId, leagueId),
+        eq(leagueMemberships.userId, me.id),
+      ),
+    );
+  revalidatePath("/mi-quiniela");
+  return { ok: true };
+}

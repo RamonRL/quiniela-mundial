@@ -1,13 +1,18 @@
 import { Link } from "@/i18n/navigation";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { ArrowLeft, Building2, Sparkles } from "lucide-react";
-import { asc, eq } from "drizzle-orm";
+import { ArrowLeft, Sparkles } from "lucide-react";
+import { asc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { leagueDepartments, leagueMemberships, leagues, profiles } from "@/lib/db/schema";
+import {
+  leagueDepartments,
+  leagueMemberships,
+  leagues,
+  pointsLedger,
+  profiles,
+} from "@/lib/db/schema";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shell/page-header";
-import { EmptyState } from "@/components/shell/empty-state";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId } from "@/lib/leagues";
 import { canUseDepartments } from "@/lib/league-tiers";
@@ -79,21 +84,29 @@ export default async function DepartmentsPage() {
     );
   }
 
-  // Miembros de la liga con su dept actual.
-  const members = await db
-    .select({
-      userId: profiles.id,
-      email: profiles.email,
-      nickname: profiles.nickname,
-      avatarUrl: profiles.avatarUrl,
-      departmentId: leagueMemberships.departmentId,
-    })
-    .from(leagueMemberships)
-    .innerJoin(profiles, eq(profiles.id, leagueMemberships.userId))
-    .where(eq(leagueMemberships.leagueId, league.id))
-    .orderBy(asc(profiles.email));
-
-  const [departments, rankings] = await Promise.all([
+  // Miembros de la liga con su dept actual + fecha de incorporación + puntos.
+  const [members, pointsRows, departments, rankings] = await Promise.all([
+    db
+      .select({
+        userId: profiles.id,
+        email: profiles.email,
+        nickname: profiles.nickname,
+        avatarUrl: profiles.avatarUrl,
+        departmentId: leagueMemberships.departmentId,
+        joinedAt: leagueMemberships.joinedAt,
+      })
+      .from(leagueMemberships)
+      .innerJoin(profiles, eq(profiles.id, leagueMemberships.userId))
+      .where(eq(leagueMemberships.leagueId, league.id))
+      .orderBy(asc(profiles.email)),
+    db
+      .select({
+        userId: pointsLedger.userId,
+        total: sql<number>`coalesce(sum(${pointsLedger.points}), 0)::int`,
+      })
+      .from(pointsLedger)
+      .where(eq(pointsLedger.leagueId, league.id))
+      .groupBy(pointsLedger.userId),
     db
       .select()
       .from(leagueDepartments)
@@ -101,6 +114,7 @@ export default async function DepartmentsPage() {
       .orderBy(asc(leagueDepartments.createdAt)),
     loadDepartmentRankings(league.id),
   ]);
+  const pointsByUser = new Map(pointsRows.map((r) => [r.userId, r.total]));
 
   return (
     <div className="space-y-6">
@@ -115,13 +129,6 @@ export default async function DepartmentsPage() {
         title={t("title")}
         description={t("desc")}
       />
-      {departments.length === 0 ? (
-        <EmptyState
-          icon={<Building2 className="size-5" />}
-          title={t("emptyTitle")}
-          description={t("emptyDesc")}
-        />
-      ) : null}
       <DepartmentsManager
         leagueId={league.id}
         departments={departments.map((d) => ({
@@ -137,6 +144,8 @@ export default async function DepartmentsPage() {
           nickname: m.nickname,
           avatarUrl: m.avatarUrl,
           departmentId: m.departmentId,
+          joinedAt: m.joinedAt.toISOString(),
+          points: pointsByUser.get(m.userId) ?? 0,
         }))}
       />
     </div>
