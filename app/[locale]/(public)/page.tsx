@@ -25,6 +25,8 @@ import { matches, teams } from "@/lib/db/schema";
 import { Reveal } from "@/components/animation/reveal";
 import { Counter } from "@/components/animation/counter";
 import { HeroPhones } from "./hero-phones";
+import { featureShotsFor } from "./feature-shots";
+import { type StaticImageData } from "next/image";
 import { TeamFlag } from "@/components/brand/team-flag";
 import { formatDateTime } from "@/lib/utils";
 import { FAQPageLD, SportsEventLD, WebSiteLD } from "@/components/seo/jsonld";
@@ -67,6 +69,8 @@ export default async function HomePage({
   const tNav = await getTranslations("nav");
   const tShell = await getTranslations("shell");
   const tModes = await getTranslations("modes");
+  const tPricing = await getTranslations("pricing");
+  const shots = featureShotsFor(locale);
   const faqs = Array.from({ length: FAQ_COUNT }, (_, i) => ({
     q: t(`faqs.q${i + 1}`),
     a: t(`faqs.a${i + 1}`),
@@ -396,7 +400,40 @@ export default async function HomePage({
             </div>
           </header>
 
-          {/* Tier cards · prices al frente */}
+          {/* Las 3 features premium, EN PANTALLA — capturas reales de la
+              liga demo. Cada card enlaza a /precios, donde viven los
+              showcases grandes. */}
+          <ul className="grid gap-3 sm:grid-cols-3">
+            <ShotFeature
+              delay={0}
+              shot={shots.branding}
+              alt={tPricing("scBrandAlt")}
+              title={t("empresas.shot1Title")}
+              text={t("empresas.shot1Text")}
+              tier={tPricing("scBrandTier")}
+              tierHighlight
+            />
+            <ShotFeature
+              delay={90}
+              shot={shots.depts}
+              alt={tPricing("scDeptAlt")}
+              title={t("empresas.shot2Title")}
+              text={t("empresas.shot2Text")}
+              tier={tPricing("scDeptTier")}
+            />
+            <ShotFeature
+              delay={180}
+              shot={shots.banner}
+              alt={tPricing("scBannerAlt")}
+              title={t("empresas.shot3Title")}
+              text={t("empresas.shot3Text")}
+              tier={tPricing("scBannerTier")}
+            />
+          </ul>
+
+          {/* Tier cards · prices al frente + qué desbloquea cada escalón.
+              La escalera tiene que leerse de un vistazo: el Branding entra
+              a partir del Pase Empresa. */}
           <div className="grid gap-3 sm:grid-cols-3">
             <TierTeaser
               priceEur={19}
@@ -404,6 +441,7 @@ export default async function HomePage({
               label={t("empresas.tier1Label")}
               members={t("empresas.tier1Members")}
               perPerson={t("empresas.tier1PerPerson")}
+              unlock={t("empresas.tier1Unlock")}
               popularLabel={t("empresas.mostPopular")}
               highlight
               delay={0}
@@ -414,6 +452,8 @@ export default async function HomePage({
               label={t("empresas.tier2Label")}
               members={t("empresas.tier2Members")}
               perPerson={t("empresas.tier2PerPerson")}
+              unlock={t("empresas.tier2Unlock")}
+              unlockHighlight
               delay={90}
             />
             <TierTeaser
@@ -422,33 +462,18 @@ export default async function HomePage({
               label={t("empresas.tier3Label")}
               members={t("empresas.tier3Members")}
               perPerson={t("empresas.tier3PerPerson")}
+              unlock={t("empresas.tier3Unlock")}
               delay={180}
             />
           </div>
 
-          {/* Killer features · una línea cada uno */}
-          <ul className="grid gap-3 sm:grid-cols-2">
-            <FeatureBullet
-              delay={0}
-              title={t("empresas.feat1Title")}
-              text={t("empresas.feat1Text")}
-            />
-            <FeatureBullet
-              delay={70}
-              title={t("empresas.feat2Title")}
-              text={t("empresas.feat2Text")}
-            />
-            <FeatureBullet
-              delay={140}
-              title={t("empresas.feat3Title")}
-              text={t("empresas.feat3Text")}
-            />
-            <FeatureBullet
-              delay={210}
-              title={t("empresas.feat4Title")}
-              text={t("empresas.feat4Text")}
-            />
-          </ul>
+          <Reveal variant="fade" className="flex items-center justify-center gap-3">
+            <span className="h-px w-6 bg-[var(--color-arena)]" />
+            <p className="text-center font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
+              {t("empresas.onePayment")}
+            </p>
+            <span className="h-px w-6 bg-[var(--color-arena)]" />
+          </Reveal>
         </div>
       </section>
 
@@ -914,6 +939,8 @@ function TierTeaser({
   label,
   members,
   perPerson,
+  unlock,
+  unlockHighlight,
   popularLabel,
   highlight,
   delay = 0,
@@ -923,6 +950,10 @@ function TierTeaser({
   label: string;
   members: string;
   perPerson: string;
+  /** Qué desbloquea este escalón respecto al anterior. */
+  unlock?: string;
+  /** true → en arena (el salto clave: Branding desde Pase Empresa). */
+  unlockHighlight?: boolean;
   popularLabel?: string;
   highlight?: boolean;
   delay?: number;
@@ -960,27 +991,74 @@ function TierTeaser({
       <p className="mt-1 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
         ≈ {perPerson}
       </p>
+      {unlock ? (
+        <p
+          className={`mt-2.5 flex items-start gap-1.5 border-t border-dashed border-[var(--color-border)] pt-2.5 text-[0.72rem] font-medium leading-snug ${
+            unlockHighlight ? "text-[var(--color-arena)]" : ""
+          }`}
+        >
+          <Check className="mt-0.5 size-3 shrink-0 text-[var(--color-arena)]" />
+          {unlock}
+        </p>
+      ) : null}
     </Reveal>
   );
 }
 
-function FeatureBullet({ title, text, delay = 0 }: { title: string; text: string; delay?: number }) {
+/**
+ * Mini-showcase de feature premium para la sección empresas de la home:
+ * captura real localizada con chip de tier encima + título y una línea.
+ * Toda la card enlaza a /precios, donde viven los showcases grandes.
+ */
+function ShotFeature({
+  shot,
+  alt,
+  title,
+  text,
+  tier,
+  tierHighlight,
+  delay = 0,
+}: {
+  shot: StaticImageData;
+  alt: string;
+  title: string;
+  text: string;
+  tier: string;
+  /** true → chip relleno arena (feature de tier superior: Branding). */
+  tierHighlight?: boolean;
+  delay?: number;
+}) {
   return (
-    <Reveal
-      as="li"
-      variant="up"
-      delay={delay}
-      className="flex items-start gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 transition-all hover:-translate-y-0.5 hover:border-[var(--color-arena)]/40"
-    >
-      <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-[var(--color-arena)] text-white">
-        <Check className="size-3" />
-      </span>
-      <div className="space-y-0.5">
-        <p className="font-display text-base tracking-tight">{title}</p>
-        <p className="font-editorial text-xs italic leading-snug text-[var(--color-muted-foreground)]">
-          {text}
-        </p>
-      </div>
+    <Reveal as="li" variant="up" delay={delay} className="group h-full">
+      <Link
+        href="/precios"
+        className="flex h-full flex-col overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] transition-all hover:-translate-y-1 hover:border-[var(--color-arena)]/40 hover:shadow-[var(--shadow-elev-1)]"
+      >
+        <div className="relative overflow-hidden border-b border-[var(--color-border)]">
+          <Image
+            src={shot}
+            alt={alt}
+            placeholder="blur"
+            sizes="(min-width: 640px) 33vw, 100vw"
+            className="h-auto w-full transition-transform duration-500 group-hover:scale-[1.04]"
+          />
+          <span
+            className={`absolute left-3 top-3 rounded-full px-2.5 py-1 font-mono text-[0.5rem] font-semibold uppercase tracking-[0.18em] ${
+              tierHighlight
+                ? "bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]"
+                : "border border-[var(--color-border-strong)] bg-[var(--color-bg)]/85 text-[var(--color-foreground)] backdrop-blur"
+            }`}
+          >
+            {tier}
+          </span>
+        </div>
+        <div className="space-y-1 p-4">
+          <h3 className="font-display text-lg tracking-tight">{title}</h3>
+          <p className="font-editorial text-xs italic leading-snug text-[var(--color-muted-foreground)]">
+            {text}
+          </p>
+        </div>
+      </Link>
     </Reveal>
   );
 }

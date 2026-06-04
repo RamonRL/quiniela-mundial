@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { type StaticImageData } from "next/image";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import {
   ArrowRight,
@@ -17,22 +16,7 @@ import { BreadcrumbLD, ProductOffersLD } from "@/components/seo/jsonld";
 import { CommercialLeadForm } from "@/components/leagues/commercial-lead-form";
 import { BuyerLeagueBanner } from "./buyer-league-banner";
 import { ShowcaseShot } from "./showcase-shot";
-
-// Capturas reales del producto (liga demo "Synaptech World Cup"),
-// localizadas por idioma. Static imports → next/image las optimiza y
-// genera el placeholder blur.
-import brandingES from "@/marketing/BRANDING/ES.png";
-import brandingEN from "@/marketing/BRANDING/EN.png";
-import brandingFR from "@/marketing/BRANDING/FR.png";
-import brandingPT from "@/marketing/BRANDING/PT.png";
-import deptsES from "@/marketing/DEPARTAMENTOS/ES.png";
-import deptsEN from "@/marketing/DEPARTAMENTOS/EN.png";
-import deptsFR from "@/marketing/DEPARTAMENTOS/FR.png";
-import deptsPT from "@/marketing/DEPARTAMENTOS/PT.png";
-import bannerES from "@/marketing/BANNER/ES.png";
-import bannerEN from "@/marketing/BANNER/EN.png";
-import bannerFR from "@/marketing/BANNER/FR.png";
-import bannerPT from "@/marketing/BANNER/PT.png";
+import { featureShotsFor } from "../feature-shots";
 
 type PaidTierId = "team-50" | "team-100" | "team-250";
 
@@ -54,13 +38,6 @@ export const metadata = {
       "Pase Mundial 2026 para empresas y grupos grandes: hasta 50, 100 o 250 miembros. Desde 19 €.",
     url: "/precios",
   },
-};
-
-const SHOTS: Record<string, Record<"branding" | "depts" | "banner", StaticImageData>> = {
-  es: { branding: brandingES, depts: deptsES, banner: bannerES },
-  en: { branding: brandingEN, depts: deptsEN, banner: bannerEN },
-  fr: { branding: brandingFR, depts: deptsFR, banner: bannerFR },
-  pt: { branding: brandingPT, depts: deptsPT, banner: bannerPT },
 };
 
 type Plan = {
@@ -95,7 +72,7 @@ export default async function PreciosPage({
   const t = await getTranslations("pricing");
   const tNav = await getTranslations("nav");
   const tHome = await getTranslations("home");
-  const shots = SHOTS[locale] ?? SHOTS.es;
+  const shots = featureShotsFor(locale);
 
   const PLANS: Plan[] = [
     {

@@ -105,7 +105,17 @@
       "feat3Title": "Up to 250 members per league",
       "feat3Text": "Three sizes so small teams or large rosters fit — scale up without migrating data.",
       "feat4Title": "Logo, CSV export, priority support",
-      "feat4Text": "Corporate branding in the header, exportable leaderboard and a direct email reply during the tournament."
+      "feat4Text": "Corporate branding in the header, exportable leaderboard and a direct email reply during the tournament.",
+      "shot1Title": "Corporate branding",
+      "shot1Text": "Your logo across the app, for every member of your league.",
+      "shot2Title": "Departments / Teams",
+      "shot2Text": "Marketing vs. Sales: team ranking by average points.",
+      "shot3Title": "Pinned announcement",
+      "shot3Text": "Your message on every page: prizes, rules, notices.",
+      "tier1Unlock": "Departments · Pinned announcement · CSV export",
+      "tier2Unlock": "+ Corporate branding with your logo",
+      "tier3Unlock": "Everything above, for large headcounts",
+      "onePayment": "One-time payment · covers the whole tournament · no renewal"
     },
     "tournament": {
       "eyebrow": "The tournament",

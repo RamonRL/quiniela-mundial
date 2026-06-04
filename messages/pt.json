@@ -105,7 +105,17 @@
       "feat3Title": "Até 250 membros por liga",
       "feat3Text": "Três tamanhos para caber times pequenos ou elencos grandes — você escala sem migrar dados.",
       "feat4Title": "Logo, exportação CSV, suporte prioritário",
-      "feat4Text": "Marca da empresa no cabeçalho, classificação exportável e resposta direta por e-mail durante o torneio."
+      "feat4Text": "Marca da empresa no cabeçalho, classificação exportável e resposta direta por e-mail durante o torneio.",
+      "shot1Title": "Branding corporativo",
+      "shot1Text": "Seu logo no app inteiro, para todos os membros da sua liga.",
+      "shot2Title": "Departamentos / Equipes",
+      "shot2Text": "Marketing contra Vendas: ranking de equipes pela média de pontos.",
+      "shot3Title": "Anúncio fixado",
+      "shot3Text": "Sua mensagem em cada página: prêmios, regras, avisos.",
+      "tier1Unlock": "Departamentos · Anúncio fixado · Export CSV",
+      "tier2Unlock": "+ Branding corporativo com o seu logo",
+      "tier3Unlock": "Tudo o anterior, para equipes grandes",
+      "onePayment": "Pagamento único · cobre o torneio inteiro · sem renovação"
     },
     "tournament": {
       "eyebrow": "O torneio",
