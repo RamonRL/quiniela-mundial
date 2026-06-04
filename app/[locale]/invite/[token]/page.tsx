@@ -57,19 +57,21 @@ export default async function InviteLandingPage({
   return (
     <div className="relative grid min-h-dvh place-items-center px-6 py-12">
       <div className="halftone pointer-events-none absolute inset-0 opacity-[0.04]" aria-hidden />
-      <div className="relative w-full max-w-md space-y-8 rounded-2xl border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_4%,var(--color-surface))] p-8 shadow-[var(--shadow-elev-2)] sm:p-10">
+      <div className="relative w-full max-w-md rounded-2xl border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_4%,var(--color-surface))] p-8 shadow-[var(--shadow-elev-2)] sm:p-10">
         <header className="space-y-3 text-center">
-          {/* Wordmark de QM, o la marca de la empresa si es premium con branding */}
-          <div className="mb-5 flex justify-center">
+          {/* Wordmark de QM, o la marca de la empresa si es premium con
+              branding. Sube un poco (-mt-2), 10% más grande (h-12→3.3rem) y
+              con más aire hasta el eyebrow (mb-9). */}
+          <div className="-mt-2 mb-9 flex justify-center">
             {brandUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={brandUrl}
                 alt={league.name}
-                className="h-12 w-auto max-w-[15rem] rounded-md object-contain"
+                className="h-[3.3rem] w-auto max-w-[16.5rem] rounded-md object-contain"
               />
             ) : (
-              <BrandWordmark priority className="h-12 w-auto" />
+              <BrandWordmark priority className="h-[3.3rem] w-auto" />
             )}
           </div>
           <p className="font-mono text-[0.68rem] uppercase tracking-[0.24em] text-[var(--color-arena)]">
@@ -86,7 +88,9 @@ export default async function InviteLandingPage({
           ) : null}
         </header>
 
-        <div className="grid gap-2 text-sm">
+        {/* Texto del header un poco más pegado a Miembros (mt-5 vs el 2rem
+            de antes); el resto de bloques conservan su separación original. */}
+        <div className="mt-5 grid gap-2 text-sm">
           <div className="flex items-center justify-between gap-3 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2.5">
             <span className="flex items-center gap-2 text-[var(--color-muted-foreground)]">
               <Users className="size-3.5" />
@@ -107,14 +111,14 @@ export default async function InviteLandingPage({
           </p>
         </div>
 
-        <form action={accept}>
+        <form action={accept} className="mt-8">
           <Button type="submit" size="lg" className="w-full">
             {t("accept")}
             <ArrowRight />
           </Button>
         </form>
 
-        <p className="text-center font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
+        <p className="mt-8 text-center font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
           {t.rich("haveAccount", {
             link: (chunks) => (
               <Link href="/login" className="underline">
