@@ -51,7 +51,10 @@ export function EmojiPicker({
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    // `modal`: este popover vive dentro de un Dialog (crear/editar dept) y el
+    // scroll-lock del dialog bloquea la rueda en contenido portaleado. En modo
+    // modal, Radix gestiona su propio scroll y la lista de emojis scrollea.
+    <Popover open={open} onOpenChange={setOpen} modal>
       <PopoverTrigger asChild>
         <button
           type="button"
