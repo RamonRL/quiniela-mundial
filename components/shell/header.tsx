@@ -66,7 +66,7 @@ export function AppHeader({
             <img
               src={brandLogoUrl}
               alt=""
-              className="h-9 w-auto max-w-[9rem] object-contain"
+              className="h-8 w-auto max-w-[6.5rem] object-contain"
             />
           ) : (
             <BrandWordmark priority className="h-9 w-auto" />
