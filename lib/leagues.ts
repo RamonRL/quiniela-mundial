@@ -145,6 +145,8 @@ export type Membership = {
   createdBy: string | null;
   /** Logo de marca (premium): sustituye el wordmark QM en el shell. */
   brandLogoUrl: string | null;
+  /** Variante de la marca para tema claro. Null = se usa brandLogoUrl. */
+  brandLogoLightUrl: string | null;
   /** Tier de la liga — para gating premium en el shell. */
   tier: LeagueTier;
 };
@@ -168,6 +170,7 @@ export async function getMembershipsForUser(userId: string): Promise<Membership[
       announcement: leagues.announcement,
       createdBy: leagues.createdBy,
       brandLogoUrl: leagues.brandLogoUrl,
+      brandLogoLightUrl: leagues.brandLogoLightUrl,
       tier: leagues.tier,
     })
     .from(leagueMemberships)

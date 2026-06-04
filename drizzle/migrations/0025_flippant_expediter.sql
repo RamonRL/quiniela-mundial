@@ -1,0 +1,1 @@
+ALTER TABLE "leagues" ADD COLUMN IF NOT EXISTS "brand_logo_light_url" text;

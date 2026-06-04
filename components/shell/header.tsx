@@ -29,6 +29,8 @@ type Props = {
   activeLeagueId: number | null;
   /** Logo de marca de la liga activa (premium) — sustituye el wordmark QM. */
   brandLogoUrl?: string | null;
+  /** Variante de la marca para tema claro. Null = brandLogoUrl en ambos. */
+  brandLogoLightUrl?: string | null;
 };
 
 export function AppHeader({
@@ -39,6 +41,7 @@ export function AppHeader({
   memberships,
   activeLeagueId,
   brandLogoUrl,
+  brandLogoLightUrl,
 }: Props) {
   const isAuthenticated = !!email;
   const t = useTranslations("shell");
@@ -61,13 +64,26 @@ export function AppHeader({
           className="block transition-opacity hover:opacity-80 lg:hidden"
         >
           {brandLogoUrl ? (
-            // Logo de marca de la liga (premium). Remota → <img> normal.
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={brandLogoUrl}
-              alt=""
-              className="h-8 w-auto max-w-[6.5rem] object-contain"
-            />
+            // Logo de marca de la liga (premium). Si hay variante para tema
+            // claro, ambas con visibilidad por tema (patrón BrandWordmark).
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={brandLogoUrl}
+                alt=""
+                className={`h-8 w-auto max-w-[6.5rem] object-contain${
+                  brandLogoLightUrl ? " hidden dark:block" : ""
+                }`}
+              />
+              {brandLogoLightUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={brandLogoLightUrl}
+                  alt=""
+                  className="block h-8 w-auto max-w-[6.5rem] object-contain dark:hidden"
+                />
+              ) : null}
+            </>
           ) : (
             <BrandWordmark priority className="h-9 w-auto" />
           )}

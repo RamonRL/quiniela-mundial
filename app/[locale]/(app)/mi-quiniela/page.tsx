@@ -155,6 +155,7 @@ export default async function MyLeaguePage() {
                   leagueId={league.id}
                   initialLogoUrl={league.logoUrl}
                   initialBrandUrl={league.brandLogoUrl}
+                  initialBrandLightUrl={league.brandLogoLightUrl}
                 />
               ),
             },

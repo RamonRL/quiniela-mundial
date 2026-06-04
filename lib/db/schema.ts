@@ -189,6 +189,10 @@ export const leagues = pgTable(
     // El logo cuadrado de la liga sigue en `logoUrl` (se usa en la sidebar
     // plegada y el switcher).
     brandLogoUrl: text("brand_logo_url"),
+    // Variante OPCIONAL de la marca para el TEMA CLARO. Null = se usa
+    // `brandLogoUrl` en ambos temas. Mismo patrón que el wordmark de QM
+    // (hlogo.png oscuro / hlogo-light.png claro).
+    brandLogoLightUrl: text("brand_logo_light_url"),
   },
   (t) => [
     index("leagues_invite_token_idx").on(t.inviteToken),

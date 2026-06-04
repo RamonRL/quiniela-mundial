@@ -1105,12 +1105,61 @@ export async function removeLeagueBrandLogo(formData: FormData): Promise<ImgResu
   if (!Number.isFinite(id)) return { ok: false, error: "Liga inválida." };
   const guard = await requireOwnerPremiumLeague(id, me.id);
   if ("error" in guard) return { ok: false, error: guard.error };
-  await db.update(leagues).set({ brandLogoUrl: null }).where(eq(leagues.id, id));
-  // Borrado best-effort del fichero (no bloqueante para la UX).
+  await db
+    .update(leagues)
+    .set({ brandLogoUrl: null, brandLogoLightUrl: null })
+    .where(eq(leagues.id, id));
+  // Borrado best-effort de los ficheros (no bloqueante para la UX).
   try {
     await deleteImage({ kind: "league", path: `${id}-brand.png` });
+    await deleteImage({ kind: "league", path: `${id}-brand-light.png` });
   } catch {
-    /* el fichero puede no existir; da igual */
+    /* los ficheros pueden no existir; da igual */
+  }
+  revalidatePath("/mi-quiniela");
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+/**
+ * Sube la variante de la MARCA para TEMA CLARO (premium, opcional). Si existe,
+ * el shell la usa en tema claro; si no, se usa `brandLogoUrl` en ambos.
+ */
+export async function uploadLeagueBrandLightLogo(formData: FormData): Promise<ImgResult> {
+  const me = await requireUser();
+  const id = Number(formData.get("id"));
+  const file = formData.get("logo");
+  if (!Number.isFinite(id)) return { ok: false, error: "Liga inválida." };
+  if (!(file instanceof File) || file.size === 0) return { ok: false, error: "Falta la imagen." };
+  if (file.size > MAX_BRAND_BYTES) return { ok: false, error: "La imagen es demasiado grande." };
+  const limited = await rateLimit(`league-brand:${me.id}`, 10, 60_000);
+  if (!limited.ok) return { ok: false, error: "Demasiados intentos. Espera un momento." };
+  const guard = await requireOwnerPremiumLeague(id, me.id);
+  if ("error" in guard) return { ok: false, error: guard.error };
+  try {
+    const url = await uploadImage({ kind: "league", path: `${id}-brand-light.png`, file });
+    const versioned = `${url}?v=${Date.now()}`;
+    await db.update(leagues).set({ brandLogoLightUrl: versioned }).where(eq(leagues.id, id));
+    revalidatePath("/mi-quiniela");
+    revalidatePath("/", "layout");
+    return { ok: true, url: versioned };
+  } catch {
+    return { ok: false, error: "No se pudo subir la marca. Reinténtalo." };
+  }
+}
+
+/** Quita SOLO la variante de tema claro → se vuelve a usar la marca única. */
+export async function removeLeagueBrandLightLogo(formData: FormData): Promise<ImgResult> {
+  const me = await requireUser();
+  const id = Number(formData.get("id"));
+  if (!Number.isFinite(id)) return { ok: false, error: "Liga inválida." };
+  const guard = await requireOwnerPremiumLeague(id, me.id);
+  if ("error" in guard) return { ok: false, error: guard.error };
+  await db.update(leagues).set({ brandLogoLightUrl: null }).where(eq(leagues.id, id));
+  try {
+    await deleteImage({ kind: "league", path: `${id}-brand-light.png` });
+  } catch {
+    /* puede no existir */
   }
   revalidatePath("/mi-quiniela");
   revalidatePath("/", "layout");

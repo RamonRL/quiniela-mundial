@@ -25,6 +25,8 @@ type Props = {
   isAuthenticated?: boolean;
   /** Logo de marca de la liga activa (premium) — sustituye el wordmark QM expandido. */
   brandLogoUrl?: string | null;
+  /** Variante de la marca para tema claro. Null = brandLogoUrl en ambos. */
+  brandLogoLightUrl?: string | null;
   /** Logo cuadrado de la liga activa (premium) — sustituye el qm-mark plegado. */
   squareLogoUrl?: string | null;
 };
@@ -41,6 +43,7 @@ export function Sidebar({
   showMyLeague = false,
   isAuthenticated = true,
   brandLogoUrl,
+  brandLogoLightUrl,
   squareLogoUrl,
 }: Props) {
   const pathname = usePathname();
@@ -111,15 +114,28 @@ export function Sidebar({
                 />
               )
             ) : brandLogoUrl ? (
-              // Premium: logo de marca de la empresa. Aprovecha todo el ancho
-              // de su zona (centrado) y un pelín más de alto que el wordmark
-              // para que no quede pequeño cuando la marca es ancha.
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={brandLogoUrl}
-                alt=""
-                className="h-14 max-h-14 w-auto max-w-full object-contain"
-              />
+              // Premium: logo de marca de la empresa, centrado y aprovechando
+              // su zona. Si hay variante para tema claro, se renderizan ambas
+              // con visibilidad por tema (mismo patrón que BrandWordmark).
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={brandLogoUrl}
+                  alt=""
+                  className={cn(
+                    "h-14 max-h-14 w-auto max-w-full object-contain",
+                    brandLogoLightUrl ? "hidden dark:block" : null,
+                  )}
+                />
+                {brandLogoLightUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={brandLogoLightUrl}
+                    alt=""
+                    className="block h-14 max-h-14 w-auto max-w-full object-contain dark:hidden"
+                  />
+                ) : null}
+              </>
             ) : (
               // Expandido: logo horizontal "Quiniela Mundial".
               <BrandWordmark priority className="h-12 w-auto" />

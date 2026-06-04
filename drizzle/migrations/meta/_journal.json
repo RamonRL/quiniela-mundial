@@ -176,6 +176,13 @@
       "when": 1780532605803,
       "tag": "0024_melted_clint_barton",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1780535536987,
+      "tag": "0025_flippant_expediter",
+      "breakpoints": true
     }
   ]
 }

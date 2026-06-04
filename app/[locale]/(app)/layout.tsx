@@ -79,6 +79,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     ? isPremiumTier(activeMembership.tier)
     : false;
   const brandLogoUrl = activeIsPremium ? (activeMembership?.brandLogoUrl ?? null) : null;
+  const brandLogoLightUrl = activeIsPremium
+    ? (activeMembership?.brandLogoLightUrl ?? null)
+    : null;
   const squareLogoUrl = activeIsPremium ? (activeMembership?.logoUrl ?? null) : null;
   const activeLeagueId = currentView ?? me.leagueId!;
   // Modo de la liga activa → decide qué variante del tutorial se dispara
@@ -95,6 +98,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           defaultCollapsed={sidebarCollapsed}
           showMyLeague={showMyLeague}
           brandLogoUrl={brandLogoUrl}
+          brandLogoLightUrl={brandLogoLightUrl}
           squareLogoUrl={squareLogoUrl}
         />
         <div className="flex min-w-0 flex-1 flex-col">
@@ -109,6 +113,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             memberships={memberships}
             activeLeagueId={currentView}
             brandLogoUrl={brandLogoUrl}
+            brandLogoLightUrl={brandLogoLightUrl}
           />
           {activeMembership?.announcement ? (
             <LeagueAnnouncementBar

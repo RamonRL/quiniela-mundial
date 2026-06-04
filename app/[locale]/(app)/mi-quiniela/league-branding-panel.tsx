@@ -11,27 +11,33 @@ import { LogoCropDialog, type CropLabels } from "@/components/leagues/logo-crop-
 import {
   uploadLeagueSquareLogo,
   uploadLeagueBrandLogo,
+  uploadLeagueBrandLightLogo,
   removeLeagueBrandLogo,
+  removeLeagueBrandLightLogo,
 } from "@/lib/league-actions";
 
 const MAX_RAW_INPUT_BYTES = 20 * 1024 * 1024;
 const ACCEPT = "image/png,image/jpeg,image/webp";
 
-type Kind = "square" | "brand";
+type Kind = "square" | "brand" | "brandLight";
 
 export function LeagueBrandingPanel({
   leagueId,
   initialLogoUrl,
   initialBrandUrl,
+  initialBrandLightUrl,
 }: {
   leagueId: number;
   initialLogoUrl: string | null;
   initialBrandUrl: string | null;
+  initialBrandLightUrl: string | null;
 }) {
   const t = useTranslations("branding");
   const router = useRouter();
   const [squareUrl, setSquareUrl] = useState(initialLogoUrl);
   const [brandUrl, setBrandUrl] = useState(initialBrandUrl);
+  const [brandLightUrl, setBrandLightUrl] = useState(initialBrandLightUrl);
+  const [dualTheme, setDualTheme] = useState(!!initialBrandLightUrl);
 
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [cropKind, setCropKind] = useState<Kind | null>(null);
@@ -39,6 +45,7 @@ export function LeagueBrandingPanel({
 
   const squareInput = useRef<HTMLInputElement>(null);
   const brandInput = useRef<HTMLInputElement>(null);
+  const brandLightInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     return () => {
@@ -63,6 +70,7 @@ export function LeagueBrandingPanel({
     setCropKind(null);
     if (squareInput.current) squareInput.current.value = "";
     if (brandInput.current) brandInput.current.value = "";
+    if (brandLightInput.current) brandLightInput.current.value = "";
   }
 
   async function onCropConfirm(file: File) {
@@ -75,19 +83,23 @@ export function LeagueBrandingPanel({
       const res =
         cropKind === "square"
           ? await uploadLeagueSquareLogo(fd)
-          : await uploadLeagueBrandLogo(fd);
+          : cropKind === "brand"
+            ? await uploadLeagueBrandLogo(fd)
+            : await uploadLeagueBrandLightLogo(fd);
       if (res.ok && res.url) {
-        // res.url ya viene versionada (?v=…) desde la action → sin doble busting.
+        // res.url ya viene versionada (?v=…) desde la action → caché invalidada.
         if (cropKind === "square") {
           setSquareUrl(res.url);
           toast.success(t("logoUpdated"));
-        } else {
+        } else if (cropKind === "brand") {
           setBrandUrl(res.url);
           toast.success(t("brandUpdated"));
+        } else {
+          setBrandLightUrl(res.url);
+          toast.success(t("lightBrandUpdated"));
         }
         closeCrop();
-        // Refresca los server components (layout) → el logo del shell se
-        // actualiza al instante, sin navegar ni hard refresh.
+        // Refresca los server components (layout) → el shell se actualiza ya.
         router.refresh();
       } else {
         toast.error(res.error ?? t("uploadError"));
@@ -105,6 +117,8 @@ export function LeagueBrandingPanel({
       const res = await removeLeagueBrandLogo(fd);
       if (res.ok) {
         setBrandUrl(null);
+        setBrandLightUrl(null);
+        setDualTheme(false);
         toast.success(t("brandRemoved"));
         router.refresh();
       } else {
@@ -115,14 +129,40 @@ export function LeagueBrandingPanel({
     }
   }
 
+  async function onToggleDualTheme(next: boolean) {
+    // Desactivar con variante clara subida → la eliminamos (vuelve a usarse la
+    // marca única en ambos temas).
+    if (!next && brandLightUrl) {
+      setPending(true);
+      try {
+        const fd = new FormData();
+        fd.set("id", String(leagueId));
+        const res = await removeLeagueBrandLightLogo(fd);
+        if (!res.ok) {
+          toast.error(res.error ?? t("uploadError"));
+          return;
+        }
+        setBrandLightUrl(null);
+        toast.success(t("lightBrandRemoved"));
+        router.refresh();
+      } finally {
+        setPending(false);
+      }
+    }
+    setDualTheme(next);
+  }
+
   const cropLabels: CropLabels = {
-    title: cropKind === "brand" ? t("cropBrandTitle") : t("cropSquareTitle"),
+    title: cropKind === "square" ? t("cropSquareTitle") : t("cropBrandTitle"),
     cancel: t("cropCancel"),
     done: t("cropDone"),
     saving: t("cropSaving"),
     dragHint: t("cropDragHint"),
     aspectLabel: t("cropAspectLabel"),
   };
+
+  // Qué imagen ve cada tema: el claro usa su variante si existe.
+  const lightSrc = brandLightUrl ?? brandUrl;
 
   return (
     <div className="space-y-8">
@@ -195,7 +235,7 @@ export function LeagueBrandingPanel({
           <span>{t("transparentTip")}</span>
         </p>
 
-        {/* dropzone marca */}
+        {/* dropzone marca (oscuro / única) */}
         <button
           type="button"
           onClick={() => brandInput.current?.click()}
@@ -217,50 +257,67 @@ export function LeagueBrandingPanel({
           onChange={(e) => pickFile(e.target.files?.[0], "brand")}
         />
 
-        {/* ── Previews de cómo queda en el shell ── */}
-        <div className="space-y-3">
+        {/* checkbox: imagen distinta por tema */}
+        <label
+          className={`flex items-center gap-2.5 text-sm ${
+            brandUrl ? "cursor-pointer" : "cursor-not-allowed opacity-50"
+          }`}
+        >
+          <input
+            type="checkbox"
+            checked={dualTheme}
+            disabled={pending || !brandUrl}
+            onChange={(e) => onToggleDualTheme(e.target.checked)}
+            className="size-4 accent-[var(--color-arena)]"
+          />
+          <span>{t("dualTheme")}</span>
+        </label>
+
+        {/* dropzone variante TEMA CLARO (desplegado por el checkbox) */}
+        {dualTheme ? (
+          <>
+            <button
+              type="button"
+              onClick={() => brandLightInput.current?.click()}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                pickFile(e.dataTransfer.files?.[0], "brandLight");
+              }}
+              className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[var(--color-border-strong)] bg-white px-4 py-5 text-sm text-[#52525b] transition hover:border-[var(--color-arena)]"
+            >
+              <UploadCloud className="size-4" />
+              {brandLightUrl ? t("changeLightBrandCta") : t("lightBrandCta")}
+            </button>
+            <input
+              ref={brandLightInput}
+              type="file"
+              accept={ACCEPT}
+              hidden
+              onChange={(e) => pickFile(e.target.files?.[0], "brandLight")}
+            />
+          </>
+        ) : null}
+
+        {/* ── Previews por TEMA de cómo queda en el shell ── */}
+        <div className="space-y-4">
           <p className="font-mono text-[0.55rem] uppercase tracking-[0.3em] text-[var(--color-muted-foreground)]">
             {t("previewLabel")}
           </p>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {/* PC: recuadro superior izquierdo de la sidebar */}
-            <div className="space-y-1.5">
-              <p className="font-mono text-[0.5rem] uppercase tracking-[0.22em] text-[var(--color-muted-foreground)]">
-                {t("previewPc")}
-              </p>
-              <div className="flex items-center gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-4">
-                <div className="flex min-w-0 flex-1 items-center">
-                  {brandUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={brandUrl} alt="" className="h-10 w-auto max-w-[12rem] object-contain" />
-                  ) : (
-                    <BrandPlaceholder />
-                  )}
-                </div>
-                <span className="grid size-8 shrink-0 place-items-center rounded-md border border-[var(--color-border)] bg-[var(--color-surface-2)] text-[var(--color-muted-foreground)]">
-                  <ChevronsLeft className="size-4" />
-                </span>
-              </div>
-            </div>
-
-            {/* Móvil: barra superior */}
-            <div className="space-y-1.5">
-              <p className="font-mono text-[0.5rem] uppercase tracking-[0.22em] text-[var(--color-muted-foreground)]">
-                {t("previewMobile")}
-              </p>
-              <div className="overflow-hidden rounded-lg border border-[var(--color-border)]">
-                <div className="flex items-center gap-2 border-b border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2.5">
-                  {brandUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={brandUrl} alt="" className="h-8 w-auto max-w-[8rem] object-contain" />
-                  ) : (
-                    <BrandPlaceholder />
-                  )}
-                </div>
-                <div className="h-10 bg-[var(--color-surface-2)]" aria-hidden />
-              </div>
-            </div>
-          </div>
+          <ShellPreview
+            theme="dark"
+            themeLabel={t("themeDark")}
+            pcLabel={t("previewPc")}
+            mobileLabel={t("previewMobile")}
+            src={brandUrl}
+          />
+          <ShellPreview
+            theme="light"
+            themeLabel={t("themeLight")}
+            pcLabel={t("previewPc")}
+            mobileLabel={t("previewMobile")}
+            src={lightSrc}
+          />
 
           {brandUrl ? (
             <button
@@ -282,23 +339,101 @@ export function LeagueBrandingPanel({
         onCancel={closeCrop}
         onConfirm={onCropConfirm}
         pending={pending}
-        shape={cropKind === "brand" ? "rect" : "round"}
+        shape={cropKind === "square" ? "round" : "rect"}
         aspect={1}
-        aspectRange={cropKind === "brand" ? { min: 2, max: 4.5 } : undefined}
+        aspectRange={
+          cropKind === "brand" || cropKind === "brandLight"
+            ? { min: 2, max: 4.5 }
+            : undefined
+        }
         labels={cropLabels}
       />
     </div>
   );
 }
 
-function BrandPlaceholder() {
+/**
+ * Mock del shell (recuadro PC con flecha de plegar + barra móvil) con colores
+ * FIJOS por tema — así el owner ve cómo queda su marca en oscuro Y en claro
+ * sin cambiar el tema de la app.
+ */
+function ShellPreview({
+  theme,
+  themeLabel,
+  pcLabel,
+  mobileLabel,
+  src,
+}: {
+  theme: "dark" | "light";
+  themeLabel: string;
+  pcLabel: string;
+  mobileLabel: string;
+  src: string | null;
+}) {
+  const isDark = theme === "dark";
+  const frame = isDark ? "border-[#2a2a31] bg-[#101014]" : "border-[#e4e4e7] bg-white";
+  const pill = isDark
+    ? "border-[#2a2a31] bg-[#1b1b21] text-[#9a9aa3]"
+    : "border-[#e4e4e7] bg-[#f4f4f5] text-[#52525b]";
+  const strip = isDark ? "bg-[#17171c]" : "bg-[#fafafa]";
+  const divider = isDark ? "border-[#2a2a31]" : "border-[#e4e4e7]";
+
+  return (
+    <div className="space-y-1.5">
+      <p className="font-mono text-[0.5rem] uppercase tracking-[0.22em] text-[var(--color-muted-foreground)]">
+        {themeLabel}
+      </p>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {/* PC: recuadro superior izquierdo de la sidebar */}
+        <div className="space-y-1">
+          <p className="font-mono text-[0.45rem] uppercase tracking-[0.2em] text-[var(--color-muted-foreground)]">
+            {pcLabel}
+          </p>
+          <div className={`flex items-center gap-3 rounded-lg border px-4 py-4 ${frame}`}>
+            <div className="flex min-w-0 flex-1 items-center justify-center">
+              {src ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={src} alt="" className="h-10 w-auto max-w-[11rem] object-contain" />
+              ) : (
+                <QmPlaceholder theme={theme} />
+              )}
+            </div>
+            <span className={`grid size-8 shrink-0 place-items-center rounded-md border ${pill}`}>
+              <ChevronsLeft className="size-4" />
+            </span>
+          </div>
+        </div>
+
+        {/* Móvil: barra superior */}
+        <div className="space-y-1">
+          <p className="font-mono text-[0.45rem] uppercase tracking-[0.2em] text-[var(--color-muted-foreground)]">
+            {mobileLabel}
+          </p>
+          <div className={`overflow-hidden rounded-lg border ${frame}`}>
+            <div className={`flex items-center gap-2 border-b px-3 py-2.5 ${divider}`}>
+              {src ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={src} alt="" className="h-8 w-auto max-w-[6.5rem] object-contain" />
+              ) : (
+                <QmPlaceholder theme={theme} />
+              )}
+            </div>
+            <div className={`h-10 ${strip}`} aria-hidden />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function QmPlaceholder({ theme }: { theme: "dark" | "light" }) {
   return (
     <Image
-      src="/hlogo.png"
+      src={theme === "dark" ? "/hlogo.png" : "/hlogo-light.png"}
       alt="Quiniela Mundial"
       width={1919}
       height={660}
-      className="h-9 w-auto opacity-50 dark:opacity-100"
+      className="h-8 w-auto"
     />
   );
 }
