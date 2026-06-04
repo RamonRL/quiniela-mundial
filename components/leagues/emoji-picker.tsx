@@ -1,34 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import { Smile, Ban } from "lucide-react";
+import dynamic from "next/dynamic";
+import { useTheme } from "next-themes";
+import { Ban, Loader2, Smile } from "lucide-react";
+import type { Theme, EmojiStyle } from "emoji-picker-react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-/**
- * Selector de emoji para los departamentos: grid curado con los emojis
- * típicos (estilo WhatsApp) en un popover — sin ir a buscarlos a internet y
- * sin meter una dependencia de 100KB. Agrupados por temática.
- */
-const EMOJI_GROUPS: string[][] = [
-  // Caras
-  ["😀", "😁", "😂", "🤣", "😅", "😊", "😉", "😍", "🤩", "😘", "😎", "🤓", "🧐", "🤔", "😏", "🥳", "😴", "🤯", "😡", "🤬", "😱", "😭", "🥶", "🥵", "🤠", "🤡", "👻", "💀", "👽", "🤖"],
-  // Gestos y personas
-  ["👍", "👎", "👏", "🙌", "💪", "🙏", "🤝", "✌️", "🤞", "🤙", "👊", "👀", "🧠", "👑", "🎩", "💼", "🧑‍💻", "🕺", "💃", "🏃", "🦸", "🦹", "🧙", "🫡", "🤌"],
-  // Deporte y competición
-  ["⚽", "🏆", "🥇", "🥈", "🥉", "🏅", "🎖️", "🎯", "🏀", "🏈", "🎾", "🏐", "🏓", "🥊", "🏋️", "🚴", "⛳", "🏄", "🎽", "🏟️"],
-  // Animales
-  ["🦁", "🐯", "🐺", "🦊", "🐻", "🐼", "🐨", "🐸", "🦅", "🦉", "🦈", "🐙", "🦄", "🐉", "🐂", "🐎", "🐍", "🦂", "🐝", "🦍", "🐬", "🦜"],
-  // Comida y bebida
-  ["☕", "🍺", "🍻", "🥂", "🍕", "🌮", "🍔", "🍟", "🌶️", "🍩", "🍪", "🎂", "🥑", "🍣", "🍿", "🧉"],
-  // Objetos y energía
-  ["🚀", "💡", "🔥", "⚡", "💥", "✨", "🌟", "⭐", "💫", "🌈", "❄️", "🌊", "🌋", "🎲", "🎸", "🥁", "🎮", "💻", "🖥️", "📱", "📈", "📊", "💰", "💎", "🛠️", "🔧", "⚙️", "🔬", "🧪", "🧲", "💣", "🛡️", "⚔️", "🏹", "🪓", "🧨", "🎺"],
-  // Símbolos y banderas
-  ["❤️", "🧡", "💛", "💚", "💙", "💜", "🖤", "🤍", "♠️", "♣️", "♥️", "♦️", "☠️", "🏴‍☠️", "🚩", "🏁", "🎌", "🔱", "♾️", "💯"],
-];
+// Picker completo (todos los emojis Unicode, buscador, categorías, tonos de
+// piel — como WhatsApp). Lazy: solo se descarga al abrir el popover, así no
+// engorda el bundle del resto de la app.
+const FullPicker = dynamic(() => import("emoji-picker-react"), {
+  ssr: false,
+  loading: () => (
+    <div className="grid h-[380px] w-[320px] place-items-center">
+      <Loader2 className="size-5 animate-spin text-[var(--color-muted-foreground)]" />
+    </div>
+  ),
+});
 
 export function EmojiPicker({
   value,
@@ -38,17 +31,13 @@ export function EmojiPicker({
 }: {
   value: string | null;
   onChange: (emoji: string | null) => void;
-  /** Texto del trigger cuando no hay emoji, y aria-label. */
+  /** Texto del trigger cuando no hay emoji, y placeholder del buscador. */
   pickLabel: string;
   /** Texto de la opción "sin emoji". */
   clearLabel: string;
 }) {
   const [open, setOpen] = useState(false);
-
-  function pick(emoji: string | null) {
-    onChange(emoji);
-    setOpen(false);
-  }
+  const { resolvedTheme } = useTheme();
 
   return (
     // `modal`: este popover vive dentro de un Dialog (crear/editar dept) y el
@@ -69,32 +58,32 @@ export function EmojiPicker({
           <Smile className="size-4 shrink-0 text-[var(--color-muted-foreground)]" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-2" align="start">
-        <div className="max-h-72 space-y-2 overflow-y-auto pr-1">
-          <button
-            type="button"
-            onClick={() => pick(null)}
-            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-[var(--color-muted-foreground)] transition hover:bg-[var(--color-surface-2)]"
-          >
-            <Ban className="size-3.5" /> {clearLabel}
-          </button>
-          {EMOJI_GROUPS.map((group, gi) => (
-            <div key={gi} className="grid grid-cols-9 gap-0.5">
-              {group.map((emoji) => (
-                <button
-                  key={emoji}
-                  type="button"
-                  onClick={() => pick(emoji)}
-                  className={`grid size-8 place-items-center rounded-md text-lg leading-none transition hover:bg-[var(--color-surface-2)] ${
-                    value === emoji ? "bg-[color-mix(in_oklch,var(--color-arena)_18%,transparent)]" : ""
-                  }`}
-                >
-                  {emoji}
-                </button>
-              ))}
-            </div>
-          ))}
-        </div>
+      <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+        <button
+          type="button"
+          onClick={() => {
+            onChange(null);
+            setOpen(false);
+          }}
+          className="flex w-full items-center gap-2 border-b border-[var(--color-border)] px-3 py-2 text-xs text-[var(--color-muted-foreground)] transition hover:bg-[var(--color-surface-2)]"
+        >
+          <Ban className="size-3.5" /> {clearLabel}
+        </button>
+        {open ? (
+          <FullPicker
+            onEmojiClick={(e) => {
+              onChange(e.emoji);
+              setOpen(false);
+            }}
+            emojiStyle={"native" as EmojiStyle}
+            theme={(resolvedTheme === "light" ? "light" : "dark") as Theme}
+            width={320}
+            height={380}
+            searchPlaceHolder={pickLabel}
+            previewConfig={{ showPreview: false }}
+            lazyLoadEmojis
+          />
+        ) : null}
       </PopoverContent>
     </Popover>
   );
