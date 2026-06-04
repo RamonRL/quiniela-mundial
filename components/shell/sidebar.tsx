@@ -2,9 +2,11 @@
 
 import Image from "next/image";
 import { BrandWordmark } from "@/components/brand/brand-wordmark";
-import { Link } from "@/i18n/navigation";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+// usePathname de next-intl: devuelve el pathname SIN prefijo de locale
+// (/en/calendario → /calendario). Con el de next/navigation, en EN/FR/PT
+// ningún href de la nav coincidía y la pestaña activa no se iluminaba.
+import { Link, usePathname } from "@/i18n/navigation";
+import { useEffect, useState } from "react";
 import { ChevronsLeft, ChevronsRight, Globe2, LogOut, Settings, UserCog } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
@@ -50,6 +52,18 @@ export function Sidebar({
   const t = useTranslations("nav");
   const ts = useTranslations("shell");
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
+  // El sidebar se REMONTA al cruzar entre grupos de rutas ((app) ↔ (public),
+  // p. ej. Dashboard → Calendario) y el payload RSC puede venir prefetcheado
+  // con un defaultCollapsed viejo — el menú se "auto-desplegaba" al navegar.
+  // En cliente la cookie es la fuente de verdad: re-sincronizamos al montar.
+  useEffect(() => {
+    const match = document.cookie.match(
+      new RegExp(`(?:^|; )${COLLAPSE_COOKIE}=([^;]*)`),
+    );
+    if (!match) return;
+    const fromCookie = match[1] === "1";
+    setCollapsed((current) => (current === fromCookie ? current : fromCookie));
+  }, []);
   const items = buildNavItems(myId, { showMyLeague, isAuthenticated });
   const main = items.filter((i) => i.group === "main");
   const preds = items.filter((i) => i.group === "predicciones");

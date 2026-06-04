@@ -1,7 +1,8 @@
 "use client";
 
-import { Link } from "@/i18n/navigation";
-import { usePathname } from "next/navigation";
+// usePathname de next-intl: sin prefijo de locale, para que la detección
+// del item activo funcione igual en /en, /fr y /pt que en español.
+import { Link, usePathname } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
 import { Menu } from "lucide-react";
 import { useTranslations } from "next-intl";

@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { cookies } from "next/headers";
 import { getCurrentUser } from "@/lib/auth/guards";
 import { currentLeagueId, getMembershipsForUser } from "@/lib/leagues";
+import { canUseBranding } from "@/lib/league-tiers";
 import { AppHeader } from "@/components/shell/header";
 import { Sidebar } from "@/components/shell/sidebar";
 import { MobileBottomNav } from "@/components/shell/mobile-nav";
@@ -39,6 +40,18 @@ export default async function PublicLayout({
   const activeMembership = memberships.find((m) => m.id === activeLeagueId);
   const showMyLeague = activeMembership ? !activeMembership.isPublic : false;
   const deadlineLeagueId = me ? activeLeagueId ?? me.leagueId ?? null : null;
+  // Branding de la liga activa — mismo criterio que (app)/layout.tsx, para
+  // que la marca de la empresa NO desaparezca al pasar a Calendario, Grupos,
+  // etc. Solo lo ve quien tiene esa liga premium como activa; visitantes y
+  // el resto de usuarios siguen viendo el logo de QM.
+  const activeCanBrand = activeMembership
+    ? canUseBranding(activeMembership.tier)
+    : false;
+  const brandLogoUrl = activeCanBrand ? (activeMembership?.brandLogoUrl ?? null) : null;
+  const brandLogoLightUrl = activeCanBrand
+    ? (activeMembership?.brandLogoLightUrl ?? null)
+    : null;
+  const squareLogoUrl = activeCanBrand ? (activeMembership?.logoUrl ?? null) : null;
 
   return (
     <div className="flex min-h-dvh">
@@ -48,6 +61,9 @@ export default async function PublicLayout({
         defaultCollapsed={sidebarCollapsed}
         showMyLeague={showMyLeague}
         isAuthenticated={isAuthenticated}
+        brandLogoUrl={brandLogoUrl}
+        brandLogoLightUrl={brandLogoLightUrl}
+        squareLogoUrl={squareLogoUrl}
       />
       <div className="flex min-w-0 flex-1 flex-col">
         {me && deadlineLeagueId != null ? (
@@ -62,6 +78,8 @@ export default async function PublicLayout({
           isAdmin={isAdmin}
           memberships={memberships}
           activeLeagueId={activeLeagueId}
+          brandLogoUrl={brandLogoUrl}
+          brandLogoLightUrl={brandLogoLightUrl}
         />
         <main className="flex-1 px-4 pb-[calc(env(safe-area-inset-bottom)+6rem)] pt-6 lg:px-8 lg:pb-12">
           <div className="mx-auto w-full max-w-6xl">{children}</div>
