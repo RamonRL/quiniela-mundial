@@ -127,10 +127,13 @@
      puntual (p. ej. los Reveal left/right aún ocultos, desplazados ±30px
      con translateX) NO debe convertirse en paneo lateral al hacer scroll.
      `clip` y no `hidden`: recorta sin crear un scroll container (hidden
-     en html/body rompe position:sticky y cambia quién scrollea). En PC
-     no aplica — el layout centrado absorbe esos offsets de sobra. */
+     en html/body rompe position:sticky y cambia quién scrollea).
+     SOLO en body, nunca en html: si html deja de ser overflow:visible,
+     el viewport ya no hereda el overflow del body y los scroll-locks de
+     Radix (react-remove-scroll pone overflow:hidden inline en body al
+     abrir menús) dejan de funcionar. En PC no aplica — el layout
+     centrado absorbe esos offsets de sobra. */
   @media (max-width: 1023px) {
-    html,
     body {
       overflow-x: clip;
     }

@@ -27,7 +27,12 @@ export function LeagueSwitcher({
   const active = memberships.find((m) => m.id === activeLeagueId) ?? null;
 
   return (
-    <DropdownMenu>
+    // modal={false}: sin scroll-lock ni pointer-events:none en el body al
+    // abrir. El lock (react-remove-scroll) provocaba en móvil un glitch de
+    // repintado con el header sticky + backdrop-blur: la barra "desaparecía"
+    // y la pantalla quedaba congelada hasta el siguiente toque. El menú
+    // sigue cerrándose al tocar fuera; solo deja de bloquear la página.
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <button
           type="button"
