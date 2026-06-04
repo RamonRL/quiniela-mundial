@@ -27,6 +27,19 @@ type PaidTierId = "team-50" | "team-100" | "team-250";
 // estática y rápida para Googlebot.
 export const revalidate = 3600;
 
+// Marketing page: en móvil arranca con zoom out (initialScale 0.5 →
+// el viewport de layout se duplica y entran los grids sm:, como una
+// mini-tablet). Mismo patrón que la home; zoom libre para el usuario.
+export const viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f5efe6" },
+    { media: "(prefers-color-scheme: dark)", color: "#0e1014" },
+  ],
+  width: "device-width",
+  initialScale: 0.5,
+  viewportFit: "cover" as const,
+};
+
 export const metadata = {
   title: "Planes para empresas y grupos grandes",
   description:

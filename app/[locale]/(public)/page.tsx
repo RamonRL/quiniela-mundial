@@ -50,6 +50,22 @@ const MODE_ICON = {
 // suficiente granularidad sin saturar la DB.
 export const revalidate = 600;
 
+// Marketing page: en móvil arranca con zoom out (initialScale 0.5 →
+// el viewport de layout se duplica y entran los grids sm:, como una
+// mini-tablet). El usuario puede pinch-zoomar libremente (sin
+// maximumScale/userScalable por a11y/SEO, igual que el layout raíz).
+// themeColor/viewportFit se re-declaran porque el viewport de página
+// sustituye al del layout campo a campo.
+export const viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f5efe6" },
+    { media: "(prefers-color-scheme: dark)", color: "#0e1014" },
+  ],
+  width: "device-width",
+  initialScale: 0.5,
+  viewportFit: "cover" as const,
+};
+
 const KICKOFF = new Date(
   process.env.NEXT_PUBLIC_TOURNAMENT_KICKOFF_AT ?? "2026-06-11T19:00:00Z",
 );
