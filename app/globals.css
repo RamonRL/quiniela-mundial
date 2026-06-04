@@ -123,6 +123,19 @@
     text-rendering: optimizeLegibility;
   }
 
+  /* Raíl vertical en móvil/tablet: cualquier desbordamiento horizontal
+     puntual (p. ej. los Reveal left/right aún ocultos, desplazados ±30px
+     con translateX) NO debe convertirse en paneo lateral al hacer scroll.
+     `clip` y no `hidden`: recorta sin crear un scroll container (hidden
+     en html/body rompe position:sticky y cambia quién scrollea). En PC
+     no aplica — el layout centrado absorbe esos offsets de sobra. */
+  @media (max-width: 1023px) {
+    html,
+    body {
+      overflow-x: clip;
+    }
+  }
+
   body {
     background: var(--color-bg);
     color: var(--color-foreground);
