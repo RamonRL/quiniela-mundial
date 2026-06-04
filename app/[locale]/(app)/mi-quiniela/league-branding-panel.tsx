@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Building2, ChevronsLeft, ImageUp, Info, Trash2, UploadCloud } from "lucide-react";
 import { toast } from "sonner";
@@ -28,6 +29,7 @@ export function LeagueBrandingPanel({
   initialBrandUrl: string | null;
 }) {
   const t = useTranslations("branding");
+  const router = useRouter();
   const [squareUrl, setSquareUrl] = useState(initialLogoUrl);
   const [brandUrl, setBrandUrl] = useState(initialBrandUrl);
 
@@ -75,15 +77,18 @@ export function LeagueBrandingPanel({
           ? await uploadLeagueSquareLogo(fd)
           : await uploadLeagueBrandLogo(fd);
       if (res.ok && res.url) {
-        const busted = `${res.url}?t=${Date.now()}`;
+        // res.url ya viene versionada (?v=…) desde la action → sin doble busting.
         if (cropKind === "square") {
-          setSquareUrl(busted);
+          setSquareUrl(res.url);
           toast.success(t("logoUpdated"));
         } else {
-          setBrandUrl(busted);
+          setBrandUrl(res.url);
           toast.success(t("brandUpdated"));
         }
         closeCrop();
+        // Refresca los server components (layout) → el logo del shell se
+        // actualiza al instante, sin navegar ni hard refresh.
+        router.refresh();
       } else {
         toast.error(res.error ?? t("uploadError"));
       }
@@ -101,6 +106,7 @@ export function LeagueBrandingPanel({
       if (res.ok) {
         setBrandUrl(null);
         toast.success(t("brandRemoved"));
+        router.refresh();
       } else {
         toast.error(res.error ?? t("uploadError"));
       }

@@ -1058,10 +1058,13 @@ export async function uploadLeagueSquareLogo(formData: FormData): Promise<ImgRes
   if ("error" in guard) return { ok: false, error: guard.error };
   try {
     const url = await uploadImage({ kind: "league", path: `${id}.png`, file });
-    await db.update(leagues).set({ logoUrl: url }).where(eq(leagues.id, id));
+    // URL versionada: el path no cambia (upsert), así que sin esto el navegador
+    // y el CDN servirían la imagen anterior hasta un hard refresh.
+    const versioned = `${url}?v=${Date.now()}`;
+    await db.update(leagues).set({ logoUrl: versioned }).where(eq(leagues.id, id));
     revalidatePath("/mi-quiniela");
     revalidatePath("/", "layout");
-    return { ok: true, url };
+    return { ok: true, url: versioned };
   } catch {
     return { ok: false, error: "No se pudo subir el logo. Reinténtalo." };
   }
@@ -1084,10 +1087,12 @@ export async function uploadLeagueBrandLogo(formData: FormData): Promise<ImgResu
   if ("error" in guard) return { ok: false, error: guard.error };
   try {
     const url = await uploadImage({ kind: "league", path: `${id}-brand.png`, file });
-    await db.update(leagues).set({ brandLogoUrl: url }).where(eq(leagues.id, id));
+    // URL versionada (ver uploadLeagueSquareLogo) → invalida caché tras re-subir.
+    const versioned = `${url}?v=${Date.now()}`;
+    await db.update(leagues).set({ brandLogoUrl: versioned }).where(eq(leagues.id, id));
     revalidatePath("/mi-quiniela");
     revalidatePath("/", "layout");
-    return { ok: true, url };
+    return { ok: true, url: versioned };
   } catch {
     return { ok: false, error: "No se pudo subir la marca. Reinténtalo." };
   }
