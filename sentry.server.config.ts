@@ -20,6 +20,15 @@ Sentry.init({
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/#sendDefaultPii
   sendDefaultPii: true,
 
+  // Ruido conocido del framework — NO son 500 reales para usuarios:
+  // "controller[kState].transformAlgorithm is not a function" lo lanza
+  // el streaming RSC de Next/undici cuando el cliente aborta la conexión
+  // a mitad de respuesta (p. ej. el uptime monitor, que corta tras los
+  // headers — por eso llega siempre con la URL interna /?nxtP_locale=…).
+  // La página se sirve bien; descartamos el evento entero, lo que también
+  // corta el espejo a Telegram (beforeSend no llega a ejecutarse).
+  ignoreErrors: [/transformAlgorithm is not a function/],
+
   // Espejo a Telegram solo en producción y solo para errores reales —
   // Sentry aplica su propio sampling antes, así que esto sigue su
   // fingerprinting (no spam de la misma excepción). El `beforeSend`
