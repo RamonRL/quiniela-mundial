@@ -1043,7 +1043,7 @@ function ShotFeature({
             className="h-auto w-full transition-transform duration-500 group-hover:scale-[1.04]"
           />
           <span
-            className={`absolute left-3 top-3 rounded-full px-2.5 py-1 font-mono text-[0.5rem] font-semibold uppercase tracking-[0.18em] ${
+            className={`absolute right-3 top-3 rounded-full px-2.5 py-1 font-mono text-[0.5rem] font-semibold uppercase tracking-[0.18em] ${
               tierHighlight
                 ? "bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]"
                 : "border border-[var(--color-border-strong)] bg-[var(--color-bg)]/85 text-[var(--color-foreground)] backdrop-blur"
