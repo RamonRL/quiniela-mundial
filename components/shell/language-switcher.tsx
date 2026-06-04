@@ -41,7 +41,10 @@ export function LanguageSwitcher() {
   }
 
   return (
-    <DropdownMenu>
+    // modal={false}: mismo fix que el selector de quinielas — el scroll-lock
+    // del modo modal congelaba la pantalla en móvil (glitch de repintado con
+    // el header sticky + backdrop-blur).
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger
         disabled={pending}
         aria-label="Idioma"

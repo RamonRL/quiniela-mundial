@@ -25,7 +25,10 @@ export function UserMenu({ email, nickname, avatarUrl, isAdmin }: UserMenuProps)
   const t = useTranslations("shell");
   const display = nickname || email.split("@")[0];
   return (
-    <DropdownMenu>
+    // modal={false}: mismo fix que el selector de quinielas — el scroll-lock
+    // del modo modal congelaba la pantalla en móvil (glitch de repintado con
+    // el header sticky + backdrop-blur).
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger className="group flex items-center gap-2 rounded-full p-1 outline-none transition focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]">
         <Avatar className="size-9 ring-2 ring-transparent transition group-hover:ring-[var(--color-primary)]/30">
           {avatarUrl ? <AvatarImage src={avatarUrl} alt={display} /> : null}
