@@ -237,7 +237,7 @@ export default async function PreciosPage({
 
           {/* Stats — los números que el comprador B2B quiere ver. */}
           <Reveal variant="up" delay={340} className="grid w-full max-w-xl grid-cols-3 gap-2 pb-12 pt-4 sm:gap-3">
-            <HeroStat to={250} label={t("heroStat1")} />
+            <HeroStat to={250} prefix={t("upTo")} label={t("heroStat1")} />
             <HeroStat to={6} label={t("heroStat2")} />
             <HeroStat to={4} label={t("heroStat3")} />
           </Reveal>
@@ -556,10 +556,24 @@ export default async function PreciosPage({
 
 // ─────────── Helpers ───────────
 
-function HeroStat({ to, label }: { to: number; label: string }) {
+function HeroStat({
+  to,
+  prefix,
+  label,
+}: {
+  to: number;
+  /** Texto pequeño delante del número ("Hasta" 250). */
+  prefix?: string;
+  label: string;
+}) {
   return (
     <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]/80 px-3 py-3 backdrop-blur-sm">
       <p className="font-display tabular text-3xl leading-none tracking-tight text-[var(--color-arena)] sm:text-4xl">
+        {prefix ? (
+          <span className="mr-1 align-middle font-mono text-[0.55rem] font-semibold uppercase tracking-[0.18em]">
+            {prefix}
+          </span>
+        ) : null}
         <Counter to={to} />
       </p>
       <p className="pt-1.5 font-mono text-[0.5rem] uppercase tracking-[0.22em] text-[var(--color-muted-foreground)] sm:text-[0.55rem]">
