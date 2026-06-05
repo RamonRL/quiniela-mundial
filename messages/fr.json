@@ -1169,7 +1169,10 @@
     "members": "Membres",
     "note": "En acceptant, tu joueras contre les autres participants de cette grille privée.",
     "accept": "Accepter l'invitation",
-    "haveAccount": "Déjà un compte ? <link>Connecte-toi</link> et reviens sur ce lien."
+    "haveAccount": "Déjà un compte ? <link>Connecte-toi</link> et reviens sur ce lien.",
+    "welcomeEyebrow": "Tu es dedans !",
+    "welcomeBody": "Tu as bien rejoint la grille. Tes pronostics, le classement et le chat t'attendent.",
+    "welcomeCta": "À jouer"
   },
   "myPool": {
     "fullBanner": "<b>Grille complète ({limit}/{limit} membres).</b> Pour en accueillir plus, prends un Pase Mundial 2026 — sans migration de données, même groupe.",

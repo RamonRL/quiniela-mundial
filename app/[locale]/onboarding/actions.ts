@@ -50,8 +50,14 @@ export async function saveInitialNickname(
 
 /**
  * Onboarding, paso 2 del perfil: la foto (opcional). Si llega un archivo lo
- * subimos; si no, no toca nada. En ambos casos seguimos al chooser de liga.
- * El botón "Saltar" del cliente navega directo sin llamar a esta acción.
+ * subimos; si no, no toca nada. Después:
+ *  - Si el usuario YA tiene liga (entró por invite link → la cookie se
+ *    consumió al crear el perfil), va directo al dashboard con el popup
+ *    de bienvenida. Antes se le mandaba al chooser de liga y parecía que
+ *    el invite no había servido de nada.
+ *  - Si no tiene liga, sigue al chooser como siempre.
+ * El botón "Saltar" del cliente navega directo sin llamar a esta acción
+ * (misma bifurcación, calculada en el cliente con `fresh`).
  */
 export async function saveInitialAvatar(
   _prev: SaveInitialProfileState,
@@ -74,6 +80,9 @@ export async function saveInitialAvatar(
     revalidatePath("/", "layout");
   }
 
+  if (!next && me.leagueId != null) {
+    redirect("/dashboard?welcome=1");
+  }
   redirect(withNext("/onboarding", next));
 }
 

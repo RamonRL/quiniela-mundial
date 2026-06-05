@@ -1169,7 +1169,10 @@
     "members": "Members",
     "note": "By accepting, you'll compete with the rest of the participants in this private pool.",
     "accept": "Accept invitation",
-    "haveAccount": "Already have an account? <link>Log in</link> and come back to this link."
+    "haveAccount": "Already have an account? <link>Log in</link> and come back to this link.",
+    "welcomeEyebrow": "You're in!",
+    "welcomeBody": "You've successfully joined the pool. Your predictions, the ranking and the chat are waiting for you.",
+    "welcomeCta": "Let's play"
   },
   "myPool": {
     "fullBanner": "<b>Pool full ({limit}/{limit} members).</b> To let more in, get a Pase Mundial 2026 — no data migration, same group.",

@@ -97,7 +97,14 @@ export function OnboardingFlow({
         nickname={userNickname ?? userEmail.split("@")[0]}
         avatarUrl={userAvatarUrl}
         nextValue={nextParam}
-        skipHref={`/onboarding${nextParam ? `?next=${encodeURIComponent(nextParam)}` : ""}`}
+        // "Saltar": si el usuario ya tiene liga (entró por invite link),
+        // directo al dashboard con el popup de bienvenida — el chooser de
+        // liga solo tiene sentido para quien aún no está en ninguna.
+        skipHref={
+          !nextParam && !fresh
+            ? "/dashboard?welcome=1"
+            : `/onboarding${nextParam ? `?next=${encodeURIComponent(nextParam)}` : ""}`
+        }
       />
     );
   }

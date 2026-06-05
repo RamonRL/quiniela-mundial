@@ -7,6 +7,7 @@ import { ArrowRight, ArrowUpRight, CalendarDays, Crown, Flame, Trophy } from "lu
 import { and, asc, desc, eq, gt, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
+  leagues,
   matchScorers,
   matchdays,
   matches,
@@ -20,6 +21,7 @@ import {
   specialPredictions,
   teams,
 } from "@/lib/db/schema";
+import { LeagueWelcomeDialog } from "@/components/leagues/league-welcome-dialog";
 import { Badge } from "@/components/ui/badge";
 import { RealtimeRefresher } from "@/components/realtime/realtime-refresher";
 import { requireUser } from "@/lib/auth/guards";
@@ -93,9 +95,14 @@ function safe<T>(
   });
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ welcome?: string }>;
+}) {
   const me = await requireUser();
   const t = await getTranslations("dashboard");
+  const params = (await searchParams) ?? {};
   const MARQUEE_TOKENS = [
     t("mqWorldCup"),
     t("mqCanada"),
@@ -106,6 +113,24 @@ export default async function DashboardPage() {
     t("mqMatches"),
   ];
   const leagueId = (await currentLeagueId(me))!;
+  // ?welcome=1 → acaba de unirse a esta liga por invite link (o terminó
+  // el onboarding habiendo entrado por uno). Cargamos nombre/logo para el
+  // popup de bienvenida; solo aplica a privadas.
+  let welcomeLeague: { name: string; logoUrl: string | null } | null = null;
+  if (params.welcome) {
+    const [row] = await safe(
+      db
+        .select({ name: leagues.name, logoUrl: leagues.logoUrl, isPublic: leagues.isPublic })
+        .from(leagues)
+        .where(eq(leagues.id, leagueId))
+        .limit(1),
+      [] as Array<{ name: string; logoUrl: string | null; isPublic: boolean }>,
+      "welcomeLeague",
+    );
+    if (row && !row.isPublic) {
+      welcomeLeague = { name: row.name, logoUrl: row.logoUrl };
+    }
+  }
   // Modo de la liga activa. Marcador / Solo Ganador NO tienen pre-torneo
   // (grupos, bota, especiales) ni bracket: solo se predicen partidos. El
   // "puesto de mando" se simplifica para que no aparezcan esas categorías.
@@ -416,6 +441,12 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-10">
+      {welcomeLeague ? (
+        <LeagueWelcomeDialog
+          leagueName={welcomeLeague.name}
+          logoUrl={welcomeLeague.logoUrl}
+        />
+      ) : null}
       <TutorialAutoStart firstSeen={me.tutorialCompletedAt == null} />
       <Suspense fallback={<div aria-hidden />}>
         <ImportPredictionsBanner userId={me.id} activeLeagueId={leagueId} />

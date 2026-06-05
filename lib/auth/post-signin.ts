@@ -38,6 +38,9 @@ export async function resolvePostSignInRedirect(next: string): Promise<string> {
       )}`;
     }
     if (me.nickname == null) return "/onboarding";
+    // Join por invite OK → popup de bienvenida en el dashboard. Si `next`
+    // apunta a otro sitio (deep link), lo respetamos sin popup.
+    if (result.ok && next === "/dashboard") return "/dashboard?welcome=1";
     return next;
   }
 

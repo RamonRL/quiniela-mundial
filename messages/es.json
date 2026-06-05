@@ -1169,7 +1169,10 @@
     "members": "Miembros",
     "note": "Al aceptar, competirás con el resto de participantes de esta quiniela privada.",
     "accept": "Aceptar invitación",
-    "haveAccount": "¿Ya tienes cuenta? <link>Inicia sesión</link> y vuelve a este enlace."
+    "haveAccount": "¿Ya tienes cuenta? <link>Inicia sesión</link> y vuelve a este enlace.",
+    "welcomeEyebrow": "¡Ya estás dentro!",
+    "welcomeBody": "Te has unido correctamente a la quiniela. Tus predicciones, el ranking y el chat ya te están esperando.",
+    "welcomeCta": "A jugar"
   },
   "myPool": {
     "fullBanner": "<b>Quiniela completa ({limit}/{limit} miembros).</b> Para que entren más, contrata un Pase Mundial 2026 — sin migrar datos, mismo grupo.",

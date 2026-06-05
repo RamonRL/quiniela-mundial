@@ -339,7 +339,9 @@ export async function acceptInvite(token: string): Promise<{
     }
   }
   revalidatePath("/", "layout");
-  redirect("/dashboard");
+  // ?welcome=1 → el dashboard muestra el popup de bienvenida a la liga,
+  // para que el usuario tenga confirmación explícita de que ya está dentro.
+  redirect("/dashboard?welcome=1");
 }
 
 // ─────────────────── CREADOR DE QUINIELA PRIVADA ───────────────────
