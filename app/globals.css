@@ -366,6 +366,65 @@
     animation: marquee 18s linear infinite;
   }
 
+  /* ─── Ruleta del tour Marcador / Solo Ganador ───
+     Rueda vertical: la predicción anterior asoma arriba (inclinada hacia
+     atrás, apagada y con blur), la siguiente abajo, y la actual vive en
+     el centro. Al avanzar, la actual sale hacia arriba (transición) y la
+     nueva entra desde abajo (keyframe, key remount); las placas se
+     "promocionan"/"degradan" con anticipación. Todo transform/opacity/
+     filter (GPU). Sin animación si prefers-reduced-motion. */
+  @media (prefers-reduced-motion: no-preference) {
+    .wheel-plate {
+      opacity: 0.38;
+      filter: blur(1.6px) saturate(0.8);
+      transition:
+        opacity 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+        transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+        filter 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .wheel-plate-prev { transform: rotateX(26deg) scale(0.94); }
+    .wheel-plate-next { transform: rotateX(-26deg) scale(0.94); }
+    /* La placa que está a punto de convertirse en la actual se acerca. */
+    .wheel-plate-prev.wheel-plate-promote {
+      opacity: 0.8;
+      filter: blur(0.5px) saturate(1);
+      transform: rotateX(10deg) scale(0.98) translateY(10px);
+    }
+    .wheel-plate-next.wheel-plate-promote {
+      opacity: 0.8;
+      filter: blur(0.5px) saturate(1);
+      transform: rotateX(-10deg) scale(0.98) translateY(-10px);
+    }
+    /* La placa que sale del trío se desvanece alejándose. */
+    .wheel-plate-prev.wheel-plate-demote {
+      opacity: 0;
+      transform: rotateX(38deg) scale(0.88) translateY(-14px);
+    }
+    .wheel-plate-next.wheel-plate-demote {
+      opacity: 0;
+      transform: rotateX(-38deg) scale(0.88) translateY(14px);
+    }
+
+    @keyframes wheel-enter-up {
+      0% { opacity: 0; transform: translateY(48px) scale(0.95); filter: blur(7px); }
+      100% { opacity: 1; transform: none; filter: none; }
+    }
+    @keyframes wheel-enter-down {
+      0% { opacity: 0; transform: translateY(-48px) scale(0.95); filter: blur(7px); }
+      100% { opacity: 1; transform: none; filter: none; }
+    }
+    .wheel-enter-up { animation: wheel-enter-up 0.36s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+    .wheel-enter-down { animation: wheel-enter-down 0.36s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+    .wheel-card {
+      transition:
+        opacity 0.17s ease-in,
+        transform 0.17s ease-in,
+        filter 0.17s ease-in;
+    }
+    .wheel-leave-up { opacity: 0; transform: translateY(-44px) scale(0.95); filter: blur(7px); }
+    .wheel-leave-down { opacity: 0; transform: translateY(44px) scale(0.95); filter: blur(7px); }
+  }
+
   /* ─── Overlay de carga (components/ui/loading-overlay.tsx) ───
      Fade-in corto del overlay + puntos suspensivos animados tras la
      etiqueta ("CARGANDO." → ".." → "..."). El ancho fijo del ::after

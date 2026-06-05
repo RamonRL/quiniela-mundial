@@ -47,6 +47,12 @@ type Props = {
   /** Centra el contenido en vertical (para pasos con poca info, p. ej.
    *  Marcador y Solo Ganador) en vez de pegarlo arriba. */
   centerBody?: boolean;
+  /**
+   * "slide" (default): el shell anima el cambio de paso con su slide
+   * horizontal (key remount). "none": el hijo gestiona su propia
+   * transición (p. ej. la ruleta vertical de Marcador/Solo Ganador).
+   */
+  bodyAnimation?: "slide" | "none";
   /** Pinta toast con check verde durante 1.5s. */
   ref?: React.Ref<TourShellHandle>;
   children: React.ReactNode;
@@ -65,6 +71,7 @@ export function InteractiveTourShell(props: Props) {
     pending = false,
     pendingLabel = "Guardando",
     centerBody = false,
+    bodyAnimation = "slide",
     children,
   } = props;
 
@@ -132,11 +139,12 @@ export function InteractiveTourShell(props: Props) {
       {/* ─── Body central con animación slide ─── */}
       <main className="flex flex-1 flex-col overflow-y-auto">
         <div
-          key={currentStep}
+          key={bodyAnimation === "slide" ? currentStep : "static"}
           className={cn(
             "mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 py-6 sm:px-6",
             centerBody && "justify-center",
-            direction === "right" ? "tour-slide-right" : "tour-slide-left",
+            bodyAnimation === "slide" &&
+              (direction === "right" ? "tour-slide-right" : "tour-slide-left"),
           )}
         >
           {children}

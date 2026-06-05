@@ -12,7 +12,7 @@ import {
   InteractiveTourShell,
   flashSavedToast,
 } from "@/components/predictions/interactive-tour-shell";
-import { formatDateTime } from "@/lib/utils";
+import { cn, formatDateTime } from "@/lib/utils";
 import type { PredictionMode } from "@/lib/prediction-modes";
 import { ScorerPicker, type PlayerCardData } from "./scorer-picker";
 import { saveMatchPrediction } from "./actions";
@@ -95,6 +95,11 @@ export function MatchdayTourClient({
     return out;
   });
   const [pending, startTransition] = useTransition();
+  // Ruleta vertical (solo Marcador / Solo Ganador): fase de salida del
+  // paso actual antes de commitear el siguiente. 170ms de exit + entrada
+  // animada del nuevo = la rueda "gira".
+  const wheelMode = mode !== "completo";
+  const [wheelLeaving, setWheelLeaving] = useState(false);
   const toldEntryToast = useRef(false);
   // Guardados en vuelo (en segundo plano). Al finalizar esperamos a que
   // terminen + un guardado masivo de respaldo, para no perder nada.
@@ -185,16 +190,34 @@ export function MatchdayTourClient({
     await saveMatchdayPredictions({ ok: false }, fd);
   }
 
+  // Cambia de paso. En la ruleta, primero deja salir al actual (fase
+  // "leaving") y luego conmuta — la entrada la anima el key remount.
+  function commitStep(dir: "left" | "right", nextStep: number) {
+    setDirection(dir);
+    const reduceMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (!wheelMode || reduceMotion) {
+      setStep(nextStep);
+      return;
+    }
+    setWheelLeaving(true);
+    window.setTimeout(() => {
+      setWheelLeaving(false);
+      setStep(nextStep);
+    }, 170);
+  }
+
   function onPrev() {
-    if (step === 0) return;
+    if (step === 0 || wheelLeaving) return;
     const p = preds[current.id];
     // Solo guardamos si el paso ya es válido; volver atrás nunca bloquea.
     if (!blockReason(p)) queueSave(current.id, p);
-    setDirection("left");
-    setStep((s) => s - 1);
+    commitStep("left", step - 1);
   }
 
   function onNext() {
+    if (wheelLeaving) return;
     const p = preds[current.id];
     const reason = blockReason(p);
     if (reason === "scorer") {
@@ -222,9 +245,11 @@ export function MatchdayTourClient({
       });
       return;
     }
-    setDirection("right");
-    setStep((s) => s + 1);
+    commitStep("right", step + 1);
   }
+
+  const prevMatch = step > 0 ? matches[step - 1] : null;
+  const nextMatch = step < matches.length - 1 ? matches[step + 1] : null;
 
   const isKnockout = current.stage !== "group";
   const stageEyebrow = current.groupCode
@@ -247,7 +272,39 @@ export function MatchdayTourClient({
       // Marcador y Solo Ganador tienen poca info: centramos en vertical para
       // que no quede pegada arriba con un hueco hasta "Siguiente".
       centerBody={mode === "marcador" || mode === "solo_ganador"}
+      // La ruleta gestiona su propia transición vertical; el slide
+      // horizontal del shell solo aplica al modo Completo.
+      bodyAnimation={wheelMode ? "none" : "slide"}
     >
+      <div className={wheelMode ? "relative w-full [perspective:1100px]" : "contents"}>
+        {wheelMode ? (
+          <WheelPlate
+            match={prevMatch}
+            pred={prevMatch ? preds[prevMatch.id] : undefined}
+            slot="prev"
+            leaving={wheelLeaving}
+            direction={direction}
+            soloGanador={soloGanador}
+            stepNumber={step > 0 ? step : null}
+          />
+        ) : null}
+        <div
+          key={current.id}
+          className={
+            wheelMode
+              ? cn(
+                  "wheel-card relative z-10",
+                  wheelLeaving
+                    ? direction === "right"
+                      ? "wheel-leave-up"
+                      : "wheel-leave-down"
+                    : direction === "right"
+                      ? "wheel-enter-up"
+                      : "wheel-enter-down",
+                )
+              : "contents"
+          }
+        >
       <div className="space-y-6">
         {soloGanador ? (
           /* ── Solo Ganador: la quiniela 1·X·2 a pantalla completa ── */
@@ -416,6 +473,94 @@ export function MatchdayTourClient({
           </>
         )}
       </div>
+        </div>
+        {wheelMode ? (
+          <WheelPlate
+            match={nextMatch}
+            pred={nextMatch ? preds[nextMatch.id] : undefined}
+            slot="next"
+            leaving={wheelLeaving}
+            direction={direction}
+            soloGanador={soloGanador}
+            stepNumber={step < matches.length - 1 ? step + 2 : null}
+          />
+        ) : null}
+      </div>
     </InteractiveTourShell>
+  );
+}
+
+/**
+ * Placa de la ruleta: resumen compacto del partido anterior/siguiente
+ * (banderas, códigos y la predicción actual), inclinada en 3D, apagada y
+ * con blur. Durante la fase "leaving", la placa que va a convertirse en
+ * el paso actual se "promociona" (se acerca, gana foco) y la que sale del
+ * trío se desvanece — la rueda gira. Si no hay partido (primer/último
+ * paso), reserva el hueco para que el centro no salte.
+ */
+function WheelPlate({
+  match,
+  pred,
+  slot,
+  leaving,
+  direction,
+  soloGanador,
+  stepNumber,
+}: {
+  match: MatchItem | null;
+  pred: LocalPrediction | undefined;
+  slot: "prev" | "next";
+  leaving: boolean;
+  direction: "left" | "right";
+  soloGanador: boolean;
+  stepNumber: number | null;
+}) {
+  if (!match) {
+    return <div aria-hidden className={slot === "prev" ? "mb-5 h-14" : "mt-5 h-14"} />;
+  }
+
+  // Avanzando (right) se promociona la placa de abajo; volviendo (left),
+  // la de arriba. La otra se degrada.
+  const promote = leaving && slot === (direction === "right" ? "next" : "prev");
+  const demote = leaving && !promote;
+
+  const pick = (() => {
+    if (!pred) return "—";
+    if (soloGanador) {
+      if (!pred.picked) return "—";
+      if (pred.winnerTeamId == null) return "X";
+      if (match.home && pred.winnerTeamId === match.home.id) return "1";
+      if (match.away && pred.winnerTeamId === match.away.id) return "2";
+      return "X";
+    }
+    return `${pred.homeScore} – ${pred.awayScore}`;
+  })();
+
+  return (
+    <div
+      aria-hidden
+      className={cn(
+        "wheel-plate pointer-events-none flex h-14 select-none items-center justify-center gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]/80 px-4",
+        slot === "prev" ? "wheel-plate-prev mb-5" : "wheel-plate-next mt-5",
+        promote && "wheel-plate-promote",
+        demote && "wheel-plate-demote",
+      )}
+    >
+      <span className="w-6 text-right font-mono text-[0.55rem] tabular text-[var(--color-muted-foreground)]">
+        {stepNumber != null ? String(stepNumber).padStart(2, "0") : ""}
+      </span>
+      {match.home ? <TeamFlag code={match.home.code} size={22} /> : null}
+      <span className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+        {match.home?.code ?? "—"}
+      </span>
+      <span className="min-w-14 text-center font-display text-xl tabular tracking-tight">
+        {pick}
+      </span>
+      <span className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+        {match.away?.code ?? "—"}
+      </span>
+      {match.away ? <TeamFlag code={match.away.code} size={22} /> : null}
+      <span aria-hidden className="w-6" />
+    </div>
   );
 }
