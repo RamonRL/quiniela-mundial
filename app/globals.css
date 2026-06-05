@@ -375,8 +375,8 @@
      filter (GPU). Sin animación si prefers-reduced-motion. */
   @media (prefers-reduced-motion: no-preference) {
     .wheel-plate {
-      opacity: 0.38;
-      filter: blur(1.6px) saturate(0.8);
+      opacity: 0.5;
+      filter: blur(0.8px) saturate(0.85);
       transition:
         opacity 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
         transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),

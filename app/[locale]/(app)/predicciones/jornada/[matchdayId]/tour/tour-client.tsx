@@ -516,7 +516,7 @@ function WheelPlate({
   stepNumber: number | null;
 }) {
   if (!match) {
-    return <div aria-hidden className={slot === "prev" ? "mb-5 h-14" : "mt-5 h-14"} />;
+    return <div aria-hidden className={slot === "prev" ? "mb-8 h-16" : "mt-8 h-16"} />;
   }
 
   // Avanzando (right) se promociona la placa de abajo; volviendo (left),
@@ -540,8 +540,8 @@ function WheelPlate({
     <div
       aria-hidden
       className={cn(
-        "wheel-plate pointer-events-none flex h-14 select-none items-center justify-center gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]/80 px-4",
-        slot === "prev" ? "wheel-plate-prev mb-5" : "wheel-plate-next mt-5",
+        "wheel-plate pointer-events-none flex h-16 select-none items-center justify-center gap-3.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]/80 px-5",
+        slot === "prev" ? "wheel-plate-prev mb-8" : "wheel-plate-next mt-8",
         promote && "wheel-plate-promote",
         demote && "wheel-plate-demote",
       )}
@@ -549,17 +549,17 @@ function WheelPlate({
       <span className="w-6 text-right font-mono text-[0.55rem] tabular text-[var(--color-muted-foreground)]">
         {stepNumber != null ? String(stepNumber).padStart(2, "0") : ""}
       </span>
-      {match.home ? <TeamFlag code={match.home.code} size={22} /> : null}
-      <span className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+      {match.home ? <TeamFlag code={match.home.code} size={26} /> : null}
+      <span className="font-mono text-[0.65rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
         {match.home?.code ?? "—"}
       </span>
-      <span className="min-w-14 text-center font-display text-xl tabular tracking-tight">
+      <span className="min-w-16 text-center font-display text-2xl tabular tracking-tight">
         {pick}
       </span>
-      <span className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+      <span className="font-mono text-[0.65rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
         {match.away?.code ?? "—"}
       </span>
-      {match.away ? <TeamFlag code={match.away.code} size={22} /> : null}
+      {match.away ? <TeamFlag code={match.away.code} size={26} /> : null}
       <span aria-hidden className="w-6" />
     </div>
   );
