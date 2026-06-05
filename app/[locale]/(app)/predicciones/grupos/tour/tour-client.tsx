@@ -33,6 +33,7 @@ import {
   endGroupsTour,
   saveGroupPredictionForGroup,
 } from "./actions";
+import { saveGroupPredictions } from "../actions";
 
 type TeamLite = { id: number; code: string; name: string };
 type GroupItem = {
@@ -61,6 +62,10 @@ export function GroupsTourClient({
   );
   const [pending, startTransition] = useTransition();
   const toldEntryToast = useRef(false);
+  // Guardados en vuelo (en segundo plano). Al finalizar esperamos a que
+  // terminen + un guardado masivo de respaldo, para no perder nada.
+  // Mismo patrón que el tour de jornadas: avance instantáneo entre pasos.
+  const pendingSaves = useRef<Set<Promise<unknown>>>(new Set());
 
   // Toast inicial si entra con todos los grupos ya predichos.
   useEffect(() => {
@@ -86,46 +91,82 @@ export function GroupsTourClient({
   if (!current) return null;
   const currentOrder = orders[current.id];
 
-  async function persistCurrent(): Promise<boolean> {
-    const order = orders[current.id];
-    if (!order || order.length !== 4) return false;
-    const res = await saveGroupPredictionForGroup({
-      groupId: current.id,
+  // Guarda un grupo en SEGUNDO PLANO: no bloqueamos la navegación esperando
+  // al servidor. El upsert es idempotente (usuario+liga+grupo), así que
+  // reintentos o guardados solapados no duplican. Si falla, no molestamos:
+  // el guardado masivo de `flushAll` al finalizar lo recupera.
+  function queueSave(groupId: number, order: number[] | undefined) {
+    if (!order || order.length !== 4) return;
+    const promise = saveGroupPredictionForGroup({
+      groupId,
       pos1TeamId: order[0],
       pos2TeamId: order[1],
       pos3TeamId: order[2],
       pos4TeamId: order[3],
-    });
+    })
+      .then((res) => {
+        if (res.ok) flashSavedToast();
+      })
+      .catch(() => {})
+      .finally(() => pendingSaves.current.delete(promise));
+    pendingSaves.current.add(promise);
+  }
+
+  // Red de seguridad al terminar: espera los guardados en vuelo y persiste
+  // los 12 grupos de una sola vez (bulk idempotente) por si alguno de
+  // fondo falló. Es la misma action que usa la página clásica de grupos.
+  async function flushAll() {
+    await Promise.allSettled([...pendingSaves.current]);
+    const fd = new FormData();
+    fd.set(
+      "payload",
+      JSON.stringify({
+        predictions: items.map((g) => {
+          const order = orders[g.id];
+          return {
+            groupId: g.id,
+            pos1TeamId: order?.[0] ?? null,
+            pos2TeamId: order?.[1] ?? null,
+            pos3TeamId: order?.[2] ?? null,
+            pos4TeamId: order?.[3] ?? null,
+          };
+        }),
+      }),
+    );
+    const res = await saveGroupPredictions({ ok: false }, fd);
     if (!res.ok) {
       toast.error(res.error ?? t("saveError"));
-      return false;
+      throw new Error(res.error ?? "saveGroupPredictions failed");
     }
-    flashSavedToast();
-    return true;
   }
 
   function onPrev() {
     if (step === 0) return;
-    startTransition(async () => {
-      const ok = await persistCurrent();
-      if (!ok) return;
-      setDirection("left");
-      setStep((s) => s - 1);
-    });
+    // Guardado en segundo plano + retroceso INMEDIATO.
+    queueSave(current.id, orders[current.id]);
+    setDirection("left");
+    setStep((s) => s - 1);
   }
 
   function onNext() {
     const isLast = step === items.length - 1;
-    startTransition(async () => {
-      const ok = await persistCurrent();
-      if (!ok) return;
-      if (isLast) {
-        await endGroupsTour();
-        router.push("/predicciones");
-        return;
-      }
+    if (!isLast) {
+      // Guardado en segundo plano + avance INMEDIATO (sin esperar al server).
+      queueSave(current.id, orders[current.id]);
       setDirection("right");
       setStep((s) => s + 1);
+      return;
+    }
+    // Último paso: aquí sí esperamos a que TODO quede persistido (con el
+    // overlay de carga del shell dando feedback si se alarga).
+    startTransition(async () => {
+      try {
+        await flushAll();
+      } catch {
+        return; // el toast de error ya avisó; el usuario puede reintentar
+      }
+      await endGroupsTour();
+      router.push("/predicciones");
     });
   }
 
