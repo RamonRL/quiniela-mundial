@@ -9,7 +9,8 @@ import { Users } from "lucide-react";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
 import { formatDateTime } from "@/lib/utils";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { localizeTeams } from "@/lib/team-names";
 import { groupsScoring, groupsFootnote } from "@/lib/scoring/copy";
 import { InteractiveModeBanner } from "@/components/predictions/interactive-mode-banner";
 import { GroupRankingForm } from "./group-ranking-form";
@@ -22,6 +23,7 @@ const KICKOFF = new Date(
 
 export default async function PredictGroupsPage() {
   const me = await requireUser();
+  const locale = await getLocale();
   const t = await getTranslations("scoring");
   const tg = await getTranslations("predGroups");
   const leagueId = (await currentLeagueId(me))!;
@@ -29,7 +31,7 @@ export default async function PredictGroupsPage() {
   // predicen grupos: cortamos el acceso directo por URL.
   const mode = (await getLeagueModes([leagueId])).get(leagueId) ?? "completo";
   if (mode !== "completo") redirect("/predicciones");
-  const [allGroups, allTeams, myPreds] = await Promise.all([
+  const [allGroups, allTeamsRaw, myPreds] = await Promise.all([
     db.select().from(groups).orderBy(asc(groups.code)),
     db.select().from(teams).orderBy(asc(teams.name)),
     db
@@ -42,6 +44,7 @@ export default async function PredictGroupsPage() {
         ),
       ),
   ]);
+  const allTeams = localizeTeams(allTeamsRaw, locale);
 
   const teamsByGroup = new Map<number, typeof allTeams>();
   for (const t of allTeams) {

@@ -1,8 +1,9 @@
 import { TeamFlag } from "@/components/brand/team-flag";
 import { Link } from "@/i18n/navigation";
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { useTranslations } from "next-intl";
+import { localizeTeams } from "@/lib/team-names";
 import { and, asc, eq, inArray, ne } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
@@ -38,6 +39,7 @@ export default async function CompararPage({
   searchParams: Promise<{ vs?: string }>;
 }) {
   const me = await requireUser();
+  const locale = await getLocale();
   const t = await getTranslations("compare");
   const leagueId = (await currentLeagueId(me))!;
   // Comparar solo aplica a quinielas privadas. Si el usuario está en la
@@ -168,7 +170,7 @@ export default async function CompararPage({
       ? await db.select().from(players).where(inArray(players.id, topScorerIds))
       : [];
 
-  const teamById = new Map(allTeams.map((t) => [t.id, t]));
+  const teamById = new Map(localizeTeams(allTeams, locale).map((t) => [t.id, t]));
   const playerById = new Map(topPlayerRows.map((p) => [p.id, p]));
 
   function findGroupPred(rows: typeof myGroups, groupId: number) {

@@ -1,9 +1,12 @@
 import { TeamFlag } from "@/components/brand/team-flag";
+import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Clock, MapPin } from "lucide-react";
 import { and, asc, eq, ne } from "drizzle-orm";
 import { db } from "@/lib/db";
+import { localizeTeams, localizedTeamName } from "@/lib/team-names";
+import { localizedStageLabel } from "@/lib/matchday-names";
 import {
   groupStandings,
   groups,
@@ -59,6 +62,8 @@ export default async function GroupDetailPage({
 }: {
   params: Promise<{ code: string }>;
 }) {
+  const locale = await getLocale();
+  const t = await getTranslations("groupDetail");
   const me = await getCurrentUser();
   const leagueId = me ? await currentLeagueId(me) : null;
   const { code } = await params;
@@ -85,7 +90,8 @@ export default async function GroupDetailPage({
       .orderBy(asc(matches.scheduledAt)),
   ]);
 
-  const teamById = new Map(groupTeams.map((t) => [t.id, t]));
+  const groupTeamsLoc = localizeTeams(groupTeams, locale);
+  const teamById = new Map(groupTeamsLoc.map((t) => [t.id, t]));
   const standingByTeam = new Map(standings.map((s) => [s.teamId, s]));
 
   const firstMatchAt = groupMatches[0]?.scheduledAt ?? null;
@@ -133,7 +139,7 @@ export default async function GroupDetailPage({
       : Promise.resolve([]),
   ]);
 
-  const sortedTeams = [...groupTeams].sort((a, b) => {
+  const sortedTeams = [...groupTeamsLoc].sort((a, b) => {
     const sa = standingByTeam.get(a.id)?.position ?? 99;
     const sb = standingByTeam.get(b.id)?.position ?? 99;
     if (sa !== sb) return sa - sb;
@@ -162,7 +168,7 @@ export default async function GroupDetailPage({
       <Button asChild variant="ghost" size="sm" className="px-0 text-[var(--color-muted-foreground)]">
         <Link href="/grupos">
           <ArrowLeft />
-          Volver a grupos
+          {t("backToGroups")}
         </Link>
       </Button>
 
@@ -183,7 +189,7 @@ export default async function GroupDetailPage({
         <div className="relative grid gap-6 p-6 sm:grid-cols-[auto_1fr] sm:items-center sm:gap-8 sm:p-8">
           <div>
             <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-              Grupo
+              {t("groupEyebrow")}
             </p>
             <h1 className="font-display leading-none tracking-tight text-[var(--color-arena)] glow-arena text-[7rem] sm:text-[10rem]">
               {group.code}
@@ -208,13 +214,13 @@ export default async function GroupDetailPage({
             {/* Stats */}
             <div className="grid grid-cols-3 gap-3">
               <Stat
-                label="Partidos"
+                label={t("statMatches")}
                 value={`${matchesPlayed} / ${groupMatches.length}`}
-                hint={liveMatches > 0 ? "1 en vivo" : null}
+                hint={liveMatches > 0 ? t("oneLive") : null}
                 live={liveMatches > 0}
               />
-              <Stat label="Finalizados" value={finishedMatches.toString()} />
-              <Stat label="Goles" value={goalsFor.toString()} />
+              <Stat label={t("statFinished")} value={finishedMatches.toString()} />
+              <Stat label={t("statGoals")} value={goalsFor.toString()} />
             </div>
           </div>
         </div>
@@ -225,12 +231,26 @@ export default async function GroupDetailPage({
         <div className="flex items-center gap-3">
           <span className="h-px w-6 bg-[var(--color-arena)]" />
           <h2 className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Clasificación
+            {t("standings")}
           </h2>
           <span className="h-px flex-1 bg-[var(--color-border)]" />
         </div>
         <article className="overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)]">
-          <DetailStandingsHeader />
+          <DetailStandingsHeader
+            labels={{
+              team: t("thTeam"),
+              played: t("thPlayed"),
+              goalDiff: t("thGoalDiff"),
+              won: t("thWon"),
+              drawn: t("thDrawn"),
+              lost: t("thLost"),
+              goalsFor: t("thGoalsFor"),
+              goalsAgainst: t("thGoalsAgainst"),
+              points: t("thPoints"),
+              you: t("thYou"),
+              yourPick: t("thYourPick"),
+            }}
+          />
           <ul>
             {sortedTeams.map((t, i) => {
               const s = standingByTeam.get(t.id);
@@ -265,7 +285,7 @@ export default async function GroupDetailPage({
             <header className="flex items-center gap-3">
               <span className="h-px w-6 bg-[var(--color-arena)]" />
               <h2 className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                Análisis del grupo
+                {t("analysisTitle")}
               </h2>
               <span className="h-px flex-1 bg-[var(--color-border)]" />
             </header>
@@ -275,24 +295,24 @@ export default async function GroupDetailPage({
               </p>
               <div className="grid gap-5 sm:grid-cols-3">
                 <AnalysisColumn
-                  label="El favorito"
+                  label={t("analysisFavorite")}
                   team={analysis.favorite.team}
                   text={analysis.favorite.text}
                 />
                 <AnalysisColumn
-                  label="El otro cupo"
+                  label={t("analysisContender")}
                   team={analysis.contender.team}
                   text={analysis.contender.text}
                 />
                 <AnalysisColumn
-                  label="Dark horse"
+                  label={t("analysisDarkHorse")}
                   team={analysis.darkHorse.team}
                   text={analysis.darkHorse.text}
                 />
               </div>
               <div className="rounded-md border-l-2 border-[var(--color-arena)] bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface-2))] px-4 py-3">
                 <p className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-                  Predicción
+                  {t("prediction")}
                 </p>
                 <p className="pt-1 text-sm leading-relaxed">
                   {analysis.prediction}
@@ -308,7 +328,7 @@ export default async function GroupDetailPage({
         <div className="flex items-center gap-3">
           <span className="h-px w-6 bg-[var(--color-arena)]" />
           <h2 className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Partidos
+            {t("matches")}
           </h2>
           <span className="h-px flex-1 bg-[var(--color-border)]" />
         </div>
@@ -333,6 +353,11 @@ export default async function GroupDetailPage({
                 }}
                 home={home}
                 away={away}
+                statusLabels={{
+                  final: t("statusFinal"),
+                  live: t("statusLive"),
+                  scheduled: t("statusScheduled"),
+                }}
               />
             );
           })}
@@ -345,19 +370,19 @@ export default async function GroupDetailPage({
         <div className="flex items-center gap-3">
           <span className="h-px w-6 bg-[var(--color-arena)]" />
           <h2 className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Tu predicción
+            {t("yourPrediction")}
           </h2>
           <span className="h-px flex-1 bg-[var(--color-border)]" />
         </div>
         <article className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 sm:p-6">
           {myPred.length === 0 ? (
             <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-              Aún sin predicción. Hazla en{" "}
+              {t("noPrediction")}{" "}
               <Link
                 className="text-[var(--color-arena)] underline-offset-2 hover:underline"
                 href="/predicciones/grupos"
               >
-                Predicciones · Posiciones por grupo
+                {t("noPredictionLink")}
               </Link>
               .
             </p>
@@ -398,7 +423,7 @@ export default async function GroupDetailPage({
                         </span>
                         {advances ? (
                           <Badge variant="default" className="text-[0.55rem]">
-                            Pasa
+                            {t("advances")}
                           </Badge>
                         ) : null}
                       </Link>
@@ -424,16 +449,16 @@ export default async function GroupDetailPage({
       ) : (
         <section className="rounded-2xl border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface))] p-6 text-center">
           <p className="font-display text-2xl tracking-tight">
-            ¿Quién pasa de este grupo?
+            {t("visitorTitle")}
           </p>
           <p className="pt-1 font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-            Crea tu quiniela y compite con tus amigos prediciendo cada posición.
+            {t("visitorSubtitle")}
           </p>
           <Link
             href="/login?next=%2Fpredicciones%2Fgrupos"
             className="mt-4 inline-flex items-center gap-1.5 rounded-md border border-[var(--color-arena)] bg-[var(--color-arena)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white shadow-[var(--shadow-arena)]"
           >
-            Crear mi quiniela
+            {t("createMyQuiniela")}
           </Link>
         </section>
       )}
@@ -444,14 +469,14 @@ export default async function GroupDetailPage({
           <div className="flex items-center gap-3">
             <span className="h-px w-6 bg-[var(--color-arena)]" />
             <h2 className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-              Predicciones de la peña
+              {t("leaguePredictions")}
             </h2>
             <span className="h-px flex-1 bg-[var(--color-border)]" />
           </div>
           <article className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 sm:p-6">
             {otherPreds.length === 0 ? (
               <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-                Nadie más predijo este grupo.
+                {t("noOnePredicted")}
               </p>
             ) : (
               <ul className="grid gap-2 sm:grid-cols-2">
@@ -551,28 +576,44 @@ function Stat({
   );
 }
 
-function DetailStandingsHeader() {
+function DetailStandingsHeader({
+  labels,
+}: {
+  labels: {
+    team: string;
+    played: string;
+    goalDiff: string;
+    won: string;
+    drawn: string;
+    lost: string;
+    goalsFor: string;
+    goalsAgainst: string;
+    points: string;
+    you: string;
+    yourPick: string;
+  };
+}) {
   return (
     <>
       <div className="grid grid-cols-[24px_1fr_28px_36px_44px_44px] gap-2 border-b border-[var(--color-border)] bg-[var(--color-surface-2)]/40 px-5 py-2 font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)] sm:hidden">
         <span>#</span>
-        <span>Selección</span>
-        <span className="text-right">PJ</span>
-        <span className="text-right">DG</span>
-        <span className="text-right">Pts</span>
-        <span className="text-right">Tú</span>
+        <span>{labels.team}</span>
+        <span className="text-right">{labels.played}</span>
+        <span className="text-right">{labels.goalDiff}</span>
+        <span className="text-right">{labels.points}</span>
+        <span className="text-right">{labels.you}</span>
       </div>
       <div className="hidden grid-cols-[24px_1fr_28px_28px_28px_28px_36px_36px_44px_60px] gap-2 border-b border-[var(--color-border)] bg-[var(--color-surface-2)]/40 px-5 py-2 font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)] sm:grid">
         <span>#</span>
-        <span>Selección</span>
-        <span className="text-right">PJ</span>
-        <span className="text-right">G</span>
-        <span className="text-right">E</span>
-        <span className="text-right">P</span>
-        <span className="text-right">GF</span>
-        <span className="text-right">GC</span>
-        <span className="text-right">Pts</span>
-        <span className="text-right">Tu pick</span>
+        <span>{labels.team}</span>
+        <span className="text-right">{labels.played}</span>
+        <span className="text-right">{labels.won}</span>
+        <span className="text-right">{labels.drawn}</span>
+        <span className="text-right">{labels.lost}</span>
+        <span className="text-right">{labels.goalsFor}</span>
+        <span className="text-right">{labels.goalsAgainst}</span>
+        <span className="text-right">{labels.points}</span>
+        <span className="text-right">{labels.yourPick}</span>
       </div>
     </>
   );
@@ -717,14 +758,18 @@ type MatchRow = {
   winnerTeamId: number | null;
 };
 
+type StatusLabels = { final: string; live: string; scheduled: string };
+
 function MatchCard({
   m,
   home,
   away,
+  statusLabels,
 }: {
   m: MatchRow;
   home: { name: string; code: string; flagUrl: string | null } | null | undefined;
   away: { name: string; code: string; flagUrl: string | null } | null | undefined;
+  statusLabels: StatusLabels;
 }) {
   const isFinished = m.status === "finished";
   const isLive = m.status === "live";
@@ -743,7 +788,7 @@ function MatchCard({
         <span className="font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
           {m.code}
         </span>
-        <StatusPill status={m.status} />
+        <StatusPill status={m.status} labels={statusLabels} />
       </header>
 
       <div className="relative grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-5 sm:gap-3 sm:py-6">
@@ -786,11 +831,17 @@ function MatchCard({
   );
 }
 
-function StatusPill({ status }: { status: MatchRow["status"] }) {
+function StatusPill({
+  status,
+  labels,
+}: {
+  status: MatchRow["status"];
+  labels: StatusLabels;
+}) {
   if (status === "finished") {
     return (
       <Badge variant="success" className="text-[0.55rem]">
-        Final
+        {labels.final}
       </Badge>
     );
   }
@@ -804,13 +855,13 @@ function StatusPill({ status }: { status: MatchRow["status"] }) {
           />
           <span className="relative inline-flex size-1.5 rounded-full bg-[var(--color-arena)]" />
         </span>
-        En vivo
+        {labels.live}
       </span>
     );
   }
   return (
     <Badge variant="outline" className="text-[0.55rem]">
-      Programado
+      {labels.scheduled}
     </Badge>
   );
 }

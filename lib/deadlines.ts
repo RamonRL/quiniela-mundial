@@ -1,3 +1,5 @@
+import { getLocale } from "next-intl/server";
+import { localizedMatchdayName } from "@/lib/matchday-names";
 import { cache } from "react";
 import { and, asc, eq, gt, inArray, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
@@ -196,6 +198,9 @@ async function loadOpenMatchdaysUnsafe(
       ),
   ]);
 
+  // Nombres de jornada localizados en ORIGEN: el banner de deadlines, el
+  // dashboard y las páginas de predicciones heredan la traducción.
+  const locale = await getLocale();
   const out: OpenMatchdayEntry[] = [];
   for (const d of openDays) {
     const stats = matchStatsByDay.get(d.id);
@@ -204,7 +209,7 @@ async function loadOpenMatchdaysUnsafe(
     const openMatches = stats.openMatches;
     out.push({
       id: d.id,
-      name: d.name,
+      name: localizedMatchdayName(d.name, d.stage, locale),
       stage: d.stage as Stage,
       nextDeadlineAt: stats.nextAt,
       total: stats.total,

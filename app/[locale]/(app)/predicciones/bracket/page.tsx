@@ -12,7 +12,8 @@ import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
 import { formatDateTime } from "@/lib/utils";
 import { getBracketStatus, getQualifiedTeamIds } from "@/lib/bracket-state";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { localizeTeams } from "@/lib/team-names";
 import { bracketScoring, bracketFootnote } from "@/lib/scoring/copy";
 import { BracketBuilder } from "./bracket-builder";
 import type { TeamLite } from "./bracket-builder";
@@ -25,6 +26,7 @@ export default async function PredictBracketPage({
   searchParams: Promise<{ preview?: string }>;
 }) {
   const me = await requireUser();
+  const locale = await getLocale();
   const t = await getTranslations("scoring");
   const tb = await getTranslations("predBracket");
   // Solo "completo" tiene bracket. Marcador / Solo Ganador → fuera.
@@ -68,12 +70,13 @@ export default async function PredictBracketPage({
   // En modo "previa admin" los grupos aún no han cerrado, así que no hay
   // 32 clasificados — usamos todas las selecciones para que la UI tenga
   // contenido con el que jugar.
-  const qualifiedTeams =
+  const qualifiedTeamsRaw =
     previewRequested && qualifiedIds.length === 0
       ? await db.select().from(teams)
       : qualifiedIds.length > 0
         ? await db.select().from(teams).where(inArray(teams.id, qualifiedIds))
         : [];
+  const qualifiedTeams = localizeTeams(qualifiedTeamsRaw, locale);
 
   // Cargamos los partidos eliminatorios para conocer el emparejamiento real
   // de R32 (homeTeamId/awayTeamId) cuando los grupos hayan cerrado. Antes de

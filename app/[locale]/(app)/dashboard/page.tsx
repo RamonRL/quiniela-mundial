@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { TeamFlag } from "@/components/brand/team-flag";
 import { ArrowRight, ArrowUpRight, CalendarDays, Crown, Flame, Trophy } from "lucide-react";
 import { and, asc, desc, eq, gt, sql } from "drizzle-orm";
@@ -27,6 +27,7 @@ import { RealtimeRefresher } from "@/components/realtime/realtime-refresher";
 import { requireUser } from "@/lib/auth/guards";
 import { TutorialAutoStart } from "@/components/tutorial/auto-start";
 import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
+import { localizeTeams } from "@/lib/team-names";
 import { formatDateTime } from "@/lib/utils";
 import { ActivityFeedCard } from "./activity-feed-card";
 import { DashboardNewsStrip } from "./news-strip";
@@ -102,6 +103,8 @@ export default async function DashboardPage({
 }) {
   const me = await requireUser();
   const t = await getTranslations("dashboard");
+  // Tablón y noticias se escriben solo en castellano → ocultos fuera de ES.
+  const locale = await getLocale();
   const params = (await searchParams) ?? {};
   const MARQUEE_TOKENS = [
     t("mqWorldCup"),
@@ -345,7 +348,7 @@ export default async function DashboardPage({
           "teamRows",
         )
       : [];
-  const teamById = new Map(teamRows.map((tm) => [tm.id, tm]));
+  const teamById = new Map(localizeTeams(teamRows, locale).map((tm) => [tm.id, tm]));
   const next = nextMatch[0];
   const nextHome = next?.homeTeamId ? teamById.get(next.homeTeamId) ?? null : null;
   const nextAway = next?.awayTeamId ? teamById.get(next.awayTeamId) ?? null : null;
@@ -1014,16 +1017,22 @@ export default async function DashboardPage({
 
       {/* Tablón de novedades de la app — patch notes que el admin va
           publicando (features, fixes, mejoras). Si no hay nada publicado
-          el componente renderiza null y no añade ruido. */}
-      <Suspense fallback={null}>
-        <PatchNotesBoard />
-      </Suspense>
+          el componente renderiza null y no añade ruido. Solo en ES: las
+          notas no se traducen una a una. */}
+      {locale === "es" ? (
+        <Suspense fallback={null}>
+          <PatchNotesBoard />
+        </Suspense>
+      ) : null}
 
       {/* Mundial al día — últimas 2 noticias, streamed para no bloquear
-          el critical path del dashboard. */}
-      <Suspense fallback={null}>
-        <DashboardNewsStrip />
-      </Suspense>
+          el critical path del dashboard. Solo en ES (contenido editorial
+          sin traducir). */}
+      {locale === "es" ? (
+        <Suspense fallback={null}>
+          <DashboardNewsStrip />
+        </Suspense>
+      ) : null}
     </div>
   );
 }

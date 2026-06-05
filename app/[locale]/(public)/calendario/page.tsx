@@ -1,10 +1,12 @@
 import { Link } from "@/i18n/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { useTranslations } from "next-intl";
 import { TeamFlag } from "@/components/brand/team-flag";
 import { CalendarDays, Clock, MapPin } from "lucide-react";
 import { asc } from "drizzle-orm";
 import { db } from "@/lib/db";
+import { localizeTeams } from "@/lib/team-names";
+import { localizedMatchdayName } from "@/lib/matchday-names";
 import { groups, matchdays, matches, teams } from "@/lib/db/schema";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/shell/empty-state";
@@ -49,6 +51,7 @@ export default async function CalendarPage({
 }: {
   searchParams: Promise<{ group?: string; team?: string; stage?: string }>;
 }) {
+  const locale = await getLocale();
   const t = await getTranslations("calendarPage");
   const tt = await getTranslations("tournament");
   const sp = await searchParams;
@@ -62,10 +65,12 @@ export default async function CalendarPage({
     db.select().from(teams),
     db.select().from(groups),
   ]);
-  const teamById = new Map(allTeams.map((t) => [t.id, t]));
+  // Nombres de selección localizados (EN/FR/PT) desde el borde de datos.
+  const allTeamsLoc = localizeTeams(allTeams, locale);
+  const teamById = new Map(allTeamsLoc.map((t) => [t.id, t]));
   const groupById = new Map(allGroups.map((g) => [g.id, g]));
   const teamsByGroup = new Map<number, typeof allTeams>();
-  for (const t of allTeams) {
+  for (const t of allTeamsLoc) {
     if (t.groupId == null) continue;
     const arr = teamsByGroup.get(t.groupId) ?? [];
     arr.push(t);
@@ -121,7 +126,7 @@ export default async function CalendarPage({
   // Etiqueta humana del filtro para el header pequeño.
   const filterLabel = ((): string | null => {
     if (active.kind === "team") {
-      const tm = allTeams.find((x) => x.code === active.code);
+      const tm = allTeamsLoc.find((x) => x.code === active.code);
       return tm ? `${tm.name}` : t("teamFallback", { code: active.code });
     }
     if (active.kind === "group") return tt("groupWithCode", { code: active.code });
@@ -200,7 +205,7 @@ export default async function CalendarPage({
                         {STAGE_LABEL_KEY[d.stage] ? tt(STAGE_LABEL_KEY[d.stage]) : d.stage}
                       </p>
                       <h2 className="font-display text-3xl leading-tight tracking-tight">
-                        {d.name}
+                        {localizedMatchdayName(d.name, d.stage, locale)}
                       </h2>
                     </div>
                   </div>

@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import {
@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { and, asc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
+import { localizedMatchdayName } from "@/lib/matchday-names";
 import {
   matchdays,
   matches,
@@ -117,10 +118,11 @@ export default async function PrediccionesHub() {
   const totalByDay = new Map(matchTotals.map((r) => [r.matchdayId ?? 0, r.total]));
   const filledByDay = new Map(myResultPicks.map((r) => [r.matchdayId ?? 0, r.filled]));
 
+  const mdLocale = await getLocale();
   const annotatedDays = await computeMatchdayStates(
     allDays.map((d) => ({
       id: d.id,
-      name: d.name,
+      name: localizedMatchdayName(d.name, d.stage, mdLocale),
       stage: d.stage as Stage,
       predictionDeadlineAt: d.predictionDeadlineAt, // se sigue mostrando como "primer kickoff" en las cards
     })),

@@ -8,7 +8,8 @@ import { PageHeader } from "@/components/shell/page-header";
 import { ScoringBox } from "@/components/brand/scoring-box";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { localizeTeams } from "@/lib/team-names";
 import { specialsScoring, specialsFootnote } from "@/lib/scoring/copy";
 import { InteractiveModeBanner } from "@/components/predictions/interactive-mode-banner";
 import { isSpecialAnswered, type SpecialType } from "./types";
@@ -18,13 +19,14 @@ export const metadata = { title: "Predicciones especiales" };
 
 export default async function PredictSpecialsPage() {
   const me = await requireUser();
+  const locale = await getLocale();
   const t = await getTranslations("scoring");
   const ts = await getTranslations("predSpecials");
   const leagueId = (await currentLeagueId(me))!;
   // Solo "completo" tiene especiales. Marcador / Solo Ganador → fuera.
   const mode = (await getLeagueModes([leagueId])).get(leagueId) ?? "completo";
   if (mode !== "completo") redirect("/predicciones");
-  const [specials, mine, allPlayers, allTeams] = await Promise.all([
+  const [specials, mine, allPlayers, allTeamsRaw] = await Promise.all([
     db.select().from(specialPredictions).orderBy(asc(specialPredictions.orderIndex)),
     db
       .select()
@@ -33,6 +35,7 @@ export default async function PredictSpecialsPage() {
     db.select().from(players).orderBy(asc(players.name)),
     db.select().from(teams).orderBy(asc(teams.name)),
   ]);
+  const allTeams = localizeTeams(allTeamsRaw, locale);
   const myByKey = new Map(mine.map((m) => [m.specialId, m]));
 
   // Modo paso a paso por defecto mientras quede alguna pregunta abierta sin

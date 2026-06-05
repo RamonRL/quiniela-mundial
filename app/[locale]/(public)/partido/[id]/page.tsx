@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
+import { getLocale } from "next-intl/server";
+import { localizeTeams } from "@/lib/team-names";
 import {
   groups,
   matchScorers,
@@ -231,7 +233,8 @@ export default async function MatchDetailPage({
   // Keep a backward-compat reference for the goleadores section using only the
   // scorer player rows so the rest of the page works unchanged.
   void playerRows;
-  const teamById = new Map(allTeams.map((t) => [t.id, t]));
+  const locale = await getLocale();
+  const teamById = new Map(localizeTeams(allTeams, locale).map((t) => [t.id, t]));
 
   const home = match.homeTeamId ? teamById.get(match.homeTeamId) : null;
   const away = match.awayTeamId ? teamById.get(match.awayTeamId) : null;

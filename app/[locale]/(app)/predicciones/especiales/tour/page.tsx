@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { and, asc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { players, predSpecial, specialPredictions, teams } from "@/lib/db/schema";
+import { getLocale } from "next-intl/server";
+import { localizeTeams } from "@/lib/team-names";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
 import { isSpecialAnswered, type SpecialType } from "../types";
@@ -14,12 +16,13 @@ export default async function SpecialsTourPage(props: {
   searchParams: Promise<{ step?: string }>;
 }) {
   const me = await requireUser();
+  const locale = await getLocale();
   const leagueId = (await currentLeagueId(me))!;
   // Solo "completo" tiene especiales. Marcador / Solo Ganador → fuera.
   const mode = (await getLeagueModes([leagueId])).get(leagueId) ?? "completo";
   if (mode !== "completo") redirect("/predicciones");
 
-  const [specials, mine, allPlayers, allTeams] = await Promise.all([
+  const [specials, mine, allPlayers, allTeamsRaw] = await Promise.all([
     db.select().from(specialPredictions).orderBy(asc(specialPredictions.orderIndex)),
     db
       .select()
@@ -28,6 +31,7 @@ export default async function SpecialsTourPage(props: {
     db.select().from(players).orderBy(asc(players.name)),
     db.select().from(teams).orderBy(asc(teams.name)),
   ]);
+  const allTeams = localizeTeams(allTeamsRaw, locale);
 
   // Solo entran al tour las preguntas todavía abiertas.
   const now = Date.now();

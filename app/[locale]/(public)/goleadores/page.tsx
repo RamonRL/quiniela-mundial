@@ -1,8 +1,9 @@
 import { Link } from "@/i18n/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Crown, Target } from "lucide-react";
 import { inArray, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
+import { localizeTeams } from "@/lib/team-names";
 import { matchScorers, players, teams } from "@/lib/db/schema";
 import { TeamFlag } from "@/components/brand/team-flag";
 import { EmptyState } from "@/components/shell/empty-state";
@@ -28,6 +29,7 @@ export const metadata = {
 };
 
 export default async function ScorersPage() {
+  const locale = await getLocale();
   const t = await getTranslations("scorersPage");
   const tt = await getTranslations("tournament");
   const rows = await db
@@ -52,7 +54,7 @@ export default async function ScorersPage() {
       : Promise.resolve([]),
   ]);
   const playerById = new Map(playerRows.map((p) => [p.id, p]));
-  const teamById = new Map(teamRows.map((t) => [t.id, t]));
+  const teamById = new Map(localizeTeams(teamRows, locale).map((t) => [t.id, t]));
 
   const totalGoals = rows.reduce((s, r) => s + r.goals, 0);
   const topGoals = rows[0]?.goals ?? 0;

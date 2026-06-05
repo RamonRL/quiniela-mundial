@@ -1,9 +1,10 @@
 import { TeamFlag } from "@/components/brand/team-flag";
 import { Link } from "@/i18n/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { useTranslations } from "next-intl";
 import { asc } from "drizzle-orm";
 import { db } from "@/lib/db";
+import { localizeTeams } from "@/lib/team-names";
 import { groups, groupStandings, teams } from "@/lib/db/schema";
 import { EmptyState } from "@/components/shell/empty-state";
 import { PageHeader } from "@/components/shell/page-header";
@@ -28,6 +29,7 @@ export const metadata = {
 };
 
 export default async function GroupsPage() {
+  const locale = await getLocale();
   const t = await getTranslations("groupsPage");
   const tt = await getTranslations("tournament");
   const [allGroups, allTeams, standings] = await Promise.all([
@@ -35,8 +37,9 @@ export default async function GroupsPage() {
     db.select().from(teams).orderBy(asc(teams.name)),
     db.select().from(groupStandings),
   ]);
+  const allTeamsLoc = localizeTeams(allTeams, locale);
   const teamsByGroup = new Map<number, typeof allTeams>();
-  for (const t of allTeams) {
+  for (const t of allTeamsLoc) {
     if (t.groupId) {
       const arr = teamsByGroup.get(t.groupId) ?? [];
       arr.push(t);

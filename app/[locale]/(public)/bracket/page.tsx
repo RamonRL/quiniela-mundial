@@ -1,9 +1,10 @@
 import { TeamFlag } from "@/components/brand/team-flag";
 import { Link } from "@/i18n/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { useTranslations } from "next-intl";
 import { and, asc, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
+import { localizeTeams } from "@/lib/team-names";
 import { matches, predBracketSlot, teams } from "@/lib/db/schema";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -45,6 +46,7 @@ const KO_STAGES = ["r32", "r16", "qf", "sf", "final", "third"] as const;
 type KoStage = (typeof KO_STAGES)[number];
 
 export default async function BracketPage() {
+  const locale = await getLocale();
   const t = await getTranslations("bracketPage");
   const tt = await getTranslations("tournament");
   const me = await getCurrentUser();
@@ -65,7 +67,7 @@ export default async function BracketPage() {
     teamIds.length > 0
       ? await db.select().from(teams).where(inArray(teams.id, teamIds))
       : [];
-  const teamById = new Map(allTeams.map((t) => [t.id, t]));
+  const teamById = new Map(localizeTeams(allTeams, locale).map((t) => [t.id, t]));
 
   const myPreds =
     me && leagueId != null

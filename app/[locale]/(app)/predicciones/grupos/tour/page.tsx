@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { and, asc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { groups, predGroupRanking, teams } from "@/lib/db/schema";
+import { getLocale } from "next-intl/server";
+import { localizeTeams } from "@/lib/team-names";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
 import { GroupsTourClient } from "./tour-client";
@@ -17,6 +19,7 @@ export default async function GroupsTourPage(props: {
   searchParams: Promise<{ step?: string }>;
 }) {
   const me = await requireUser();
+  const locale = await getLocale();
   const leagueId = (await currentLeagueId(me))!;
   // Solo "completo" predice grupos. Marcador / Solo Ganador → fuera.
   const mode = (await getLeagueModes([leagueId])).get(leagueId) ?? "completo";
@@ -28,7 +31,7 @@ export default async function GroupsTourPage(props: {
     redirect("/predicciones/grupos");
   }
 
-  const [allGroups, allTeams, myPreds] = await Promise.all([
+  const [allGroups, allTeamsRaw, myPreds] = await Promise.all([
     db.select().from(groups).orderBy(asc(groups.code)),
     db.select().from(teams).orderBy(asc(teams.name)),
     db
@@ -41,6 +44,7 @@ export default async function GroupsTourPage(props: {
         ),
       ),
   ]);
+  const allTeams = localizeTeams(allTeamsRaw, locale);
 
   // Si el torneo aún no tiene todos los grupos cargados, no abrimos el
   // tour — volver al full-page que ya gestiona el empty-state.

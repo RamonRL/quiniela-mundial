@@ -26,6 +26,7 @@ import { Reveal } from "@/components/animation/reveal";
 import { Counter } from "@/components/animation/counter";
 import { HeroPhones } from "./hero-phones";
 import { featureShotsFor } from "./feature-shots";
+import { localizeTeams } from "@/lib/team-names";
 import { type StaticImageData } from "next/image";
 import { TeamFlag } from "@/components/brand/team-flag";
 import { formatDateTime } from "@/lib/utils";
@@ -95,19 +96,26 @@ export default async function HomePage({
     teamIds.length > 0
       ? await db.select().from(teams).where(inArray(teams.id, teamIds))
       : [];
-  const teamMap = new Map(teamRows.map((t) => [t.id, t]));
+  const teamMap = new Map(
+    localizeTeams(teamRows, locale).map((t) => [t.id, t]),
+  );
 
   // Las 48 selecciones, en orden alfabético: alimenta la tira visual del
   // hero. Es una sola query barata y nos da masa visual sin meter texto.
-  const allTeams = await db
-    .select({ id: teams.id, code: teams.code, name: teams.name })
-    .from(teams)
-    .orderBy(asc(teams.name));
+  const allTeams = localizeTeams(
+    await db
+      .select({ id: teams.id, code: teams.code, name: teams.name })
+      .from(teams)
+      .orderBy(asc(teams.name)),
+    locale,
+  );
 
   // Últimas noticias para la sección editorial del home. 3 cards entre
   // "El torneo" y "Explora el torneo". Si aún no hay noticias publicadas
   // simplemente no renderizamos la sección.
-  const latestNews = await listPublishedNews({ limit: 3 });
+  // Las noticias se redactan solo en castellano: fuera del locale `es` la
+  // sección entera desaparece (lista vacía → no se renderiza).
+  const latestNews = locale === "es" ? await listPublishedNews({ limit: 3 }) : [];
 
   const daysToKickoff = Math.max(
     0,
@@ -908,7 +916,9 @@ export default async function HomePage({
             <Link href="/grupos" className="hover:text-[var(--color-arena)]">{tNav("grupos")}</Link>
             <Link href="/bracket" className="hover:text-[var(--color-arena)]">{tNav("bracket")}</Link>
             <Link href="/goleadores" className="hover:text-[var(--color-arena)]">{tNav("goleadores")}</Link>
-            <Link href="/noticias" className="hover:text-[var(--color-arena)]">{tNav("noticias")}</Link>
+            {locale === "es" ? (
+              <Link href="/noticias" className="hover:text-[var(--color-arena)]">{tNav("noticias")}</Link>
+            ) : null}
             <Link href="/equipos" className="hover:text-[var(--color-arena)]">{tNav("selecciones")}</Link>
             <Link href="/sedes" className="hover:text-[var(--color-arena)]">{tNav("sedes")}</Link>
             <Link href="/puntuacion" className="hover:text-[var(--color-arena)]">{t("footer.scoring")}</Link>

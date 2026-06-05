@@ -1,3 +1,6 @@
+import { getLocale } from "next-intl/server";
+import { localizedMatchdayName } from "@/lib/matchday-names";
+import { localizeTeams } from "@/lib/team-names";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -32,6 +35,7 @@ export default async function PredictMatchdayPage({
   params: Promise<{ matchdayId: string }>;
 }) {
   const me = await requireUser();
+  const locale = await getLocale();
   const t = await getTranslations("scoring");
   const tm = await getTranslations("predMatchday");
   const leagueId = (await currentLeagueId(me))!;
@@ -66,7 +70,7 @@ export default async function PredictMatchdayPage({
             {tm("backLink")}
           </Link>
         </Button>
-        <PageHeader eyebrow={day.stage.toUpperCase()} title={day.name} description={status.reason} />
+        <PageHeader eyebrow={day.stage.toUpperCase()} title={localizedMatchdayName(day.name, day.stage, locale)} description={status.reason} />
         <EmptyState
           icon={<Lock className="size-5" />}
           title={tm("blockedTitle")}
@@ -95,10 +99,12 @@ export default async function PredictMatchdayPage({
     ),
   );
 
-  const allTeams =
+  const allTeams = localizeTeams(
     teamIds.length > 0
       ? await db.select().from(teams).where(inArray(teams.id, teamIds))
-      : [];
+      : [],
+    locale,
+  );
   // Cargamos los grupos referenciados por los partidos para poder pintar
   // "Grupo A/B/C…" en el badge del card en lugar del genérico "GROUP".
   const allGroups =
@@ -183,7 +189,7 @@ export default async function PredictMatchdayPage({
       </Button>
       <PageHeader
         eyebrow={day.stage.toUpperCase()}
-        title={day.name}
+        title={localizedMatchdayName(day.name, day.stage, locale)}
         description={
           open
             ? `${tm("closesOn", {

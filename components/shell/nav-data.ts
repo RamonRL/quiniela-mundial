@@ -40,6 +40,12 @@ type BuildOptions = {
    */
   showMyLeague?: boolean;
   /**
+   * Las noticias se escriben solo en castellano: fuera del locale `es`
+   * el item de nav desaparece (la página sigue existiendo, pero no se
+   * promociona). Default true para no romper llamadas existentes.
+   */
+  showNews?: boolean;
+  /**
    * Sesión activa. Si false (visitante público), filtramos los items con
    * requiresAuth y reordenamos los primarios de la barra inferior móvil
    * (Inicio, Calendario, Grupos) para que el visitante tenga atajos al
@@ -78,7 +84,9 @@ export function buildNavItems(myId: string, opts: BuildOptions = {}): NavItem[] 
     },
     { href: "/bracket", label: "bracket", icon: Swords, group: "main" },
     { href: "/goleadores", label: "goleadores", icon: Target, group: "main" },
-    { href: "/noticias", label: "noticias", icon: Newspaper, group: "main" },
+    ...(opts.showNews !== false
+      ? [{ href: "/noticias", label: "noticias", icon: Newspaper, group: "main" } as NavItem]
+      : []),
     {
       href: "/estadisticas",
       label: "estadisticas",

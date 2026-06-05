@@ -1,8 +1,11 @@
+import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, CalendarDays, Clock, MapPin, Users } from "lucide-react";
 import { asc, eq, ilike, inArray, or } from "drizzle-orm";
 import { db } from "@/lib/db";
+import { localizeTeams, localizedTeamName } from "@/lib/team-names";
+import { localizedStageLabel } from "@/lib/matchday-names";
 import { matches, teams } from "@/lib/db/schema";
 import { TeamFlag } from "@/components/brand/team-flag";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +54,8 @@ export default async function VenueDetailPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  const locale = await getLocale();
+  const t = await getTranslations("venueDetail");
   const { slug } = await params;
   const venue = findVenueBySlug(slug);
   if (!venue) notFound();
@@ -82,7 +87,7 @@ export default async function VenueDetailPage({
     teamIds.length > 0
       ? await db.select().from(teams).where(inArray(teams.id, teamIds))
       : [];
-  const teamById = new Map(teamRows.map((t) => [t.id, t]));
+  const teamById = new Map(localizeTeams(teamRows, locale).map((t) => [t.id, t]));
 
   return (
     <div className="space-y-10">
@@ -102,7 +107,7 @@ export default async function VenueDetailPage({
       >
         <Link href="/sedes">
           <ArrowLeft />
-          Volver a sedes
+          {t("backToVenues")}
         </Link>
       </Button>
 
@@ -111,25 +116,33 @@ export default async function VenueDetailPage({
         <div className="flex items-center gap-3">
           <span className="h-px w-10 bg-[var(--color-arena)]" />
           <p className="font-mono text-[0.65rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-arena)]">
-            Sede · {venue.country}
+            {t("venueEyebrow", { country: venue.country })}
           </p>
         </div>
         <h1 className="font-display text-5xl leading-[0.92] tracking-tight sm:text-6xl">
           {venue.name}
         </h1>
         <p className="font-editorial text-lg italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-xl">
-          {venue.city}
-          {venue.region ? `, ${venue.region}` : ""}. Capacidad{" "}
-          {venue.capacity.toLocaleString("es-ES")} espectadores. Inaugurado en{" "}
-          {venue.inaugurated}.
+          {venue.region
+            ? t("heroSubtitleRegion", {
+                city: venue.city,
+                region: venue.region,
+                capacity: venue.capacity.toLocaleString("es-ES"),
+                year: venue.inaugurated,
+              })
+            : t("heroSubtitle", {
+                city: venue.city,
+                capacity: venue.capacity.toLocaleString("es-ES"),
+                year: venue.inaugurated,
+              })}
         </p>
       </header>
 
       {/* ─── Stat tiles ─── */}
       <section className="grid gap-3 sm:grid-cols-3">
-        <StatTile label="Capacidad" value={venue.capacity.toLocaleString("es-ES")} accent />
-        <StatTile label="Inaugurado" value={String(venue.inaugurated)} textValue />
-        <StatTile label="Partidos · Mundial 2026" value={venueMatches.length} />
+        <StatTile label={t("statCapacity")} value={venue.capacity.toLocaleString("es-ES")} accent />
+        <StatTile label={t("statInaugurated")} value={String(venue.inaugurated)} textValue />
+        <StatTile label={t("statMatches")} value={venueMatches.length} />
       </section>
 
       {/* ─── El estadio ─── */}
@@ -137,7 +150,7 @@ export default async function VenueDetailPage({
         <header className="flex items-center gap-3 border-b border-[var(--color-border)] pb-2">
           <span className="h-px w-6 bg-[var(--color-arena)]" />
           <h2 className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            El estadio
+            {t("theStadium")}
           </h2>
         </header>
         <p className="font-editorial text-base italic leading-relaxed text-[var(--color-foreground)] sm:text-lg">
@@ -150,7 +163,7 @@ export default async function VenueDetailPage({
         <header className="flex items-center gap-3 border-b border-[var(--color-border)] pb-2">
           <span className="h-px w-6 bg-[var(--color-arena)]" />
           <h2 className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Historia
+            {t("history")}
           </h2>
         </header>
         <p className="font-editorial text-base italic leading-relaxed text-[var(--color-foreground)] sm:text-lg">
@@ -161,7 +174,7 @@ export default async function VenueDetailPage({
       {/* ─── Lo destacable ─── */}
       <section className="rounded-2xl border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_4%,var(--color-surface))] p-6 sm:p-8">
         <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-          Lo que hay que saber
+          {t("mustKnow")}
         </p>
         <p className="pt-2 text-base leading-relaxed sm:text-lg">{venue.notable}</p>
       </section>
@@ -171,14 +184,14 @@ export default async function VenueDetailPage({
         <header className="flex items-center gap-3 border-b border-[var(--color-border)] pb-2">
           <span className="h-px w-6 bg-[var(--color-arena)]" />
           <h2 className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Datos clave
+            {t("keyFacts")}
           </h2>
         </header>
         <ul className="grid gap-2 sm:grid-cols-2">
-          <FactRow icon={<MapPin className="size-4" />} label="Ciudad" value={`${venue.city}${venue.region ? `, ${venue.region}` : ""}, ${venue.country}`} />
-          <FactRow icon={<Users className="size-4" />} label="Capacidad" value={venue.capacity.toLocaleString("es-ES")} />
-          <FactRow icon={<CalendarDays className="size-4" />} label="Inaugurado" value={String(venue.inaugurated)} />
-          <FactRow icon={<Clock className="size-4" />} label="Equipos locales" value={venue.homeTeams.join(" · ")} />
+          <FactRow icon={<MapPin className="size-4" />} label={t("factCity")} value={`${venue.city}${venue.region ? `, ${venue.region}` : ""}, ${venue.country}`} />
+          <FactRow icon={<Users className="size-4" />} label={t("factCapacity")} value={venue.capacity.toLocaleString("es-ES")} />
+          <FactRow icon={<CalendarDays className="size-4" />} label={t("factInaugurated")} value={String(venue.inaugurated)} />
+          <FactRow icon={<Clock className="size-4" />} label={t("factHomeTeams")} value={venue.homeTeams.join(" · ")} />
         </ul>
       </section>
 
@@ -187,14 +200,14 @@ export default async function VenueDetailPage({
         <header className="flex items-center gap-3 border-b border-[var(--color-border)] pb-2">
           <span className="h-px w-6 bg-[var(--color-arena)]" />
           <h2 className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Partidos del Mundial 2026 en {venue.name}
+            {t("matchesHere", { name: venue.name })}
           </h2>
         </header>
         {venueMatches.length === 0 ? (
           <EmptyState
             icon={<CalendarDays className="size-5" />}
-            title="Sin partidos asignados todavía"
-            description="El fixture oficial todavía no marca partidos en esta sede."
+            title={t("noMatchesTitle")}
+            description={t("noMatchesDesc")}
           />
         ) : (
           <ul className="space-y-2">
@@ -211,7 +224,7 @@ export default async function VenueDetailPage({
                     />
                     <span className="relative flex items-center gap-2">
                       <Badge variant="outline" className="text-[0.55rem]">
-                        {STAGE_LABEL[m.stage] ?? m.stage}
+                        {localizedStageLabel(m.stage, STAGE_LABEL[m.stage] ?? m.stage, locale)}
                       </Badge>
                       <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
                         {m.code}
@@ -235,7 +248,7 @@ export default async function VenueDetailPage({
                             {home.name}
                           </Link>
                         ) : (
-                          "TBD"
+                          t("tbd")
                         )}{" "}
                         <span className="text-[var(--color-muted-foreground)]">·</span>{" "}
                         {away ? (
@@ -243,7 +256,7 @@ export default async function VenueDetailPage({
                             {away.name}
                           </Link>
                         ) : (
-                          "TBD"
+                          t("tbd")
                         )}
                       </span>
                       {away ? (

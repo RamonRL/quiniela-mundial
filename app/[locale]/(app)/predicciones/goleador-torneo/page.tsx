@@ -9,7 +9,8 @@ import { ScoringBox } from "@/components/brand/scoring-box";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
 import { formatDateTime } from "@/lib/utils";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { localizeTeams } from "@/lib/team-names";
 import { topScorerScoring } from "@/lib/scoring/copy";
 import { TopScorerForm } from "./top-scorer-form";
 
@@ -21,13 +22,14 @@ const KICKOFF = new Date(
 
 export default async function PredictTopScorerPage() {
   const me = await requireUser();
+  const locale = await getLocale();
   const t = await getTranslations("scoring");
   const ts = await getTranslations("predTopScorer");
   const leagueId = (await currentLeagueId(me))!;
   // Solo "completo" predice goleador. Marcador / Solo Ganador → fuera.
   const mode = (await getLeagueModes([leagueId])).get(leagueId) ?? "completo";
   if (mode !== "completo") redirect("/predicciones");
-  const [allPlayers, allTeams, allGroups, mine] = await Promise.all([
+  const [allPlayers, allTeamsRaw, allGroups, mine] = await Promise.all([
     db.select().from(players).orderBy(asc(players.name)),
     db.select().from(teams),
     db.select().from(groups).orderBy(asc(groups.code)),
@@ -61,6 +63,7 @@ export default async function PredictTopScorerPage() {
     );
   }
 
+  const allTeams = localizeTeams(allTeamsRaw, locale);
   const teamById = new Map(allTeams.map((t) => [t.id, t]));
   const groupById = new Map(allGroups.map((g) => [g.id, g]));
   const teamsByGroup = new Map<string, { code: string; name: string }[]>();

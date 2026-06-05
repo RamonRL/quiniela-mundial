@@ -5,7 +5,7 @@
 import { Link, usePathname } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
 import { Menu } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   Sheet,
   SheetContent,
@@ -46,7 +46,9 @@ export function MobileBottomNav({
   const pathname = usePathname();
   const t = useTranslations("nav");
   const ts = useTranslations("shell");
-  const items = buildNavItems(myId, { showMyLeague, isAuthenticated });
+  const locale = useLocale();
+  // Noticias solo en ES (contenido sin traducir) — fuera del nav en EN/FR/PT.
+  const items = buildNavItems(myId, { showMyLeague, isAuthenticated, showNews: locale === "es" });
   const primary = items.filter((i) => i.primaryMobile);
   // El sheet "Más" lista todos los items por grupo, no sólo los que no
   // están en la barra inferior. La duplicación es intencional: el sheet

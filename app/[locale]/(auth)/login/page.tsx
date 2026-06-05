@@ -2,16 +2,20 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { BrandWordmark } from "@/components/brand/brand-wordmark";
 import { LoginForm } from "./login-form";
 
-export const metadata: Metadata = {
-  title: "Acceso",
-  // El login es para el usuario, no para Google. Sin esto, GSC reporta
-  // las variantes `/login?next=...` como duplicadas sin canonical.
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("login");
+  return {
+    title: t("metaTitle"),
+    // El login es para el usuario, no para Google. Sin esto, GSC reporta
+    // las variantes `/login?next=...` como duplicadas sin canonical.
+    robots: { index: false, follow: false },
+  };
+}
 
 const KICKOFF = process.env.NEXT_PUBLIC_TOURNAMENT_KICKOFF_AT ?? "2026-06-11T19:00:00Z";
 
@@ -21,6 +25,7 @@ export default async function LoginPage({
   searchParams: Promise<{ next?: string; reason?: string }>;
 }) {
   const params = await searchParams;
+  const t = await getTranslations("login");
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -66,7 +71,7 @@ export default async function LoginPage({
           <div className="flex w-full items-center justify-center sm:w-auto sm:order-1 sm:justify-start">
             <Link
               href="/"
-              aria-label="Volver al inicio"
+              aria-label={t("backToHome")}
               className="block transition-opacity hover:opacity-80"
             >
               <BrandWordmark priority className="h-12 w-auto sm:h-14" />
@@ -77,14 +82,14 @@ export default async function LoginPage({
           <div className="flex flex-col items-center gap-1.5 sm:order-2">
             <Image
               src="/fwc26.png"
-              alt="FIFA World Cup 26"
+              alt={t("worldCupAlt")}
               width={1500}
               height={1500}
               priority
               className="h-12 w-auto sm:h-14"
             />
             <p className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)] sm:text-[0.6rem]">
-              Copa Mundial de la FIFA 2026
+              {t("worldCupCaption")}
             </p>
           </div>
 
@@ -98,7 +103,7 @@ export default async function LoginPage({
               <span className="relative inline-flex size-2 rounded-full bg-[var(--color-arena)]" />
             </span>
             <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-              T-{daysLeft.toString().padStart(2, "0")} días al kickoff
+              {t("countdown", { days: daysLeft.toString().padStart(2, "0") })}
             </p>
           </div>
         </header>
@@ -110,28 +115,28 @@ export default async function LoginPage({
               <div className="flex items-center justify-center gap-3">
                 <span className="h-px w-10 bg-[var(--color-arena)]" />
                 <p className="font-mono text-[0.65rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                  Acceso
+                  {t("eyebrow")}
                 </p>
                 <span className="h-px w-10 bg-[var(--color-arena)]" />
               </div>
               <h1 className="font-display text-5xl leading-tight tracking-tight sm:text-6xl">
-                Entra a Quiniela Mundial
+                {t("title")}
               </h1>
               <p className="font-editorial text-lg italic text-[var(--color-muted-foreground)]">
-                Con tu cuenta de Google o con tu email. Para amigos, equipos y empresas.
+                {t("subtitle")}
               </p>
             </div>
 
             {params.reason === "banned" ? (
               <div className="rounded-md border border-[var(--color-danger)]/40 bg-[var(--color-danger)]/10 p-3 text-center text-sm text-[var(--color-danger)]">
-                Tu cuenta ha sido suspendida por el admin.
+                {t("bannedNotice")}
               </div>
             ) : null}
 
             <LoginForm next={params.next} />
 
             <p className="text-center font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-              Quien mejor lea el torneo, gana.
+              {t("tagline")}
             </p>
           </div>
         </main>

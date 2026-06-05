@@ -1,8 +1,11 @@
+import { getLocale, getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, CalendarDays, Clock, Crown, Goal, MapPin, Newspaper, Shirt, Target, Users } from "lucide-react";
 import { and, asc, eq, inArray, or, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
+import { localizeTeams, localizedTeamName } from "@/lib/team-names";
+import { localizedStageLabel } from "@/lib/matchday-names";
 import {
   groupStandings,
   groups,
@@ -75,6 +78,8 @@ export default async function TeamDetailPage({
 }: {
   params: Promise<{ code: string }>;
 }) {
+  const locale = await getLocale();
+  const t = await getTranslations("teamDetail");
   const me = await getCurrentUser();
   const leagueId = me ? await currentLeagueId(me) : null;
   const { code } = await params;
@@ -133,7 +138,7 @@ export default async function TeamDetailPage({
   const oppRows = oppIds.length > 0
     ? await db.select().from(teams).where(inArray(teams.id, oppIds))
     : [];
-  const oppById = new Map(oppRows.map((t) => [t.id, t]));
+  const oppById = new Map(localizeTeams(oppRows, locale).map((t) => [t.id, t]));
 
   // Predicción agregada de la peña: en qué posición del grupo se coloca a este equipo.
   // Sólo se calcula con sesión activa, liga seleccionada y primer partido del grupo ya jugado.
@@ -215,6 +220,20 @@ export default async function TeamDetailPage({
   const goalsAgainst = standing?.goalsAgainst ?? 0;
   const goalDiff = goalsFor - goalsAgainst;
 
+  // Nombre del propio equipo localizado para todo el body (hero, cards).
+  team.name = localizedTeamName(team.code, team.name, locale);
+
+  const cardLabels = {
+    stageLocale: locale,
+    vs: t("vs"),
+    tbd: t("tbd"),
+    live: t("statusLive"),
+    scheduled: t("statusScheduled"),
+    win: t("resultWin"),
+    loss: t("resultLoss"),
+    draw: t("resultDraw"),
+  };
+
   return (
     <div className="space-y-8">
       <SportsTeamLD
@@ -235,7 +254,7 @@ export default async function TeamDetailPage({
       <Button asChild variant="ghost" size="sm" className="px-0 text-[var(--color-muted-foreground)]">
         <Link href="/equipos">
           <ArrowLeft />
-          Volver a selecciones
+          {t("backToTeams")}
         </Link>
       </Button>
 
@@ -266,19 +285,19 @@ export default async function TeamDetailPage({
           <div className="space-y-5">
             <div className="space-y-2">
               <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                Selección · {team.code}
+                {t("teamEyebrow", { code: team.code })}
               </p>
               <h1 className="font-display text-5xl leading-[0.92] tracking-tight sm:text-7xl">
                 {team.name}
               </h1>
               {group ? (
                 <p className="font-editorial text-base italic leading-relaxed text-[var(--color-muted-foreground)] sm:text-lg">
-                  {team.name} en el Mundial 2026, encuadrada en el{" "}
+                  {t("inGroup", { team: team.name })}{" "}
                   <Link
                     href={`/grupos/${group.code}`}
                     className="text-[var(--color-arena)] underline-offset-2 hover:underline"
                   >
-                    Grupo {group.code}
+                    {t("groupLink", { code: group.code })}
                   </Link>
                   .
                 </p>
@@ -288,18 +307,18 @@ export default async function TeamDetailPage({
             {/* Stats clave */}
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <Stat
-                label="Posición"
+                label={t("statPosition")}
                 value={standing ? `${standing.position}º` : "—"}
-                hint={standing ? `${standing.points} pts` : "Sin disputar"}
+                hint={standing ? t("statPositionHint", { points: standing.points }) : t("statNotPlayed")}
               />
               <Stat
-                label="Partidos"
+                label={t("statMatches")}
                 value={`${matchesPlayed} / ${totalMatches || 3}`}
-                hint={liveMatch ? "1 en vivo" : null}
+                hint={liveMatch ? t("oneLive") : null}
                 live={!!liveMatch}
               />
               <Stat
-                label="Goles"
+                label={t("statGoals")}
                 value={`${goalsFor}`}
                 hint={
                   goalDiff !== 0
@@ -310,9 +329,9 @@ export default async function TeamDetailPage({
                 }
               />
               <Stat
-                label="Plantilla"
+                label={t("statSquad")}
                 value={squad.length.toString()}
-                hint={`${squadByPosition.DEL.length} delanteros`}
+                hint={t("forwards", { count: squadByPosition.DEL.length })}
               />
             </div>
           </div>
@@ -322,19 +341,19 @@ export default async function TeamDetailPage({
       {/* ─── Análisis editorial (SEO) ─── */}
       {analysis ? (
         <section className="space-y-4">
-          <SectionHeader title="Análisis · Mundial 2026" />
+          <SectionHeader title={t("analysisTitle")} />
           <article className="space-y-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 sm:p-8">
             <p className="font-editorial text-base italic leading-relaxed text-[var(--color-foreground)] sm:text-lg">
               {analysis.intro}
             </p>
             <div className="grid gap-5 sm:grid-cols-3">
-              <AnalysisColumn label="La estrella" title={analysis.star.title} text={analysis.star.text} />
-              <AnalysisColumn label="Fortalezas" title={analysis.strengths.title} text={analysis.strengths.text} />
-              <AnalysisColumn label="Riesgos" title={analysis.risks.title} text={analysis.risks.text} />
+              <AnalysisColumn label={t("analysisStar")} title={analysis.star.title} text={analysis.star.text} />
+              <AnalysisColumn label={t("analysisStrengths")} title={analysis.strengths.title} text={analysis.strengths.text} />
+              <AnalysisColumn label={t("analysisRisks")} title={analysis.risks.title} text={analysis.risks.text} />
             </div>
             <div className="rounded-md border-l-2 border-[var(--color-arena)] bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface-2))] px-4 py-3">
               <p className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-                Expectativa en el torneo
+                {t("tournamentExpectation")}
               </p>
               <p className="pt-1 text-sm leading-relaxed">{analysis.expectation}</p>
             </div>
@@ -345,7 +364,7 @@ export default async function TeamDetailPage({
       {/* ─── Próximo partido ─── */}
       {nextMatch ? (
         <section className="space-y-4">
-          <SectionHeader title={liveMatch ? "Partido en vivo" : "Próximo partido"} icon={Clock} />
+          <SectionHeader title={liveMatch ? t("liveMatch") : t("nextMatch")} icon={Clock} />
           <NextMatchCard
             m={nextMatch}
             team={team}
@@ -358,6 +377,7 @@ export default async function TeamDetailPage({
                   ? oppById.get(nextMatch.homeTeamId) ?? null
                   : null
             }
+            labels={cardLabels}
           />
         </section>
       ) : null}
@@ -365,13 +385,13 @@ export default async function TeamDetailPage({
       {/* ─── Resultados recientes ─── */}
       {finishedDesc.length > 0 ? (
         <section className="space-y-4">
-          <SectionHeader title="Resultados" icon={CalendarDays} />
+          <SectionHeader title={t("results")} icon={CalendarDays} />
           <div className="grid gap-3 sm:grid-cols-2">
             {finishedDesc.map((m) => {
               const isHome = m.homeTeamId === team.id;
               const oppId = isHome ? m.awayTeamId : m.homeTeamId;
               const opp = oppId ? oppById.get(oppId) ?? null : null;
-              return <ResultCard key={m.id} m={m} team={team} opp={opp} isHome={isHome} />;
+              return <ResultCard key={m.id} m={m} team={team} opp={opp} isHome={isHome} labels={cardLabels} />;
             })}
           </div>
         </section>
@@ -380,13 +400,13 @@ export default async function TeamDetailPage({
       {/* ─── Calendario restante ─── */}
       {remainingUpcoming.length > 0 ? (
         <section className="space-y-4">
-          <SectionHeader title="Calendario" icon={CalendarDays} />
+          <SectionHeader title={t("schedule")} icon={CalendarDays} />
           <ul className="space-y-2">
             {remainingUpcoming.map((m) => {
               const isHome = m.homeTeamId === team.id;
               const oppId = isHome ? m.awayTeamId : m.homeTeamId;
               const opp = oppId ? oppById.get(oppId) ?? null : null;
-              return <UpcomingRow key={m.id} m={m} opp={opp} />;
+              return <UpcomingRow key={m.id} m={m} opp={opp} labels={cardLabels} />;
             })}
           </ul>
         </section>
@@ -394,11 +414,11 @@ export default async function TeamDetailPage({
 
       {teamMatches.length === 0 ? (
         <section className="space-y-4">
-          <SectionHeader title="Calendario" icon={CalendarDays} />
+          <SectionHeader title={t("schedule")} icon={CalendarDays} />
           <EmptyState
             icon={<CalendarDays className="size-5" />}
-            title="Sin partidos asignados"
-            description="Pendiente del fixture oficial FIFA."
+            title={t("noMatchesTitle")}
+            description={t("noMatchesDesc")}
           />
         </section>
       ) : null}
@@ -408,20 +428,20 @@ export default async function TeamDetailPage({
         <div className="flex items-center gap-3">
           <span className="h-px w-6 bg-[var(--color-arena)]" />
           <h2 className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Goleadores
+            {t("scorers")}
           </h2>
           <span className="h-px flex-1 bg-[var(--color-border)]" />
           {teamGoals > 0 ? (
             <span className="shrink-0 rounded-full border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_8%,transparent)] px-2.5 py-0.5 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-arena)]">
-              {teamGoals} {teamGoals === 1 ? "gol" : "goles"}
+              {t("goalsCount", { count: teamGoals })}
             </span>
           ) : null}
         </div>
         {scorerAggRows.length === 0 ? (
           <EmptyState
             icon={<Target className="size-5" />}
-            title="Sin goles aún"
-            description="Esperando los primeros partidos."
+            title={t("noGoalsTitle")}
+            description={t("noGoalsDesc")}
           />
         ) : (
           <ul className="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]">
@@ -478,12 +498,12 @@ export default async function TeamDetailPage({
 
       {/* ─── Plantilla por posición ─── */}
       <section className="space-y-6">
-        <SectionHeader title={`Plantilla · ${squad.length} jugadores`} icon={Users} />
+        <SectionHeader title={t("squadTitle", { count: squad.length })} icon={Users} />
         {squad.length === 0 ? (
           <EmptyState
             icon={<Shirt className="size-5" />}
-            title="Plantilla aún por definir"
-            description="Las listas finales de 26 jugadores se confirman semanas antes del torneo."
+            title={t("noSquadTitle")}
+            description={t("noSquadDesc")}
           />
         ) : (
           <div className="space-y-10">
@@ -512,19 +532,24 @@ export default async function TeamDetailPage({
                       {pos} · {POSITION_LABEL[pos]}
                     </span>
                     <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-                      {list.length} {list.length === 1 ? "jugador" : "jugadores"}
+                      {t("playersCount", { count: list.length })}
                     </span>
                     <span className="h-px flex-1 bg-[var(--color-border)]" />
                   </div>
                   <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    {list.map((p) => (
-                      <PlayerCard
-                        key={p.id}
-                        player={p}
-                        goals={goalsByPlayer.get(p.id) ?? 0}
-                        isTopScorer={p.id === topScorerId}
-                      />
-                    ))}
+                    {list.map((p) => {
+                      const g = goalsByPlayer.get(p.id) ?? 0;
+                      return (
+                        <PlayerCard
+                          key={p.id}
+                          player={p}
+                          goals={g}
+                          isTopScorer={p.id === topScorerId}
+                          topScorerLabel={t("topScorerLabel")}
+                          goalsTitle={t("playerGoalsTitle", { count: g })}
+                        />
+                      );
+                    })}
                   </ul>
                 </div>
               );
@@ -533,19 +558,24 @@ export default async function TeamDetailPage({
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <span className="inline-flex items-center gap-2 rounded-md border border-[var(--color-border)] bg-[var(--color-surface-2)] px-2.5 py-1 font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
-                    Otros
+                    {t("other")}
                   </span>
                   <span className="h-px flex-1 bg-[var(--color-border)]" />
                 </div>
                 <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {squadOther.map((p) => (
-                    <PlayerCard
-                      key={p.id}
-                      player={p}
-                      goals={goalsByPlayer.get(p.id) ?? 0}
-                      isTopScorer={p.id === topScorerId}
-                    />
-                  ))}
+                  {squadOther.map((p) => {
+                    const g = goalsByPlayer.get(p.id) ?? 0;
+                    return (
+                      <PlayerCard
+                        key={p.id}
+                        player={p}
+                        goals={g}
+                        isTopScorer={p.id === topScorerId}
+                        topScorerLabel={t("topScorerLabel")}
+                        goalsTitle={t("playerGoalsTitle", { count: g })}
+                      />
+                    );
+                  })}
                 </ul>
               </div>
             ) : null}
@@ -557,11 +587,14 @@ export default async function TeamDetailPage({
       {me ? (
         aggTotalUsers > 0 ? (
           <section className="space-y-3">
-            <SectionHeader title="¿Dónde acaba la peña?" />
+            <SectionHeader title={t("leagueAggTitle")} />
             <article className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 sm:p-6">
               <p className="pb-4 font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-                {aggTotalUsers} {aggTotalUsers === 1 ? "predicción" : "predicciones"} de tu liga
-                sobre la posición de {team.name} en el Grupo {group?.code}.
+                {t("leagueAggIntro", {
+                  count: aggTotalUsers,
+                  team: team.name,
+                  code: group?.code ?? "",
+                })}
               </p>
               <ul className="space-y-2">
                 {aggPositions.map((row) => {
@@ -579,7 +612,7 @@ export default async function TeamDetailPage({
                           <span className="font-display tabular text-sm" style={{ color }}>
                             {row.pos}º
                           </span>{" "}
-                          {advances ? "Pasa a R32" : limbo ? "Mejor 3º" : "Fuera"}
+                          {advances ? t("passToR32") : limbo ? t("best3rd") : t("out")}
                         </span>
                         <span className="text-[var(--color-foreground)]">
                           {row.pct}% · {row.count}
@@ -611,17 +644,17 @@ export default async function TeamDetailPage({
             <div className="space-y-1">
               <p className="inline-flex items-center gap-2 font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
                 <Newspaper className="size-3.5 text-[var(--color-arena)]" />
-                Noticias de {team.name}
+                {t("newsEyebrow", { team: team.name })}
               </p>
               <h2 className="font-display text-3xl tracking-tight sm:text-4xl">
-                Lo último sobre {team.name} en el Mundial 2026
+                {t("newsTitle", { team: team.name })}
               </h2>
             </div>
             <Link
               href={`/noticias?team=${team.code}`}
               className="hidden items-center gap-1.5 font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)] transition hover:text-[var(--color-arena)] sm:inline-flex"
             >
-              Ver más →
+              {t("seeMore")}
             </Link>
           </header>
           <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -636,15 +669,15 @@ export default async function TeamDetailPage({
 
       {!me ? (
         <section className="rounded-2xl border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface))] p-6 text-center">
-          <p className="font-display text-2xl tracking-tight">¿Hasta dónde llega {team.name}?</p>
+          <p className="font-display text-2xl tracking-tight">{t("visitorTitle", { team: team.name })}</p>
           <p className="pt-1 font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-            Crea tu quiniela y compite con tus amigos prediciendo el recorrido de cada selección.
+            {t("visitorSubtitle")}
           </p>
           <Link
             href="/login?next=%2Fpredicciones%2Fgrupos"
             className="mt-4 inline-flex items-center gap-1.5 rounded-md border border-[var(--color-arena)] bg-[var(--color-arena)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white shadow-[var(--shadow-arena)]"
           >
-            Crear mi quiniela
+            {t("createMyQuiniela")}
           </Link>
         </section>
       ) : null}
@@ -730,14 +763,27 @@ function AnalysisColumn({
 type MatchRow = typeof matches.$inferSelect;
 type TeamRow = typeof teams.$inferSelect;
 
+type CardLabels = {
+  stageLocale: string;
+  vs: string;
+  tbd: string;
+  live: string;
+  scheduled: string;
+  win: string;
+  loss: string;
+  draw: string;
+};
+
 function NextMatchCard({
   m,
   team,
   opp,
+  labels,
 }: {
   m: MatchRow;
   team: TeamRow;
   opp: TeamRow | null;
+  labels: CardLabels;
 }) {
   const isHome = m.homeTeamId === team.id;
   const isLive = m.status === "live";
@@ -755,7 +801,7 @@ function NextMatchCard({
         <span className="flex items-center gap-2 font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
           <span>{m.code}</span>
           <Badge variant="outline" className="text-[0.55rem]">
-            {STAGE_LABEL[m.stage] ?? m.stage}
+            {localizedStageLabel(m.stage, STAGE_LABEL[m.stage] ?? m.stage, labels.stageLocale)}
           </Badge>
         </span>
         {isLive ? (
@@ -767,24 +813,25 @@ function NextMatchCard({
               />
               <span className="relative inline-flex size-1.5 rounded-full bg-[var(--color-arena)]" />
             </span>
-            En vivo
+            {labels.live}
           </span>
         ) : (
           <Badge variant="outline" className="text-[0.55rem]">
-            Programado
+            {labels.scheduled}
           </Badge>
         )}
       </header>
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-5 py-6 sm:gap-6 sm:py-8">
-        <TeamSide team={isHome ? team : opp} side="home" />
+        <TeamSide team={isHome ? team : opp} side="home" labels={labels} />
         <ScoreCenter
           home={isHome ? m.homeScore : m.awayScore}
           away={isHome ? m.awayScore : m.homeScore}
           status={m.status}
           scheduledAt={m.scheduledAt}
           big
+          labels={labels}
         />
-        <TeamSide team={isHome ? opp : team} side="away" />
+        <TeamSide team={isHome ? opp : team} side="away" labels={labels} />
       </div>
       <footer className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-dashed border-[var(--color-border)] bg-[var(--color-surface-2)]/30 px-5 py-2.5 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
         <span className="inline-flex items-center gap-1.5">
@@ -813,11 +860,13 @@ function ResultCard({
   team,
   opp,
   isHome,
+  labels,
 }: {
   m: MatchRow;
   team: TeamRow;
   opp: TeamRow | null;
   isHome: boolean;
+  labels: CardLabels;
 }) {
   const teamScore = isHome ? m.homeScore : m.awayScore;
   const oppScore = isHome ? m.awayScore : m.homeScore;
@@ -832,15 +881,15 @@ function ResultCard({
   const resultBadge =
     result === "win" ? (
       <Badge variant="success" className="text-[0.55rem]">
-        Victoria
+        {labels.win}
       </Badge>
     ) : result === "loss" ? (
       <Badge variant="danger" className="text-[0.55rem]">
-        Derrota
+        {labels.loss}
       </Badge>
     ) : (
       <Badge variant="outline" className="text-[0.55rem]">
-        Empate
+        {labels.draw}
       </Badge>
     );
   return (
@@ -853,20 +902,21 @@ function ResultCard({
         <span className="flex items-center gap-2">
           <span>{m.code}</span>
           <Badge variant="outline" className="text-[0.55rem]">
-            {STAGE_LABEL[m.stage] ?? m.stage}
+            {localizedStageLabel(m.stage, STAGE_LABEL[m.stage] ?? m.stage, labels.stageLocale)}
           </Badge>
         </span>
         {resultBadge}
       </header>
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-5 sm:gap-3">
-        <TeamSide team={isHome ? team : opp} side="home" winner={result === "win" && isHome} />
+        <TeamSide team={isHome ? team : opp} side="home" winner={result === "win" && isHome} labels={labels} />
         <ScoreCenter
           home={isHome ? m.homeScore : m.awayScore}
           away={isHome ? m.awayScore : m.homeScore}
           status="finished"
           scheduledAt={m.scheduledAt}
+          labels={labels}
         />
-        <TeamSide team={isHome ? opp : team} side="away" winner={result === "win" && !isHome} />
+        <TeamSide team={isHome ? opp : team} side="away" winner={result === "win" && !isHome} labels={labels} />
       </div>
       <footer className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-dashed border-[var(--color-border)] bg-[var(--color-surface-2)]/40 px-4 py-2 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
         <span className="inline-flex items-center gap-1.5">
@@ -882,7 +932,7 @@ function ResultCard({
   );
 }
 
-function UpcomingRow({ m, opp }: { m: MatchRow; opp: TeamRow | null }) {
+function UpcomingRow({ m, opp, labels }: { m: MatchRow; opp: TeamRow | null; labels: CardLabels }) {
   return (
     <li>
       <div className="relative flex flex-wrap items-center justify-between gap-3 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 transition hover:border-[var(--color-arena)]/40">
@@ -893,14 +943,14 @@ function UpcomingRow({ m, opp }: { m: MatchRow; opp: TeamRow | null }) {
         />
         <span className="pointer-events-none relative flex items-center gap-2">
           <Badge variant="outline" className="text-[0.55rem]">
-            {STAGE_LABEL[m.stage] ?? m.stage}
+            {localizedStageLabel(m.stage, STAGE_LABEL[m.stage] ?? m.stage, labels.stageLocale)}
           </Badge>
           <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
             {m.code}
           </span>
         </span>
         <span className="pointer-events-none relative flex min-w-0 flex-1 items-center gap-2 sm:ml-3">
-          <span className="text-sm font-medium text-[var(--color-muted-foreground)]">vs</span>
+          <span className="text-sm font-medium text-[var(--color-muted-foreground)]">{labels.vs}</span>
           {opp ? (
             <Link
               href={`/equipos/${opp.code}`}
@@ -913,7 +963,7 @@ function UpcomingRow({ m, opp }: { m: MatchRow; opp: TeamRow | null }) {
           ) : (
             <>
               <TeamFlag code={undefined} size={20} />
-              <span className="truncate text-sm font-medium">TBD</span>
+              <span className="truncate text-sm font-medium">{labels.tbd}</span>
             </>
           )}
         </span>
@@ -941,10 +991,12 @@ function TeamSide({
   team,
   side,
   winner,
+  labels,
 }: {
   team: TeamRow | null | undefined;
   side: "home" | "away";
   winner?: boolean;
+  labels: CardLabels;
 }) {
   const isHome = side === "home";
   return (
@@ -972,7 +1024,7 @@ function TeamSide({
             wordBreak: "break-word",
           }}
         >
-          {team?.name ?? "TBD"}
+          {team?.name ?? labels.tbd}
         </p>
         <p className="mt-0.5 font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
           {team?.code ?? "—"}
@@ -988,12 +1040,14 @@ function ScoreCenter({
   status,
   scheduledAt,
   big = false,
+  labels,
 }: {
   home: number | null;
   away: number | null;
   status: MatchRow["status"];
   scheduledAt: Date;
   big?: boolean;
+  labels: CardLabels;
 }) {
   if (status === "scheduled") {
     return (
@@ -1003,7 +1057,7 @@ function ScoreCenter({
             big ? "text-2xl sm:text-3xl" : "text-xl sm:text-2xl"
           }`}
         >
-          vs
+          {labels.vs}
         </span>
         <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
           {formatDateTime(scheduledAt, { hour: "2-digit", minute: "2-digit" })}
@@ -1046,10 +1100,14 @@ function PlayerCard({
   player,
   goals,
   isTopScorer,
+  topScorerLabel,
+  goalsTitle,
 }: {
   player: PlayerRow;
   goals: number;
   isTopScorer?: boolean;
+  topScorerLabel: string;
+  goalsTitle: string;
 }) {
   const norm = player.position ? normalizePosition(player.position) : null;
   const style = norm ? POSITION_STYLE[norm] : null;
@@ -1092,8 +1150,8 @@ function PlayerCard({
           {highlight ? (
             <span
               className="absolute -top-1 -right-1 grid size-5 place-items-center rounded-full border-2 border-[var(--color-surface)] bg-[var(--color-arena)] shadow-[var(--shadow-arena)]"
-              aria-label="Máximo goleador del equipo"
-              title="Máximo goleador del equipo"
+              aria-label={topScorerLabel}
+              title={topScorerLabel}
             >
               <Crown className="size-2.5 text-white" />
             </span>
@@ -1127,7 +1185,7 @@ function PlayerCard({
                 ? "border-[var(--color-arena)] bg-[var(--color-arena)] text-white shadow-[var(--shadow-arena)]"
                 : "border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_10%,transparent)] text-[var(--color-arena)]"
             }`}
-            title={`${goals} ${goals === 1 ? "gol" : "goles"} en el torneo`}
+            title={goalsTitle}
           >
             <Goal className="size-3.5" />
             {goals}

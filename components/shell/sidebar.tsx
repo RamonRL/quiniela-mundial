@@ -8,7 +8,7 @@ import { BrandWordmark } from "@/components/brand/brand-wordmark";
 import { Link, usePathname } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
 import { ChevronsLeft, ChevronsRight, Globe2, LogOut, Settings, UserCog } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { ADMIN_NAV, buildNavItems, type NavItem } from "./nav-data";
 
@@ -64,7 +64,9 @@ export function Sidebar({
     const fromCookie = match[1] === "1";
     setCollapsed((current) => (current === fromCookie ? current : fromCookie));
   }, []);
-  const items = buildNavItems(myId, { showMyLeague, isAuthenticated });
+  const locale = useLocale();
+  // Noticias solo en ES (contenido sin traducir) — fuera del nav en EN/FR/PT.
+  const items = buildNavItems(myId, { showMyLeague, isAuthenticated, showNews: locale === "es" });
   const main = items.filter((i) => i.group === "main");
   const preds = items.filter((i) => i.group === "predicciones");
   const social = items.filter((i) => i.group === "social");

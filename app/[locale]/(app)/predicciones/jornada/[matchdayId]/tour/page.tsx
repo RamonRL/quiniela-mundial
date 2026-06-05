@@ -1,3 +1,6 @@
+import { getLocale } from "next-intl/server";
+import { localizedMatchdayName } from "@/lib/matchday-names";
+import { localizeTeams } from "@/lib/team-names";
 import { notFound, redirect } from "next/navigation";
 import { and, asc, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
@@ -23,6 +26,7 @@ export default async function MatchdayTourPage(props: {
   searchParams: Promise<{ step?: string }>;
 }) {
   const me = await requireUser();
+  const locale = await getLocale();
   const leagueId = (await currentLeagueId(me))!;
   const mode = (await getLeagueModes([leagueId])).get(leagueId) ?? "completo";
   const showScorer = mode === "completo";
@@ -104,7 +108,7 @@ export default async function MatchdayTourPage(props: {
       : [],
   ]);
 
-  const teamById = new Map(allTeams.map((t) => [t.id, t]));
+  const teamById = new Map(localizeTeams(allTeams, locale).map((t) => [t.id, t]));
   const groupById = new Map(allGroups.map((g) => [g.id, g]));
   const playersByTeam = new Map<number, typeof allPlayers>();
   for (const p of allPlayers) {
@@ -192,7 +196,7 @@ export default async function MatchdayTourPage(props: {
   return (
     <MatchdayTourClient
       matchdayId={matchdayId}
-      matchdayName={day.name}
+      matchdayName={localizedMatchdayName(day.name, day.stage, locale)}
       matches={matchItems}
       initialStep={initialStep}
       allCompleteOnEntry={allComplete}

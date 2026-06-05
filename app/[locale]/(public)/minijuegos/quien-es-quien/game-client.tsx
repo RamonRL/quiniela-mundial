@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { Check, Clock3, Loader2, Play, Trophy, Users2, X, Zap } from "lucide-react";
 import { TeamFlag } from "@/components/brand/team-flag";
@@ -48,6 +49,7 @@ type Phase =
 type ChosenAnswer = { roundId: number; chosenPlayerId: number };
 
 export function QuienEsQuienClient({ myIdentityKey, myBestScore }: Props) {
+  const t = useTranslations("minigames");
   const isGuest = myIdentityKey == null;
   const [phase, setPhase] = useState<Phase>({ kind: "idle" });
   const [secondsLeft, setSecondsLeft] = useState(GAME_SECONDS);
@@ -112,10 +114,10 @@ export function QuienEsQuienClient({ myIdentityKey, myBestScore }: Props) {
     } catch (err) {
       setPhase({
         kind: "error",
-        message: err instanceof Error ? err.message : "No se pudo iniciar la partida.",
+        message: err instanceof Error ? err.message : t("startError"),
       });
     }
-  }, []);
+  }, [t]);
 
   const handlePlayClick = () => {
     if (isGuest && !getStoredGuestNickname()) {
@@ -197,11 +199,11 @@ export function QuienEsQuienClient({ myIdentityKey, myBestScore }: Props) {
       } catch (err) {
         setPhase({
           kind: "error",
-          message: err instanceof Error ? err.message : "No se pudo enviar tu puntuación.",
+          message: err instanceof Error ? err.message : t("submitError"),
         });
       }
     },
-    [isGuest],
+    [isGuest, t],
   );
 
   const handleAbandon = useCallback(() => {
@@ -238,17 +240,15 @@ export function QuienEsQuienClient({ myIdentityKey, myBestScore }: Props) {
       <GameStage
         active={stageActive}
         abandonConfirm={
-          phase.kind === "playing"
-            ? "¿Abandonar la partida? Perderás los aciertos de esta ronda."
-            : undefined
+          phase.kind === "playing" ? t("abandonConfirm") : undefined
         }
         onAbandon={phase.kind === "playing" ? handleAbandon : undefined}
         onClose={handleCloseDone}
-        exitLabel={phase.kind === "done" ? "Cerrar" : undefined}
+        exitLabel={phase.kind === "done" ? t("close") : undefined}
       >
-        {phase.kind === "starting" ? <StagePending label="Preparando partida" /> : null}
+        {phase.kind === "starting" ? <StagePending label={t("preparing")} /> : null}
         {phase.kind === "submitting" ? (
-          <StagePending label="Calculando puntuación" />
+          <StagePending label={t("scoring")} />
         ) : null}
         {phase.kind === "playing" ? (
           <PlayPanel
@@ -290,6 +290,7 @@ function IntroPanel({
   onPlay: () => void;
   errorMessage: string | null;
 }) {
+  const t = useTranslations("minigames");
   return (
     <div className="relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 text-center sm:p-12">
       {/* Línea verde tipo gradiente de campo */}
@@ -306,19 +307,18 @@ function IntroPanel({
         <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-pitch)]/40 bg-[color-mix(in_oklch,var(--color-pitch)_8%,transparent)] px-3 py-1">
           <span className="size-1.5 rounded-full bg-[var(--color-pitch)] mj-led-blink" />
           <span className="font-mono text-[0.55rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-pitch)]">
-            Insert coin · 60 s
+            {t("insertCoin")}
           </span>
         </div>
         <h2 className="font-display text-4xl tracking-tight sm:text-5xl">
-          ¿Listo para jugar?
+          {t("readyTitle")}
         </h2>
         <p className="mx-auto max-w-md font-editorial text-base italic text-[var(--color-muted-foreground)]">
-          Aparecerán caras de jugadores. Elige el nombre correcto entre cuatro
-          opciones. Verás al instante si has acertado.
+          {t("qqIntro")}
         </p>
         {myBestScore != null ? (
           <p className="font-mono text-[0.7rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-            Tu mejor:{" "}
+            {t("yourBestLabel")}{" "}
             <span className="font-display text-2xl tabular text-[var(--color-pitch)] glow-pitch">
               {myBestScore}
             </span>
@@ -330,7 +330,7 @@ function IntroPanel({
           className="group inline-flex items-center gap-2 rounded-md border-2 border-[var(--color-pitch)] bg-[var(--color-pitch)] px-6 py-3 font-mono text-[0.7rem] font-bold uppercase tracking-[0.24em] text-black shadow-[var(--shadow-pitch)] transition hover:-translate-y-0.5"
         >
           <Play className="size-4" />
-          Empezar partida
+          {t("startGame")}
         </button>
         {errorMessage ? (
           <p className="mx-auto max-w-sm rounded-md border border-[var(--color-danger)]/40 bg-[color-mix(in_oklch,var(--color-danger)_8%,transparent)] px-3 py-2 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-[var(--color-danger)]">
@@ -592,11 +592,12 @@ function ResultPanel({
   onPlayAgain: () => void;
   onClose: () => void;
 }) {
+  const t = useTranslations("minigames");
   return (
     <div className="m-auto w-full max-w-md space-y-6 rounded-2xl border-2 border-[var(--mj-pitch)]/60 bg-[var(--mj-bg-2)]/90 p-8 text-center backdrop-blur-sm mj-stage-in">
       <div className="space-y-2">
         <p className="font-mono text-[0.65rem] uppercase tracking-[0.36em] text-[var(--mj-text-dim)]">
-          {improved ? "Récord nuevo" : "Final · Partida"}
+          {improved ? t("newRecord") : t("gameOver")}
         </p>
         <p
           className="font-display text-[7rem] tabular leading-none text-[var(--mj-pitch)] mj-glow-pitch sm:text-[8rem]"
@@ -607,17 +608,17 @@ function ResultPanel({
         <p className="font-mono text-[0.65rem] uppercase tracking-[0.28em] text-[var(--mj-text-dim)]">
           {improved
             ? previousBest != null
-              ? `superas tu mejor de ${previousBest}`
-              : "tu primer registro"
-            : `tu mejor sigue siendo ${previousBest ?? score}`}
+              ? t("beatBest", { best: previousBest })
+              : t("firstScore")
+            : t("keepBest", { best: previousBest ?? score })}
         </p>
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        <StatChip icon={<Trophy className="size-4" />} label="Posición" value={`#${rank}`} />
+        <StatChip icon={<Trophy className="size-4" />} label={t("position")} value={`#${rank}`} />
         <StatChip
           icon={<Users2 className="size-4" />}
-          label="Jugadores"
+          label={t("playersStat")}
           value={totalParticipants}
         />
       </div>
@@ -629,14 +630,14 @@ function ResultPanel({
           className="inline-flex items-center justify-center gap-2 rounded-md border-2 border-[var(--mj-pitch)] bg-[var(--mj-pitch)] px-5 py-3 font-mono text-[0.7rem] font-bold uppercase tracking-[0.24em] text-black transition hover:-translate-y-0.5"
         >
           <Zap className="size-4" />
-          Otra partida
+          {t("playAgain")}
         </button>
         <button
           type="button"
           onClick={onClose}
           className="inline-flex items-center justify-center gap-2 rounded-md border-2 border-[var(--mj-line-strong)] bg-transparent px-5 py-3 font-mono text-[0.7rem] font-bold uppercase tracking-[0.24em] text-[var(--mj-text)] transition hover:border-[var(--mj-pitch)] hover:text-[var(--mj-pitch)]"
         >
-          Ver ranking
+          {t("viewRanking")}
         </button>
       </div>
     </div>

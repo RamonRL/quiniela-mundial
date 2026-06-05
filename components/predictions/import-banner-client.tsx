@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useTranslations } from "next-intl";
 import { ArrowDownToLine, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import type { LeagueWithPicks } from "./import-banner";
 const initial: ImportFormState = { ok: false };
 
 export function ImportBannerClient({ sources }: { sources: LeagueWithPicks[] }) {
+  const t = useTranslations("importPreds");
   const [state, action, pending] = useActionState(
     importPredictionsAction,
     initial,
@@ -44,15 +46,13 @@ export function ImportBannerClient({ sources }: { sources: LeagueWithPicks[] }) 
           </div>
           <div className="space-y-1">
             <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-              Copiar predicciones
+              {t("eyebrow")}
             </p>
             <h2 className="font-display text-xl tracking-tight sm:text-2xl">
-              Rellena tus picks desde otra quiniela
+              {t("title")}
             </h2>
             <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-              Copiamos de golpe las picks que te faltan desde otra de tus
-              quinielas del mismo modo. Solo rellenamos huecos: nunca machacamos
-              lo que ya tengas ni las picks pasadas de fecha.
+              {t("description")}
             </p>
           </div>
         </div>
@@ -60,15 +60,15 @@ export function ImportBannerClient({ sources }: { sources: LeagueWithPicks[] }) 
           <input type="hidden" name="sourceLeagueId" value={sourceId} />
           <Select value={sourceId} onValueChange={setSourceId}>
             <SelectTrigger className="min-w-[12rem]">
-              <SelectValue placeholder="Liga origen" />
+              <SelectValue placeholder={t("sourceLeaguePlaceholder")} />
             </SelectTrigger>
             <SelectContent>
               {sources.map((s) => (
                 <SelectItem key={s.id} value={String(s.id)}>
                   {s.name}
-                  {s.isPublic ? " (Pública)" : ""}
+                  {s.isPublic ? ` ${t("publicSuffix")}` : ""}
                   <span className="ml-2 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-                    {s.totalPicks} picks
+                    {t("picksCount", { count: s.totalPicks })}
                   </span>
                 </SelectItem>
               ))}
@@ -76,7 +76,7 @@ export function ImportBannerClient({ sources }: { sources: LeagueWithPicks[] }) 
           </Select>
           <Button type="submit" disabled={pending || !sourceId}>
             <ArrowDownToLine className="size-3.5" />
-            {pending ? "Importando…" : "Importar"}
+            {pending ? t("importing") : t("import")}
           </Button>
           <Button
             type="button"
@@ -84,7 +84,7 @@ export function ImportBannerClient({ sources }: { sources: LeagueWithPicks[] }) 
             size="sm"
             onClick={() => setDismissed(true)}
           >
-            Ahora no
+            {t("notNow")}
           </Button>
         </form>
       </div>
