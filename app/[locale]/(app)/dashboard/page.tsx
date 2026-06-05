@@ -447,7 +447,10 @@ export default async function DashboardPage({
           logoUrl={welcomeLeague.logoUrl}
         />
       ) : null}
-      <TutorialAutoStart firstSeen={me.tutorialCompletedAt == null} />
+      <TutorialAutoStart
+        firstSeen={me.tutorialCompletedAt == null}
+        holdForWelcome={welcomeLeague != null}
+      />
       <Suspense fallback={<div aria-hidden />}>
         <ImportPredictionsBanner userId={me.id} activeLeagueId={leagueId} />
       </Suspense>

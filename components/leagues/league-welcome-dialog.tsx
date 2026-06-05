@@ -13,6 +13,13 @@ import {
 import { Button } from "@/components/ui/button";
 
 /**
+ * Evento que se emite al cerrar el popup — lo escucha TutorialAutoStart
+ * para arrancar el tutorial DESPUÉS de la bienvenida (antes saltaban los
+ * dos a la vez en el primer login por invite).
+ */
+export const WELCOME_CLOSED_EVENT = "qm:league-welcome-closed";
+
+/**
  * Popup de bienvenida tras unirse a una quiniela por invite link
  * (`/dashboard?welcome=1`). Confirma al usuario que el proceso terminó
  * bien y en QUÉ liga está — sin esto, quien entraba por invitación
@@ -32,6 +39,7 @@ export function LeagueWelcomeDialog({
 
   function close() {
     setOpen(false);
+    window.dispatchEvent(new Event(WELCOME_CLOSED_EVENT));
     router.replace("/dashboard");
   }
 

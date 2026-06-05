@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useTutorial } from "./tutorial-provider";
 import { TUTORIAL_REPLAY_KEY } from "./replay-button";
+import { WELCOME_CLOSED_EVENT } from "@/components/leagues/league-welcome-dialog";
 
 /**
  * Dispara `tutorial.start()` cuando el usuario aterriza en `/dashboard`
@@ -20,7 +21,19 @@ import { TUTORIAL_REPLAY_KEY } from "./replay-button";
  */
 const AUTOSTART_DELAY_MS = 800;
 
-export function TutorialAutoStart({ firstSeen }: { firstSeen: boolean }) {
+export function TutorialAutoStart({
+  firstSeen,
+  holdForWelcome = false,
+}: {
+  firstSeen: boolean;
+  /**
+   * true mientras el popup de bienvenida a la liga está en pantalla
+   * (?welcome=1): el tutorial espera al evento WELCOME_CLOSED_EVENT en
+   * vez de solaparse con él. Fallback: cuando el popup limpia el query
+   * param, la prop vuelve a false y el efecto re-dispara igualmente.
+   */
+  holdForWelcome?: boolean;
+}) {
   const { start, isOpen } = useTutorial();
   const triggeredRef = useRef(false);
 
@@ -33,14 +46,30 @@ export function TutorialAutoStart({ firstSeen }: { firstSeen: boolean }) {
 
     if (!firstSeen && !fromReplay) return;
 
-    triggeredRef.current = true;
-    if (fromReplay && typeof window !== "undefined") {
-      window.sessionStorage.removeItem(TUTORIAL_REPLAY_KEY);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const fire = () => {
+      if (triggeredRef.current) return;
+      triggeredRef.current = true;
+      if (fromReplay && typeof window !== "undefined") {
+        window.sessionStorage.removeItem(TUTORIAL_REPLAY_KEY);
+      }
+      timer = setTimeout(start, AUTOSTART_DELAY_MS);
+    };
+
+    if (holdForWelcome) {
+      window.addEventListener(WELCOME_CLOSED_EVENT, fire, { once: true });
+      return () => {
+        window.removeEventListener(WELCOME_CLOSED_EVENT, fire);
+        if (timer) clearTimeout(timer);
+      };
     }
-    const t = setTimeout(start, AUTOSTART_DELAY_MS);
-    return () => clearTimeout(t);
+
+    fire();
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [firstSeen]);
+  }, [firstSeen, holdForWelcome]);
 
   return null;
 }
