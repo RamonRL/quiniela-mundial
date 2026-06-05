@@ -209,7 +209,9 @@ export async function joinLeagueByCode(
     .set({ leagueId: league.id })
     .where(eq(profiles.id, me.id));
   revalidatePath("/", "layout");
-  redirect("/dashboard");
+  // Join nuevo por código → popup de bienvenida en el dashboard (la
+  // reactivación de un miembro existente, más arriba, va sin popup).
+  redirect("/dashboard?welcome=1");
 }
 
 /**

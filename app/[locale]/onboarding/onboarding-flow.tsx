@@ -42,6 +42,7 @@ import {
 } from "@/lib/prediction-modes";
 import { ONBOARDING_PLANS, type PlanKey } from "@/lib/plans";
 import { useFadeNav } from "./step-transition";
+import { DelayedLoadingOverlay } from "@/components/ui/loading-overlay";
 import {
   joinPublicByMode,
   saveInitialAvatar,
@@ -693,6 +694,11 @@ function PlanStep({
     }
   }
 
+  // Overlay de carga: creación free/enterprise o verificación post-pago
+  // (finalizeWithRetry puede tardar varios segundos). Mientras el checkout
+  // de Paddle está abierto (paying) NO se muestra — ya hay UI de pago.
+  const showCreating = busy && !paying;
+
   const ctaLabel =
     selected === "free"
       ? t("ctaFree")
@@ -702,6 +708,7 @@ function PlanStep({
 
   return (
     <div className="space-y-5 sm:space-y-8">
+      <DelayedLoadingOverlay show={showCreating} label={t("creatingLeague")} />
       <div className="flex items-center justify-between gap-3">
         <Eyebrow>{t("ebPlan")}</Eyebrow>
         <button
@@ -934,7 +941,9 @@ function CreatedSuccess({
       <div className="flex flex-wrap items-center gap-4 pt-2">
         <Button
           size="lg"
-          onClick={() => goDashboard("/dashboard")}
+          // welcome=created → popup "¡Quiniela creada!" en el dashboard
+          // (el tutorial espera a que se cierre, igual que con los joins).
+          onClick={() => goDashboard("/dashboard?welcome=created")}
           className="h-14 px-8 text-base sm:flex-1"
         >
           {t("goDashboard")} <ArrowRight />
@@ -1026,6 +1035,9 @@ function JoinLeagueForm() {
 
   return (
     <div className="space-y-6 sm:space-y-10">
+      {/* Validar código + join + redirect al dashboard puede irse a >1s:
+          el overlay deja claro que está en marcha. */}
+      <DelayedLoadingOverlay show={pending} label={t("joiningLeague")} />
       <Eyebrow>{t("ebJoin")}</Eyebrow>
       <header className="space-y-4">
         <h1 className="font-display text-3xl tracking-tight sm:text-5xl xl:text-6xl">

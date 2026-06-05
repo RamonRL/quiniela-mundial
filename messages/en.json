@@ -1172,7 +1172,9 @@
     "haveAccount": "Already have an account? <link>Log in</link> and come back to this link.",
     "welcomeEyebrow": "You're in!",
     "welcomeBody": "You've successfully joined the pool. Your predictions, the ranking and the chat are waiting for you.",
-    "welcomeCta": "Let's play"
+    "welcomeCta": "Let's play",
+    "createdEyebrow": "Pool created!",
+    "createdBody": "Your pool is up and running. Share the invite code with your people and let the trash talk begin."
   },
   "myPool": {
     "fullBanner": "<b>Pool full ({limit}/{limit} members).</b> To let more in, get a Pase Mundial 2026 — no data migration, same group.",
@@ -1342,6 +1344,8 @@
     "joinOrCreate": "Join or create a pool"
   },
   "onboarding": {
+    "creatingLeague": "Creating your pool",
+    "joiningLeague": "Joining the pool",
     "dashboardLink": "← Dashboard",
     "worldCupCaption": "FIFA World Cup 2026",
     "countdown": "T-{days} days to kickoff",

@@ -445,6 +445,7 @@ export default async function DashboardPage({
         <LeagueWelcomeDialog
           leagueName={welcomeLeague.name}
           logoUrl={welcomeLeague.logoUrl}
+          variant={params.welcome === "created" ? "created" : "joined"}
         />
       ) : null}
       <TutorialAutoStart

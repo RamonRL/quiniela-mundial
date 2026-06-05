@@ -366,6 +366,31 @@
     animation: marquee 18s linear infinite;
   }
 
+  /* ─── Overlay de carga (components/ui/loading-overlay.tsx) ───
+     Fade-in corto del overlay + puntos suspensivos animados tras la
+     etiqueta ("CARGANDO." → ".." → "..."). El ancho fijo del ::after
+     evita que el texto baile al cambiar de frame. */
+  @keyframes qm-overlay-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .qm-loading-overlay {
+    animation: qm-overlay-in 0.2s ease-out both;
+  }
+  @keyframes qm-loading-dots {
+    0% { content: ""; }
+    25% { content: "."; }
+    50% { content: ".."; }
+    75% { content: "..."; }
+  }
+  .qm-loading-dots::after {
+    content: "";
+    display: inline-block;
+    width: 1.1em;
+    text-align: left;
+    animation: qm-loading-dots 1.2s steps(1) infinite;
+  }
+
   /* Scoreboard glow */
   .glow-arena {
     text-shadow: 0 0 1px color-mix(in oklch, var(--color-arena) 60%, transparent),

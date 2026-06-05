@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, X, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DelayedLoadingOverlay } from "@/components/ui/loading-overlay";
 
 /**
  * Shell del modo interactivo de predicción (1 elemento por pantalla).
@@ -41,6 +42,8 @@ type Props = {
   finishLabel?: string;
   /** Para deshabilitar las flechas mientras se procesa un guardado. */
   pending?: boolean;
+  /** Etiqueta del overlay de carga cuando un guardado se alarga. */
+  pendingLabel?: string;
   /** Centra el contenido en vertical (para pasos con poca info, p. ej.
    *  Marcador y Solo Ganador) en vez de pegarlo arriba. */
   centerBody?: boolean;
@@ -60,6 +63,7 @@ export function InteractiveTourShell(props: Props) {
     direction,
     finishLabel = "Finalizar",
     pending = false,
+    pendingLabel = "Guardando",
     centerBody = false,
     children,
   } = props;
@@ -162,6 +166,12 @@ export function InteractiveTourShell(props: Props) {
           </button>
         </div>
       </footer>
+
+      {/* ─── Overlay de carga ───
+          Los pasos intermedios guardan en ~200-300ms y no llegan a
+          enseñarlo (delay 450ms); el cierre del tour (persistir + marcar
+          fin + navegar) sí tarda 2-3s y aquí el usuario ve qué pasa. */}
+      <DelayedLoadingOverlay show={pending} delayMs={450} label={pendingLabel} />
 
       {/* ─── Toast efímero "Guardado" ─── */}
       {showToast ? (

@@ -1172,7 +1172,9 @@
     "haveAccount": "Déjà un compte ? <link>Connecte-toi</link> et reviens sur ce lien.",
     "welcomeEyebrow": "Tu es dedans !",
     "welcomeBody": "Tu as bien rejoint la grille. Tes pronostics, le classement et le chat t'attendent.",
-    "welcomeCta": "À jouer"
+    "welcomeCta": "À jouer",
+    "createdEyebrow": "Grille créée !",
+    "createdBody": "Ta grille est lancée. Partage le code d'invitation avec ton monde et que le chambrage commence."
   },
   "myPool": {
     "fullBanner": "<b>Grille complète ({limit}/{limit} membres).</b> Pour en accueillir plus, prends un Pase Mundial 2026 — sans migration de données, même groupe.",
@@ -1342,6 +1344,8 @@
     "joinOrCreate": "Rejoindre ou créer une grille"
   },
   "onboarding": {
+    "creatingLeague": "Création de ta grille",
+    "joiningLeague": "Inscription à la grille",
     "dashboardLink": "← Tableau de bord",
     "worldCupCaption": "Coupe du monde de la FIFA 2026",
     "countdown": "J-{days} avant le coup d'envoi",

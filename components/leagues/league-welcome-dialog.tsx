@@ -29,9 +29,12 @@ export const WELCOME_CLOSED_EVENT = "qm:league-welcome-closed";
 export function LeagueWelcomeDialog({
   leagueName,
   logoUrl,
+  variant = "joined",
 }: {
   leagueName: string;
   logoUrl: string | null;
+  /** "joined" → te has unido (invite); "created" → acabas de crearla. */
+  variant?: "joined" | "created";
 }) {
   const t = useTranslations("invite");
   const router = useRouter();
@@ -70,14 +73,14 @@ export function LeagueWelcomeDialog({
           )}
           <div className="space-y-1">
             <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-              {t("welcomeEyebrow")}
+              {variant === "created" ? t("createdEyebrow") : t("welcomeEyebrow")}
             </p>
             <DialogTitle className="font-display text-3xl tracking-tight">
               {leagueName}
             </DialogTitle>
           </div>
           <DialogDescription className="font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)]">
-            {t("welcomeBody")}
+            {variant === "created" ? t("createdBody") : t("welcomeBody")}
           </DialogDescription>
           <Button type="button" size="lg" className="mt-1 w-full" onClick={close}>
             {t("welcomeCta")}

@@ -1172,7 +1172,9 @@
     "haveAccount": "Já tens conta? <link>Inicia sessão</link> e volta a este link.",
     "welcomeEyebrow": "Já estás dentro!",
     "welcomeBody": "Entraste no bolão com sucesso. Os teus palpites, o ranking e o chat já estão à tua espera.",
-    "welcomeCta": "A jogar"
+    "welcomeCta": "A jogar",
+    "createdEyebrow": "Bolão criado!",
+    "createdBody": "O seu bolão já está no ar. Compartilhe o código de convite com o seu pessoal e que comece a provocação."
   },
   "myPool": {
     "fullBanner": "<b>Bolão cheio ({limit}/{limit} membros).</b> Para entrarem mais, contrate um Pase Mundial 2026 — sem migrar dados, mesmo grupo.",
@@ -1342,6 +1344,8 @@
     "joinOrCreate": "Entrar ou criar bolão"
   },
   "onboarding": {
+    "creatingLeague": "Criando o seu bolão",
+    "joiningLeague": "Entrando no bolão",
     "dashboardLink": "← Painel",
     "worldCupCaption": "Copa do Mundo da FIFA 2026",
     "countdown": "T-{days} dias para o pontapé inicial",

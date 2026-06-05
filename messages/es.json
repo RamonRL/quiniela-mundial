@@ -1172,7 +1172,9 @@
     "haveAccount": "¿Ya tienes cuenta? <link>Inicia sesión</link> y vuelve a este enlace.",
     "welcomeEyebrow": "¡Ya estás dentro!",
     "welcomeBody": "Te has unido correctamente a la quiniela. Tus predicciones, el ranking y el chat ya te están esperando.",
-    "welcomeCta": "A jugar"
+    "welcomeCta": "A jugar",
+    "createdEyebrow": "¡Quiniela creada!",
+    "createdBody": "Tu quiniela ya está en marcha. Comparte el código de invitación con tu gente y que empiece el pique."
   },
   "myPool": {
     "fullBanner": "<b>Quiniela completa ({limit}/{limit} miembros).</b> Para que entren más, contrata un Pase Mundial 2026 — sin migrar datos, mismo grupo.",
@@ -1342,6 +1344,8 @@
     "joinOrCreate": "Unirse o crear quiniela"
   },
   "onboarding": {
+    "creatingLeague": "Creando tu quiniela",
+    "joiningLeague": "Uniéndote a la quiniela",
     "dashboardLink": "← Dashboard",
     "worldCupCaption": "Copa Mundial de la FIFA 2026",
     "countdown": "T-{days} días al kickoff",
