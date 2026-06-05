@@ -6,6 +6,7 @@ import { requireUser } from "@/lib/auth/guards";
 import { paddleClientToken, paddlePublicEnv } from "@/lib/paddle";
 import { BrandWordmark } from "@/components/brand/brand-wordmark";
 import { OnboardingFlow } from "./onboarding-flow";
+import { StepTransition } from "./step-transition";
 
 export const metadata = { title: "Bienvenido" } satisfies Metadata;
 
@@ -153,14 +154,19 @@ export default async function OnboardingPage({
         </header>
 
         <div className="flex flex-1 flex-col justify-center">
-          <OnboardingFlow
-            step={step}
-            fresh={fresh}
-            userNickname={me.nickname}
-            userEmail={me.email}
-            userAvatarUrl={me.avatarUrl}
-            paddle={{ token: paddleClientToken(), env: paddlePublicEnv() }}
-          />
+          {/* StepTransition: fade-in escalonado al montar cada paso y
+              fade-out coordinado al navegar (useFadeNav). El key=step
+              remonta el wrapper en cada cambio de pantalla. */}
+          <StepTransition stepKey={step}>
+            <OnboardingFlow
+              step={step}
+              fresh={fresh}
+              userNickname={me.nickname}
+              userEmail={me.email}
+              userAvatarUrl={me.avatarUrl}
+              paddle={{ token: paddleClientToken(), env: paddlePublicEnv() }}
+            />
+          </StepTransition>
         </div>
       </div>
     </div>

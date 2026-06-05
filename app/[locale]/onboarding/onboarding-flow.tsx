@@ -3,7 +3,7 @@
 import { Link } from "@/i18n/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { useActionState, useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   ArrowRight,
@@ -41,6 +41,7 @@ import {
   type PredictionMode,
 } from "@/lib/prediction-modes";
 import { ONBOARDING_PLANS, type PlanKey } from "@/lib/plans";
+import { useFadeNav } from "./step-transition";
 import {
   joinPublicByMode,
   saveInitialAvatar,
@@ -79,11 +80,12 @@ export function OnboardingFlow({
   paddle: PaddleConfig;
 }) {
   const t = useTranslations("onboarding");
-  const router = useRouter();
+  // Navegación entre pasos con fade-out coordinado (StepTransition).
+  const go = useFadeNav();
   // Si el usuario llegó al onboarding desde el gateway de compra (p. ej.
   // pulsó "Comprar" sin tener liga), `?next=/precios/comprar/team-100`
   // arrastra a dónde queremos devolverle al terminar. Lo propagamos por
-  // todos los pasos para que no se pierda entre `router.push`.
+  // todos los pasos para que no se pierda entre navegaciones.
   const nextParam = useSearchParams().get("next");
   const nextQuery = nextParam ? `&next=${encodeURIComponent(nextParam)}` : "";
 
@@ -130,7 +132,7 @@ export function OnboardingFlow({
             description={t("publicDesc")}
             primary
             onClick={() => {
-              router.push(`/onboarding?step=publica-elegir${nextQuery}`);
+              go(`/onboarding?step=publica-elegir${nextQuery}`);
             }}
             actionLabel={t("continue")}
           />
@@ -139,7 +141,7 @@ export function OnboardingFlow({
             label={t("privateLabel")}
             description={t("privateDesc")}
             onClick={() => {
-              router.push(`/onboarding?step=privada-elegir${nextQuery}`);
+              go(`/onboarding?step=privada-elegir${nextQuery}`);
             }}
             actionLabel={t("continue")}
           />
@@ -201,7 +203,7 @@ export function OnboardingFlow({
             description={t("createDesc")}
             primary
             onClick={() => {
-              router.push(`/onboarding?step=privada-crear${nextQuery}`);
+              go(`/onboarding?step=privada-crear${nextQuery}`);
             }}
             actionLabel={t("create")}
           />
@@ -210,7 +212,7 @@ export function OnboardingFlow({
             label={t("joinLabel")}
             description={t("joinDesc")}
             onClick={() => {
-              router.push(`/onboarding?step=privada-unirse${nextQuery}`);
+              go(`/onboarding?step=privada-unirse${nextQuery}`);
             }}
             actionLabel={t("join")}
           />
@@ -249,9 +251,17 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
 
 function BackButton({ href }: { href: string }) {
   const t = useTranslations("onboarding");
+  // Link (prefetch + middle-click intactos) pero la navegación normal pasa
+  // por el fade-out del StepTransition.
+  const go = useFadeNav();
   return (
     <Link
       href={href}
+      onClick={(e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        e.preventDefault();
+        go(href);
+      }}
       className="inline-flex items-center gap-2 font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)] transition hover:text-[var(--color-foreground)]"
     >
       <ArrowLeft className="size-3.5" /> {t("back")}
@@ -851,7 +861,7 @@ function CreatedSuccess({
   plan: PlanKey;
 }) {
   const t = useTranslations("onboarding");
-  const router = useRouter();
+  const goDashboard = useFadeNav();
   const { name, joinCode, inviteToken } = league;
   const isEnterprise = plan === "enterprise";
   const isPaid = plan === "team-50" || plan === "team-100" || plan === "team-250";
@@ -924,7 +934,7 @@ function CreatedSuccess({
       <div className="flex flex-wrap items-center gap-4 pt-2">
         <Button
           size="lg"
-          onClick={() => router.push("/dashboard")}
+          onClick={() => goDashboard("/dashboard")}
           className="h-14 px-8 text-base sm:flex-1"
         >
           {t("goDashboard")} <ArrowRight />
@@ -1196,6 +1206,7 @@ function PhotoStep({
   skipHref: string;
 }) {
   const t = useTranslations("onboarding");
+  const goSkip = useFadeNav();
   const [state, action, pending] = useActionState(
     saveInitialAvatar,
     initialProfile,
@@ -1342,7 +1353,16 @@ function PhotoStep({
             size="lg"
             className="h-14 px-6 text-base text-[var(--color-muted-foreground)]"
           >
-            <Link href={skipHref}>{t("skipForNow")}</Link>
+            <Link
+              href={skipHref}
+              onClick={(e) => {
+                if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+                e.preventDefault();
+                goSkip(skipHref);
+              }}
+            >
+              {t("skipForNow")}
+            </Link>
           </Button>
         </div>
       </form>
