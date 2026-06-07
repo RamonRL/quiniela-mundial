@@ -28,6 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/shell/page-header";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
+import { getEffectiveTimeZone } from "@/lib/timezone-server";
 import { formatDateTime } from "@/lib/utils";
 import { computeMatchdayStates, type Stage } from "@/lib/matchday-state";
 import { getBracketStatus } from "@/lib/bracket-state";
@@ -43,6 +44,7 @@ const KICKOFF = new Date(
 export default async function PrediccionesHub() {
   const t = await getTranslations("predHub");
   const me = await requireUser();
+  const timeZone = await getEffectiveTimeZone();
   const now = new Date();
   const leagueId = (await currentLeagueId(me))!;
   // Modo de la liga activa. Marcador y Solo Ganador solo predicen partidos:
@@ -180,6 +182,7 @@ export default async function PrediccionesHub() {
           preTorneoOpen
             ? t("closeMeta", {
                 date: formatDateTime(KICKOFF, {
+                  timeZone,
                   day: "2-digit",
                   month: "short",
                   hour: "2-digit",
@@ -270,7 +273,7 @@ export default async function PrediccionesHub() {
         ) : (
           <div className="space-y-4">
             {featured ? (
-              <FeaturedMatchday day={featured} />
+              <FeaturedMatchday day={featured} timeZone={timeZone} />
             ) : waitingDays.length > 0 ? (
               <WaitingMatchday day={waitingDays[0]} />
             ) : null}
@@ -278,13 +281,13 @@ export default async function PrediccionesHub() {
             {(otherOpen.length > 0 || waitingDays.length > 1 || closedDays.length > 0) && (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {otherOpen.map((d) => (
-                  <MatchdayMini key={d.id} day={d} />
+                  <MatchdayMini key={d.id} day={d} timeZone={timeZone} />
                 ))}
                 {waitingDays.slice(featured ? 0 : 1).map((d) => (
-                  <MatchdayMini key={d.id} day={d} />
+                  <MatchdayMini key={d.id} day={d} timeZone={timeZone} />
                 ))}
                 {closedDays.map((d) => (
-                  <MatchdayMini key={d.id} day={d} />
+                  <MatchdayMini key={d.id} day={d} timeZone={timeZone} />
                 ))}
               </div>
             )}
@@ -303,6 +306,7 @@ export default async function PrediccionesHub() {
           bracketStatus.state === "open" && bracketStatus.closesAt
             ? t("closeMeta", {
                 date: formatDateTime(bracketStatus.closesAt, {
+                  timeZone,
                   day: "2-digit",
                   month: "short",
                   hour: "2-digit",
@@ -314,7 +318,7 @@ export default async function PrediccionesHub() {
               : t("bracketClosed")
         }
       >
-        <BracketCard status={bracketStatus.state} closesAt={bracketStatus.closesAt} />
+        <BracketCard status={bracketStatus.state} closesAt={bracketStatus.closesAt} timeZone={timeZone} />
       </Section>
       ) : null}
     </div>
@@ -443,9 +447,11 @@ function CategoryCard({
 function BracketCard({
   status,
   closesAt,
+  timeZone,
 }: {
   status: "waiting" | "open" | "closed";
   closesAt: Date | null;
+  timeZone: string;
 }) {
   const t = useTranslations("predHub");
   const baseInner = (
@@ -492,6 +498,7 @@ function BracketCard({
               ? t("bracketClosesPrefix", {
                   date: closesAt
                     ? formatDateTime(closesAt, {
+                        timeZone,
                         day: "2-digit",
                         month: "short",
                         hour: "2-digit",
@@ -523,7 +530,7 @@ type DayCard = {
   filled: number;
 };
 
-function FeaturedMatchday({ day }: { day: DayCard }) {
+function FeaturedMatchday({ day, timeZone }: { day: DayCard; timeZone: string }) {
   const t = useTranslations("predHub");
   const remaining = day.total - day.filled;
   return (
@@ -551,6 +558,7 @@ function FeaturedMatchday({ day }: { day: DayCard }) {
             </p>
             <p className="font-display text-2xl tracking-tight">
               {formatDateTime(day.predictionDeadlineAt, {
+                timeZone,
                 weekday: "short",
                 day: "2-digit",
                 month: "short",
@@ -595,7 +603,7 @@ function WaitingMatchday({ day }: { day: DayCard }) {
   );
 }
 
-function MatchdayMini({ day }: { day: DayCard }) {
+function MatchdayMini({ day, timeZone }: { day: DayCard; timeZone: string }) {
   const t = useTranslations("predHub");
   const inner = (
     <article
@@ -641,6 +649,7 @@ function MatchdayMini({ day }: { day: DayCard }) {
         </span>
         <span className="text-[0.6rem] text-[var(--color-muted-foreground)]">
           {formatDateTime(day.predictionDeadlineAt, {
+            timeZone,
             day: "2-digit",
             month: "short",
             hour: "2-digit",

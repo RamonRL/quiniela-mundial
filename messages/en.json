@@ -573,7 +573,7 @@
     "langDesc": "Change the interface language. News stays in Spanish.",
     "tzEyebrow": "Time zone",
     "tzTitle": "Local match times",
-    "tzDesc": "Match times in the app will show in this zone. If you leave it on automatic, we use the browser's, falling back to Europe/Madrid.",
+    "tzDesc": "All dates and times in the app (matches, prediction deadlines, etc.) will show in this zone. On automatic we detect your device's and it adapts on its own if you change country; pick any other option and it stays fixed to that one.",
     "tzLabel": "Preferred time zone",
     "tzPlaceholder": "Select a time zone",
     "tzAuto": "Automatic (detect from browser)",

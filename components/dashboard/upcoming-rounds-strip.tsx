@@ -56,9 +56,11 @@ export type Round = {
 export async function UpcomingRoundsStrip({
   userId,
   leagueId,
+  timeZone,
 }: {
   userId: string;
   leagueId: number;
+  timeZone: string;
 }) {
   const t = await getTranslations("dashboard");
   const all = await db
@@ -172,14 +174,14 @@ export async function UpcomingRoundsStrip({
       </header>
       <RoundsStripScroller activeIndex={activeInWindow}>
         {rounds.map((r) => (
-          <RoundCard key={r.id} round={r} />
+          <RoundCard key={r.id} round={r} timeZone={timeZone} />
         ))}
       </RoundsStripScroller>
     </section>
   );
 }
 
-function RoundCard({ round }: { round: Round }) {
+function RoundCard({ round, timeZone }: { round: Round; timeZone: string }) {
   const t = useTranslations("dashboard");
   const isOpen = round.state === "open";
   const isClosed = round.state === "closed";
@@ -229,6 +231,7 @@ function RoundCard({ round }: { round: Round }) {
         {isOpen
           ? t("urCloses", {
               date: formatDateTime(round.deadline, {
+                timeZone,
                 weekday: "short",
                 day: "2-digit",
                 month: "short",
@@ -239,6 +242,7 @@ function RoundCard({ round }: { round: Round }) {
           : isClosed
             ? t("urClosedAt", {
                 date: formatDateTime(round.deadline, {
+                  timeZone,
                   day: "2-digit",
                   month: "short",
                 }),

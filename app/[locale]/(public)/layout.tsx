@@ -7,6 +7,7 @@ import { AppHeader } from "@/components/shell/header";
 import { Sidebar } from "@/components/shell/sidebar";
 import { MobileBottomNav } from "@/components/shell/mobile-nav";
 import { DeadlineSlot } from "@/components/shell/deadline-slot";
+import { TimezoneSync } from "@/components/shell/timezone-sync";
 
 /**
  * Layout PÚBLICO. Igual que (app)/layout.tsx pero sin requireUser():
@@ -55,6 +56,11 @@ export default async function PublicLayout({
 
   return (
     <div className="flex min-h-dvh">
+      {/* Cliente: refresca la cookie de TZ (display local del visitante).
+          No vuelve dinámica la página — solo escribe la cookie que lee
+          <LocalDateTime/> en cliente. Respeta la TZ fijada a mano si hay
+          sesión. */}
+      <TimezoneSync pinnedTz={me?.timezone ?? null} />
       <Sidebar
         isAdmin={isAdmin}
         myId={me?.id ?? ""}

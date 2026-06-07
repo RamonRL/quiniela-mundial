@@ -573,7 +573,7 @@
     "langDesc": "Change la langue de l'interface. Les actualités restent en espagnol.",
     "tzEyebrow": "Fuseau horaire",
     "tzTitle": "Heure locale des matchs",
-    "tzDesc": "Les horaires des matchs dans l'appli s'afficheront dans ce fuseau. Si tu le laisses en automatique, on utilise celui du navigateur, avec repli sur Europe/Madrid.",
+    "tzDesc": "Toutes les dates et heures de l'appli (matchs, clôtures de pronostics, etc.) s'afficheront dans ce fuseau. En automatique on détecte celui de ton appareil et il s'adapte tout seul si tu changes de pays ; avec une autre option, il reste fixé sur celle-ci.",
     "tzLabel": "Fuseau horaire préféré",
     "tzPlaceholder": "Choisis un fuseau horaire",
     "tzAuto": "Automatique (détecter depuis le navigateur)",

@@ -11,6 +11,7 @@ import { groups, matchdays, matches, teams } from "@/lib/db/schema";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/shell/empty-state";
 import { formatDateTime } from "@/lib/utils";
+import { LocalDateTime } from "@/components/local-date-time";
 import { CalendarFilters, type ActiveFilter } from "./calendar-filters";
 import { BreadcrumbLD, SportsEventLD } from "@/components/seo/jsonld";
 import { BrandCTA } from "@/components/seo/brand-cta";
@@ -312,13 +313,22 @@ function MatchCard({
       <footer className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-dashed border-[var(--color-border)] bg-[var(--color-surface-2)]/40 px-4 py-2 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
         <span className="inline-flex items-center gap-1.5">
           <Clock className="size-3 shrink-0" />
-          {formatDateTime(m.scheduledAt, {
-            weekday: "short",
-            day: "2-digit",
-            month: "short",
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
+          {(() => {
+            const opts: Intl.DateTimeFormatOptions = {
+              weekday: "short",
+              day: "2-digit",
+              month: "short",
+              hour: "2-digit",
+              minute: "2-digit",
+            };
+            return (
+              <LocalDateTime
+                iso={m.scheduledAt.toISOString()}
+                ssr={formatDateTime(m.scheduledAt, opts)}
+                options={opts}
+              />
+            );
+          })()}
         </span>
         {m.venue ? (
           <span className="inline-flex min-w-0 items-center gap-1.5">
@@ -439,7 +449,11 @@ function ScoreCenter({
           {tt("vs")}
         </span>
         <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-          {formatDateTime(scheduledAt, { hour: "2-digit", minute: "2-digit" })}
+          <LocalDateTime
+            iso={scheduledAt.toISOString()}
+            ssr={formatDateTime(scheduledAt, { hour: "2-digit", minute: "2-digit" })}
+            options={{ hour: "2-digit", minute: "2-digit" }}
+          />
         </span>
       </div>
     );

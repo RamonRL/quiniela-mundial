@@ -23,6 +23,7 @@ import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
 import { getTranslations } from "next-intl/server";
 import { matchScoringSections } from "@/lib/scoring/copy";
+import { getEffectiveTimeZone } from "@/lib/timezone-server";
 import { formatDateTime } from "@/lib/utils";
 import { getMatchdayState, isMatchClosed, type Stage } from "@/lib/matchday-state";
 import { EmptyState } from "@/components/shell/empty-state";
@@ -39,7 +40,7 @@ export default async function PredictMatchdayPage({
   const t = await getTranslations("scoring");
   const tm = await getTranslations("predMatchday");
   const leagueId = (await currentLeagueId(me))!;
-  const userTz = me.timezone ?? undefined;
+  const userTz = await getEffectiveTimeZone();
   const mode = (await getLeagueModes([leagueId])).get(leagueId) ?? "completo";
   const { matchdayId: idParam } = await params;
   const matchdayId = Number(idParam);

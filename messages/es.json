@@ -573,7 +573,7 @@
     "langDesc": "Cambia el idioma de la interfaz. Las noticias se mantienen en español.",
     "tzEyebrow": "Zona horaria",
     "tzTitle": "Hora local de partidos",
-    "tzDesc": "Los horarios de partidos en la app se mostrarán en esta zona. Si la dejas en automático, usamos la del navegador con fallback a Europe/Madrid.",
+    "tzDesc": "Todas las fechas y horas de la app (partidos, cierres de predicción, etc.) se mostrarán en esta zona. En automático detectamos la de tu dispositivo y se adapta sola si cambias de país; con cualquier otra opción, queda fijada esa.",
     "tzLabel": "Zona horaria preferida",
     "tzPlaceholder": "Selecciona una zona horaria",
     "tzAuto": "Automática (detectar del navegador)",

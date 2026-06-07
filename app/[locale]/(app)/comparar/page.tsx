@@ -22,6 +22,7 @@ import { PageHeader } from "@/components/shell/page-header";
 import { Lock, Trophy } from "lucide-react";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, inLeagueFilter } from "@/lib/leagues";
+import { getEffectiveTimeZone } from "@/lib/timezone-server";
 import { formatDateTime } from "@/lib/utils";
 import { formatRemaining } from "@/lib/deadlines";
 import { getBracketStatus } from "@/lib/bracket-state";
@@ -40,6 +41,7 @@ export default async function CompararPage({
 }) {
   const me = await requireUser();
   const locale = await getLocale();
+  const timeZone = await getEffectiveTimeZone();
   const t = await getTranslations("compare");
   const leagueId = (await currentLeagueId(me))!;
   // Comparar solo aplica a quinielas privadas. Si el usuario está en la
@@ -209,6 +211,7 @@ export default async function CompararPage({
       ) : !tournamentPredsPublic ? (
         <PreKickoffTeaser
           opponentName={opponent.nickname || opponent.email.split("@")[0]}
+          timeZone={timeZone}
         />
       ) : (
         <>
@@ -388,7 +391,7 @@ function Pair({ label, value }: { label: string; value: string }) {
   );
 }
 
-function PreKickoffTeaser({ opponentName }: { opponentName: string }) {
+function PreKickoffTeaser({ opponentName, timeZone }: { opponentName: string; timeZone: string }) {
   const t = useTranslations("compare");
   const ms = Math.max(0, KICKOFF.getTime() - Date.now());
   return (
@@ -407,7 +410,7 @@ function PreKickoffTeaser({ opponentName }: { opponentName: string }) {
             })}
           </h3>
           <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-            {t("teaserDesc", { date: formatDateTime(KICKOFF) })}
+            {t("teaserDesc", { date: formatDateTime(KICKOFF, { timeZone }) })}
           </p>
         </div>
         <div className="flex flex-col items-start gap-1 lg:items-end lg:text-right">

@@ -573,7 +573,7 @@
     "langDesc": "Mude o idioma da interface. As notícias permanecem em espanhol.",
     "tzEyebrow": "Fuso horário",
     "tzTitle": "Horário local dos jogos",
-    "tzDesc": "Os horários dos jogos no app serão mostrados neste fuso. Se deixar no automático, usamos o do navegador, com fallback para Europe/Madrid.",
+    "tzDesc": "Todas as datas e horas do app (jogos, prazos de palpites, etc.) serão mostradas neste fuso. No automático detectamos o do seu dispositivo e ele se adapta sozinho se você mudar de país; com qualquer outra opção, fica fixado nessa.",
     "tzLabel": "Fuso horário preferido",
     "tzPlaceholder": "Selecione um fuso horário",
     "tzAuto": "Automático (detectar do navegador)",

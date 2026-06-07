@@ -28,6 +28,7 @@ import { requireUser } from "@/lib/auth/guards";
 import { TutorialAutoStart } from "@/components/tutorial/auto-start";
 import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
 import { localizeTeams } from "@/lib/team-names";
+import { getEffectiveTimeZone } from "@/lib/timezone-server";
 import { formatDateTime } from "@/lib/utils";
 import { ActivityFeedCard } from "./activity-feed-card";
 import { DashboardNewsStrip } from "./news-strip";
@@ -140,7 +141,7 @@ export default async function DashboardPage({
   const mode = (await getLeagueModes([leagueId])).get(leagueId) ?? "completo";
   const onlyMatches = mode !== "completo";
   // TZ del usuario para horarios de partidos; null → fallback Spain TZ.
-  const userTz = me.timezone ?? undefined;
+  const userTz = await getEffectiveTimeZone();
   const kickoff = new Date(KICKOFF);
   const tournamentStarted = kickoff.getTime() <= Date.now();
   const days = Math.max(0, Math.ceil((kickoff.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
@@ -712,7 +713,7 @@ export default async function DashboardPage({
           {/* En Marcador / Solo Ganador el grid del puesto de mando ya
               lista las jornadas; el strip de "próximas rondas" duplicaría. */}
           {onlyMatches ? null : (
-            <UpcomingRoundsStrip userId={me.id} leagueId={leagueId} />
+            <UpcomingRoundsStrip userId={me.id} leagueId={leagueId} timeZone={userTz} />
           )}
         </div>
       </section>

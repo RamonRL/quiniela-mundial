@@ -15,6 +15,9 @@ import { Sidebar } from "@/components/shell/sidebar";
 import { MobileBottomNav } from "@/components/shell/mobile-nav";
 import { DeadlineSlot } from "@/components/shell/deadline-slot";
 import { TutorialProvider } from "@/components/tutorial/tutorial-provider";
+import { TimeZoneProvider } from "@/components/shell/timezone-provider";
+import { TimezoneSync } from "@/components/shell/timezone-sync";
+import { getEffectiveTimeZone } from "@/lib/timezone-server";
 
 // El layout corre en CADA navegación, así que aquí es donde más duele un
 // hang. Sólo bloqueamos lo imprescindible para pintar el shell (auth,
@@ -89,8 +92,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // los replays desde "Mis predicciones".
   const activeMode =
     (await getLeagueModes([activeLeagueId])).get(activeLeagueId) ?? "completo";
+  // TZ efectiva del usuario para esta sesión (manual ?? detectada ?? España).
+  // Alimenta el provider (client components) y todos los formatDateTime del
+  // árbol autenticado. `<TimezoneSync/>` mantiene la cookie al día.
+  const timeZone = await getEffectiveTimeZone();
   return (
     <TutorialProvider mode={activeMode}>
+      <TimeZoneProvider tz={timeZone}>
+      <TimezoneSync pinnedTz={me.timezone ?? null} />
       <div className="flex min-h-dvh">
         <Sidebar
           isAdmin={isAdmin}
@@ -132,6 +141,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           />
         </div>
       </div>
+      </TimeZoneProvider>
     </TutorialProvider>
   );
 }

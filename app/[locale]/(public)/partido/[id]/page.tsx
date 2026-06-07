@@ -26,6 +26,7 @@ import { RealtimeRefresher } from "@/components/realtime/realtime-refresher";
 import { getCurrentUser } from "@/lib/auth/guards";
 import { currentLeagueId } from "@/lib/leagues";
 import { formatDateTime, initials } from "@/lib/utils";
+import { LocalDateTime } from "@/components/local-date-time";
 import { formatRemaining } from "@/lib/deadlines";
 import { Edit3, MapPin, Newspaper, Settings2, Target } from "lucide-react";
 import { BreadcrumbLD, MatchLD } from "@/components/seo/jsonld";
@@ -427,7 +428,12 @@ export default async function MatchDetailPage({
           </div>
 
           <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--color-border)] pt-4 font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-            <span>{formatDateTime(match.scheduledAt)}</span>
+            <span>
+              <LocalDateTime
+                iso={match.scheduledAt.toISOString()}
+                ssr={formatDateTime(match.scheduledAt)}
+              />
+            </span>
             <VenueLink venue={match.venue} />
           </footer>
         </div>

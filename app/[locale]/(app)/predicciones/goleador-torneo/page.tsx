@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/shell/page-header";
 import { ScoringBox } from "@/components/brand/scoring-box";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
+import { getEffectiveTimeZone } from "@/lib/timezone-server";
 import { formatDateTime } from "@/lib/utils";
 import { getLocale, getTranslations } from "next-intl/server";
 import { localizeTeams } from "@/lib/team-names";
@@ -23,6 +24,7 @@ const KICKOFF = new Date(
 export default async function PredictTopScorerPage() {
   const me = await requireUser();
   const locale = await getLocale();
+  const timeZone = await getEffectiveTimeZone();
   const t = await getTranslations("scoring");
   const ts = await getTranslations("predTopScorer");
   const leagueId = (await currentLeagueId(me))!;
@@ -87,7 +89,7 @@ export default async function PredictTopScorerPage() {
         title={ts("title")}
         description={
           open
-            ? ts("descOpen", { date: formatDateTime(KICKOFF) })
+            ? ts("descOpen", { date: formatDateTime(KICKOFF, { timeZone }) })
             : ts("descClosed")
         }
       />
