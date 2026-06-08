@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shell/empty-state";
 import { formatDateTime } from "@/lib/utils";
+import { intlLocale } from "@/lib/timezone";
 import { POSITIONS, POSITION_LABEL, type Position, normalizePosition } from "@/lib/position";
 import { BreadcrumbLD, SportsTeamLD } from "@/components/seo/jsonld";
 import { TEAM_ANALYSES } from "@/lib/seo/team-analysis";
@@ -225,6 +226,7 @@ export default async function TeamDetailPage({
 
   const cardLabels = {
     stageLocale: locale,
+    dateLocale: intlLocale(locale),
     vs: t("vs"),
     tbd: t("tbd"),
     live: t("statusLive"),
@@ -765,6 +767,7 @@ type TeamRow = typeof teams.$inferSelect;
 
 type CardLabels = {
   stageLocale: string;
+  dateLocale: string;
   vs: string;
   tbd: string;
   live: string;
@@ -842,6 +845,7 @@ function NextMatchCard({
             month: "short",
             hour: "2-digit",
             minute: "2-digit",
+            locale: labels.dateLocale,
           })}
         </span>
         {m.venue ? (
@@ -925,6 +929,7 @@ function ResultCard({
             day: "2-digit",
             month: "short",
             year: "numeric",
+            locale: labels.dateLocale,
           })}
         </span>
       </footer>
@@ -974,6 +979,7 @@ function UpcomingRow({ m, opp, labels }: { m: MatchRow; opp: TeamRow | null; lab
             month: "short",
             hour: "2-digit",
             minute: "2-digit",
+            locale: labels.dateLocale,
           })}
         </span>
         {m.venue ? (
@@ -1060,7 +1066,7 @@ function ScoreCenter({
           {labels.vs}
         </span>
         <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-          {formatDateTime(scheduledAt, { hour: "2-digit", minute: "2-digit" })}
+          {formatDateTime(scheduledAt, { hour: "2-digit", minute: "2-digit", locale: labels.dateLocale })}
         </span>
       </div>
     );

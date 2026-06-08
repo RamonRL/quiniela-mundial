@@ -39,12 +39,21 @@ const DEFAULT_TIME_OPTS: Intl.DateTimeFormatOptions = {
   minute: "2-digit",
 };
 
+const DEFAULT_LOCALE = "es-ES";
+
 /**
- * Para que `options.timeZone === undefined` no sobrescriba el default a
- * undefined (lo que dejaría a `toLocaleString` cayendo al TZ del runtime
- * — UTC en Vercel — y descuadraría los partidos), extraemos el campo
- * aparte y aplicamos el fallback explícito.
+ * Opciones de Intl + dos campos con manejo especial:
+ *   - `timeZone`: si es undefined NO debe sobreescribir el default
+ *     (dejaría a toLocaleString cayendo al TZ del runtime — UTC en Vercel
+ *     —, descuadrando los partidos). Lo extraemos y aplicamos fallback a
+ *     España.
+ *   - `locale`: BCP-47 para los NOMBRES (día de la semana, mes). Por
+ *     defecto es-ES; pásalo (en-GB/fr-FR/pt-PT) para que "Thursday",
+ *     "jeudi"… salgan en el idioma del usuario. Mapea el locale de
+ *     next-intl con `intlLocale()` de `@/lib/timezone`.
  */
+type FormatOptions = Intl.DateTimeFormatOptions & { locale?: string };
+
 function resolveTz(options: Intl.DateTimeFormatOptions): Intl.DateTimeFormatOptions {
   const { timeZone, ...rest } = options;
   return { timeZone: timeZone ?? SPAIN_TZ, ...rest };
@@ -52,11 +61,12 @@ function resolveTz(options: Intl.DateTimeFormatOptions): Intl.DateTimeFormatOpti
 
 export function formatDateTime(
   value: Date | string | number,
-  options: Intl.DateTimeFormatOptions = {},
+  options: FormatOptions = {},
 ) {
   const date = value instanceof Date ? value : new Date(value);
-  const { timeZone, ...rest } = resolveTz(options);
-  return date.toLocaleString("es-ES", {
+  const { locale, ...intl } = options;
+  const { timeZone, ...rest } = resolveTz(intl);
+  return date.toLocaleString(locale ?? DEFAULT_LOCALE, {
     timeZone,
     ...DEFAULT_DATETIME_OPTS,
     ...rest,
@@ -65,19 +75,21 @@ export function formatDateTime(
 
 export function formatDate(
   value: Date | string | number,
-  options: Intl.DateTimeFormatOptions = {},
+  options: FormatOptions = {},
 ) {
   const date = value instanceof Date ? value : new Date(value);
-  return date.toLocaleDateString("es-ES", resolveTz(options));
+  const { locale, ...intl } = options;
+  return date.toLocaleDateString(locale ?? DEFAULT_LOCALE, resolveTz(intl));
 }
 
 export function formatTime(
   value: Date | string | number,
-  options: Intl.DateTimeFormatOptions = {},
+  options: FormatOptions = {},
 ) {
   const date = value instanceof Date ? value : new Date(value);
-  const { timeZone, ...rest } = resolveTz(options);
-  return date.toLocaleTimeString("es-ES", {
+  const { locale, ...intl } = options;
+  const { timeZone, ...rest } = resolveTz(intl);
+  return date.toLocaleTimeString(locale ?? DEFAULT_LOCALE, {
     timeZone,
     ...DEFAULT_TIME_OPTS,
     ...rest,

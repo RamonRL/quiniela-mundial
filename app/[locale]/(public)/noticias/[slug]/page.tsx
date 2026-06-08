@@ -15,7 +15,9 @@ import { NewsBody } from "@/components/news/news-body";
 import { TeamFlag } from "@/components/brand/team-flag";
 import { getNewsBySlug, getRelatedNews } from "@/lib/news/queries";
 import { NEWS_CATEGORIES } from "@/lib/news/categories";
+import { getLocale } from "next-intl/server";
 import { formatDateTime } from "@/lib/utils";
+import { intlLocale } from "@/lib/timezone";
 
 // Detalle de un artículo — ISR con revalidación cada 10 min. NO usamos
 // `dynamic = "force-static"` a propósito: forzar static cachearía el
@@ -118,12 +120,14 @@ export default async function NewsDetailPage({
     4,
   );
 
+  const dateLocale = intlLocale(await getLocale());
   const dateLabel = formatDateTime(article.publishedAt, {
     day: "2-digit",
     month: "long",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    locale: dateLocale,
   });
   const readMinutes = Math.max(1, Math.round(article.body.split(/\s+/).length / 230));
   // El authorName se mantiene para JSON-LD (Google exige `author` en

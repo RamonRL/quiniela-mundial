@@ -14,6 +14,7 @@ import { Swords, Trophy } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth/guards";
 import { currentLeagueId } from "@/lib/leagues";
 import { formatDateTime } from "@/lib/utils";
+import { intlLocale } from "@/lib/timezone";
 import { getBracketStatus } from "@/lib/bracket-state";
 import { BracketTree, type BracketMatch } from "@/components/bracket/bracket-tree";
 import { KO_FEEDS, R32_SLOTS, formatSlotSource } from "@/lib/bracket-format";
@@ -47,6 +48,7 @@ type KoStage = (typeof KO_STAGES)[number];
 
 export default async function BracketPage() {
   const locale = await getLocale();
+  const dateLocale = intlLocale(locale);
   const t = await getTranslations("bracketPage");
   const tt = await getTranslations("tournament");
   const me = await getCurrentUser();
@@ -212,6 +214,7 @@ export default async function BracketPage() {
                             month: "short",
                             hour: "2-digit",
                             minute: "2-digit",
+                            locale: dateLocale,
                           })}
                         </span>
                         <Badge

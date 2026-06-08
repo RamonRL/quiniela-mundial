@@ -24,7 +24,14 @@ export function LeagueSwitcher({
   activeLeagueId: number | null;
 }) {
   const t = useTranslations("shellExtra");
+  const tModes = useTranslations("modes");
   const active = memberships.find((m) => m.id === activeLeagueId) ?? null;
+
+  // Las quinielas públicas tienen el nombre en español en BD ("Quiniela
+  // pública (Completo)"). Lo componemos localizado: "<público> · <modo>".
+  // Las privadas conservan su nombre tal cual lo puso el creador.
+  const nameOf = (m: Membership) =>
+    m.isPublic ? `${t("publicPool")} · ${tModes(m.predictionMode)}` : m.name;
 
   return (
     // modal={false}: sin scroll-lock ni pointer-events:none en el body al
@@ -51,7 +58,7 @@ export function LeagueSwitcher({
             </Avatar>
           ) : null}
           <span className="min-w-0 truncate font-display text-xl uppercase tracking-[0.06em] text-[var(--color-foreground)] sm:text-2xl">
-            {active?.name ?? t("selectPool")}
+            {active ? nameOf(active) : t("selectPool")}
           </span>
           <ChevronsUpDown
             className="size-3.5 shrink-0 text-[var(--color-muted-foreground)] opacity-40 transition-opacity group-hover:opacity-80"
@@ -83,7 +90,7 @@ export function LeagueSwitcher({
                     </Avatar>
                   ) : null}
                   <span className="min-w-0 flex-1 truncate text-left">
-                    <span className="font-medium">{m.name}</span>
+                    <span className="font-medium">{nameOf(m)}</span>
                     {!m.isPublic && m.joinCode ? (
                       <span className="ml-1.5 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
                         · {m.joinCode}

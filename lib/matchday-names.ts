@@ -49,12 +49,11 @@ export function localizedStageLabel(
   fallback: string,
   locale: string,
 ): string {
-  if (locale === "es" || (locale !== "en" && locale !== "fr" && locale !== "pt")) {
-    return fallback;
-  }
-  if (stage === "group") return GROUP_LABEL[locale];
+  const lang = langOf(locale);
+  if (lang === "es") return fallback;
+  if (stage === "group") return GROUP_LABEL[lang];
   const entry = STAGE_NAMES[stage as Exclude<MatchdayStage, "group">];
-  return entry?.[locale] ?? fallback;
+  return entry?.[lang] ?? fallback;
 }
 
 /**
@@ -66,8 +65,8 @@ export function localizedMatchdayName(
   stage: string | null | undefined,
   locale: string,
 ): string {
-  if (locale === "es") return name;
-  if (locale !== "en" && locale !== "fr" && locale !== "pt") return name;
+  const lang = langOf(locale);
+  if (lang === "es") return name;
 
   let st = stage as MatchdayStage | null | undefined;
   if (!st) {
@@ -84,7 +83,17 @@ export function localizedMatchdayName(
 
   if (st === "group") {
     const n = name.match(/(\d+)\s*$/)?.[1];
-    return n ? GROUP_STAGE[locale](n) : GROUP_STAGE[locale]("1");
+    return n ? GROUP_STAGE[lang](n) : GROUP_STAGE[lang]("1");
   }
-  return STAGE_NAMES[st]?.[locale] ?? name;
+  return STAGE_NAMES[st]?.[lang] ?? name;
+}
+
+/**
+ * Normaliza el locale a su idioma base soportado. Acepta tanto el locale
+ * de next-intl ("es") como BCP-47 ("es-ES") — coge los 2 primeros chars.
+ * Cualquier idioma no soportado cae a "es".
+ */
+function langOf(locale: string): "es" | "en" | "fr" | "pt" {
+  const base = locale.slice(0, 2).toLowerCase();
+  return base === "en" || base === "fr" || base === "pt" ? base : "es";
 }

@@ -1499,7 +1499,8 @@
     "changeActive": "Switch active pool",
     "selectPool": "Select pool",
     "myPools": "My pools",
-    "joinOrCreate": "Join or create a pool"
+    "joinOrCreate": "Join or create a pool",
+    "publicPool": "Public pool"
   },
   "onboarding": {
     "creatingLeague": "Creating your pool",

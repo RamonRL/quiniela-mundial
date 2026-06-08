@@ -1499,7 +1499,8 @@
     "changeActive": "Trocar bolão ativo",
     "selectPool": "Selecione um bolão",
     "myPools": "Meus bolões",
-    "joinOrCreate": "Entrar ou criar bolão"
+    "joinOrCreate": "Entrar ou criar bolão",
+    "publicPool": "Bolão público"
   },
   "onboarding": {
     "creatingLeague": "Criando o seu bolão",

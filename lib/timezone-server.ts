@@ -1,7 +1,8 @@
 import { cache } from "react";
 import { cookies } from "next/headers";
+import { getLocale } from "next-intl/server";
 import { getCurrentUser } from "@/lib/auth/guards";
-import { SPAIN_TZ, TZ_COOKIE, isValidTimeZone } from "@/lib/timezone";
+import { SPAIN_TZ, TZ_COOKIE, intlLocale, isValidTimeZone } from "@/lib/timezone";
 
 /**
  * TZ efectiva del usuario para esta petición (server-only — usa
@@ -22,3 +23,15 @@ export const getEffectiveTimeZone = cache(async (): Promise<string> => {
   if (isValidTimeZone(cookieTz)) return cookieTz;
   return SPAIN_TZ;
 });
+
+/**
+ * Contexto de formato de fechas para esta petición: TZ efectiva del usuario
+ * + locale BCP-47 (del idioma activo). Pasa ambos a formatDateTime para que
+ * la hora salga en la zona del usuario Y los nombres de día/mes en su idioma.
+ */
+export const getDateContext = cache(
+  async (): Promise<{ timeZone: string; locale: string }> => ({
+    timeZone: await getEffectiveTimeZone(),
+    locale: intlLocale(await getLocale()),
+  }),
+);

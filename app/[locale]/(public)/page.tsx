@@ -19,7 +19,7 @@ import {
   Users,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { db } from "@/lib/db";
 import { matches, teams } from "@/lib/db/schema";
 import { Reveal } from "@/components/animation/reveal";
@@ -30,6 +30,7 @@ import { localizeTeams } from "@/lib/team-names";
 import { type StaticImageData } from "next/image";
 import { TeamFlag } from "@/components/brand/team-flag";
 import { formatDateTime } from "@/lib/utils";
+import { intlLocale } from "@/lib/timezone";
 import { FAQPageLD, SportsEventLD, WebSiteLD } from "@/components/seo/jsonld";
 import { AnswerText } from "@/components/faq/answer-text";
 import { NewsCard } from "@/components/news/news-card";
@@ -66,6 +67,7 @@ export default async function HomePage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const dateLocale = intlLocale(await getLocale());
   const t = await getTranslations("home");
   const tNav = await getTranslations("nav");
   const tShell = await getTranslations("shell");
@@ -615,6 +617,7 @@ export default async function HomePage({
                           {formatDateTime(m.scheduledAt, {
                             day: "2-digit",
                             month: "short",
+                            locale: dateLocale,
                           })}
                         </span>
                       </div>

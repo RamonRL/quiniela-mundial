@@ -8,7 +8,7 @@ import {
   InteractiveTourShell,
   flashSavedToast,
 } from "@/components/predictions/interactive-tour-shell";
-import { useTimeZone } from "@/components/shell/timezone-provider";
+import { useDateFormat } from "@/components/shell/timezone-provider";
 import { formatDateTime } from "@/lib/utils";
 import { SpecialField } from "../specials-form";
 import {
@@ -36,7 +36,7 @@ export function SpecialsTourClient({
   allCompleteOnEntry: boolean;
 }) {
   const t = useTranslations("predSpecials");
-  const timeZone = useTimeZone();
+  const { timeZone, locale } = useDateFormat();
   const router = useRouter();
   const [step, setStep] = useState(initialStep);
   const [direction, setDirection] = useState<"left" | "right">("right");
@@ -124,7 +124,7 @@ export function SpecialsTourClient({
         <header className="text-center">
           <p className="font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-arena)]">
             {t("closeTour", {
-              date: formatDateTime(current.closesAt, { timeZone, day: "2-digit", month: "short" }),
+              date: formatDateTime(current.closesAt, { timeZone, locale, day: "2-digit", month: "short" }),
             })}
           </p>
           <h1 className="mt-2 font-display text-2xl leading-snug tracking-tight sm:text-3xl">

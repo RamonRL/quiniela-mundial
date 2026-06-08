@@ -1499,7 +1499,8 @@
     "changeActive": "Changer de grille active",
     "selectPool": "Choisis une grille",
     "myPools": "Mes grilles",
-    "joinOrCreate": "Rejoindre ou créer une grille"
+    "joinOrCreate": "Rejoindre ou créer une grille",
+    "publicPool": "Grille publique"
   },
   "onboarding": {
     "creatingLeague": "Création de ta grille",

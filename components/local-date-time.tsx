@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { TZ_COOKIE } from "@/lib/timezone";
+import { useLocale } from "next-intl";
+import { TZ_COOKIE, intlLocale } from "@/lib/timezone";
 
 /**
  * Hora localizada para el LADO PÚBLICO (mejora progresiva).
@@ -30,6 +31,7 @@ export function LocalDateTime({
   options?: Intl.DateTimeFormatOptions;
 }) {
   const [local, setLocal] = useState<string | null>(null);
+  const locale = intlLocale(useLocale());
 
   useEffect(() => {
     let tz: string | null = null;
@@ -44,7 +46,7 @@ export function LocalDateTime({
     }
     if (!tz) return;
     try {
-      const formatted = new Intl.DateTimeFormat("es-ES", {
+      const formatted = new Intl.DateTimeFormat(locale, {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
@@ -57,7 +59,7 @@ export function LocalDateTime({
     } catch {
       // TZ inválida o fecha mala: nos quedamos con el SSR.
     }
-  }, [iso, options]);
+  }, [iso, options, locale]);
 
   return <span suppressHydrationWarning>{local ?? ssr}</span>;
 }

@@ -22,6 +22,7 @@ import { PageHeader } from "@/components/shell/page-header";
 import { getCurrentUser } from "@/lib/auth/guards";
 import { currentLeagueId, inLeagueFilter } from "@/lib/leagues";
 import { formatDateTime, initials } from "@/lib/utils";
+import { intlLocale } from "@/lib/timezone";
 import { BreadcrumbLD } from "@/components/seo/jsonld";
 import { GROUP_ANALYSES } from "@/lib/seo/group-analysis";
 
@@ -63,6 +64,7 @@ export default async function GroupDetailPage({
   params: Promise<{ code: string }>;
 }) {
   const locale = await getLocale();
+  const dateLocale = intlLocale(locale);
   const t = await getTranslations("groupDetail");
   const me = await getCurrentUser();
   const leagueId = me ? await currentLeagueId(me) : null;
@@ -358,6 +360,7 @@ export default async function GroupDetailPage({
                   live: t("statusLive"),
                   scheduled: t("statusScheduled"),
                 }}
+                dateLocale={dateLocale}
               />
             );
           })}
@@ -765,11 +768,13 @@ function MatchCard({
   home,
   away,
   statusLabels,
+  dateLocale,
 }: {
   m: MatchRow;
   home: { name: string; code: string; flagUrl: string | null } | null | undefined;
   away: { name: string; code: string; flagUrl: string | null } | null | undefined;
   statusLabels: StatusLabels;
+  dateLocale: string;
 }) {
   const isFinished = m.status === "finished";
   const isLive = m.status === "live";
@@ -798,6 +803,7 @@ function MatchCard({
           away={m.awayScore}
           status={m.status}
           scheduledAt={m.scheduledAt}
+          dateLocale={dateLocale}
         />
         <TeamSide team={away} side="away" winner={winnerAway} />
       </div>
@@ -811,6 +817,7 @@ function MatchCard({
             month: "short",
             hour: "2-digit",
             minute: "2-digit",
+            locale: dateLocale,
           })}
         </span>
         {m.venue ? (
@@ -924,11 +931,13 @@ function ScoreCenter({
   away,
   status,
   scheduledAt,
+  dateLocale,
 }: {
   home: number | null;
   away: number | null;
   status: MatchRow["status"];
   scheduledAt: Date;
+  dateLocale: string;
 }) {
   if (status === "scheduled") {
     return (
@@ -937,7 +946,7 @@ function ScoreCenter({
           vs
         </span>
         <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-          {formatDateTime(scheduledAt, { hour: "2-digit", minute: "2-digit" })}
+          {formatDateTime(scheduledAt, { hour: "2-digit", minute: "2-digit", locale: dateLocale })}
         </span>
       </div>
     );

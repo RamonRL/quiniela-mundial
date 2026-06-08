@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RealtimeRefresher } from "@/components/realtime/realtime-refresher";
-import { useTimeZone } from "@/components/shell/timezone-provider";
+import { useDateFormat } from "@/components/shell/timezone-provider";
 import { formatTime, initials } from "@/lib/utils";
 import { deleteMessage, sendMessage, type FormState } from "./actions";
 
@@ -38,7 +38,7 @@ export function ChatThread({
   isAdmin: boolean;
 }) {
   const t = useTranslations("chat");
-  const timeZone = useTimeZone();
+  const { timeZone, locale } = useDateFormat();
   const [state, action, pending] = useActionState(sendMessage, initial);
   const formRef = useRef<HTMLFormElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -97,6 +97,7 @@ export function ChatThread({
                       <span className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-[var(--color-muted-foreground)]">
                         {formatTime(m.createdAt, {
                           timeZone,
+                          locale,
                           hour: "2-digit",
                           minute: "2-digit",
                         })}

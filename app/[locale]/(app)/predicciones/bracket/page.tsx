@@ -10,7 +10,7 @@ import { ScoringBox } from "@/components/brand/scoring-box";
 import { Button } from "@/components/ui/button";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
-import { getEffectiveTimeZone } from "@/lib/timezone-server";
+import { getDateContext } from "@/lib/timezone-server";
 import { formatDateTime } from "@/lib/utils";
 import { getBracketStatus, getQualifiedTeamIds } from "@/lib/bracket-state";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -28,7 +28,7 @@ export default async function PredictBracketPage({
 }) {
   const me = await requireUser();
   const locale = await getLocale();
-  const timeZone = await getEffectiveTimeZone();
+  const { timeZone, locale: dateLocale } = await getDateContext();
   const t = await getTranslations("scoring");
   const tb = await getTranslations("predBracket");
   // Solo "completo" tiene bracket. Marcador / Solo Ganador → fuera.
@@ -175,7 +175,7 @@ export default async function PredictBracketPage({
     ? tb("descPreview")
     : status.state === "open"
       ? tb("descOpen", {
-          date: status.closesAt ? formatDateTime(status.closesAt, { timeZone }) : tb("closesFirstR32"),
+          date: status.closesAt ? formatDateTime(status.closesAt, { timeZone, locale: dateLocale }) : tb("closesFirstR32"),
         })
       : tb("descClosed");
 

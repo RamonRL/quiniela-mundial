@@ -11,6 +11,7 @@ import { groups, matchdays, matches, teams } from "@/lib/db/schema";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/shell/empty-state";
 import { formatDateTime } from "@/lib/utils";
+import { intlLocale } from "@/lib/timezone";
 import { LocalDateTime } from "@/components/local-date-time";
 import { CalendarFilters, type ActiveFilter } from "./calendar-filters";
 import { BreadcrumbLD, SportsEventLD } from "@/components/seo/jsonld";
@@ -53,6 +54,7 @@ export default async function CalendarPage({
   searchParams: Promise<{ group?: string; team?: string; stage?: string }>;
 }) {
   const locale = await getLocale();
+  const dateLocale = intlLocale(locale);
   const t = await getTranslations("calendarPage");
   const tt = await getTranslations("tournament");
   const sp = await searchParams;
@@ -211,7 +213,7 @@ export default async function CalendarPage({
                     </div>
                   </div>
                   <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-                    {t("deadline", { date: formatDateTime(d.predictionDeadlineAt) })}
+                    {t("deadline", { date: formatDateTime(d.predictionDeadlineAt, { locale: dateLocale }) })}
                   </p>
                 </header>
 
@@ -235,6 +237,7 @@ export default async function CalendarPage({
                           home={home}
                           away={away}
                           groupCode={groupCode}
+                          dateLocale={dateLocale}
                         />
                       );
                     })
@@ -266,11 +269,13 @@ function MatchCard({
   home,
   away,
   groupCode,
+  dateLocale,
 }: {
   m: MatchRow;
   home: { name: string; code: string; flagUrl: string | null } | null | undefined;
   away: { name: string; code: string; flagUrl: string | null } | null | undefined;
   groupCode: string | null;
+  dateLocale: string;
 }) {
   const tt = useTranslations("tournament");
   const isFinished = m.status === "finished";
@@ -305,6 +310,7 @@ function MatchCard({
           away={m.awayScore}
           status={m.status}
           scheduledAt={m.scheduledAt}
+          dateLocale={dateLocale}
         />
         <TeamSide team={away} side="away" winner={winnerAway} />
       </div>
@@ -324,7 +330,7 @@ function MatchCard({
             return (
               <LocalDateTime
                 iso={m.scheduledAt.toISOString()}
-                ssr={formatDateTime(m.scheduledAt, opts)}
+                ssr={formatDateTime(m.scheduledAt, { ...opts, locale: dateLocale })}
                 options={opts}
               />
             );
@@ -435,11 +441,13 @@ function ScoreCenter({
   away,
   status,
   scheduledAt,
+  dateLocale,
 }: {
   home: number | null;
   away: number | null;
   status: MatchRow["status"];
   scheduledAt: Date;
+  dateLocale: string;
 }) {
   const tt = useTranslations("tournament");
   if (status === "scheduled") {
@@ -451,7 +459,7 @@ function ScoreCenter({
         <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
           <LocalDateTime
             iso={scheduledAt.toISOString()}
-            ssr={formatDateTime(scheduledAt, { hour: "2-digit", minute: "2-digit" })}
+            ssr={formatDateTime(scheduledAt, { hour: "2-digit", minute: "2-digit", locale: dateLocale })}
             options={{ hour: "2-digit", minute: "2-digit" }}
           />
         </span>

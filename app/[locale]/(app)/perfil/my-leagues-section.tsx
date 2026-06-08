@@ -35,7 +35,14 @@ export function MyLeaguesSection({
   pickCountByLeagueId: Record<number, number>;
 }) {
   const t = useTranslations("profile");
+  const tShell = useTranslations("shellExtra");
+  const tModes = useTranslations("modes");
   const [pending, start] = useTransition();
+
+  // Nombre localizado: las públicas se componen "<público> · <modo>" (su
+  // nombre en BD está en español); las privadas conservan el suyo.
+  const nameOf = (m: { isPublic: boolean; name: string; predictionMode: string }) =>
+    m.isPublic ? `${tShell("publicPool")} · ${tModes(m.predictionMode)}` : m.name;
 
   const setActive = (id: number) => {
     const fd = new FormData();
@@ -148,7 +155,7 @@ export function MyLeaguesSection({
                   />
                 )}
                 <div className="space-y-0.5">
-                  <p className="font-display text-base tracking-tight">{m.name}</p>
+                  <p className="font-display text-base tracking-tight">{nameOf(m)}</p>
                   <div className="flex flex-wrap items-center gap-2 text-[0.65rem] text-[var(--color-muted-foreground)]">
                     {m.isPublic ? (
                       <Badge variant="success" className="text-[0.55rem]">

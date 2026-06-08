@@ -30,7 +30,7 @@ import { canUseBranding, canUseDepartments } from "@/lib/league-tiers";
 import { loadDepartmentRankings } from "@/lib/leaderboard";
 import { buildDeptCards, type DeptCardData } from "./departamentos/dept-data";
 import { MemberDepartmentsPanel } from "./departamentos/member-departments-panel";
-import { getEffectiveTimeZone } from "@/lib/timezone-server";
+import { getDateContext } from "@/lib/timezone-server";
 import { formatDateTime, initials } from "@/lib/utils";
 import { CollapsibleSection } from "@/components/shell/collapsible-section";
 import { LeagueTabs } from "@/components/shell/league-tabs";
@@ -45,7 +45,7 @@ export const dynamic = "force-dynamic";
 
 export default async function MyLeaguePage() {
   const me = await requireUser();
-  const timeZone = await getEffectiveTimeZone();
+  const { timeZone, locale } = await getDateContext();
   const t = await getTranslations("myPool");
   const tBranding = await getTranslations("branding");
   const leagueId = await currentLeagueId(me);
@@ -200,6 +200,7 @@ export default async function MyLeaguePage() {
                   isPremium={isPremium}
                   showUpgrade={false}
                   timeZone={timeZone}
+                  locale={locale}
                 />
               ),
             },
@@ -249,6 +250,7 @@ export default async function MyLeaguePage() {
                   isPremium={isPremium}
                   showUpgrade={false}
                   timeZone={timeZone}
+                  locale={locale}
                 />
               ),
             },
@@ -276,6 +278,7 @@ export default async function MyLeaguePage() {
           isPremium={isPremium}
           showUpgrade={isOwner && !isPremium}
           timeZone={timeZone}
+          locale={locale}
         />
       )}
     </div>
@@ -296,6 +299,7 @@ function LeagueInfoContent({
   isPremium,
   showUpgrade,
   timeZone,
+  locale,
 }: {
   league: typeof leagues.$inferSelect;
   members: (typeof profiles.$inferSelect)[];
@@ -306,6 +310,7 @@ function LeagueInfoContent({
   isPremium: boolean;
   showUpgrade: boolean;
   timeZone: string;
+  locale: string;
 }) {
   const t = useTranslations("myPool");
   const tModes = useTranslations("modes");
@@ -406,7 +411,7 @@ function LeagueInfoContent({
                       </div>
                     </TableCell>
                     <TableCell className="hidden text-xs text-[var(--color-muted-foreground)] sm:table-cell">
-                      {formatDateTime(m.createdAt, { timeZone, day: "2-digit", month: "short" })}
+                      {formatDateTime(m.createdAt, { timeZone, locale, day: "2-digit", month: "short" })}
                     </TableCell>
                     <TableCell className="text-right font-display tabular text-base">
                       {points}

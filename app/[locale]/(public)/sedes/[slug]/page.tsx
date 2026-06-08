@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shell/empty-state";
 import { formatDateTime } from "@/lib/utils";
+import { intlLocale } from "@/lib/timezone";
 import { BreadcrumbLD } from "@/components/seo/jsonld";
 import { findVenueBySlug, VENUES } from "@/lib/seo/venues";
 
@@ -55,6 +56,7 @@ export default async function VenueDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const locale = await getLocale();
+  const dateLocale = intlLocale(locale);
   const t = await getTranslations("venueDetail");
   const { slug } = await params;
   const venue = findVenueBySlug(slug);
@@ -278,6 +280,7 @@ export default async function VenueDetailPage({
                         month: "short",
                         hour: "2-digit",
                         minute: "2-digit",
+                        locale: dateLocale,
                       })}
                     </span>
                   </div>

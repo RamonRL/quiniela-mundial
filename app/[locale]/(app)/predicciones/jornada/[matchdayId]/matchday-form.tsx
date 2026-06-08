@@ -22,7 +22,7 @@ import { SavePredictionButton } from "@/components/predictions/save-prediction-b
 import { SaveOverlay } from "@/components/predictions/save-overlay";
 import { WinnerPicker } from "@/components/predictions/winner-picker";
 import { usePredictionSaveToast } from "@/lib/predictions/use-save-toast";
-import { useTimeZone } from "@/components/shell/timezone-provider";
+import { useDateFormat } from "@/components/shell/timezone-provider";
 import { formatDateTime } from "@/lib/utils";
 import type { PredictionMode } from "@/lib/prediction-modes";
 import { saveMatchdayPredictions, type FormState } from "./actions";
@@ -111,7 +111,7 @@ export function MatchdayPredictionForm({
   mode?: PredictionMode;
 }) {
   const t = useTranslations("predMatchday");
-  const timeZone = useTimeZone();
+  const { timeZone, locale } = useDateFormat();
   const soloGanador = mode === "solo_ganador";
   const showScorer = mode === "completo";
   const [predictions, setPredictions] = useState<Prediction[]>(
@@ -195,6 +195,7 @@ export function MatchdayPredictionForm({
                   <span className="text-xs text-[var(--color-muted-foreground)]">
                     {formatDateTime(m.scheduledAt, {
                       timeZone,
+                      locale,
                       day: "2-digit",
                       month: "short",
                       hour: "2-digit",

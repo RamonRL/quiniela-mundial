@@ -23,7 +23,7 @@ import { compareForRanking } from "@/lib/scoring/tiebreaker";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, inLeagueFilter } from "@/lib/leagues";
 import { loadActivityFeed } from "@/lib/activity-feed";
-import { getEffectiveTimeZone } from "@/lib/timezone-server";
+import { getDateContext } from "@/lib/timezone-server";
 import { formatDate, formatDateTime, initials } from "@/lib/utils";
 
 const KNOCKOUT_SOURCES = [
@@ -133,7 +133,7 @@ export default async function ParticipantDetailPage({
   params: Promise<{ userId: string }>;
 }) {
   const me = await requireUser();
-  const timeZone = await getEffectiveTimeZone();
+  const { timeZone, locale } = await getDateContext();
   const t = await getTranslations("ranking");
   const { userId } = await params;
   const leagueId = await currentLeagueId(me);
@@ -306,7 +306,7 @@ export default async function ParticipantDetailPage({
                   </Badge>
                 ) : null}
                 <span className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-                  {t("joined", { date: formatDate(user.createdAt, { timeZone, day: "2-digit", month: "short", year: "numeric" }) })}
+                  {t("joined", { date: formatDate(user.createdAt, { timeZone, locale, day: "2-digit", month: "short", year: "numeric" }) })}
                 </span>
               </div>
             </div>
@@ -474,7 +474,7 @@ export default async function ParticipantDetailPage({
                     <p className="truncate text-sm font-medium">{a.label}</p>
                     <p className="truncate font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
                       {a.detail ??
-                        formatDateTime(a.computedAt, { timeZone, day: "2-digit", month: "short" })}
+                        formatDateTime(a.computedAt, { timeZone, locale, day: "2-digit", month: "short" })}
                     </p>
                   </div>
                   <span className="font-display tabular text-2xl text-[var(--color-arena)] glow-arena">

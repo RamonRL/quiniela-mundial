@@ -21,6 +21,24 @@
 export const SPAIN_TZ = "Europe/Madrid";
 export const TZ_COOKIE = "qm_tz";
 
+/**
+ * Locale de next-intl (es/en/fr/pt) → BCP-47 para Intl.DateTimeFormat, de
+ * modo que los nombres de día/mes salgan en el idioma del usuario. Puro y
+ * client-safe.
+ */
+export function intlLocale(locale: string): string {
+  switch (locale) {
+    case "en":
+      return "en-GB";
+    case "fr":
+      return "fr-FR";
+    case "pt":
+      return "pt-PT";
+    default:
+      return "es-ES";
+  }
+}
+
 /** ¿Es `tz` una IANA timezone que el runtime entiende? */
 export function isValidTimeZone(tz: string | null | undefined): tz is string {
   if (!tz) return false;

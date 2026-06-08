@@ -12,7 +12,7 @@ import {
   InteractiveTourShell,
   flashSavedToast,
 } from "@/components/predictions/interactive-tour-shell";
-import { useTimeZone } from "@/components/shell/timezone-provider";
+import { useDateFormat } from "@/components/shell/timezone-provider";
 import { cn, formatDateTime } from "@/lib/utils";
 import type { PredictionMode } from "@/lib/prediction-modes";
 import { ScorerPicker, type PlayerCardData } from "./scorer-picker";
@@ -75,7 +75,7 @@ export function MatchdayTourClient({
   mode: PredictionMode;
 }) {
   const t = useTranslations("predMatchday");
-  const timeZone = useTimeZone();
+  const { timeZone, locale } = useDateFormat();
   const soloGanador = mode === "solo_ganador";
   const showScorer = mode === "completo";
 
@@ -320,6 +320,7 @@ export function MatchdayTourClient({
                   <Calendar className="size-3" />
                   {formatDateTime(current.scheduledAt, {
                     timeZone,
+                    locale,
                     day: "2-digit",
                     month: "short",
                     hour: "2-digit",
@@ -375,6 +376,7 @@ export function MatchdayTourClient({
                   <Calendar className="size-3" />
                   {formatDateTime(current.scheduledAt, {
                     timeZone,
+                    locale,
                     day: "2-digit",
                     month: "short",
                     hour: "2-digit",

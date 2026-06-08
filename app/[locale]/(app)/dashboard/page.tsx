@@ -22,13 +22,14 @@ import {
   teams,
 } from "@/lib/db/schema";
 import { LeagueWelcomeDialog } from "@/components/leagues/league-welcome-dialog";
+import { localizedMatchdayName } from "@/lib/matchday-names";
 import { Badge } from "@/components/ui/badge";
 import { RealtimeRefresher } from "@/components/realtime/realtime-refresher";
 import { requireUser } from "@/lib/auth/guards";
 import { TutorialAutoStart } from "@/components/tutorial/auto-start";
 import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
 import { localizeTeams } from "@/lib/team-names";
-import { getEffectiveTimeZone } from "@/lib/timezone-server";
+import { getDateContext } from "@/lib/timezone-server";
 import { formatDateTime } from "@/lib/utils";
 import { ActivityFeedCard } from "./activity-feed-card";
 import { DashboardNewsStrip } from "./news-strip";
@@ -141,7 +142,7 @@ export default async function DashboardPage({
   const mode = (await getLeagueModes([leagueId])).get(leagueId) ?? "completo";
   const onlyMatches = mode !== "completo";
   // TZ del usuario para horarios de partidos; null → fallback Spain TZ.
-  const userTz = await getEffectiveTimeZone();
+  const { timeZone: userTz } = await getDateContext();
   const kickoff = new Date(KICKOFF);
   const tournamentStarted = kickoff.getTime() <= Date.now();
   const days = Math.max(0, Math.ceil((kickoff.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
@@ -600,6 +601,7 @@ export default async function DashboardPage({
             <p className="font-editorial text-base italic text-[var(--color-muted-foreground)] sm:text-lg">
               {formatDateTime(kickoff, {
                 timeZone: userTz,
+                locale,
                 weekday: "long",
                 day: "2-digit",
                 month: "long",
@@ -636,6 +638,7 @@ export default async function DashboardPage({
                     <span>
                       {formatDateTime(next.scheduledAt, {
                         timeZone: userTz,
+                        locale,
                         weekday: "short",
                         day: "2-digit",
                         month: "short",
@@ -670,12 +673,19 @@ export default async function DashboardPage({
                     {t("nextDeadline")}
                   </p>
                   <p className="font-display text-xl tracking-tight">
-                    {upcomingMatchdays[0]?.name ?? t("noActiveMatchday")}
+                    {upcomingMatchdays[0]
+                      ? localizedMatchdayName(
+                          upcomingMatchdays[0].name,
+                          upcomingMatchdays[0].stage,
+                          locale,
+                        )
+                      : t("noActiveMatchday")}
                   </p>
                   {upcomingMatchdays[0] ? (
                     <p className="text-xs text-[var(--color-muted-foreground)]">
                       {formatDateTime(upcomingMatchdays[0].predictionDeadlineAt, {
                         timeZone: userTz,
+                        locale,
                         day: "2-digit",
                         month: "short",
                         hour: "2-digit",
@@ -713,7 +723,7 @@ export default async function DashboardPage({
           {/* En Marcador / Solo Ganador el grid del puesto de mando ya
               lista las jornadas; el strip de "próximas rondas" duplicaría. */}
           {onlyMatches ? null : (
-            <UpcomingRoundsStrip userId={me.id} leagueId={leagueId} timeZone={userTz} />
+            <UpcomingRoundsStrip userId={me.id} leagueId={leagueId} timeZone={userTz} locale={locale} />
           )}
         </div>
       </section>
@@ -835,6 +845,7 @@ export default async function DashboardPage({
                         <span className="font-mono text-[0.55rem] uppercase tracking-[0.22em] text-[var(--color-muted-foreground)]">
                           {formatDateTime(m.scheduledAt, {
                             timeZone: userTz,
+                            locale,
                             day: "2-digit",
                             month: "short",
                           })}

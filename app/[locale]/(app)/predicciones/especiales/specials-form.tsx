@@ -17,7 +17,7 @@ import { TeamFlag } from "@/components/brand/team-flag";
 import { SavePredictionButton } from "@/components/predictions/save-prediction-button";
 import { SaveOverlay } from "@/components/predictions/save-overlay";
 import { usePredictionSaveToast } from "@/lib/predictions/use-save-toast";
-import { useTimeZone } from "@/components/shell/timezone-provider";
+import { useDateFormat } from "@/components/shell/timezone-provider";
 import { cn, formatDateTime } from "@/lib/utils";
 import { saveSpecialPredictions, type FormState } from "./actions";
 import { maxPointsForSpecial as maxPointsFor } from "./points";
@@ -65,7 +65,7 @@ const isAnswered = isSpecialAnsweredHelper;
 
 export function SpecialsForm({ specials, existing, players, teams }: Props) {
   const t = useTranslations("predSpecials");
-  const timeZone = useTimeZone();
+  const { timeZone, locale } = useDateFormat();
   const initialMap: Record<number, Record<string, unknown>> = Object.fromEntries(
     specials.map((s) => [s.id, {}]),
   );
@@ -149,7 +149,7 @@ export function SpecialsForm({ specials, existing, players, teams }: Props) {
                     </p>
                     <p className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
                       {t("closeShort", {
-                        date: formatDateTime(s.closesAt, { timeZone, day: "2-digit", month: "short" }),
+                        date: formatDateTime(s.closesAt, { timeZone, locale, day: "2-digit", month: "short" }),
                       })}
                     </p>
                   </div>

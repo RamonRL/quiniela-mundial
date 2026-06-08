@@ -6,6 +6,7 @@ import { Lock } from "lucide-react";
 import { db } from "@/lib/db";
 import { matchdays, matches, predMatchResult } from "@/lib/db/schema";
 import { computeMatchdayStates, type Stage } from "@/lib/matchday-state";
+import { localizedMatchdayName } from "@/lib/matchday-names";
 import { formatDateTime } from "@/lib/utils";
 import { RoundsStripScroller } from "./rounds-strip-scroller";
 
@@ -57,10 +58,12 @@ export async function UpcomingRoundsStrip({
   userId,
   leagueId,
   timeZone,
+  locale,
 }: {
   userId: string;
   leagueId: number;
   timeZone: string;
+  locale: string;
 }) {
   const t = await getTranslations("dashboard");
   const all = await db
@@ -174,14 +177,14 @@ export async function UpcomingRoundsStrip({
       </header>
       <RoundsStripScroller activeIndex={activeInWindow}>
         {rounds.map((r) => (
-          <RoundCard key={r.id} round={r} timeZone={timeZone} />
+          <RoundCard key={r.id} round={r} timeZone={timeZone} locale={locale} />
         ))}
       </RoundsStripScroller>
     </section>
   );
 }
 
-function RoundCard({ round, timeZone }: { round: Round; timeZone: string }) {
+function RoundCard({ round, timeZone, locale }: { round: Round; timeZone: string; locale: string }) {
   const t = useTranslations("dashboard");
   const isOpen = round.state === "open";
   const isClosed = round.state === "closed";
@@ -214,7 +217,7 @@ function RoundCard({ round, timeZone }: { round: Round; timeZone: string }) {
         )}
       </div>
       <h3 className="font-display text-lg leading-tight tracking-tight">
-        {round.name}
+        {localizedMatchdayName(round.name, round.stage, locale)}
       </h3>
       <p className="text-xs text-[var(--color-muted-foreground)]">
         {round.total > 0
@@ -232,6 +235,7 @@ function RoundCard({ round, timeZone }: { round: Round; timeZone: string }) {
           ? t("urCloses", {
               date: formatDateTime(round.deadline, {
                 timeZone,
+                locale,
                 weekday: "short",
                 day: "2-digit",
                 month: "short",
@@ -243,6 +247,7 @@ function RoundCard({ round, timeZone }: { round: Round; timeZone: string }) {
             ? t("urClosedAt", {
                 date: formatDateTime(round.deadline, {
                   timeZone,
+                  locale,
                   day: "2-digit",
                   month: "short",
                 }),

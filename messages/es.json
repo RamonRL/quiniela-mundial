@@ -1499,7 +1499,8 @@
     "changeActive": "Cambiar quiniela activa",
     "selectPool": "Selecciona quiniela",
     "myPools": "Mis quinielas",
-    "joinOrCreate": "Unirse o crear quiniela"
+    "joinOrCreate": "Unirse o crear quiniela",
+    "publicPool": "Quiniela pública"
   },
   "onboarding": {
     "creatingLeague": "Creando tu quiniela",

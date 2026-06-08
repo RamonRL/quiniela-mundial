@@ -23,7 +23,7 @@ import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
 import { getTranslations } from "next-intl/server";
 import { matchScoringSections } from "@/lib/scoring/copy";
-import { getEffectiveTimeZone } from "@/lib/timezone-server";
+import { getDateContext } from "@/lib/timezone-server";
 import { formatDateTime } from "@/lib/utils";
 import { getMatchdayState, isMatchClosed, type Stage } from "@/lib/matchday-state";
 import { EmptyState } from "@/components/shell/empty-state";
@@ -40,7 +40,7 @@ export default async function PredictMatchdayPage({
   const t = await getTranslations("scoring");
   const tm = await getTranslations("predMatchday");
   const leagueId = (await currentLeagueId(me))!;
-  const userTz = await getEffectiveTimeZone();
+  const { timeZone: userTz } = await getDateContext();
   const mode = (await getLeagueModes([leagueId])).get(leagueId) ?? "completo";
   const { matchdayId: idParam } = await params;
   const matchdayId = Number(idParam);
@@ -77,7 +77,7 @@ export default async function PredictMatchdayPage({
           title={tm("blockedTitle")}
           description={tm("blockedDesc", {
             reason: status.reason ?? "",
-            date: formatDateTime(day.predictionDeadlineAt, { timeZone: userTz }),
+            date: formatDateTime(day.predictionDeadlineAt, { timeZone: userTz, locale }),
           })}
         />
       </div>
@@ -194,7 +194,7 @@ export default async function PredictMatchdayPage({
         description={
           open
             ? `${tm("closesOn", {
-                date: formatDateTime(day.predictionDeadlineAt, { timeZone: userTz }),
+                date: formatDateTime(day.predictionDeadlineAt, { timeZone: userTz, locale }),
               })} ${
                 mode === "solo_ganador"
                   ? tm("descOpenSolo")
@@ -203,7 +203,7 @@ export default async function PredictMatchdayPage({
                     : tm("descOpenCompleto")
               }`
             : tm("closedPast", {
-                date: formatDateTime(day.predictionDeadlineAt, { timeZone: userTz }),
+                date: formatDateTime(day.predictionDeadlineAt, { timeZone: userTz, locale }),
               })
         }
       />

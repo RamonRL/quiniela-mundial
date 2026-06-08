@@ -8,7 +8,7 @@ import { ScoringBox } from "@/components/brand/scoring-box";
 import { Users } from "lucide-react";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
-import { getEffectiveTimeZone } from "@/lib/timezone-server";
+import { getDateContext } from "@/lib/timezone-server";
 import { formatDateTime } from "@/lib/utils";
 import { getLocale, getTranslations } from "next-intl/server";
 import { localizeTeams } from "@/lib/team-names";
@@ -25,7 +25,7 @@ const KICKOFF = new Date(
 export default async function PredictGroupsPage() {
   const me = await requireUser();
   const locale = await getLocale();
-  const timeZone = await getEffectiveTimeZone();
+  const { timeZone, locale: dateLocale } = await getDateContext();
   const t = await getTranslations("scoring");
   const tg = await getTranslations("predGroups");
   const leagueId = (await currentLeagueId(me))!;
@@ -117,7 +117,7 @@ export default async function PredictGroupsPage() {
         title={tg("title")}
         description={
           open
-            ? tg("descOpen", { date: formatDateTime(KICKOFF, { timeZone }) })
+            ? tg("descOpen", { date: formatDateTime(KICKOFF, { timeZone, locale: dateLocale }) })
             : tg("descClosed")
         }
       />

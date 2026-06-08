@@ -26,6 +26,7 @@ import { RealtimeRefresher } from "@/components/realtime/realtime-refresher";
 import { getCurrentUser } from "@/lib/auth/guards";
 import { currentLeagueId } from "@/lib/leagues";
 import { formatDateTime, initials } from "@/lib/utils";
+import { intlLocale } from "@/lib/timezone";
 import { LocalDateTime } from "@/components/local-date-time";
 import { formatRemaining } from "@/lib/deadlines";
 import { Edit3, MapPin, Newspaper, Settings2, Target } from "lucide-react";
@@ -49,6 +50,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const dateLocale = intlLocale(await getLocale());
   const { id } = await params;
   const matchId = Number(id);
   if (!Number.isFinite(matchId)) notFound();
@@ -75,6 +77,7 @@ export async function generateMetadata({
     day: "2-digit",
     month: "long",
     year: "numeric",
+    locale: dateLocale,
   });
   return {
     title: matchup,
@@ -235,6 +238,7 @@ export default async function MatchDetailPage({
   // scorer player rows so the rest of the page works unchanged.
   void playerRows;
   const locale = await getLocale();
+  const dateLocale = intlLocale(locale);
   const teamById = new Map(localizeTeams(allTeams, locale).map((t) => [t.id, t]));
 
   const home = match.homeTeamId ? teamById.get(match.homeTeamId) : null;
@@ -431,7 +435,7 @@ export default async function MatchDetailPage({
             <span>
               <LocalDateTime
                 iso={match.scheduledAt.toISOString()}
-                ssr={formatDateTime(match.scheduledAt)}
+                ssr={formatDateTime(match.scheduledAt, { locale: dateLocale })}
               />
             </span>
             <VenueLink venue={match.venue} />
