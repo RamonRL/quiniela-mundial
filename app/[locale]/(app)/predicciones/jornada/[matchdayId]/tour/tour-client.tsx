@@ -353,7 +353,7 @@ export function MatchdayTourClient({
               <p className="font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-arena)]">
                 {stageEyebrow}
               </p>
-              <div className="mt-3 flex items-center justify-center gap-3 text-lg sm:text-xl">
+              <div className="mt-3 flex items-center justify-center gap-3 text-2xl sm:text-3xl">
                 {current.home ? (
                   <span className="flex items-center gap-2">
                     <TeamFlag code={current.home.code} size={32} />
