@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { LanguageSwitcher } from "@/components/shell/language-switcher";
 import { updateTimezone, type SettingsFormState } from "./actions";
 
 const INITIAL_STATE: SettingsFormState = { ok: false };
@@ -70,6 +71,8 @@ export function SettingsForm({ currentTimezone }: { currentTimezone: string | nu
 
   return (
     <div className="space-y-4">
+      {/* Orden: Idioma → Tema → Hora local de partidos. */}
+      <LanguageSection />
       <ThemeSection />
       <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 sm:p-6">
         <header className="space-y-1 pb-4">
@@ -131,6 +134,26 @@ export function SettingsForm({ currentTimezone }: { currentTimezone: string | nu
         </form>
       </section>
     </div>
+  );
+}
+
+// ──────────────────────── Idioma ────────────────────────
+
+function LanguageSection() {
+  const t = useTranslations("settings");
+  return (
+    <section className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 sm:p-6">
+      <header className="space-y-1 pb-4">
+        <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
+          {t("langEyebrow")}
+        </p>
+        <h2 className="font-display text-xl tracking-tight">{t("langTitle")}</h2>
+        <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
+          {t("langDesc")}
+        </p>
+      </header>
+      <LanguageSwitcher />
+    </section>
   );
 }
 
