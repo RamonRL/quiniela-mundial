@@ -2,7 +2,7 @@ import { Link } from "@/i18n/navigation";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { useTranslations } from "next-intl";
-import { ArrowRight, Building2, Crown, Download, Mail, Megaphone, Sparkles, ShieldCheck, Users } from "lucide-react";
+import { ArrowRight, Building2, Crown, Download, Lock, Mail, Megaphone, Sparkles, ShieldCheck, Users } from "lucide-react";
 import { asc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
@@ -228,6 +228,7 @@ export default async function MyLeaguePage() {
                   leagueId={league.id}
                   leagueName={league.name}
                   announcement={league.announcement}
+                  canBrand={canBrand}
                 />
               ),
             },
@@ -453,15 +454,43 @@ function FeaturesPanel({
   leagueId,
   leagueName,
   announcement,
+  canBrand,
 }: {
   leagueId: number;
   leagueName: string;
   announcement: string | null;
+  /** false en Pase Equipo (50): el branding está bloqueado y mostramos
+   *  una tarjeta-upsell que apunta al Pase Empresa. */
+  canBrand: boolean;
 }) {
   const t = useTranslations("myPool");
   return (
     <div className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Branding: si la liga aún no lo tiene (Pase Equipo), tarjeta
+            bloqueada que deja claro que se desbloquea con el Pase Empresa.
+            Si ya lo tiene, vive en su propia pestaña y no se repite aquí. */}
+        {!canBrand ? (
+          <Link
+            href="/precios"
+            className="flex items-center gap-3 rounded-xl border border-dashed border-[var(--color-border-strong)] bg-[var(--color-surface)] p-4 transition hover:border-[var(--color-arena)]/60"
+          >
+            <span className="grid size-9 place-items-center rounded-md bg-[var(--color-surface-2)] text-[var(--color-muted-foreground)]">
+              <Lock className="size-4" />
+            </span>
+            <div className="min-w-0">
+              <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <span className="font-display text-sm tracking-tight">{t("brandingCardTitle")}</span>
+                <span className="rounded-full border border-[var(--color-arena)]/40 px-1.5 py-px font-mono text-[0.5rem] font-semibold uppercase tracking-[0.12em] text-[var(--color-arena)]">
+                  {t("brandingFromPass")}
+                </span>
+              </p>
+              <p className="font-editorial text-xs italic text-[var(--color-muted-foreground)]">
+                {t("brandingCardDesc")}
+              </p>
+            </div>
+          </Link>
+        ) : null}
         <Link
           href="/mi-quiniela/departamentos"
           className="flex items-center gap-3 rounded-xl border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_4%,var(--color-surface))] p-4 transition hover:border-[var(--color-arena)]/60"

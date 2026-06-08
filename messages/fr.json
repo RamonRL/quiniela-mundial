@@ -585,7 +585,8 @@
     "themeDark": "Sombre",
     "themeDarkDesc": "Recommandé pour les longues sessions et les matchs de nuit.",
     "themeLight": "Clair",
-    "themeLightDesc": "Mode éditorial crème, meilleur en extérieur au soleil."
+    "themeLightDesc": "Mode éditorial crème, meilleur en extérieur au soleil.",
+    "langEyebrow": "Interface"
   },
   "profile": {
     "pageEyebrow": "Compte",
@@ -1375,7 +1376,7 @@
     "promoDesc": "Ta ligue Free est plafonnée à {limit} membres (vous êtes {members}). Avec un Pass on monte à 50, 100 ou 250 et on débloque les fonctions pensées pour les grands groupes.",
     "promoBullet1": "Départements internes avec classement par moyenne",
     "promoBullet2": "Jusqu'à 250 membres par ligue",
-    "promoBullet3": "Logo d'entreprise + annonce épinglée",
+    "promoBullet3": "Logo d'entreprise (Pass Entreprise) et annonce épinglée",
     "promoBullet4": "Export CSV du classement et support prioritaire",
     "promoFrom": "à partir de 19 €",
     "promoOneTime": "Paiement unique · sans renouvellement",
@@ -1421,7 +1422,10 @@
     "nameLabel": "Nom · max 25 caractères",
     "logoLabel": "Logo",
     "customLogo": "Logo perso",
-    "customLogoHint": "Remplace la galerie à l'enregistrement."
+    "customLogoHint": "Remplace la galerie à l'enregistrement.",
+    "brandingCardTitle": "Branding d'entreprise",
+    "brandingCardDesc": "Ton logo dans toute l'appli, pour ta ligue",
+    "brandingFromPass": "Dès le Pass Entreprise"
   },
   "departments": {
     "backToMyPool": "Retour à Ma Grille",

@@ -585,7 +585,8 @@
     "themeDark": "Escuro",
     "themeDarkDesc": "Recomendado para uso prolongado e jogos à noite.",
     "themeLight": "Claro",
-    "themeLightDesc": "Modo editorial cremoso, melhor ao ar livre no sol."
+    "themeLightDesc": "Modo editorial cremoso, melhor ao ar livre no sol.",
+    "langEyebrow": "Interface"
   },
   "profile": {
     "pageEyebrow": "Conta",
@@ -1375,7 +1376,7 @@
     "promoDesc": "Sua liga Free está limitada a {limit} membros (vocês são {members}). Com um Passe ampliamos para 50, 100 ou 250 e liberamos as funções pensadas para grupos grandes.",
     "promoBullet1": "Departamentos internos com ranking por média",
     "promoBullet2": "Até 250 membros por liga",
-    "promoBullet3": "Logo corporativo + anúncio fixado",
+    "promoBullet3": "Logo corporativo (Passe Empresa) e anúncio fixado",
     "promoBullet4": "Export CSV do ranking e suporte prioritário",
     "promoFrom": "a partir de 19 €",
     "promoOneTime": "Pagamento único · sem renovação",
@@ -1421,7 +1422,10 @@
     "nameLabel": "Nome · máx 25 caracteres",
     "logoLabel": "Logo",
     "customLogo": "Logo personalizado",
-    "customLogoHint": "Substitui a galeria ao salvar."
+    "customLogoHint": "Substitui a galeria ao salvar.",
+    "brandingCardTitle": "Branding corporativo",
+    "brandingCardDesc": "Seu logo no app inteiro, para a sua liga",
+    "brandingFromPass": "A partir do Passe Empresa"
   },
   "departments": {
     "backToMyPool": "Voltar a Meu Bolão",

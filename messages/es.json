@@ -585,7 +585,8 @@
     "themeDark": "Oscuro",
     "themeDarkDesc": "Recomendado para uso prolongado y partidos de noche.",
     "themeLight": "Claro",
-    "themeLightDesc": "Modo cremoso editorial, mejor en exteriores con sol."
+    "themeLightDesc": "Modo cremoso editorial, mejor en exteriores con sol.",
+    "langEyebrow": "Interfaz"
   },
   "profile": {
     "pageEyebrow": "Cuenta",
@@ -1375,7 +1376,7 @@
     "promoDesc": "Tu liga Free está topada a {limit} miembros (vais {members}). Con un Pase ampliamos a 50, 100 o 250 y desbloqueamos las funciones pensadas para grupos grandes.",
     "promoBullet1": "Departamentos internos con ranking por media",
     "promoBullet2": "Hasta 250 miembros por liga",
-    "promoBullet3": "Logo corporativo + anuncio fijado",
+    "promoBullet3": "Logo corporativo (Pase Empresa) y anuncio fijado",
     "promoBullet4": "Export CSV del ranking y soporte prioritario",
     "promoFrom": "desde 19 €",
     "promoOneTime": "Pago único · sin renovación",
@@ -1421,7 +1422,10 @@
     "nameLabel": "Nombre · máx 25 caracteres",
     "logoLabel": "Logo",
     "customLogo": "Logo custom",
-    "customLogoHint": "Sustituye la galería al guardar."
+    "customLogoHint": "Sustituye la galería al guardar.",
+    "brandingCardTitle": "Branding corporativo",
+    "brandingCardDesc": "Tu logo en toda la app, para tu liga",
+    "brandingFromPass": "A partir del Pase Empresa"
   },
   "departments": {
     "backToMyPool": "Volver a Mi Quiniela",

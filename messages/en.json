@@ -585,7 +585,8 @@
     "themeDark": "Dark",
     "themeDarkDesc": "Recommended for long sessions and night matches.",
     "themeLight": "Light",
-    "themeLightDesc": "Creamy editorial mode, better outdoors in sunlight."
+    "themeLightDesc": "Creamy editorial mode, better outdoors in sunlight.",
+    "langEyebrow": "Interface"
   },
   "profile": {
     "pageEyebrow": "Account",
@@ -1375,7 +1376,7 @@
     "promoDesc": "Your Free league is capped at {limit} members (you're {members}). With a Pass we raise it to 50, 100 or 250 and unlock the features built for big groups.",
     "promoBullet1": "Internal departments with ranking by average",
     "promoBullet2": "Up to 250 members per league",
-    "promoBullet3": "Corporate logo + pinned announcement",
+    "promoBullet3": "Corporate logo (Company Pass) and pinned announcement",
     "promoBullet4": "CSV export of the ranking and priority support",
     "promoFrom": "from €19",
     "promoOneTime": "One-time payment · no renewal",
@@ -1421,7 +1422,10 @@
     "nameLabel": "Name · max 25 characters",
     "logoLabel": "Logo",
     "customLogo": "Custom logo",
-    "customLogoHint": "Replaces the gallery on save."
+    "customLogoHint": "Replaces the gallery on save.",
+    "brandingCardTitle": "Corporate branding",
+    "brandingCardDesc": "Your logo across the app, for your league",
+    "brandingFromPass": "From the Company Pass"
   },
   "departments": {
     "backToMyPool": "Back to My Pool",
