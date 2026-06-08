@@ -976,7 +976,8 @@
     "posPor": "Porteros",
     "noPosition": "Sin posición",
     "unofficialTitle": "Convocatoria no oficial",
-    "unofficialDesc": "Esta selección aún no ha confirmado su lista para el Mundial. El jugador que elijas podría quedarse fuera."
+    "unofficialDesc": "Esta selección aún no ha confirmado su lista para el Mundial. El jugador que elijas podría quedarse fuera.",
+    "scorerPickedLabel": "Tu goleador"
   },
   "predBracket": {
     "eyebrow": "Categoría 4",

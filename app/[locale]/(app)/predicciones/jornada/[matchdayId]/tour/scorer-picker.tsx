@@ -59,6 +59,7 @@ export function ScorerPicker({
   selectedId: number | null;
   onSelect: (playerId: number) => void;
 }) {
+  const t = useTranslations("predMatchday");
   // Tab inicial: si el goleador ya estaba en el equipo visitante, arrancamos
   // en "away". Se calcula UNA vez al montar (initializer); a partir de ahí el
   // usuario controla la pestaña libremente — antes había un efecto en render
@@ -69,6 +70,22 @@ export function ScorerPicker({
     const inHome = homePlayers.some((p) => p.id === selectedId);
     return inAway && !inHome ? "away" : "home";
   });
+
+  // Jugador seleccionado (de cualquiera de los dos equipos) + su equipo, para
+  // la preview pegajosa de móvil: el goleador elegido se ve SIEMPRE aunque
+  // cambies de pestaña de equipo — así queda claro que es uno solo, no uno
+  // por equipo.
+  const selectedPlayer =
+    selectedId == null
+      ? null
+      : homePlayers.find((p) => p.id === selectedId) ??
+        awayPlayers.find((p) => p.id === selectedId) ??
+        null;
+  const selectedTeam = selectedPlayer
+    ? selectedPlayer.teamId === home.id
+      ? home
+      : away
+    : null;
 
   return (
     <div className="space-y-3">
@@ -100,6 +117,37 @@ export function ScorerPicker({
           hiddenOnMobile={activeTab !== "away"}
         />
       </div>
+
+      {/* Preview pegajosa (solo móvil): el goleador elegido, anclado abajo —
+          encima de la barra anterior/siguiente. Es `sticky bottom-0`: mientras
+          haces scroll queda fijado al fondo y, al llegar al final de la lista,
+          se asienta tras la última card (porteros) — así se ven todas enteras
+          con el goleador justo debajo. En desktop no hace falta (ambas
+          columnas están a la vista). */}
+      {selectedPlayer && selectedTeam ? (
+        <div className="sticky bottom-0 z-10 -mx-1 mt-2 md:hidden">
+          <div className="flex items-center gap-3 rounded-xl border border-[var(--color-arena)]/50 bg-[color-mix(in_oklch,var(--color-bg)_90%,transparent)] px-3 py-2.5 shadow-[var(--shadow-elev-2)] backdrop-blur">
+            <PlayerAvatar
+              name={selectedPlayer.name}
+              photoUrl={selectedPlayer.photoUrl}
+              jerseyNumber={selectedPlayer.jerseyNumber}
+              size={40}
+            />
+            <div className="min-w-0 flex-1">
+              <p className="font-mono text-[0.5rem] uppercase tracking-[0.22em] text-[var(--color-arena)]">
+                {t("scorerPickedLabel")}
+              </p>
+              <p className="truncate font-display text-base leading-tight tracking-tight">
+                {selectedPlayer.name}
+              </p>
+            </div>
+            <span className="flex shrink-0 items-center gap-1.5 font-mono text-[0.55rem] uppercase tracking-[0.16em] text-[var(--color-muted-foreground)]">
+              {selectedPlayer.jerseyNumber != null ? `#${selectedPlayer.jerseyNumber}` : null}
+              <TeamFlag code={selectedTeam.code} size={20} />
+            </span>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

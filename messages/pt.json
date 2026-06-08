@@ -976,7 +976,8 @@
     "posPor": "Goleiros",
     "noPosition": "Sem posição",
     "unofficialTitle": "Convocação não oficial",
-    "unofficialDesc": "Esta seleção ainda não confirmou sua lista para a Copa. O jogador que você escolher pode ficar de fora."
+    "unofficialDesc": "Esta seleção ainda não confirmou sua lista para a Copa. O jogador que você escolher pode ficar de fora.",
+    "scorerPickedLabel": "Seu artilheiro"
   },
   "predBracket": {
     "eyebrow": "Categoria 4",

@@ -976,7 +976,8 @@
     "posPor": "Goalkeepers",
     "noPosition": "No position",
     "unofficialTitle": "Unofficial squad",
-    "unofficialDesc": "This team hasn't confirmed its World Cup squad yet. The player you pick could be left out."
+    "unofficialDesc": "This team hasn't confirmed its World Cup squad yet. The player you pick could be left out.",
+    "scorerPickedLabel": "Your scorer"
   },
   "predBracket": {
     "eyebrow": "Category 4",
