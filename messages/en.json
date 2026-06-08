@@ -1854,5 +1854,65 @@
     "playersStat": "Players",
     "playAgain": "Play again",
     "viewRanking": "View ranking"
+  },
+  "onbPlans": {
+    "priceFree": "Free",
+    "priceCustom": "Custom",
+    "free": {
+      "name": "Standard",
+      "members": "Up to 20 members",
+      "audience": "Your group of friends or family.",
+      "features": [
+        "All 6 prediction categories",
+        "Public pool + up to 5 private",
+        "Live ranking and league chat"
+      ]
+    },
+    "team-50": {
+      "name": "Team Pass",
+      "members": "Up to 50 members",
+      "audience": "Teams, clubs and mid-size groups.",
+      "features": [
+        "Everything in Standard, up to 50 people",
+        "Departments with average-based ranking",
+        "Organizer's pinned announcement",
+        "CSV export of the ranking",
+        "Priority email support"
+      ]
+    },
+    "team-100": {
+      "name": "Company Pass",
+      "members": "Up to 100 members",
+      "audience": "Mid-size companies and communities.",
+      "features": [
+        "Everything in Team Pass, up to 100 people",
+        "Corporate logo across the app",
+        "Departments and pinned announcement",
+        "CSV export of the ranking",
+        "Priority email support"
+      ]
+    },
+    "team-250": {
+      "name": "Company Plus Pass",
+      "members": "Up to 250 members",
+      "audience": "Large organizations and events.",
+      "features": [
+        "Everything in Company Pass, up to 250 people",
+        "Corporate logo, departments and announcement",
+        "Built for events and large headcounts",
+        "CSV export of the ranking",
+        "Priority email support"
+      ]
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "members": "No member cap",
+      "audience": "Over 250 or special needs.",
+      "features": [
+        "Everything in the Passes, no member cap",
+        "Dedicated onboarding and support",
+        "Custom billing and terms"
+      ]
+    }
   }
 }

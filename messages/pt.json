@@ -1854,5 +1854,65 @@
     "playersStat": "Jogadores",
     "playAgain": "Outra partida",
     "viewRanking": "Ver ranking"
+  },
+  "onbPlans": {
+    "priceFree": "Grátis",
+    "priceCustom": "Sob medida",
+    "free": {
+      "name": "Padrão",
+      "members": "Até 20 membros",
+      "audience": "Seu grupo de amigos ou família.",
+      "features": [
+        "As 6 categorias de palpites",
+        "Bolão público + até 5 privados",
+        "Ranking ao vivo e chat da liga"
+      ]
+    },
+    "team-50": {
+      "name": "Passe Equipe",
+      "members": "Até 50 membros",
+      "audience": "Times, peñas e grupos médios.",
+      "features": [
+        "Tudo do Padrão, até 50 pessoas",
+        "Departamentos com ranking pela média",
+        "Anúncio fixado do organizador",
+        "Export CSV do ranking",
+        "Suporte prioritário por email"
+      ]
+    },
+    "team-100": {
+      "name": "Passe Empresa",
+      "members": "Até 100 membros",
+      "audience": "Empresas médias e comunidades.",
+      "features": [
+        "Tudo do Passe Equipe, até 100 pessoas",
+        "Logo corporativo no app inteiro",
+        "Departamentos e anúncio fixado",
+        "Export CSV do ranking",
+        "Suporte prioritário por email"
+      ]
+    },
+    "team-250": {
+      "name": "Passe Empresa Plus",
+      "members": "Até 250 membros",
+      "audience": "Grandes organizações e eventos.",
+      "features": [
+        "Tudo do Passe Empresa, até 250 pessoas",
+        "Logo corporativo, departamentos e anúncio",
+        "Pensado para eventos e equipes grandes",
+        "Export CSV do ranking",
+        "Suporte prioritário por email"
+      ]
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "members": "Sem limite de membros",
+      "audience": "Mais de 250 ou necessidades especiais.",
+      "features": [
+        "Tudo dos Passes, sem limite de membros",
+        "Onboarding e suporte dedicado",
+        "Faturamento e condições sob medida"
+      ]
+    }
   }
 }

@@ -610,13 +610,29 @@ function PlanStep({
   onCreated: (league: CreatedLeague, plan: PlanKey) => void;
 }) {
   const t = useTranslations("onboarding");
+  const tp = useTranslations("onbPlans");
   const [selected, setSelected] = useState<PlanKey>("free");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
   const checkout = useInlineCheckout(paddle);
 
-  const selectedPlan = ONBOARDING_PLANS.find((p) => p.key === selected)!;
+  // Texto de los planes traducido (namespace onbPlans); los datos
+  // estructurales (precio numérico, popular, paid) vienen de ONBOARDING_PLANS.
+  const plans = ONBOARDING_PLANS.map((p) => ({
+    ...p,
+    name: tp(`${p.key}.name`),
+    members: tp(`${p.key}.members`),
+    audience: tp(`${p.key}.audience`),
+    features: tp.raw(`${p.key}.features`) as string[],
+    priceLabel:
+      p.key === "free"
+        ? tp("priceFree")
+        : p.key === "enterprise"
+          ? tp("priceCustom")
+          : p.priceLabel,
+  }));
+  const selectedPlan = plans.find((p) => p.key === selected)!;
 
   // Crea la liga gratis (Estándar o Enterprise) vía la server action clásica.
   async function createFree(plan: PlanKey) {
@@ -729,7 +745,7 @@ function PlanStep({
       </header>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-        {ONBOARDING_PLANS.map((plan) => (
+        {plans.map((plan) => (
           <PlanColumn
             key={plan.key}
             plan={plan}
@@ -867,11 +883,12 @@ function CreatedSuccess({
   plan: PlanKey;
 }) {
   const t = useTranslations("onboarding");
+  const tp = useTranslations("onbPlans");
   const goDashboard = useFadeNav();
   const { name, joinCode, inviteToken } = league;
   const isEnterprise = plan === "enterprise";
   const isPaid = plan === "team-50" || plan === "team-100" || plan === "team-250";
-  const planMeta = ONBOARDING_PLANS.find((p) => p.key === plan);
+  const planName = tp(`${plan}.name`);
   const inviteUrl =
     typeof window !== "undefined"
       ? `${window.location.origin}/invite/${inviteToken}`
@@ -881,7 +898,7 @@ function CreatedSuccess({
       <div className="flex items-center gap-3">
         <Sparkles className="size-4 text-[var(--color-arena)]" />
         <p className="font-mono text-[0.65rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-arena)]">
-          {isPaid ? t("createdWithPlan", { plan: planMeta?.name ?? "" }) : t("created")}
+          {isPaid ? t("createdWithPlan", { plan: planName }) : t("created")}
         </p>
       </div>
       <header className="space-y-4">

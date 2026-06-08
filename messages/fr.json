@@ -1854,5 +1854,65 @@
     "playersStat": "Joueurs",
     "playAgain": "Rejouer",
     "viewRanking": "Voir le classement"
+  },
+  "onbPlans": {
+    "priceFree": "Gratuit",
+    "priceCustom": "Sur mesure",
+    "free": {
+      "name": "Standard",
+      "members": "Jusqu'à 20 membres",
+      "audience": "Ton groupe d'amis ou ta famille.",
+      "features": [
+        "Les 6 catégories de pronostics",
+        "Grille publique + jusqu'à 5 privées",
+        "Classement en direct et chat de ligue"
+      ]
+    },
+    "team-50": {
+      "name": "Pass Équipe",
+      "members": "Jusqu'à 50 membres",
+      "audience": "Équipes, clubs et groupes moyens.",
+      "features": [
+        "Tout le Standard, jusqu'à 50 personnes",
+        "Départements avec classement à la moyenne",
+        "Annonce épinglée de l'organisateur",
+        "Export CSV du classement",
+        "Support prioritaire par email"
+      ]
+    },
+    "team-100": {
+      "name": "Pass Entreprise",
+      "members": "Jusqu'à 100 membres",
+      "audience": "Entreprises moyennes et communautés.",
+      "features": [
+        "Tout le Pass Équipe, jusqu'à 100 personnes",
+        "Logo d'entreprise dans toute l'appli",
+        "Départements et annonce épinglée",
+        "Export CSV du classement",
+        "Support prioritaire par email"
+      ]
+    },
+    "team-250": {
+      "name": "Pass Entreprise Plus",
+      "members": "Jusqu'à 250 membres",
+      "audience": "Grandes organisations et événements.",
+      "features": [
+        "Tout le Pass Entreprise, jusqu'à 250 personnes",
+        "Logo d'entreprise, départements et annonce",
+        "Pensé pour les événements et grands effectifs",
+        "Export CSV du classement",
+        "Support prioritaire par email"
+      ]
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "members": "Sans limite de membres",
+      "audience": "Plus de 250 ou besoins particuliers.",
+      "features": [
+        "Tout des Pass, sans limite de membres",
+        "Onboarding et support dédiés",
+        "Facturation et conditions sur mesure"
+      ]
+    }
   }
 }

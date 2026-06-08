@@ -1854,5 +1854,65 @@
     "playersStat": "Jugadores",
     "playAgain": "Otra partida",
     "viewRanking": "Ver ranking"
+  },
+  "onbPlans": {
+    "priceFree": "Gratis",
+    "priceCustom": "A medida",
+    "free": {
+      "name": "Estándar",
+      "members": "Hasta 20 miembros",
+      "audience": "Tu grupo de amigos o familia.",
+      "features": [
+        "Las 6 categorías de predicción",
+        "Quiniela pública + hasta 5 privadas",
+        "Ranking en vivo y chat de liga"
+      ]
+    },
+    "team-50": {
+      "name": "Pase Equipo",
+      "members": "Hasta 50 miembros",
+      "audience": "Equipos, peñas y grupos medianos.",
+      "features": [
+        "Todo lo de Estándar, hasta 50 personas",
+        "Departamentos con ranking por media",
+        "Anuncio fijado del organizador",
+        "Export CSV del ranking",
+        "Soporte prioritario por email"
+      ]
+    },
+    "team-100": {
+      "name": "Pase Empresa",
+      "members": "Hasta 100 miembros",
+      "audience": "Empresas medianas y comunidades.",
+      "features": [
+        "Todo lo del Pase Equipo, hasta 100 personas",
+        "Logo corporativo en toda la app",
+        "Departamentos y anuncio fijado",
+        "Export CSV del ranking",
+        "Soporte prioritario por email"
+      ]
+    },
+    "team-250": {
+      "name": "Pase Empresa Plus",
+      "members": "Hasta 250 miembros",
+      "audience": "Grandes organizaciones y eventos.",
+      "features": [
+        "Todo lo del Pase Empresa, hasta 250 personas",
+        "Logo corporativo, departamentos y anuncio",
+        "Pensado para eventos y plantillas grandes",
+        "Export CSV del ranking",
+        "Soporte prioritario por email"
+      ]
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "members": "Sin tope de miembros",
+      "audience": "Más de 250 o necesidades especiales.",
+      "features": [
+        "Todo lo de los Pases, sin tope de miembros",
+        "Onboarding y soporte dedicado",
+        "Facturación y condiciones a medida"
+      ]
+    }
   }
 }
