@@ -119,15 +119,17 @@ export default async function MonitoringProductoPage({
 
   // Cumplimiento por categoría: cuántos usuarios distintos tienen al menos
   // una predicción de cada tipo, vs total de usuarios.
+  // Excluimos usuarios de relleno (@demo.invalid) de los KPIs globales:
+  // total y "usuarios distintos que han predicho X" (vía JOIN a profiles).
   const [predRow] = await db.execute<PredictionsCountsRow>(sql`
     SELECT
-      (SELECT count(*)::int FROM profiles)                                              AS "totalUsers",
-      (SELECT count(DISTINCT user_id)::int FROM pred_group_ranking)                     AS "groupUsers",
-      (SELECT count(DISTINCT user_id)::int FROM pred_bracket_slot)                      AS "bracketUsers",
-      (SELECT count(DISTINCT user_id)::int FROM pred_tournament_top_scorer)             AS "topScorerUsers",
-      (SELECT count(DISTINCT user_id)::int FROM pred_special)                           AS "specialUsers",
-      (SELECT count(DISTINCT user_id)::int FROM pred_match_result)                      AS "matchResultUsers",
-      (SELECT count(DISTINCT user_id)::int FROM pred_match_scorer)                      AS "matchScorerUsers"
+      (SELECT count(*)::int FROM profiles WHERE email NOT LIKE '%@demo.invalid')                                                                              AS "totalUsers",
+      (SELECT count(DISTINCT x.user_id)::int FROM pred_group_ranking x JOIN profiles p ON p.id = x.user_id WHERE p.email NOT LIKE '%@demo.invalid')            AS "groupUsers",
+      (SELECT count(DISTINCT x.user_id)::int FROM pred_bracket_slot x JOIN profiles p ON p.id = x.user_id WHERE p.email NOT LIKE '%@demo.invalid')             AS "bracketUsers",
+      (SELECT count(DISTINCT x.user_id)::int FROM pred_tournament_top_scorer x JOIN profiles p ON p.id = x.user_id WHERE p.email NOT LIKE '%@demo.invalid')    AS "topScorerUsers",
+      (SELECT count(DISTINCT x.user_id)::int FROM pred_special x JOIN profiles p ON p.id = x.user_id WHERE p.email NOT LIKE '%@demo.invalid')                  AS "specialUsers",
+      (SELECT count(DISTINCT x.user_id)::int FROM pred_match_result x JOIN profiles p ON p.id = x.user_id WHERE p.email NOT LIKE '%@demo.invalid')             AS "matchResultUsers",
+      (SELECT count(DISTINCT x.user_id)::int FROM pred_match_scorer x JOIN profiles p ON p.id = x.user_id WHERE p.email NOT LIKE '%@demo.invalid')             AS "matchScorerUsers"
   `);
   const preds = predRow as PredictionsCountsRow;
 
@@ -149,6 +151,7 @@ export default async function MonitoringProductoPage({
       COALESCE(SUM(pl.points), 0)::int AS points
     FROM profiles p
     LEFT JOIN points_ledger pl ON pl.user_id = p.id
+    WHERE p.email NOT LIKE '%@demo.invalid'
     GROUP BY p.id
     ORDER BY points DESC, p.created_at ASC
     LIMIT 10
@@ -160,9 +163,10 @@ export default async function MonitoringProductoPage({
       l.id                 AS "leagueId",
       l.name               AS name,
       l.is_public          AS "isPublic",
-      count(lm.user_id)::int AS members
+      count(p.id)::int     AS members
     FROM leagues l
     LEFT JOIN league_memberships lm ON lm.league_id = l.id
+    LEFT JOIN profiles p ON p.id = lm.user_id AND p.email NOT LIKE '%@demo.invalid'
     GROUP BY l.id
     ORDER BY members DESC, l.created_at ASC
     LIMIT 10
@@ -170,9 +174,11 @@ export default async function MonitoringProductoPage({
 
   // Buckets de distribución de puntos por usuario.
   const bucketRowsRaw = await db.execute<{ userPoints: number }>(sql`
-    SELECT COALESCE(SUM(points), 0)::int AS "userPoints"
-    FROM points_ledger
-    GROUP BY user_id
+    SELECT COALESCE(SUM(pl.points), 0)::int AS "userPoints"
+    FROM points_ledger pl
+    JOIN profiles p ON p.id = pl.user_id
+    WHERE p.email NOT LIKE '%@demo.invalid'
+    GROUP BY pl.user_id
   `);
   const bucketRows = bucketRowsRaw as { userPoints: number }[];
   // Incluimos a usuarios SIN entries en points_ledger (entran con 0 puntos).

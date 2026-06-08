@@ -6,7 +6,7 @@ import {
   UserPlus,
   Users,
 } from "lucide-react";
-import { desc, sql } from "drizzle-orm";
+import { desc, notLike, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { auditLog, chatMessages, leagues, profiles } from "@/lib/db/schema";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -70,16 +70,18 @@ export default async function MonitoringOverviewPage() {
   // Una sola query para los KPIs principales — sobre Supabase desde Vercel
   // cada round-trip son ~100-300 ms, así que 8 aggregates en 1 query baja
   // el TTFB del overview drásticamente.
+  // `email NOT LIKE '%@demo.invalid'` excluye los usuarios de relleno
+  // (liga demo + quinielas de promoción) de todos los KPIs y gráficas.
   const [countsRow] = await db.execute<CountsRow>(sql`
     SELECT
-      (SELECT count(*)::int FROM profiles WHERE last_seen_at > now() - interval '5 minutes')   AS online,
-      (SELECT count(*)::int FROM profiles WHERE last_seen_at > now() - interval '24 hours')    AS dau,
-      (SELECT count(*)::int FROM profiles WHERE last_seen_at > now() - interval '7 days')      AS wau,
-      (SELECT count(*)::int FROM profiles WHERE last_seen_at > now() - interval '30 days')     AS mau,
-      (SELECT count(*)::int FROM profiles)                                                     AS total,
-      (SELECT count(*)::int FROM profiles WHERE created_at > now() - interval '24 hours')      AS "newToday",
-      (SELECT count(*)::int FROM profiles WHERE created_at > now() - interval '7 days')        AS "newWeek",
-      (SELECT count(DISTINCT country_code)::int FROM profiles WHERE country_code IS NOT NULL)  AS "countriesRepresented"
+      (SELECT count(*)::int FROM profiles WHERE email NOT LIKE '%@demo.invalid' AND last_seen_at > now() - interval '5 minutes')   AS online,
+      (SELECT count(*)::int FROM profiles WHERE email NOT LIKE '%@demo.invalid' AND last_seen_at > now() - interval '24 hours')    AS dau,
+      (SELECT count(*)::int FROM profiles WHERE email NOT LIKE '%@demo.invalid' AND last_seen_at > now() - interval '7 days')      AS wau,
+      (SELECT count(*)::int FROM profiles WHERE email NOT LIKE '%@demo.invalid' AND last_seen_at > now() - interval '30 days')     AS mau,
+      (SELECT count(*)::int FROM profiles WHERE email NOT LIKE '%@demo.invalid')                                                   AS total,
+      (SELECT count(*)::int FROM profiles WHERE email NOT LIKE '%@demo.invalid' AND created_at > now() - interval '24 hours')      AS "newToday",
+      (SELECT count(*)::int FROM profiles WHERE email NOT LIKE '%@demo.invalid' AND created_at > now() - interval '7 days')        AS "newWeek",
+      (SELECT count(DISTINCT country_code)::int FROM profiles WHERE email NOT LIKE '%@demo.invalid' AND country_code IS NOT NULL)  AS "countriesRepresented"
   `);
   const counts = countsRow as CountsRow;
 
@@ -96,7 +98,7 @@ export default async function MonitoringOverviewPage() {
     )
     SELECT
       to_char(d.day, 'DD/MM') AS "date",
-      COALESCE(count(p.id) FILTER (WHERE (p.created_at at time zone 'Europe/Madrid')::date = d.day), 0)::int AS "count"
+      COALESCE(count(p.id) FILTER (WHERE (p.created_at at time zone 'Europe/Madrid')::date = d.day AND p.email NOT LIKE '%@demo.invalid'), 0)::int AS "count"
     FROM days d
     LEFT JOIN profiles p ON true
     GROUP BY d.day
@@ -151,6 +153,7 @@ export default async function MonitoringOverviewPage() {
         countryCode: profiles.countryCode,
       })
       .from(profiles)
+      .where(notLike(profiles.email, "%@demo.invalid"))
       .orderBy(desc(profiles.createdAt))
       .limit(20),
   ]);

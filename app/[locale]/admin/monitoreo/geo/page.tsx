@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { notLike, sql } from "drizzle-orm";
 import { Globe2 } from "lucide-react";
 import { db } from "@/lib/db";
 import { profiles } from "@/lib/db/schema";
@@ -41,6 +41,8 @@ export default async function MonitoringGeoPage() {
       userCount: sql<number>`count(*)::int`,
     })
     .from(profiles)
+    // Excluye usuarios de relleno (@demo.invalid) del reparto geográfico.
+    .where(notLike(profiles.email, "%@demo.invalid"))
     .groupBy(profiles.countryCode);
 
   // Ordenamos: filas con país, descendente por count; los nulls al final.
