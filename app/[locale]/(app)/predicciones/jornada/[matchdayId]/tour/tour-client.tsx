@@ -453,10 +453,10 @@ export function MatchdayTourClient({
             {showScorer ? (
               <section className="space-y-3 border-t border-[var(--color-border)] pt-5">
                 <div className="text-center">
-                  <p className="font-mono text-[0.6rem] uppercase tracking-[0.22em] text-[var(--color-muted-foreground)]">
+                  <p className="font-mono text-[0.72rem] uppercase tracking-[0.22em] text-[var(--color-muted-foreground)] sm:text-[0.8rem]">
                     {t("scorerLabel")}
                   </p>
-                  <p className="mt-1 font-editorial text-xs italic text-[var(--color-muted-foreground)]">
+                  <p className="mt-1 font-editorial text-sm italic leading-snug text-[var(--color-muted-foreground)] sm:text-base">
                     {t("scorerHint")}
                   </p>
                 </div>
