@@ -18,8 +18,10 @@ type Props = {
 
 const SIZE = {
   default: { btn: "size-11", icon: "size-4", num: "h-11 w-12 text-2xl" },
-  // El doble: dígitos ~2× (text-5xl) y signos -/+ ~2× (size-8).
-  lg: { btn: "size-16", icon: "size-8", num: "h-16 min-w-16 px-2 text-5xl" },
+  // Paso a paso: dígitos y signos grandes pero ~13% más compactos que antes
+  // (botones 64→56px, dígito 3→2.6rem) para que dos marcadores quepan sin
+  // salirse por los lados en móviles estrechos (iPhone 15 y similares).
+  lg: { btn: "size-14", icon: "size-7", num: "h-14 min-w-14 px-1.5 text-[2.6rem]" },
 } as const;
 
 /**
