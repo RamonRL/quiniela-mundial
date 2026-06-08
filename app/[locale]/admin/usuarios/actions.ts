@@ -36,7 +36,23 @@ export async function setUserAvatar(formData: FormData): Promise<AvatarResult> {
   await db.update(profiles).set({ avatarUrl }).where(eq(profiles.id, userId));
   await logAdminAction({ adminId: me.id, action: "user.avatar.set", payload: { userId } });
   revalidatePath("/admin/usuarios");
+  revalidatePath("/admin/relleno");
   return { ok: true, avatarUrl };
+}
+
+/** Cambia el apodo (nickname) de cualquier usuario. Admin. */
+export async function setUserNickname(formData: FormData): Promise<AvatarResult> {
+  const me = await requireAdmin();
+  const userId = String(formData.get("userId"));
+  const raw = String(formData.get("nickname") ?? "").trim();
+  if (!userId) return { ok: false, error: "Usuario inválido." };
+  if (raw.length < 1) return { ok: false, error: "El apodo no puede estar vacío." };
+  const nickname = raw.slice(0, 40);
+  await db.update(profiles).set({ nickname }).where(eq(profiles.id, userId));
+  await logAdminAction({ adminId: me.id, action: "user.nickname", payload: { userId, nickname } });
+  revalidatePath("/admin/usuarios");
+  revalidatePath("/admin/relleno");
+  return { ok: true };
 }
 
 /** Quita la foto de un usuario (vuelve a iniciales) y borra el archivo. */
@@ -56,6 +72,7 @@ export async function clearUserAvatar(formData: FormData): Promise<AvatarResult>
   }
   await logAdminAction({ adminId: me.id, action: "user.avatar.clear", payload: { userId } });
   revalidatePath("/admin/usuarios");
+  revalidatePath("/admin/relleno");
   return { ok: true };
 }
 

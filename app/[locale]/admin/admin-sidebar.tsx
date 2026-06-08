@@ -23,6 +23,7 @@ import {
   Sparkles,
   Trophy,
   UserCheck,
+  UserCog,
   Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -34,6 +35,7 @@ const items: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/admin/ligas", label: "Ligas", icon: Trophy },
   { href: "/admin/leads", label: "Leads", icon: Briefcase },
   { href: "/admin/usuarios", label: "Usuarios", icon: UserCheck },
+  { href: "/admin/relleno", label: "Usuarios de relleno", icon: UserCog },
   { href: "/admin/selecciones", label: "Selecciones", icon: Users },
   { href: "/admin/jugadores", label: "Jugadores", icon: Goal },
   { href: "/admin/calendario", label: "Calendario", icon: CalendarRange },
