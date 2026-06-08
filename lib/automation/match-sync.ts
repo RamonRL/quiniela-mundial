@@ -1,4 +1,4 @@
-import { and, eq, inArray, lt, ne, sql } from "drizzle-orm";
+import { and, eq, gt, gte, inArray, isNotNull, lt, lte, ne } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
   appSettings,
@@ -269,8 +269,9 @@ export async function syncLiveMatches(): Promise<SyncReport> {
       and(
         ne(matches.status, "finished"),
         eq(matches.resultSource, "auto"),
-        sql`${matches.providerFixtureId} is not null`,
-        sql`${matches.scheduledAt} between ${from} and ${to}`,
+        isNotNull(matches.providerFixtureId),
+        gte(matches.scheduledAt, from),
+        lte(matches.scheduledAt, to),
       ),
     )) as Candidate[];
 
@@ -306,9 +307,9 @@ export async function runWatchdog(): Promise<void> {
       and(
         eq(matches.status, "scheduled"),
         eq(matches.resultSource, "auto"),
-        sql`${matches.providerFixtureId} is not null`,
+        isNotNull(matches.providerFixtureId),
         lt(matches.scheduledAt, new Date(now - 12 * 60 * 1000)),
-        sql`${matches.scheduledAt} > ${new Date(now - WINDOW_AFTER_MS)}`,
+        gt(matches.scheduledAt, new Date(now - WINDOW_AFTER_MS)),
       ),
     );
   for (const m of stale) {

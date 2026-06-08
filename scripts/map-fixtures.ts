@@ -48,12 +48,27 @@ type AfFixtureRow = {
 async function main() {
   if (!KEY) throw new Error("Falta API_FOOTBALL_KEY");
 
-  // Nuestros equipos + índice por nombre normalizado (EN y ES).
+  // Alias de nombres del proveedor (API-Football) → código FIFA nuestro,
+  // para las variantes que no casan por nombre EN/ES directo.
+  const PROVIDER_ALIASES: Record<string, string> = {
+    "czech republic": "CZE",
+    "bosnia herzegovina": "BIH",
+    "congo dr": "COD",
+    "cape verde islands": "CPV",
+    usa: "USA",
+  };
+
+  // Nuestros equipos + índice por nombre normalizado (EN y ES) + código.
   const ourTeams = await db.select({ id: teams.id, code: teams.code, name: teams.name }).from(teams);
+  const byCode = new Map(ourTeams.map((t) => [t.code, t.id]));
   const byName = new Map<string, number>();
   for (const t of ourTeams) {
     byName.set(norm(localizedTeamName(t.code, t.name, "en")), t.id);
     byName.set(norm(t.name), t.id);
+  }
+  for (const [alias, code] of Object.entries(PROVIDER_ALIASES)) {
+    const id = byCode.get(code);
+    if (id) byName.set(alias, id);
   }
 
   // Equipos del proveedor → nuestro teamId.
