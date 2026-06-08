@@ -5,7 +5,7 @@ import { Globe2 } from "lucide-react";
 import { EmptyState } from "@/components/shell/empty-state";
 import { PageHeader } from "@/components/shell/page-header";
 import { requireUser } from "@/lib/auth/guards";
-import { isPredictionMode, PREDICTION_MODES, PREDICTION_MODE_META } from "@/lib/leagues";
+import { isPredictionMode, PREDICTION_MODES } from "@/lib/leagues";
 import { loadGlobalLeaderboard } from "@/lib/leaderboard";
 import { cn } from "@/lib/utils";
 import { GlobalStandings } from "./global-standings";
@@ -20,6 +20,7 @@ export default async function GlobalRankingPage({
 }) {
   const me = await requireUser();
   const t = await getTranslations("ranking");
+  const tModes = await getTranslations("modes");
   const { mode: modeRaw } = await params;
   if (!isPredictionMode(modeRaw)) notFound();
   const mode = modeRaw;
@@ -31,7 +32,7 @@ export default async function GlobalRankingPage({
     <div className="space-y-6">
       <PageHeader
         eyebrow={t("globalEyebrow")}
-        title={t("globalTitle", { mode: PREDICTION_MODE_META[mode].label })}
+        title={t("globalTitle", { mode: tModes(mode) })}
         description={t("globalDesc")}
       />
 
@@ -51,7 +52,7 @@ export default async function GlobalRankingPage({
               )}
             >
               <Globe2 className="size-3.5" />
-              {PREDICTION_MODE_META[m].label}
+              {tModes(m)}
             </Link>
           );
         })}
@@ -90,7 +91,7 @@ export default async function GlobalRankingPage({
 
       {myIndex < 0 ? (
         <p className="text-center font-editorial text-xs italic text-[var(--color-muted-foreground)]">
-          {t("notInRanking", { mode: PREDICTION_MODE_META[mode].label })}
+          {t("notInRanking", { mode: tModes(mode) })}
         </p>
       ) : null}
     </div>

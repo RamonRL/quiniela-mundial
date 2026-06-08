@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { EmptyState } from "@/components/shell/empty-state";
 import { PageHeader } from "@/components/shell/page-header";
 import { requireUser } from "@/lib/auth/guards";
-import { currentLeagueId, PREDICTION_MODES, PREDICTION_MODE_META } from "@/lib/leagues";
+import { currentLeagueId, PREDICTION_MODES } from "@/lib/leagues";
 import { loadLeaderboard, type LeaderboardEntry } from "@/lib/leaderboard";
 import { LeagueStandings } from "./league-standings";
 import { RankingTabs } from "./ranking-tabs";
@@ -21,6 +21,7 @@ export const metadata = { title: "Ranking" };
 export default async function RankingPage() {
   const me = await requireUser();
   const t = await getTranslations("ranking");
+  const tModes = await getTranslations("modes");
   const leagueId = (await currentLeagueId(me))!;
   // Las quinielas públicas no tienen ranking propio: redirigimos al ranking
   // global del modo de esa pública.
@@ -93,7 +94,7 @@ export default async function RankingPage() {
             className="inline-flex items-center gap-1.5 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-2.5 py-1 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-foreground)] transition hover:border-[var(--color-arena)]/40 hover:text-[var(--color-arena)]"
           >
             <Globe2 className="size-3" />
-            {PREDICTION_MODE_META[m].label}
+            {tModes(m)}
           </Link>
         ))}
       </div>

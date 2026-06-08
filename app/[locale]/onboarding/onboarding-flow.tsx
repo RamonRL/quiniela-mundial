@@ -37,7 +37,6 @@ import {
 } from "@/lib/league-actions";
 import {
   PREDICTION_MODES,
-  PREDICTION_MODE_META,
   type PredictionMode,
 } from "@/lib/prediction-modes";
 import { ONBOARDING_PLANS, type PlanKey } from "@/lib/plans";
@@ -81,6 +80,7 @@ export function OnboardingFlow({
   paddle: PaddleConfig;
 }) {
   const t = useTranslations("onboarding");
+  const tModes = useTranslations("modes");
   // Navegación entre pasos con fade-out coordinado (StepTransition).
   const go = useFadeNav();
   // Si el usuario llegó al onboarding desde el gateway de compra (p. ej.
@@ -166,13 +166,12 @@ export function OnboardingFlow({
         </header>
         <div className="grid gap-4 sm:grid-cols-3">
           {PREDICTION_MODES.map((m) => {
-            const meta = PREDICTION_MODE_META[m];
             return (
               <ChoiceCard
                 key={m}
                 icon={<Globe className="size-6" />}
-                label={meta.label}
-                description={meta.description}
+                label={tModes(m)}
+                description={tModes(`${m}Description`)}
                 primary={m === "completo"}
                 onClick={async () => {
                   await joinPublicByMode(m);
@@ -358,6 +357,7 @@ function CreateLeagueForm({
   paddle: PaddleConfig;
 }) {
   const t = useTranslations("onboarding");
+  const tModes = useTranslations("modes");
   const [phase, setPhase] = useState<"form" | "plan">("form");
   const [nameValue, setNameValue] = useState("");
   const [mode, setMode] = useState<PredictionMode>("completo");
@@ -430,7 +430,6 @@ function CreateLeagueForm({
           </p>
           <div className="grid gap-2 sm:grid-cols-3">
             {PREDICTION_MODES.map((m) => {
-              const meta = PREDICTION_MODE_META[m];
               const active = mode === m;
               return (
                 <button
@@ -444,9 +443,9 @@ function CreateLeagueForm({
                       : "border-[var(--color-border)] bg-[var(--color-surface)] hover:border-[var(--color-arena)]/40"
                   }`}
                 >
-                  <p className="font-display text-base tracking-tight">{meta.label}</p>
+                  <p className="font-display text-base tracking-tight">{tModes(m)}</p>
                   <p className="mt-1 text-xs leading-snug text-[var(--color-muted-foreground)]">
-                    {meta.description}
+                    {tModes(`${m}Description`)}
                   </p>
                 </button>
               );
