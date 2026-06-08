@@ -1,8 +1,8 @@
 "use client";
 
-import { useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { ShieldCheck, ShieldOff, Trash2, UserCheck, UserX } from "lucide-react";
+import { ImageOff, ImageUp, ShieldCheck, ShieldOff, Trash2, UserCheck, UserX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,7 +12,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { deleteUser, setUserBanned, setUserRole } from "./actions";
+import { AvatarCropDialog } from "@/components/profile/avatar-crop-dialog";
+import { clearUserAvatar, deleteUser, setUserAvatar, setUserBanned, setUserRole } from "./actions";
+
+const MAX_RAW_INPUT_BYTES = 20 * 1024 * 1024;
 
 type Props = {
   userId: string;
@@ -25,6 +28,62 @@ type Props = {
 
 export function UserActions({ userId, role, banned, displayName, isSelf }: Props) {
   const [pending, start] = useTransition();
+  const [uploading, startUpload] = useTransition();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [cropSource, setCropSource] = useState<string | null>(null);
+  const [cropOpen, setCropOpen] = useState(false);
+
+  function pickFile(file: File) {
+    if (file.size > MAX_RAW_INPUT_BYTES) {
+      toast.error("La imagen es demasiado grande (máx. 20 MB).");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setCropSource((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return url;
+    });
+    setCropOpen(true);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  function closeCrop() {
+    setCropOpen(false);
+    if (cropSource) {
+      URL.revokeObjectURL(cropSource);
+      setCropSource(null);
+    }
+  }
+
+  function onCropConfirm(file: File): Promise<void> {
+    return new Promise((resolve) => {
+      startUpload(async () => {
+        const fd = new FormData();
+        fd.set("userId", userId);
+        fd.append("avatar", file);
+        const res = await setUserAvatar(fd);
+        if (res.ok) {
+          toast.success(`Foto actualizada para ${displayName}.`);
+          closeCrop();
+        } else {
+          toast.error(res.error ?? "No se pudo subir la foto.");
+        }
+        resolve();
+      });
+    });
+  }
+
+  function removePhoto() {
+    if (!confirm(`¿Quitar la foto de ${displayName}? Volverá a mostrar sus iniciales.`)) return;
+    start(async () => {
+      const fd = new FormData();
+      fd.set("userId", userId);
+      const res = await clearUserAvatar(fd);
+      if (res.ok) toast.success("Foto quitada.");
+      else toast.error(res.error ?? "No se pudo quitar la foto.");
+    });
+  }
 
   function toggleBan() {
     const next = !banned;
@@ -88,14 +147,34 @@ export function UserActions({ userId, role, banned, displayName, isSelf }: Props
   }
 
   return (
-    <DropdownMenu>
+    <>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) pickFile(f);
+        }}
+      />
+      <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" disabled={pending}>
-          {pending ? "..." : "Acciones"}
+        <Button variant="ghost" size="sm" disabled={pending || uploading}>
+          {pending || uploading ? "..." : "Acciones"}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>{displayName}</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
+          <ImageUp className="size-4" />
+          Cambiar foto
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={removePhoto}>
+          <ImageOff className="size-4" />
+          Quitar foto
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         {banned ? (
           <DropdownMenuItem onClick={toggleBan}>
@@ -133,6 +212,15 @@ export function UserActions({ userId, role, banned, displayName, isSelf }: Props
           </>
         )}
       </DropdownMenuContent>
-    </DropdownMenu>
+      </DropdownMenu>
+
+      <AvatarCropDialog
+        open={cropOpen}
+        sourceUrl={cropSource}
+        onCancel={closeCrop}
+        onConfirm={onCropConfirm}
+        pending={uploading}
+      />
+    </>
   );
 }

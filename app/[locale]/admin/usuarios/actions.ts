@@ -7,6 +7,57 @@ import { leagues, profiles } from "@/lib/db/schema";
 import { requireAdmin } from "@/lib/auth/guards";
 import { createSupabaseServiceClient } from "@/lib/supabase/server";
 import { logAdminAction } from "@/lib/admin/audit";
+import { uploadImage, deleteImage } from "@/lib/storage";
+
+// Tope defensivo en servidor. El cliente comprime con compressImage antes
+// de subir; esto es solo fallback.
+const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
+
+export type AvatarResult = { ok: boolean; error?: string; avatarUrl?: string };
+
+/**
+ * Cambia la foto de perfil de CUALQUIER usuario (admin). Pensado para
+ * gestionar cuentas sin login propio (p. ej. usuarios de relleno) y para
+ * soporte. Sube al bucket `avatars` en el path estable `<userId>.png`
+ * (sobrescribe) y actualiza `avatarUrl`.
+ */
+export async function setUserAvatar(formData: FormData): Promise<AvatarResult> {
+  const me = await requireAdmin();
+  const userId = String(formData.get("userId"));
+  if (!userId) return { ok: false, error: "Usuario inválido." };
+  const file = formData.get("avatar");
+  if (!(file instanceof File) || file.size === 0) {
+    return { ok: false, error: "No se recibió ninguna imagen." };
+  }
+  if (file.size > MAX_AVATAR_BYTES) {
+    return { ok: false, error: "La imagen es demasiado grande." };
+  }
+  const avatarUrl = await uploadImage({ kind: "avatar", path: `${userId}.png`, file });
+  await db.update(profiles).set({ avatarUrl }).where(eq(profiles.id, userId));
+  await logAdminAction({ adminId: me.id, action: "user.avatar.set", payload: { userId } });
+  revalidatePath("/admin/usuarios");
+  return { ok: true, avatarUrl };
+}
+
+/** Quita la foto de un usuario (vuelve a iniciales) y borra el archivo. */
+export async function clearUserAvatar(formData: FormData): Promise<AvatarResult> {
+  const me = await requireAdmin();
+  const userId = String(formData.get("userId"));
+  if (!userId) return { ok: false, error: "Usuario inválido." };
+  await db.update(profiles).set({ avatarUrl: null }).where(eq(profiles.id, userId));
+  // best-effort: borra ambos posibles paths (.png del admin/onboarding y
+  // .jpg de los seeds de relleno).
+  for (const ext of ["png", "jpg"]) {
+    try {
+      await deleteImage({ kind: "avatar", path: `${userId}.${ext}` });
+    } catch {
+      /* el archivo podía no existir */
+    }
+  }
+  await logAdminAction({ adminId: me.id, action: "user.avatar.clear", payload: { userId } });
+  revalidatePath("/admin/usuarios");
+  return { ok: true };
+}
 
 export async function setUserBanned(formData: FormData) {
   const me = await requireAdmin();
