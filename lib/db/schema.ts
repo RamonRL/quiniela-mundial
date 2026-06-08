@@ -396,8 +396,15 @@ export const players = pgTable(
     position: text("position"),
     jerseyNumber: smallint("jersey_number"),
     photoUrl: text("photo_url"),
+    // Caché del id de jugador en API-Football. Se rellena la primera vez
+    // que un gol de este jugador se mapea con confianza, para acelerar y
+    // estabilizar mapeos posteriores.
+    providerPlayerId: integer("provider_player_id"),
   },
-  (t) => [index("players_team_idx").on(t.teamId)],
+  (t) => [
+    index("players_team_idx").on(t.teamId),
+    uniqueIndex("players_provider_idx").on(t.providerPlayerId),
+  ],
 );
 
 export const matchdays = pgTable("matchdays", {
@@ -427,12 +434,51 @@ export const matches = pgTable(
     homeScorePen: smallint("home_score_pen"),
     awayScorePen: smallint("away_score_pen"),
     winnerTeamId: integer("winner_team_id").references(() => teams.id, { onDelete: "set null" }),
+    // ─── Automatización (sync con API-Football) ───
+    // Id del fixture en API-Football, casado una vez por fecha + equipos.
+    providerFixtureId: integer("provider_fixture_id"),
+    // "auto" = el sync puede escribir este partido. "manual" = el admin lo
+    // editó a mano y el sync NO debe sobrescribirlo (la corrección humana
+    // siempre gana). Se libera desde el panel de sync.
+    resultSource: text("result_source").notNull().default("auto"),
+    // Último instante en que el sync tocó/confirmó este partido (watchdog).
+    lastSyncedAt: timestamp("last_synced_at", { withTimezone: true }),
   },
   (t) => [
     index("matches_scheduled_idx").on(t.scheduledAt),
     index("matches_stage_idx").on(t.stage),
     index("matches_matchday_idx").on(t.matchdayId),
     index("matches_group_idx").on(t.groupId),
+    uniqueIndex("matches_provider_idx").on(t.providerFixtureId),
+  ],
+);
+
+/**
+ * Goles cuyo jugador NO se pudo mapear con confianza a un `players.id`
+ * (nombre que no casa, dorsal ausente, etc.). El gol YA cuenta para el
+ * marcador (está en `matches`), pero NO puntúa goleador hasta que el admin
+ * lo reconcilie desde /admin/sync (elige el jugador → se inserta en
+ * `match_scorers`, se cachea `players.provider_player_id` y se re-puntúa).
+ */
+export const pendingScorers = pgTable(
+  "pending_scorers",
+  {
+    id: serial("id").primaryKey(),
+    matchId: integer("match_id")
+      .notNull()
+      .references(() => matches.id, { onDelete: "cascade" }),
+    teamId: integer("team_id").references(() => teams.id, { onDelete: "set null" }),
+    providerPlayerId: integer("provider_player_id"),
+    playerName: text("player_name").notNull(),
+    minute: smallint("minute"),
+    isOwnGoal: boolean("is_own_goal").notNull().default(false),
+    isPenalty: boolean("is_penalty").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("pending_scorers_match_idx").on(t.matchId),
+    // Mismo gol del proveedor no se duplica si el sync corre varias veces.
+    uniqueIndex("pending_scorers_dedup_idx").on(t.matchId, t.providerPlayerId, t.minute),
   ],
 );
 

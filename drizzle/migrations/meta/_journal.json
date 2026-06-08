@@ -183,6 +183,13 @@
       "when": 1780535536987,
       "tag": "0025_flippant_expediter",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1780960582229,
+      "tag": "0026_concerned_psynapse",
+      "breakpoints": true
     }
   ]
 }
