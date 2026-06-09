@@ -129,9 +129,9 @@ describe("scoreMatchScorerPrediction", () => {
     wentToPens: false,
     winnerTeamId: 30,
     scorers: [
-      { playerId: 100, teamId: 30, isFirstGoal: true },
-      { playerId: 101, teamId: 30, isFirstGoal: false },
-      { playerId: 102, teamId: 30, isFirstGoal: false },
+      { playerId: 100, teamId: 30, isFirstGoal: true, isOwnGoal: false },
+      { playerId: 101, teamId: 30, isFirstGoal: false, isOwnGoal: false },
+      { playerId: 102, teamId: 30, isFirstGoal: false, isOwnGoal: false },
     ],
   };
 
@@ -164,5 +164,37 @@ describe("scoreMatchScorerPrediction", () => {
       rules,
     });
     expect(entries).toHaveLength(0);
+  });
+
+  it("no acredita un autogol como gol del goleador", () => {
+    const ownGoalMatch: MatchOutcome = {
+      ...match,
+      scorers: [
+        { playerId: 200, teamId: 30, isFirstGoal: false, isOwnGoal: true },
+      ],
+    };
+    const entries = scoreMatchScorerPrediction({
+      match: ownGoalMatch,
+      prediction: { matchId: 3, playerId: 200 },
+      rules,
+    });
+    expect(entries).toHaveLength(0);
+  });
+
+  it("acredita el gol válido aunque el mismo jugador marque también en propia", () => {
+    const mixed: MatchOutcome = {
+      ...match,
+      scorers: [
+        { playerId: 300, teamId: 30, isFirstGoal: true, isOwnGoal: false },
+        { playerId: 300, teamId: 30, isFirstGoal: false, isOwnGoal: true },
+      ],
+    };
+    const entries = scoreMatchScorerPrediction({
+      match: mixed,
+      prediction: { matchId: 3, playerId: 300 },
+      rules,
+    });
+    // 4 (marcó) + 2 (primer gol válido) = 6, sin doble conteo por el autogol.
+    expect(entries.reduce((s, e) => s + e.points, 0)).toBe(6);
   });
 });

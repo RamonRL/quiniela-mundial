@@ -123,6 +123,7 @@ export async function recomputeMatchScoringForAllUsers(matchId: number) {
       playerId: s.playerId,
       teamId: s.teamId,
       isFirstGoal: s.isFirstGoal,
+      isOwnGoal: s.isOwnGoal,
     })),
   };
 

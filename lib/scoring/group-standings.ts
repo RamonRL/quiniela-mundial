@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { groupStandings, matches } from "@/lib/db/schema";
+import { rankGroupStandings, type H2HMatch } from "./group-standings-rank";
 
 /**
  * Recompute the `group_standings` table from the current state of finished
@@ -13,10 +14,17 @@ import { groupStandings, matches } from "@/lib/db/schema";
  * categoría "Posiciones de grupo" sigue siendo manual desde
  * `/admin/operaciones` (un admin verifica antes de repartir).
  *
- * Tiebreakers: puntos desc → diferencia de goles desc → goles a favor desc.
- * Coincide con el criterio FIFA. En caso de empate total, el orden interno
- * sería arbitrario; se asume que el admin desempata manualmente desde
- * `/admin/grupos` (no implementado aún) si llegamos a ese caso.
+ * Desempates (criterio FIFA 2026, en orden):
+ *   1. puntos · 2. diferencia de goles · 3. goles a favor (todos los partidos
+ *      del grupo). Si dos o más siguen empatadas, mini-liga entre ellas:
+ *   4. puntos · 5. diferencia de goles · 6. goles a favor (solo en los partidos
+ *      entre las empatadas). Tras eso FIFA usa fair-play y sorteo, que no
+ *      modelamos: como último recurso ordenamos por `teamId` para que el orden
+ *      sea DETERMINISTA y reproducible (no dependiente del orden de inserción).
+ *
+ * Esto importa: el orquestador puntúa la Categoría 1 y siembra el R32 (pos 1 y
+ * 2) automáticamente al cerrar el grupo, así que el orden de empate se usa sin
+ * intervención humana.
  */
 export async function recomputeAllGroupStandings(): Promise<{
   groupCount: number;
@@ -91,6 +99,21 @@ export async function recomputeAllGroupStandings(): Promise<{
     byGroup.set(v.groupId, arr);
   }
 
+  // Partidos finalizados por grupo, para la mini-liga (head-to-head).
+  const matchesByGroup = new Map<number, H2HMatch[]>();
+  for (const m of groupMatches) {
+    if (m.groupId == null || m.homeTeamId == null || m.awayTeamId == null) continue;
+    if (m.homeScore == null || m.awayScore == null) continue;
+    const arr = matchesByGroup.get(m.groupId) ?? [];
+    arr.push({
+      homeTeamId: m.homeTeamId,
+      awayTeamId: m.awayTeamId,
+      homeScore: m.homeScore,
+      awayScore: m.awayScore,
+    });
+    matchesByGroup.set(m.groupId, arr);
+  }
+
   await db.transaction(async (tx) => {
     // Wipe TODA la tabla y reescribimos desde cero. Importante: si el admin
     // revierte el último partido finalizado de un grupo, ese grupo ya no
@@ -99,16 +122,10 @@ export async function recomputeAllGroupStandings(): Promise<{
     // borra el estado obsoleto correspondiente.
     await tx.delete(groupStandings);
 
-    for (const [, arr] of byGroup) {
-      arr.sort((a, b) => {
-        if (b.points !== a.points) return b.points - a.points;
-        const gdA = a.goalsFor - a.goalsAgainst;
-        const gdB = b.goalsFor - b.goalsAgainst;
-        if (gdB !== gdA) return gdB - gdA;
-        return b.goalsFor - a.goalsFor;
-      });
-      for (let i = 0; i < arr.length; i++) {
-        const v = arr[i];
+    for (const [groupId, arr] of byGroup) {
+      const ranked = rankGroupStandings(arr, matchesByGroup.get(groupId) ?? []);
+      for (let i = 0; i < ranked.length; i++) {
+        const v = ranked[i];
         await tx.insert(groupStandings).values({
           groupId: v.groupId,
           teamId: v.teamId,

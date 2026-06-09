@@ -7,7 +7,7 @@ export type MatchOutcome = {
   awayScore: number;
   wentToPens: boolean;
   winnerTeamId: number | null;
-  scorers: { playerId: number; teamId: number; isFirstGoal: boolean }[];
+  scorers: { playerId: number; teamId: number; isFirstGoal: boolean; isOwnGoal: boolean }[];
 };
 
 export type MatchResultPrediction = {
@@ -97,6 +97,11 @@ export function scoreMatchResultPrediction(args: {
  * Score per-match scorer prediction (categoría 5).
  * - 4 pts if predicted player is among the scorers of the match.
  * - +2 if predicted player scored the FIRST goal (cumulative with the 4).
+ *
+ * Los AUTOGOLES no cuentan: marcar en propia puerta no acredita al jugador como
+ * goleador a efectos de esta predicción (coherente con la bota de oro, que
+ * también los excluye). Si un jugador marca un gol válido Y un autogol en el
+ * mismo partido, sí puntúa por el válido.
  */
 export function scoreMatchScorerPrediction(args: {
   match: MatchOutcome;
@@ -106,9 +111,11 @@ export function scoreMatchScorerPrediction(args: {
   const { match, prediction, rules } = args;
   const entries: LedgerEntry[] = [];
 
-  const playerScored = match.scorers.some((s) => s.playerId === prediction.playerId);
+  const playerScored = match.scorers.some(
+    (s) => s.playerId === prediction.playerId && !s.isOwnGoal,
+  );
   const playerScoredFirst = match.scorers.some(
-    (s) => s.playerId === prediction.playerId && s.isFirstGoal,
+    (s) => s.playerId === prediction.playerId && s.isFirstGoal && !s.isOwnGoal,
   );
 
   if (playerScored) {
