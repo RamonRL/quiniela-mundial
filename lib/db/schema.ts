@@ -338,6 +338,28 @@ export const leagueMemberships = pgTable(
   ],
 );
 
+// Logos de patrocinadores de una liga (feature admin-only). Si una liga tiene
+// ≥1 patrocinador, el dashboard muestra esta franja de logos EN LUGAR del logo
+// de la FIFA World Cup, para dar protagonismo a las marcas patrocinadoras.
+export const leagueSponsors = pgTable(
+  "league_sponsors",
+  {
+    id: serial("id").primaryKey(),
+    leagueId: integer("league_id")
+      .notNull()
+      .references(() => leagues.id, { onDelete: "cascade" }),
+    imageUrl: text("image_url").notNull(),
+    // Ruta dentro del bucket `sponsors` (para borrar el objeto al eliminar).
+    storagePath: text("storage_path").notNull(),
+    // Texto alternativo / nombre de la marca.
+    alt: text("alt"),
+    // Orden de aparición de izquierda a derecha (asc).
+    orderIndex: integer("order_index").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("league_sponsors_league_idx").on(t.leagueId, t.orderIndex)],
+);
+
 // Sub-grupos dentro de una liga premium (Marketing, Ventas, Ingeniería…).
 // Solo se crean en ligas con plan de pago activo; el chequeo vive en las
 // server actions (`lib/league-actions.ts`) y en la vista admin.

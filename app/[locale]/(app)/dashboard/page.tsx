@@ -40,6 +40,8 @@ import { ProgressHub, type ProgressHubProps } from "@/components/dashboard/progr
 import { UpcomingRoundsStrip } from "@/components/dashboard/upcoming-rounds-strip";
 import { GroupStandingsSlider } from "@/components/dashboard/group-standings-slider";
 import { PatchNotesBoard } from "@/components/dashboard/patch-notes-board";
+import { SponsorStrip } from "@/components/dashboard/sponsor-strip";
+import { loadLeagueSponsors, type SponsorLogo } from "@/lib/sponsors";
 import {
   countLeagueMembers,
   loadLeaderboard,
@@ -169,6 +171,7 @@ export default async function DashboardPage({
     myPointsRows,
     leaderboardEntries,
     leagueMemberCountFallback,
+    sponsorRows,
   ] = await Promise.all([
     safe(
       db
@@ -320,7 +323,9 @@ export default async function DashboardPage({
       0,
       "leagueMemberCountFallback",
     ),
+    safe(loadLeagueSponsors(leagueId), [] as SponsorLogo[], "sponsors"),
   ]);
+  const sponsors = sponsorRows;
   const myPoints = myPointsRows[0]?.total ?? 0;
 
   // Activity feed se ha movido a un async Server Component dentro de
@@ -461,20 +466,26 @@ export default async function DashboardPage({
         <ImportPredictionsBanner userId={me.id} activeLeagueId={leagueId} />
       </Suspense>
 
-      {/* FWC26 mark — centrado, encima de la barra dinámica */}
-      <div className="flex flex-col items-center gap-1.5 pt-2">
-        <Image
-          src="/fwc26.png"
-          alt="FIFA World Cup 26"
-          width={1500}
-          height={1500}
-          priority
-          className="h-14 w-auto sm:h-16"
-        />
-        <p className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)] sm:text-[0.6rem]">
-          {t("fifaWorldCup")}
-        </p>
-      </div>
+      {/* Cabecera superior: si la liga tiene patrocinadores, su franja de
+          logos SUSTITUYE al logo FWC (más espacio para las marcas). Si no,
+          el mark estándar FWC26 centrado. */}
+      {sponsors.length > 0 ? (
+        <SponsorStrip sponsors={sponsors} />
+      ) : (
+        <div className="flex flex-col items-center gap-1.5 pt-2">
+          <Image
+            src="/fwc26.png"
+            alt="FIFA World Cup 26"
+            width={1500}
+            height={1500}
+            priority
+            className="h-14 w-auto sm:h-16"
+          />
+          <p className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)] sm:text-[0.6rem]">
+            {t("fifaWorldCup")}
+          </p>
+        </div>
+      )}
 
       {/* Marquee strip */}
       <div className="-mx-4 overflow-hidden border-y border-[var(--color-border)] bg-[var(--color-surface)] py-2 lg:-mx-8">
