@@ -1,7 +1,7 @@
 from PIL import Image
 import numpy as np
 
-img = Image.open("/home/ramon.romero/workspace/personal/quiniela-mundial/favicon/synaptech.png").convert("RGBA")
+img = Image.open("/home/ramon.romero/Pictures/unnax.png").convert("RGBA")
 data = np.array(img)
 
 # Separar canales
@@ -14,4 +14,4 @@ white = (r < 30) & (g < 30) & (b < 30)
 data[..., :-1][white.T] = (255, 255, 255)
 data[..., -1][white.T] = 0
 
-Image.fromarray(data).save("/home/ramon.romero/workspace/personal/quiniela-mundial/favicon/synaptech_alpha.png")
+Image.fromarray(data).save("/home/ramon.romero/Pictures/unnax_alpha.png")

@@ -171,20 +171,25 @@ export default async function MyLeaguePage() {
         title={league.name}
         description={isOwner ? t("descOwner") : t("descMember")}
         actions={
-          isOwner ? (
-            <LeagueSettingsDialog
-              league={{
-                id: league.id,
-                name: league.name,
-                logoUrl: league.logoUrl,
-                isPremium,
-              }}
-              memberCount={members.length}
-              canDelete={isRealOwner}
-            />
-          ) : (
-            <LeaveButton leagueId={league.id} leagueName={league.name} />
-          )
+          <div className="flex items-center gap-2">
+            {isOwner ? (
+              <LeagueSettingsDialog
+                league={{
+                  id: league.id,
+                  name: league.name,
+                  logoUrl: league.logoUrl,
+                  isPremium,
+                }}
+                memberCount={members.length}
+                canDelete={isRealOwner}
+              />
+            ) : null}
+            {/* El creador real no abandona (borra); cualquier otro miembro,
+                incluido un admin co-admin, sí puede salir. */}
+            {!isRealOwner ? (
+              <LeaveButton leagueId={league.id} leagueName={league.name} />
+            ) : null}
+          </div>
         }
       />
 
