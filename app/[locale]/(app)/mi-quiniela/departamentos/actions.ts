@@ -11,6 +11,7 @@ import {
 } from "@/lib/db/schema";
 import { requireUser } from "@/lib/auth/guards";
 import { canUseDepartments } from "@/lib/league-tiers";
+import { canManageLeague } from "@/lib/leagues";
 import { logAdminAction } from "@/lib/admin/audit";
 
 export type DepartmentFormState = {
@@ -42,7 +43,7 @@ const createSchema = z.object({
  * Centraliza el chequeo en un sitio para no repetirlo en cada acción.
  */
 async function requireDeptAdmin(
-  meId: string,
+  me: { id: string; role: "user" | "admin" },
   leagueId: number,
 ): Promise<{ league: typeof leagues.$inferSelect } | { error: string }> {
   if (!Number.isFinite(leagueId)) return { error: "Liga inválida." };
@@ -53,8 +54,8 @@ async function requireDeptAdmin(
     .limit(1);
   if (!league) return { error: "Liga no encontrada." };
   if (league.isPublic) return { error: "La quiniela pública no usa departamentos." };
-  if (league.createdBy !== meId) {
-    return { error: "Solo el creador puede gestionar departamentos." };
+  if (!canManageLeague(me, league)) {
+    return { error: "No tienes permiso para gestionar departamentos." };
   }
   if (!canUseDepartments(league.tier)) {
     return {
@@ -79,7 +80,7 @@ export async function createDepartment(
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
   }
-  const guard = await requireDeptAdmin(me.id, parsed.data.leagueId);
+  const guard = await requireDeptAdmin(me, parsed.data.leagueId);
   if ("error" in guard) return { ok: false, error: guard.error };
 
   try {
@@ -154,7 +155,7 @@ export async function updateDepartment(
     .limit(1);
   if (!dept) return { ok: false, error: "Departamento no encontrado." };
 
-  const guard = await requireDeptAdmin(me.id, dept.leagueId);
+  const guard = await requireDeptAdmin(me, dept.leagueId);
   if ("error" in guard) return { ok: false, error: guard.error };
 
   try {
@@ -191,7 +192,7 @@ export async function deleteDepartment(formData: FormData) {
     .limit(1);
   if (!dept) return;
 
-  const guard = await requireDeptAdmin(me.id, dept.leagueId);
+  const guard = await requireDeptAdmin(me, dept.leagueId);
   if ("error" in guard) return;
 
   // El FK ON DELETE SET NULL en league_memberships.departmentId hace que
@@ -231,7 +232,7 @@ export async function assignMemberToDepartment(
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
   }
 
-  const guard = await requireDeptAdmin(me.id, parsed.data.leagueId);
+  const guard = await requireDeptAdmin(me, parsed.data.leagueId);
   if ("error" in guard) return { ok: false, error: guard.error };
 
   // Si el deptId no es null, validamos que ese departamento PERTENECE a la

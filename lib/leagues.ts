@@ -11,6 +11,26 @@ export const PENDING_INVITE_COOKIE = "pending_league_token";
 export const PUBLIC_LEAGUE_SLUG = "liga-principal";
 export const PRIVATE_LEAGUES_PER_USER_LIMIT = 5;
 
+/**
+ * ¿Puede `user` GESTIONAR esta liga (editar ajustes, logo/branding, anuncio,
+ * departamentos, expulsar miembros)? Lo puede el creador y, además, cualquier
+ * admin de la plataforma (ADMIN_EMAILS) actúa como CO-ADMIN de cualquier liga
+ * PRIVADA — así una cuenta admin es siempre gestora de las quinielas a las que
+ * pertenece. La quiniela PÚBLICA nunca se gestiona desde la UI de usuario.
+ *
+ * Ojo: BORRAR una liga NO pasa por aquí. Eso sigue siendo exclusivo del
+ * creador real (`createdBy`), para que un co-admin no elimine por accidente la
+ * quiniela de otra persona; un admin que necesite borrarla lo hace desde
+ * /admin/ligas.
+ */
+export function canManageLeague(
+  user: { id: string; role: "user" | "admin" },
+  league: { createdBy: string | null; isPublic: boolean },
+): boolean {
+  if (league.isPublic) return false;
+  return league.createdBy === user.id || user.role === "admin";
+}
+
 // Helpers puros sobre tiers viven en su propio módulo para que los tests
 // no tiren de la conexión DB al importarlos. Re-export aquí para que los
 // consumidores existentes sigan haciendo `from "@/lib/leagues"`.

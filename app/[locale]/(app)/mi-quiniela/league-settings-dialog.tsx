@@ -28,6 +28,8 @@ const initial: LeagueFormState = { ok: false };
 type Props = {
   league: { id: number; name: string; logoUrl: string | null; isPremium: boolean };
   memberCount: number;
+  /** Solo el creador real puede borrar la liga; un co-admin no ve esta zona. */
+  canDelete?: boolean;
 };
 
 /**
@@ -38,7 +40,7 @@ type Props = {
  *     "ELIMINAR" (fricción deliberada, irreversible → `deleteOwnLeague`).
  * Así "Eliminar" deja de estar tan a la vista en la página.
  */
-export function LeagueSettingsDialog({ league, memberCount }: Props) {
+export function LeagueSettingsDialog({ league, memberCount, canDelete = true }: Props) {
   const t = useTranslations("myPool");
   const [open, setOpen] = useState(false);
   const [state, action, pending] = useActionState(updateLeague, initial);
@@ -131,7 +133,8 @@ export function LeagueSettingsDialog({ league, memberCount }: Props) {
           </DialogFooter>
         </form>
 
-        {/* ── Zona peligrosa: oculta hasta clicar ── */}
+        {/* ── Zona peligrosa: oculta hasta clicar; solo el creador real ── */}
+        {canDelete ? (
         <div className="mt-1 border-t border-[var(--color-border)] pt-4">
           {!showDelete ? (
             <button
@@ -191,6 +194,7 @@ export function LeagueSettingsDialog({ league, memberCount }: Props) {
             </div>
           )}
         </div>
+        ) : null}
       </DialogContent>
     </Dialog>
   );

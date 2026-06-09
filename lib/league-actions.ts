@@ -19,6 +19,7 @@ import {
   PENDING_INVITE_COOKIE,
   PRIVATE_LEAGUES_PER_USER_LIMIT,
   canJoinLeague,
+  canManageLeague,
   countPrivateMemberships,
   createLeagueRecord,
   getPublicLeague,
@@ -385,8 +386,8 @@ export async function updateLeague(
   if (target.isPublic) {
     return { ok: false, error: "La quiniela pública no se puede editar." };
   }
-  if (target.createdBy !== me.id) {
-    return { ok: false, error: "Solo el creador puede editar la quiniela." };
+  if (!canManageLeague(me, target)) {
+    return { ok: false, error: "No tienes permiso para editar esta quiniela." };
   }
 
   const update: Record<string, unknown> = { name: parsed.data.name };
@@ -466,8 +467,8 @@ export async function kickFromOwnLeague(formData: FormData) {
   const [target] = await db.select().from(leagues).where(eq(leagues.id, leagueId)).limit(1);
   if (!target) return;
   if (target.isPublic) return;
-  if (target.createdBy !== me.id) return;
-  if (userId === me.id) return; // el creador no se autoexpulsa
+  if (!canManageLeague(me, target)) return;
+  if (userId === me.id) return; // un gestor no se autoexpulsa
 
   await db
     .delete(leagueMemberships)
@@ -522,8 +523,8 @@ export async function updateLeagueAnnouncement(
     .where(eq(leagues.id, parsed.data.id))
     .limit(1);
   if (!target) return { ok: false, error: "Liga no encontrada." };
-  if (target.createdBy !== me.id) {
-    return { ok: false, error: "Solo el creador puede editar el anuncio." };
+  if (!canManageLeague(me, target)) {
+    return { ok: false, error: "No tienes permiso para editar el anuncio." };
   }
   if (!isPremiumTier(target.tier)) {
     return {
@@ -1029,18 +1030,19 @@ const MAX_BRAND_BYTES = 2 * 1024 * 1024; // 2 MB — el cliente ya recorta a PNG
 
 type ImgResult = { ok: boolean; error?: string; url?: string };
 
-/** Valida que `me` es el owner de una liga premium. Devuelve la liga o un error. */
+/** Valida que `me` puede gestionar el branding de una liga premium (owner o
+ * co-admin). Devuelve la liga o un error. */
 async function requireOwnerPremiumLeague(
   leagueId: number,
-  meId: string,
+  me: { id: string; role: "user" | "admin" },
 ): Promise<{ tier: string } | { error: string }> {
   const [target] = await db
-    .select({ createdBy: leagues.createdBy, tier: leagues.tier })
+    .select({ createdBy: leagues.createdBy, tier: leagues.tier, isPublic: leagues.isPublic })
     .from(leagues)
     .where(eq(leagues.id, leagueId))
     .limit(1);
   if (!target) return { error: "Liga no encontrada." };
-  if (target.createdBy !== meId) return { error: "Solo el creador puede editar el branding." };
+  if (!canManageLeague(me, target)) return { error: "No tienes permiso para editar el branding." };
   if (!canUseBranding(target.tier)) {
     return { error: "El branding personalizado está disponible a partir del Pase Empresa (100)." };
   }
@@ -1060,7 +1062,7 @@ export async function uploadLeagueSquareLogo(formData: FormData): Promise<ImgRes
   if (file.size > MAX_BRAND_BYTES) return { ok: false, error: "La imagen es demasiado grande." };
   const limited = await rateLimit(`league-logo:${me.id}`, 10, 60_000);
   if (!limited.ok) return { ok: false, error: "Demasiados intentos. Espera un momento." };
-  const guard = await requireOwnerPremiumLeague(id, me.id);
+  const guard = await requireOwnerPremiumLeague(id, me);
   if ("error" in guard) return { ok: false, error: guard.error };
   try {
     const url = await uploadImage({ kind: "league", path: `${id}.png`, file });
@@ -1089,7 +1091,7 @@ export async function uploadLeagueBrandLogo(formData: FormData): Promise<ImgResu
   if (file.size > MAX_BRAND_BYTES) return { ok: false, error: "La imagen es demasiado grande." };
   const limited = await rateLimit(`league-brand:${me.id}`, 10, 60_000);
   if (!limited.ok) return { ok: false, error: "Demasiados intentos. Espera un momento." };
-  const guard = await requireOwnerPremiumLeague(id, me.id);
+  const guard = await requireOwnerPremiumLeague(id, me);
   if ("error" in guard) return { ok: false, error: guard.error };
   try {
     const url = await uploadImage({ kind: "league", path: `${id}-brand.png`, file });
@@ -1109,7 +1111,7 @@ export async function removeLeagueBrandLogo(formData: FormData): Promise<ImgResu
   const me = await requireUser();
   const id = Number(formData.get("id"));
   if (!Number.isFinite(id)) return { ok: false, error: "Liga inválida." };
-  const guard = await requireOwnerPremiumLeague(id, me.id);
+  const guard = await requireOwnerPremiumLeague(id, me);
   if ("error" in guard) return { ok: false, error: guard.error };
   await db
     .update(leagues)
@@ -1140,7 +1142,7 @@ export async function uploadLeagueBrandLightLogo(formData: FormData): Promise<Im
   if (file.size > MAX_BRAND_BYTES) return { ok: false, error: "La imagen es demasiado grande." };
   const limited = await rateLimit(`league-brand:${me.id}`, 10, 60_000);
   if (!limited.ok) return { ok: false, error: "Demasiados intentos. Espera un momento." };
-  const guard = await requireOwnerPremiumLeague(id, me.id);
+  const guard = await requireOwnerPremiumLeague(id, me);
   if ("error" in guard) return { ok: false, error: guard.error };
   try {
     const url = await uploadImage({ kind: "league", path: `${id}-brand-light.png`, file });
@@ -1159,7 +1161,7 @@ export async function removeLeagueBrandLightLogo(formData: FormData): Promise<Im
   const me = await requireUser();
   const id = Number(formData.get("id"));
   if (!Number.isFinite(id)) return { ok: false, error: "Liga inválida." };
-  const guard = await requireOwnerPremiumLeague(id, me.id);
+  const guard = await requireOwnerPremiumLeague(id, me);
   if ("error" in guard) return { ok: false, error: guard.error };
   await db.update(leagues).set({ brandLogoLightUrl: null }).where(eq(leagues.id, id));
   try {

@@ -25,7 +25,7 @@ import {
 import { PageHeader } from "@/components/shell/page-header";
 import { EmptyState } from "@/components/shell/empty-state";
 import { requireUser } from "@/lib/auth/guards";
-import { currentLeagueId, inLeagueFilter, isPremiumTier } from "@/lib/leagues";
+import { canManageLeague, currentLeagueId, inLeagueFilter, isPremiumTier } from "@/lib/leagues";
 import { canUseBranding, canUseDepartments } from "@/lib/league-tiers";
 import { loadDepartmentRankings } from "@/lib/leaderboard";
 import { buildDeptCards, type DeptCardData } from "./departamentos/dept-data";
@@ -77,7 +77,11 @@ export default async function MyLeaguePage() {
       .groupBy(pointsLedger.userId),
   ]);
   const pointsByUser = new Map(pointsRows.map((r) => [r.userId, r.total]));
-  const isOwner = league.createdBy === me.id;
+  // `isRealOwner` = el creador de verdad (único que puede BORRAR la liga).
+  // `isOwner` = quien puede GESTIONARLA: el creador o un admin co-admin. Casi
+  // toda la UI de gestión se rige por `isOwner`; el borrado, por `isRealOwner`.
+  const isRealOwner = league.createdBy === me.id;
+  const isOwner = canManageLeague(me, league);
   const isPremium = isPremiumTier(league.tier);
   // Branding personalizado: solo Pase Empresa (100) o superior. El team-50
   // ve únicamente INFO y FUNCIONALIDADES.
@@ -176,6 +180,7 @@ export default async function MyLeaguePage() {
                 isPremium,
               }}
               memberCount={members.length}
+              canDelete={isRealOwner}
             />
           ) : (
             <LeaveButton leagueId={league.id} leagueName={league.name} />
