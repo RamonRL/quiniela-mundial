@@ -711,7 +711,8 @@
     "pnTypeNote": "Notice",
     "afHeader": "Latest points · your ledger",
     "nsHeader": "World Cup daily",
-    "nsSeeAll": "See all"
+    "nsSeeAll": "See all",
+    "sponsorsHeader": "Sponsors"
   },
   "progressHub": {
     "ready": "DONE!",

@@ -711,7 +711,8 @@
     "pnTypeNote": "Avis",
     "afHeader": "Derniers points · ton historique",
     "nsHeader": "La Coupe du Monde au jour le jour",
-    "nsSeeAll": "Voir tout"
+    "nsSeeAll": "Voir tout",
+    "sponsorsHeader": "Partenaires"
   },
   "progressHub": {
     "ready": "PRÊT !",

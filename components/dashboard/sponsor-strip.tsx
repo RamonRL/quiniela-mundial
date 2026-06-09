@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import type { SponsorLogo } from "@/lib/sponsors";
 
 /**
@@ -14,10 +15,15 @@ import type { SponsorLogo } from "@/lib/sponsors";
  * Con 1 logo queda centrado; con 2, uno a cada lado del centro; con 3, centro
  * + lados; con 4, fila completa; a partir de ahí salta a la siguiente fila.
  */
-export function SponsorStrip({ sponsors }: { sponsors: SponsorLogo[] }) {
+export async function SponsorStrip({ sponsors }: { sponsors: SponsorLogo[] }) {
   if (sponsors.length === 0) return null;
+  const t = await getTranslations("dashboard");
   return (
-    <ul className="mx-auto flex max-w-5xl flex-wrap items-center justify-center pt-2">
+    <div className="space-y-3 pt-2">
+      <p className="text-center font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)] sm:text-[0.6rem]">
+        {t("sponsorsHeader")}
+      </p>
+      <ul className="mx-auto flex max-w-5xl flex-wrap items-center justify-center">
       {sponsors.map((s) => (
         <li
           key={s.id}
@@ -32,6 +38,7 @@ export function SponsorStrip({ sponsors }: { sponsors: SponsorLogo[] }) {
           />
         </li>
       ))}
-    </ul>
+      </ul>
+    </div>
   );
 }
