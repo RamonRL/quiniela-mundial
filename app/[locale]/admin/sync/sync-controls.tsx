@@ -2,9 +2,31 @@
 
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { Lock, LockOpen, RefreshCw } from "lucide-react";
+import { Lock, LockOpen, RefreshCw, Unlock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { forceSyncNow, setResultSource } from "./actions";
+import { forceSyncNow, openR32Predictions, setResultSource } from "./actions";
+
+export function OpenR32Button({ alreadyOpen }: { alreadyOpen: boolean }) {
+  const [pending, start] = useTransition();
+  return (
+    <Button
+      type="button"
+      size="sm"
+      variant={alreadyOpen ? "outline" : "default"}
+      disabled={pending}
+      onClick={() =>
+        start(async () => {
+          const r = await openR32Predictions();
+          if (r.ok) toast.success(r.message ?? "R32 abierto.");
+          else toast.error(r.error ?? "No se pudo abrir el R32.");
+        })
+      }
+    >
+      <Unlock className={pending ? "size-4 animate-pulse" : "size-4"} />
+      {alreadyOpen ? "Reaplicar terceros" : "Abrir R32 a los jugadores"}
+    </Button>
+  );
+}
 
 export function ForceSyncButton() {
   const [pending, start] = useTransition();

@@ -12,9 +12,15 @@ import {
   cascadeKoWinner,
   clearKoCascade,
   isGroupComplete,
+  isGroupStageComplete,
   populateR32FromGroup,
 } from "./bracket-population";
 import { clearAutoResolvedSpecials, evaluateAutoSpecials } from "./specials-auto";
+import {
+  handleGroupStageTransition,
+  isR32Open,
+  setR32TransitionState,
+} from "./third-place-population";
 
 /**
  * Orquestador post-partido.
@@ -58,6 +64,10 @@ export async function onMatchFinalized(matchId: number): Promise<void> {
       await populateR32FromGroup(m.groupId);
       await recomputeGroupScoringForAllUsers(m.groupId);
     }
+    // Si cerró toda la fase de grupos, avisa de la transición a R32 (no abre
+    // nada: la apertura es un clic del admin). Los mejores terceros NO se
+    // poblan aquí — solo al confirmar.
+    await handleGroupStageTransition();
   }
 
   // ── KO cascade + bracket scoring incremental ─────────────────────────
@@ -105,6 +115,16 @@ export async function onMatchReverted(matchId: number): Promise<void> {
     if (stageKey) {
       const advancers = await loadStageWinners(m.stage);
       await recomputeBracketStageForAllUsers(stageKey, advancers);
+    }
+  } else {
+    // Revertir un partido de grupo puede reabrir la fase. Si ya no está
+    // completa y el R32 aún no se abrió, resetea el aviso de transición para
+    // que vuelva a dispararse cuando se cierre de nuevo. Si ya estaba abierto,
+    // re-evalúa (avisará si los terceros han cambiado).
+    if (!(await isGroupStageComplete()) && !(await isR32Open())) {
+      await setR32TransitionState({ notifiedAt: undefined, ambiguousNotifiedAt: undefined });
+    } else {
+      await handleGroupStageTransition();
     }
   }
 

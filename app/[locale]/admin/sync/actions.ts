@@ -8,8 +8,41 @@ import { requireAdmin } from "@/lib/auth/guards";
 import { logAdminAction } from "@/lib/admin/audit";
 import { recomputeMatchScoringForAllUsers } from "@/lib/scoring/persistence";
 import { syncLiveMatches } from "@/lib/automation/match-sync";
+import {
+  populateR32ThirdPlaces,
+  setR32TransitionState,
+} from "@/lib/automation/third-place-population";
 
 export type ActionResult = { ok: boolean; error?: string; message?: string };
+
+/**
+ * Gate de transición a R32: puebla las 8 casillas de mejores terceros vía
+ * Anexo C y marca el R32 como abierto. Tras esto, las jornadas/bracket de R32
+ * salen de "waiting" (los emparejamientos quedan resueltos). 1 clic del admin.
+ */
+export async function openR32Predictions(): Promise<ActionResult> {
+  const me = await requireAdmin();
+  const res = await populateR32ThirdPlaces();
+  if (res.status !== "ok") {
+    const error =
+      res.status === "ambiguous"
+        ? "Empate en el corte 8.º/9.º: resuélvelo en Operaciones › Mejores terceros antes de abrir."
+        : res.status === "incomplete"
+          ? "La fase de grupos aún no ha cerrado del todo."
+          : "No hay una combinación válida de terceros (revisa las clasificaciones).";
+    return { ok: false, error };
+  }
+  await setR32TransitionState({ openedAt: new Date().toISOString(), openedBy: me.id });
+  await logAdminAction({ adminId: me.id, action: "ops.open_r32", payload: { changed: res.changed } });
+  revalidatePath("/admin/sync");
+  revalidatePath("/predicciones");
+  revalidatePath("/predicciones/bracket");
+  revalidatePath("/predicciones/jornada/[matchdayId]", "page");
+  revalidatePath("/bracket");
+  revalidatePath("/calendario");
+  revalidatePath("/grupos/terceros");
+  return { ok: true, message: `R32 abierto. ${res.changed.length} casillas de terceros ubicadas.` };
+}
 
 /** Dispara el sync a mano (mismo camino que el cron). */
 export async function forceSyncNow(): Promise<ActionResult> {

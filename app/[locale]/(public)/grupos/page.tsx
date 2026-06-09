@@ -11,6 +11,7 @@ import { PageHeader } from "@/components/shell/page-header";
 import { ArrowUpRight, Users } from "lucide-react";
 import { BreadcrumbLD } from "@/components/seo/jsonld";
 import { BrandCTA } from "@/components/seo/brand-cta";
+import { GroupsTabs } from "./groups-tabs";
 
 // Clasificación de grupos: cambia cuando finaliza un partido. ISR a 60s
 // la mantiene fresca sin pegar a Postgres en cada navegación.
@@ -64,6 +65,7 @@ export default async function GroupsPage() {
         title={t("title")}
         description={t("desc")}
       />
+      <GroupsTabs active="grupos" />
       {allGroups.length === 0 ? (
         <EmptyState
           icon={<Users className="size-5" />}
