@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/guards";
@@ -13,7 +12,6 @@ import { AppHeader } from "@/components/shell/header";
 import { LeagueAnnouncementBar } from "@/components/shell/league-announcement-bar";
 import { Sidebar } from "@/components/shell/sidebar";
 import { MobileBottomNav } from "@/components/shell/mobile-nav";
-import { DeadlineSlot } from "@/components/shell/deadline-slot";
 import { TutorialProvider } from "@/components/tutorial/tutorial-provider";
 import { TimeZoneProvider } from "@/components/shell/timezone-provider";
 import { TimezoneSync } from "@/components/shell/timezone-sync";
@@ -23,9 +21,7 @@ import { getLocale } from "next-intl/server";
 
 // El layout corre en CADA navegación, así que aquí es donde más duele un
 // hang. Sólo bloqueamos lo imprescindible para pintar el shell (auth,
-// memberships para el switcher). El banner de deadline va por Suspense
-// para que su query (que era el culpable de los timeouts de 4-5s) no
-// frene la página.
+// memberships para el switcher).
 const LAYOUT_QUERY_TIMEOUT_MS = 4000;
 
 function withTimeout<T>(promise: Promise<T>, fallback: T, label: string): Promise<T> {
@@ -114,9 +110,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           squareLogoUrl={squareLogoUrl}
         />
         <div className="flex min-w-0 flex-1 flex-col">
-          <Suspense fallback={<div aria-hidden />}>
-            <DeadlineSlot userId={me.id} leagueId={activeLeagueId} />
-          </Suspense>
           <AppHeader
             email={me.email}
             nickname={me.nickname}
