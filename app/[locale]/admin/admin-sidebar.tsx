@@ -12,6 +12,7 @@ import {
   Gamepad2,
   Gauge,
   Briefcase,
+  Eye,
   Goal,
   MessagesSquare,
   Megaphone,
@@ -33,6 +34,7 @@ import { cn } from "@/lib/utils";
 
 const items: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/admin", label: "Dashboard", icon: Gauge },
+  { href: "/admin/preview", label: "Preview", icon: Eye },
   { href: "/admin/monitoreo", label: "Monitoreo", icon: Radar },
   { href: "/admin/ligas", label: "Ligas", icon: Trophy },
   { href: "/admin/patrocinadores", label: "Patrocinadores", icon: Handshake },
