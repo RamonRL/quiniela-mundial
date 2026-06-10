@@ -49,7 +49,7 @@ export default async function AdminHome() {
       (SELECT count(*) FILTER (WHERE status = 'finished')::int FROM matches) AS "matchFinished",
       (SELECT count(*)::int FROM match_scorers) AS "goalCount",
       (SELECT count(*) FILTER (WHERE role = 'admin')::int FROM profiles) AS "adminCount",
-      (SELECT count(*)::int FROM profiles) AS "userCount",
+      (SELECT count(*)::int FROM profiles WHERE email NOT LIKE '%@demo.invalid') AS "userCount",
       (SELECT count(*)::int FROM special_predictions) AS "specialCount",
       (SELECT count(*) FILTER (WHERE resolved_value_json IS NOT NULL)::int FROM special_predictions) AS "specialResolved"
   `);
