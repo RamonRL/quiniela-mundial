@@ -23,7 +23,7 @@ export const dynamic = "force-dynamic";
 
 export default async function MatchdayTourPage(props: {
   params: Promise<{ matchdayId: string }>;
-  searchParams: Promise<{ step?: string }>;
+  searchParams: Promise<{ step?: string; match?: string }>;
 }) {
   const me = await requireUser();
   const locale = await getLocale();
@@ -188,10 +188,20 @@ export default async function MatchdayTourPage(props: {
   const allComplete = firstUnpredicted === -1;
   const defaultStep = allComplete ? 0 : firstUnpredicted;
   const sp = await props.searchParams;
+  // Precedencia: ?match=<id> (deep-link a un partido concreto, p.ej. desde el
+  // contador del dashboard) → ?step=<n> → primer pendiente. Usar el id es
+  // robusto: no se rompe aunque cambie el orden o se cierre algún partido.
+  const fromMatch = sp.match != null ? Number(sp.match) : NaN;
+  const matchIdx = Number.isFinite(fromMatch)
+    ? matchItems.findIndex((m) => m.id === fromMatch)
+    : -1;
   const fromUrl = sp.step != null ? parseInt(sp.step, 10) : NaN;
-  const initialStep = Number.isFinite(fromUrl)
-    ? Math.max(0, Math.min(matchItems.length - 1, fromUrl))
-    : defaultStep;
+  const initialStep =
+    matchIdx >= 0
+      ? matchIdx
+      : Number.isFinite(fromUrl)
+        ? Math.max(0, Math.min(matchItems.length - 1, fromUrl))
+        : defaultStep;
 
   return (
     <MatchdayTourClient

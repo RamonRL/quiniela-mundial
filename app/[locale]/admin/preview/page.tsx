@@ -70,7 +70,12 @@ export default async function PreviewPage() {
     predMissingHint: "Puedes hacerlo hasta que empiece",
     predMissingCta: "Predecir",
   };
-  const href = next?.matchdayId ? `/predicciones/jornada/${next.matchdayId}` : "/predicciones";
+  // Deep-link directo a ESE partido en el paso a paso (?match=<id>). El tour
+  // resuelve el paso por id; si la jornada ya no está abierta, el propio tour
+  // redirige a la lista. Fallback a /predicciones si falta el dato.
+  const href = next?.matchdayId
+    ? `/predicciones/jornada/${next.matchdayId}/tour?match=${next.id}`
+    : "/predicciones";
 
   return (
     <div className="space-y-8">
