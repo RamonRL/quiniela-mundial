@@ -28,7 +28,11 @@ jobs:
           sudo sed -i 's|deb |deb [signed-by=/usr/share/keyrings/pgdg.gpg] |' /etc/apt/sources.list.d/pgdg.list
           sudo apt-get update
           sudo apt-get install -y postgresql-client-17
-          pg_dump --version
+          # En el runner ya viene el cliente 16, y /usr/bin/pg_dump apunta a él
+          # → "server version mismatch" contra Postgres 17. Anteponemos el bin
+          # del 17 al PATH para los pasos siguientes (pg_dump y psql).
+          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+          /usr/lib/postgresql/17/bin/pg_dump --version
 
       - name: Volcar la base de datos
         env:
