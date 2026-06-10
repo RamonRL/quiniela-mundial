@@ -460,6 +460,30 @@
       0 0 24px color-mix(in oklch, var(--color-pitch) 30%, transparent);
   }
 
+  /* Resplandor de directo: pulso sutil del borde/sombra arena de la card
+     cuando hay un partido en vivo. Sin animación con reduced-motion. */
+  @keyframes live-pulse {
+    0%, 100% {
+      box-shadow:
+        0 0 0 1px color-mix(in oklch, var(--color-arena) 35%, transparent),
+        0 18px 44px -24px color-mix(in oklch, var(--color-arena) 45%, transparent);
+    }
+    50% {
+      box-shadow:
+        0 0 0 1px color-mix(in oklch, var(--color-arena) 60%, transparent),
+        0 26px 64px -22px color-mix(in oklch, var(--color-arena) 70%, transparent);
+    }
+  }
+  .live-glow {
+    animation: live-pulse 2.6s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .live-glow {
+      animation: none;
+      box-shadow: var(--shadow-arena);
+    }
+  }
+
   /* "Cut" corner cards — clipped corner like trading-card stamp */
   .cut-corner {
     clip-path: polygon(
