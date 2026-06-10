@@ -28,6 +28,13 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: supabaseRemotePatterns,
   },
+  experimental: {
+    // El body de un Server Action está limitado a 1 MB por defecto. La subida
+    // de foto del onboarding ya comprime con `compressImage`, pero algún caso
+    // borde (HEIC, foto enorme antes de comprimir) superaba el tope y reventaba
+    // con "Body exceeded 1 MB limit". 4 MB da margen de sobra.
+    serverActions: { bodySizeLimit: "4mb" },
+  },
   // 301 permanentes para URLs basura que Google haya indexado por error.
   // El motivo principal del array: durante semanas se ha indexado
   // `quinielamundial.es/$` (origen desconocido, posiblemente un share

@@ -18,14 +18,27 @@ Sentry.init({
     // Ruido genérico de navegador, inofensivo.
     "ResizeObserver loop limit exceeded",
     "ResizeObserver loop completed with undelivered notifications",
+    // Modo lector de Firefox/Brave en iOS: inyecta `window.__firefox__` en la
+    // página y peta solo. No es código nuestro. Cubre tanto
+    // "evaluating 'window.__firefox__.reader'" como "Can't find variable: __firefox__".
+    /__firefox__/,
+    // Navegador in-app de Instagram (su instrumentación interna).
+    "Java object is gone",
+    // Ruido conocido de extensiones (puente tipo COM en la página).
+    /Object Not Found Matching Id/i,
+    // Rechazo de promesa vacío e inaccionable (sin stack ni datos), casi
+    // siempre de una extensión.
+    /promise rejection with keys: \[object has no keys\]/i,
   ],
   // Descarta cualquier evento cuyo stack venga de un script inyectado por
-  // una extensión (inpage.js, chrome-extension://, moz-extension://, …).
+  // una extensión (inpage.js, chrome-extension://, moz-extension://, …) o por
+  // la instrumentación del navegador in-app de Instagram.
   denyUrls: [
     /inpage\.js/i,
     /^chrome-extension:\/\//i,
     /^moz-extension:\/\//i,
     /^safari-(web-)?extension:\/\//i,
+    /navigation_performance_logger_android/i,
   ],
 
   // Add optional integrations for additional features
