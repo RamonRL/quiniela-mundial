@@ -89,7 +89,7 @@ function Side({
   flag: number;
   compact?: boolean;
 }) {
-  const nameCls = `line-clamp-2 text-balance font-display tracking-tight leading-[0.95] ${
+  const nameCls = `text-balance break-words font-display tracking-tight leading-[1.05] ${
     compact ? "text-xl" : "text-2xl sm:text-4xl"
   }`;
   const nameBlock = (
