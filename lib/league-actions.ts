@@ -18,13 +18,13 @@ import {
   MEMBER_LIMIT_FREE,
   PENDING_INVITE_COOKIE,
   PRIVATE_LEAGUES_PER_USER_LIMIT,
-  canJoinLeague,
   canManageLeague,
   countPrivateMemberships,
   createLeagueRecord,
   getPublicLeague,
   isMemberOf,
   isPremiumTier,
+  joinLeagueAtomic,
   joinLeagueByInviteToken,
 } from "@/lib/leagues";
 import { TIER_LABEL, canUseBranding } from "@/lib/league-tiers";
@@ -196,15 +196,11 @@ export async function joinLeagueByCode(
     return { ok: false, error: PRIVATE_LIMIT_ERROR };
   }
 
-  const cap = await canJoinLeague(league.id);
-  if (!cap.ok) {
-    return { ok: false, error: leagueFullError(league.name, cap.limit) };
+  // Inscripción atómica respecto al cupo (evita pasarse del tope por carrera).
+  const joined = await joinLeagueAtomic(me.id, league.id);
+  if (!joined.ok) {
+    return { ok: false, error: leagueFullError(league.name, joined.limit) };
   }
-
-  await db
-    .insert(leagueMemberships)
-    .values({ userId: me.id, leagueId: league.id })
-    .onConflictDoNothing();
   await db
     .update(profiles)
     .set({ leagueId: league.id })

@@ -1344,7 +1344,12 @@
     "welcomeBody": "Te has unido correctamente a la quiniela. Tus predicciones, el ranking y el chat ya te están esperando.",
     "welcomeCta": "A jugar",
     "createdEyebrow": "¡Quiniela creada!",
-    "createdBody": "Tu quiniela ya está en marcha. Comparte el código de invitación con tu gente y que empiece el pique."
+    "createdBody": "Tu quiniela ya está en marcha. Comparte el código de invitación con tu gente y que empiece el pique.",
+    "fullTitle": "Quiniela completa",
+    "fullBody": "Esta quiniela ya ha alcanzado su número máximo de participantes, así que no admite más miembros por ahora. El creador puede ampliarla con un Pase Mundial 2026.",
+    "fullCta": "Ver planes",
+    "limitTitle": "Límite alcanzado",
+    "limitBody": "Ya estás en 5 quinielas privadas (el máximo). Abandona alguna desde tu perfil para poder unirte a esta."
   },
   "myPool": {
     "fullBanner": "<b>Quiniela completa ({limit}/{limit} miembros).</b> Para que entren más, contrata un Pase Mundial 2026 — sin migrar datos, mismo grupo.",

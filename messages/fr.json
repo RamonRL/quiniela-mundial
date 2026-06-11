@@ -1344,7 +1344,12 @@
     "welcomeBody": "Tu as bien rejoint la grille. Tes pronostics, le classement et le chat t'attendent.",
     "welcomeCta": "À jouer",
     "createdEyebrow": "Grille créée !",
-    "createdBody": "Ta grille est lancée. Partage le code d'invitation avec ton monde et que le chambrage commence."
+    "createdBody": "Ta grille est lancée. Partage le code d'invitation avec ton monde et que le chambrage commence.",
+    "fullTitle": "Ligue complète",
+    "fullBody": "Cette ligue a atteint son nombre maximal de joueurs et n’accepte plus de membres pour l’instant. Le créateur peut l’agrandir avec un Pass Coupe du Monde 2026.",
+    "fullCta": "Voir les offres",
+    "limitTitle": "Limite atteinte",
+    "limitBody": "Tu es déjà dans 5 ligues privées (le maximum). Quitte-en une depuis ton profil pour rejoindre celle-ci."
   },
   "myPool": {
     "fullBanner": "<b>Grille complète ({limit}/{limit} membres).</b> Pour en accueillir plus, prends un Pase Mundial 2026 — sans migration de données, même groupe.",

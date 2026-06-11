@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { and, eq, sql } from "drizzle-orm";
@@ -8,16 +8,19 @@ import { Button } from "@/components/ui/button";
 import { BrandWordmark } from "@/components/brand/brand-wordmark";
 import { acceptInvite } from "@/lib/league-actions";
 import { isPremiumTier } from "@/lib/league-tiers";
-import { ArrowRight, Users } from "lucide-react";
+import { ArrowRight, Users, Lock } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 export default async function InviteLandingPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ token: string }>;
+  searchParams: Promise<{ full?: string; limit?: string }>;
 }) {
   const { token } = await params;
+  const sp = await searchParams;
   const t = await getTranslations("invite");
 
   const [league] = await db
@@ -31,26 +34,29 @@ export default async function InviteLandingPage({
     .select({ count: sql<number>`count(*)::int` })
     .from(leagueMemberships)
     .where(eq(leagueMemberships.leagueId, league.id));
+  const count = memberCount?.count ?? 0;
+
+  // Llena: el cupo ya está alcanzado (o una carrera la llenó justo al aceptar,
+  // que vuelve aquí con ?full=1). En ese caso no mostramos "Aceptar".
+  const isFull =
+    sp.full === "1" || (league.memberLimit != null && count >= league.memberLimit);
+  const limitReached = sp.limit === "1";
 
   // Premium con branding → su marca (variante oscura/única) en vez del
   // wordmark de Quiniela Mundial.
   const brandUrl = isPremiumTier(league.tier) ? league.brandLogoUrl : null;
 
-  // Server action wrapper. acceptInvite redirige por sí solo en los casos
-  // OK; si devuelve `private_limit_reached` lanzamos un error con el copy
-  // adecuado para que la error boundary lo recoja.
+  // Server action. acceptInvite redirige por sí solo en los casos OK; si la
+  // liga está llena o el usuario llegó a su tope de privadas, volvemos a esta
+  // misma página con un flag para mostrar un mensaje claro (sin error boundary).
   async function accept() {
     "use server";
     const res = await acceptInvite(token);
-    if (res.status === "private_limit_reached") {
-      throw new Error(
-        `Ya tienes 5 quinielas privadas. Para unirte a "${res.leagueName}" abandona alguna desde tu perfil.`,
-      );
-    }
     if (res.status === "league_full") {
-      throw new Error(
-        `"${res.leagueName}" ya está completa (${res.limit ?? "tope"} miembros). El creador puede ampliarla con un Pase Mundial 2026 — más info en /precios.`,
-      );
+      redirect(`/invite/${token}?full=1`);
+    }
+    if (res.status === "private_limit_reached") {
+      redirect(`/invite/${token}?limit=1`);
     }
   }
 
@@ -96,8 +102,10 @@ export default async function InviteLandingPage({
               <Users className="size-3.5" />
               {t("members")}
             </span>
-            <span className="font-display tabular text-base">
-              {memberCount?.count ?? 0}
+            <span
+              className={`font-display tabular text-base ${isFull ? "text-[var(--color-arena)]" : ""}`}
+            >
+              {count}
               {league.memberLimit != null ? (
                 <span className="text-[var(--color-muted-foreground)]">
                   {" "}
@@ -111,12 +119,46 @@ export default async function InviteLandingPage({
           </p>
         </div>
 
-        <form action={accept} className="mt-8">
-          <Button type="submit" size="lg" className="w-full">
-            {t("accept")}
-            <ArrowRight />
-          </Button>
-        </form>
+        {isFull ? (
+          // Liga completa → sin botón de aceptar; mensaje claro + enlace a planes.
+          <div className="mt-8 space-y-4">
+            <div className="flex items-start gap-3 rounded-md border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_8%,transparent)] px-4 py-3">
+              <Lock className="mt-0.5 size-4 shrink-0 text-[var(--color-arena)]" />
+              <div className="space-y-1">
+                <p className="font-display text-sm tracking-tight text-[var(--color-arena)]">
+                  {t("fullTitle")}
+                </p>
+                <p className="text-xs leading-relaxed text-[var(--color-muted-foreground)]">
+                  {t("fullBody")}
+                </p>
+              </div>
+            </div>
+            <Button asChild variant="outline" size="lg" className="w-full">
+              <Link href="/precios">
+                {t("fullCta")}
+                <ArrowRight />
+              </Link>
+            </Button>
+          </div>
+        ) : limitReached ? (
+          // Usuario en su tope de 5 privadas.
+          <div className="mt-8 flex items-start gap-3 rounded-md border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-4 py-3">
+            <Lock className="mt-0.5 size-4 shrink-0 text-[var(--color-muted-foreground)]" />
+            <div className="space-y-1">
+              <p className="font-display text-sm tracking-tight">{t("limitTitle")}</p>
+              <p className="text-xs leading-relaxed text-[var(--color-muted-foreground)]">
+                {t("limitBody")}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <form action={accept} className="mt-8">
+            <Button type="submit" size="lg" className="w-full">
+              {t("accept")}
+              <ArrowRight />
+            </Button>
+          </form>
+        )}
 
         <p className="mt-8 text-center font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
           {t.rich("haveAccount", {

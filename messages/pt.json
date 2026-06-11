@@ -1344,7 +1344,12 @@
     "welcomeBody": "Entraste no bolão com sucesso. Os teus palpites, o ranking e o chat já estão à tua espera.",
     "welcomeCta": "A jogar",
     "createdEyebrow": "Bolão criado!",
-    "createdBody": "O seu bolão já está no ar. Compartilhe o código de convite com o seu pessoal e que comece a provocação."
+    "createdBody": "O seu bolão já está no ar. Compartilhe o código de convite com o seu pessoal e que comece a provocação.",
+    "fullTitle": "Bolão cheio",
+    "fullBody": "Este bolão atingiu o número máximo de participantes e não aceita mais membros por enquanto. O criador pode ampliá-lo com um Passe Copa 2026.",
+    "fullCta": "Ver planos",
+    "limitTitle": "Limite atingido",
+    "limitBody": "Você já está em 5 bolões privados (o máximo). Saia de um pelo seu perfil para entrar neste."
   },
   "myPool": {
     "fullBanner": "<b>Bolão cheio ({limit}/{limit} membros).</b> Para entrarem mais, contrate um Pase Mundial 2026 — sem migrar dados, mesmo grupo.",

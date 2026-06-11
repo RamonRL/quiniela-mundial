@@ -28,6 +28,11 @@ export async function resolvePostSignInRedirect(next: string): Promise<string> {
   if (pending) {
     const result = await joinLeagueByInviteToken(me.id, pending);
     cookieStore.delete(PENDING_INVITE_COOKIE);
+    // Liga llena (incl. carrera): no se ha unido. Lo mandamos a la landing del
+    // invite, que muestra el estado "completa" con mensaje claro.
+    if (!result.ok && result.reason === "league_full") {
+      return `/invite/${pending}?full=1`;
+    }
     if (
       !result.ok &&
       result.reason === "private_limit_reached" &&

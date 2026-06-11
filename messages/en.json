@@ -1344,7 +1344,12 @@
     "welcomeBody": "You've successfully joined the pool. Your predictions, the ranking and the chat are waiting for you.",
     "welcomeCta": "Let's play",
     "createdEyebrow": "Pool created!",
-    "createdBody": "Your pool is up and running. Share the invite code with your people and let the trash talk begin."
+    "createdBody": "Your pool is up and running. Share the invite code with your people and let the trash talk begin.",
+    "fullTitle": "League full",
+    "fullBody": "This league has reached its maximum number of players, so it can’t take more members for now. The creator can expand it with a World Cup 2026 Pass.",
+    "fullCta": "See plans",
+    "limitTitle": "Limit reached",
+    "limitBody": "You’re already in 5 private leagues (the max). Leave one from your profile to join this one."
   },
   "myPool": {
     "fullBanner": "<b>Pool full ({limit}/{limit} members).</b> To let more in, get a Pase Mundial 2026 — no data migration, same group.",

@@ -236,27 +236,65 @@ export async function countLeagueMembers(leagueId: number): Promise<number> {
 }
 
 /**
- * Comprueba si una liga acepta a un miembro más. Devuelve ok=true si la
- * liga no tiene tope (`memberLimit` NULL, p.ej. la pública) o si todavía
- * hay hueco. Devuelve `full` con el contador actual y el tope cuando ya
- * no caben más — el caller traduce el mensaje al usuario.
+ * Inscribe a `userId` en `leagueId` de forma ATÓMICA respecto al cupo.
+ *
+ * `canJoinLeague` + insert por separado es un TOCTOU: dos personas abriendo el
+ * invite link a la vez leen ambas `count < limit` antes de que ninguna
+ * confirme, y las dos entran → la liga se pasa del tope (p.ej. 22/20). Aquí
+ * bloqueamos la FILA de la liga (`SELECT … FOR UPDATE`): los joins concurrentes
+ * a la MISMA liga se serializan, así que el segundo re-cuenta ya con el primero
+ * dentro y, si toca, recibe "full". Idempotente si ya es miembro.
  */
-export async function canJoinLeague(leagueId: number): Promise<
-  | { ok: true }
+export async function joinLeagueAtomic(
+  userId: string,
+  leagueId: number,
+): Promise<
+  | { ok: true; alreadyMember: boolean }
   | { ok: false; reason: "full"; current: number; limit: number }
 > {
-  const [league] = await db
-    .select({ memberLimit: leagues.memberLimit })
-    .from(leagues)
-    .where(eq(leagues.id, leagueId))
-    .limit(1);
-  if (!league) return { ok: true };
-  if (league.memberLimit == null) return { ok: true };
-  const current = await countLeagueMembers(leagueId);
-  if (current >= league.memberLimit) {
-    return { ok: false, reason: "full", current, limit: league.memberLimit };
-  }
-  return { ok: true };
+  return withDbRetry(
+    () =>
+      db.transaction(async (tx) => {
+        // Lock de la fila → serializa los joins concurrentes a esta liga.
+        const [lg] = await tx
+          .select({ memberLimit: leagues.memberLimit })
+          .from(leagues)
+          .where(eq(leagues.id, leagueId))
+          .limit(1)
+          .for("update");
+        if (!lg) return { ok: true as const, alreadyMember: false };
+
+        const [existing] = await tx
+          .select({ userId: leagueMemberships.userId })
+          .from(leagueMemberships)
+          .where(
+            and(
+              eq(leagueMemberships.userId, userId),
+              eq(leagueMemberships.leagueId, leagueId),
+            ),
+          )
+          .limit(1);
+        if (existing) return { ok: true as const, alreadyMember: true };
+
+        if (lg.memberLimit != null) {
+          const [cnt] = await tx
+            .select({ c: sql<number>`count(*)::int` })
+            .from(leagueMemberships)
+            .where(eq(leagueMemberships.leagueId, leagueId));
+          const current = cnt?.c ?? 0;
+          if (current >= lg.memberLimit) {
+            return { ok: false as const, reason: "full" as const, current, limit: lg.memberLimit };
+          }
+        }
+
+        await tx
+          .insert(leagueMemberships)
+          .values({ userId, leagueId })
+          .onConflictDoNothing();
+        return { ok: true as const, alreadyMember: false };
+      }),
+    { label: "joinLeagueAtomic" },
+  );
 }
 
 export async function isMemberOf(userId: string, leagueId: number): Promise<boolean> {
@@ -327,23 +365,19 @@ export async function joinLeagueByInviteToken(
     }
   }
 
-  const cap = await canJoinLeague(league.id);
-  if (!cap.ok) {
+  const joined = await joinLeagueAtomic(userId, league.id);
+  if (!joined.ok) {
     return {
       ok: false,
       reason: "league_full",
       leagueName: league.name,
-      current: cap.current,
-      limit: cap.limit,
+      current: joined.current,
+      limit: joined.limit,
     };
   }
 
-  await db
-    .insert(leagueMemberships)
-    .values({ userId, leagueId: league.id })
-    .onConflictDoNothing();
   await db.update(profiles).set({ leagueId: league.id }).where(eq(profiles.id, userId));
-  return { ok: true, leagueId: league.id, alreadyMember: false };
+  return { ok: true, leagueId: league.id, alreadyMember: joined.alreadyMember };
 }
 
 /**
