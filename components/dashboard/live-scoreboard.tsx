@@ -83,7 +83,7 @@ export function LiveScoreboard({ match, compact }: { match: HeroMatch; compact?:
     <Link
       href={href}
       aria-label={`${home?.name ?? "TBD"} vs ${away?.name ?? "TBD"}`}
-      className="block rounded-xl outline-none transition hover:opacity-95 focus-visible:ring-2 focus-visible:ring-[var(--color-arena)]"
+      className="group block rounded-xl outline-none transition focus-visible:ring-2 focus-visible:ring-[var(--color-arena)]"
     >
       {body}
     </Link>
@@ -101,7 +101,7 @@ function Side({
   flag: number;
   compact?: boolean;
 }) {
-  const nameCls = `text-balance break-words font-display tracking-tight leading-[1.05] ${
+  const nameCls = `text-balance break-words font-display tracking-tight leading-[1.05] transition-colors group-hover:text-[var(--color-arena)] ${
     compact ? "text-xl" : "text-2xl sm:text-4xl"
   }`;
   const nameBlock = (

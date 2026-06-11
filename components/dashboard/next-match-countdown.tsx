@@ -33,16 +33,11 @@ export function NextMatchCountdown({ match }: { match: HeroMatch }) {
   const s = totalSecs != null ? totalSecs % 60 : null;
   const pad = (n: number | null) => (n == null ? "--" : n.toString().padStart(2, "0"));
 
-  return (
-    <div className="relative">
-      {href ? (
-        <Link
-          href={href}
-          aria-label={`${home?.name ?? "TBD"} vs ${away?.name ?? "TBD"}`}
-          className="absolute inset-0 z-0 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-arena)]"
-        />
-      ) : null}
-      <div className={`relative z-10 flex flex-col gap-4 ${href ? "pointer-events-none" : ""}`}>
+  // Solo el bloque principal (eyebrow + equipos/VS + contador) es clicable al
+  // partido. La fila de fecha + recordatorio de pronóstico queda FUERA del
+  // enlace, para no robarle clics al botón de pronóstico (sobre todo en móvil).
+  const mainBlock = (
+    <>
       {/* Eyebrow */}
       <div className="flex flex-wrap items-center gap-2.5">
         <span className="h-px w-7 bg-[var(--color-arena)]" />
@@ -56,11 +51,13 @@ export function NextMatchCountdown({ match }: { match: HeroMatch }) {
         ) : null}
       </div>
 
-      {/* Equipos — abrazan el VS (banderas al exterior, nombres al centro). */}
+      {/* Equipos — abrazan el VS (banderas al exterior, nombres al centro).
+          En hover (PC), los nombres pasan a rojo para indicar que toda la
+          zona principal lleva al partido. */}
       <div className="flex items-center justify-center gap-3 sm:gap-5">
         <span className="flex min-w-0 flex-1 items-center justify-end gap-2.5">
           <TeamFlag code={home?.code} size={46} className="shrink-0" />
-          <span className="text-balance break-words text-right font-display text-3xl leading-[1.05] tracking-tight sm:text-[2.6rem]">
+          <span className="text-balance break-words text-right font-display text-3xl leading-[1.05] tracking-tight transition-colors group-hover:text-[var(--color-arena)] sm:text-[2.6rem]">
             {home?.name ?? "TBD"}
           </span>
         </span>
@@ -68,7 +65,7 @@ export function NextMatchCountdown({ match }: { match: HeroMatch }) {
           VS
         </span>
         <span className="flex min-w-0 flex-1 items-center justify-start gap-2.5">
-          <span className="text-balance break-words text-left font-display text-3xl leading-[1.05] tracking-tight sm:text-[2.6rem]">
+          <span className="text-balance break-words text-left font-display text-3xl leading-[1.05] tracking-tight transition-colors group-hover:text-[var(--color-arena)] sm:text-[2.6rem]">
             {away?.name ?? "TBD"}
           </span>
           <TeamFlag code={away?.code} size={46} className="shrink-0" />
@@ -88,17 +85,32 @@ export function NextMatchCountdown({ match }: { match: HeroMatch }) {
           <Segment value={pad(s)} label="seg" dim />
         </div>
       )}
+    </>
+  );
+
+  return (
+    <div className="flex flex-col gap-4">
+      {href ? (
+        <Link
+          href={href}
+          aria-label={`${home?.name ?? "TBD"} vs ${away?.name ?? "TBD"}`}
+          className="group flex flex-col gap-4 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-arena)]"
+        >
+          {mainBlock}
+        </Link>
+      ) : (
+        <div className="flex flex-col gap-4">{mainBlock}</div>
+      )}
 
       <div className="h-px bg-[var(--color-border)]" />
 
-      {/* Fecha + recordatorio de pronóstico */}
+      {/* Fecha + recordatorio de pronóstico (FUERA del enlace al partido) */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
           {dateLabel}
           {venue ? ` · ${venue}` : ""}
         </p>
         {prediction && !live ? <PredictionPill prediction={prediction} /> : null}
-      </div>
       </div>
     </div>
   );
