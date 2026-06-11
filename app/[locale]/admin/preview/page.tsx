@@ -24,8 +24,8 @@ const SCENARIOS: Scenario[] = [
         },
       ],
       context: [
-        { code: "M2", status: "upcoming", home: T("USA", "EE. UU."), away: T("WAL", "Gales"), dateLabel: "12 jun · 18:00" },
-        { code: "M3", status: "upcoming", home: T("ARG", "Argentina"), away: T("KSA", "Arabia S."), dateLabel: "12 jun · 21:00" },
+        { code: "M2", group: "D", status: "upcoming", home: T("USA", "EE. UU."), away: T("WAL", "Gales"), dateLabel: "12 jun · 18:00" },
+        { code: "M3", group: "E", status: "upcoming", home: T("ARG", "Argentina"), away: T("KSA", "Arabia S."), dateLabel: "12 jun · 21:00" },
       ],
     }),
   },
@@ -43,8 +43,8 @@ const SCENARIOS: Scenario[] = [
         },
       ],
       context: [
-        { code: "M22", status: "finished", home: T("BRA", "Brasil"), away: T("ARG", "Argentina"), homeScore: 2, awayScore: 1 },
-        { code: "M24", status: "upcoming", home: T("FRA", "Francia"), away: T("POR", "Portugal"), dateLabel: "Mañana · 18:00" },
+        { code: "M22", group: "C", status: "finished", home: T("BRA", "Brasil"), away: T("ARG", "Argentina"), homeScore: 2, awayScore: 1 },
+        { code: "M24", group: "G", status: "upcoming", home: T("FRA", "Francia"), away: T("POR", "Portugal"), dateLabel: "Mañana · 18:00" },
       ],
     }),
   },
@@ -62,8 +62,8 @@ const SCENARIOS: Scenario[] = [
         },
       ],
       context: [
-        { code: "M70", status: "finished", home: T("URU", "Uruguay"), away: T("SUI", "Suiza"), homeScore: 0, awayScore: 0 },
-        { code: "M71", status: "finished", home: T("CRO", "Croacia"), away: T("MAR", "Marruecos"), homeScore: 1, awayScore: 2 },
+        { code: "M70", group: "K", status: "finished", home: T("URU", "Uruguay"), away: T("SUI", "Suiza"), homeScore: 0, awayScore: 0 },
+        { code: "M71", group: "L", status: "finished", home: T("CRO", "Croacia"), away: T("MAR", "Marruecos"), homeScore: 1, awayScore: 2 },
       ],
     }),
   },
@@ -81,8 +81,8 @@ const SCENARIOS: Scenario[] = [
         },
       ],
       context: [
-        { code: "M31", status: "upcoming", home: T("ENG", "Inglaterra"), away: T("NED", "Países Bajos"), kickoffISO: at(120) },
-        { code: "M32", status: "upcoming", home: T("JPN", "Japón"), away: T("SEN", "Senegal"), dateLabel: "Mañana · 18:00" },
+        { code: "M31", group: "F", status: "upcoming", home: T("ENG", "Inglaterra"), away: T("NED", "Países Bajos"), kickoffISO: at(120) },
+        { code: "M32", group: "G", status: "upcoming", home: T("JPN", "Japón"), away: T("SEN", "Senegal"), dateLabel: "Mañana · 18:00" },
       ],
     }),
   },
@@ -100,8 +100,8 @@ const SCENARIOS: Scenario[] = [
         },
       ],
       context: [
-        { code: "M45", status: "finished", home: T("COL", "Colombia"), away: T("ECU", "Ecuador"), homeScore: 3, awayScore: 1 },
-        { code: "M48", status: "upcoming", home: T("GHA", "Ghana"), away: T("KOR", "Corea del Sur"), dateLabel: "Hoy · 22:00", note: "· a la vez" },
+        { code: "M45", group: "G", status: "finished", home: T("COL", "Colombia"), away: T("ECU", "Ecuador"), homeScore: 3, awayScore: 1 },
+        { code: "M48", group: "H", status: "upcoming", home: T("GHA", "Ghana"), away: T("KOR", "Corea del Sur"), dateLabel: "Hoy · 22:00", note: "· a la vez" },
       ],
     }),
   },
@@ -127,7 +127,26 @@ const SCENARIOS: Scenario[] = [
         },
       ],
       context: [
-        { code: "M18", status: "upcoming", home: T("CRO", "Croacia"), away: T("MAR", "Marruecos"), kickoffISO: at(75) },
+        { code: "M18", group: "B", status: "upcoming", home: T("CRO", "Croacia"), away: T("MAR", "Marruecos"), kickoffISO: at(75) },
+      ],
+    }),
+  },
+  {
+    title: "G · Nombres largos + fase final (octavos)",
+    desc: "Prueba de estrés: nombres largos (Bosnia y Herzegovina, República Checa…) para ver saltos de línea / truncado, y la etiqueta de RONDA (Octavos) en vez de grupo.",
+    data: (at) => ({
+      featuredKind: "next",
+      featured: [
+        {
+          code: "M89", stage: "r16", status: "upcoming",
+          home: T("BIH", "Bosnia y Herzegovina"), away: T("CZE", "República Checa"),
+          kickoffISO: at(300), dateLabel: "Hoy, 21:00", venue: "AT&T Stadium",
+          prediction: { hasResult: false, href: "/predicciones" },
+        },
+      ],
+      context: [
+        { code: "M88", stage: "r16", status: "finished", home: T("KOR", "Corea del Sur"), away: T("CIV", "Costa de Marfil"), homeScore: 2, awayScore: 1 },
+        { code: "M90", stage: "r16", status: "upcoming", home: T("USA", "Estados Unidos"), away: T("KSA", "Arabia Saudí"), dateLabel: "Mañana · 18:00" },
       ],
     }),
   },
@@ -152,7 +171,7 @@ export default async function PreviewPage() {
         </h2>
         <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
           El protagonista son los partidos en directo si los hay; si no, el siguiente con su cuenta
-          atrás. Debajo, la tira de contexto. Abajo, las 6 casuísticas con su descripción.
+          atrás. Debajo, la tira de contexto. Abajo, las casuísticas con su descripción.
         </p>
 
         <div className="space-y-10">

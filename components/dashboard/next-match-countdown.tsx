@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { AlertTriangle, ArrowRight, PencilLine } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { TeamFlag } from "@/components/brand/team-flag";
-import type { HeroMatch, HeroTeam } from "./hero-card";
+import { roundOrGroupLabel, type HeroMatch } from "./hero-card";
 
 /**
  * Protagonista cuando NO hay directo: el siguiente partido como marcador de
@@ -12,7 +12,8 @@ import type { HeroMatch, HeroTeam } from "./hero-card";
  * recordatorio de pronóstico integrado inline en rojo arena (sin caja amarilla).
  */
 export function NextMatchCountdown({ match }: { match: HeroMatch }) {
-  const { home, away, group, code, dateLabel, venue, kickoffISO, prediction } = match;
+  const { home, away, dateLabel, venue, kickoffISO, prediction } = match;
+  const label = roundOrGroupLabel(match);
   const target = kickoffISO ? new Date(kickoffISO).getTime() : 0;
   const [remaining, setRemaining] = useState<number | null>(null);
 
@@ -38,20 +39,32 @@ export function NextMatchCountdown({ match }: { match: HeroMatch }) {
       <div className="flex flex-wrap items-center gap-2.5">
         <span className="h-px w-7 bg-[var(--color-arena)]" />
         <span className="font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
-          Próximo partido · {code}
+          Próximo partido
         </span>
-        {group ? (
+        {label ? (
           <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface-2)] px-2 py-0.5 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-            Grupo {group}
+            {label}
           </span>
         ) : null}
       </div>
 
-      {/* Equipos */}
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-        <Team team={home} align="start" />
-        <span className="font-display text-lg text-[var(--color-muted-foreground)] sm:text-xl">VS</span>
-        <Team team={away} align="end" />
+      {/* Equipos — abrazan el VS (banderas al exterior, nombres al centro). */}
+      <div className="flex items-center justify-center gap-3 sm:gap-5">
+        <span className="flex min-w-0 flex-1 items-center justify-end gap-2.5">
+          <TeamFlag code={home?.code} size={46} className="shrink-0" />
+          <span className="truncate font-display text-3xl leading-[0.95] tracking-tight sm:text-[2.6rem]">
+            {home?.name ?? "TBD"}
+          </span>
+        </span>
+        <span className="shrink-0 font-display text-base text-[var(--color-muted-foreground)] sm:text-xl">
+          VS
+        </span>
+        <span className="flex min-w-0 flex-1 items-center justify-start gap-2.5">
+          <span className="truncate font-display text-3xl leading-[0.95] tracking-tight sm:text-[2.6rem]">
+            {away?.name ?? "TBD"}
+          </span>
+          <TeamFlag code={away?.code} size={46} className="shrink-0" />
+        </span>
       </div>
 
       {/* Cuenta atrás (pieza central) */}
@@ -110,23 +123,11 @@ function PredictionPill({ prediction }: { prediction: { hasResult: boolean; href
   );
 }
 
-function Team({ team, align }: { team: HeroTeam; align: "start" | "end" }) {
-  const flip = align === "end" ? "flex-row-reverse text-right" : "";
-  return (
-    <span className={`flex min-w-0 items-center gap-2.5 ${flip}`}>
-      <TeamFlag code={team?.code} size={44} className="shrink-0" />
-      <span className="block min-w-0 truncate font-display text-2xl tracking-tight sm:text-3xl">
-        {team?.name ?? "TBD"}
-      </span>
-    </span>
-  );
-}
-
 function Segment({ value, label, dim }: { value: string; label: string; dim?: boolean }) {
   return (
     <div className="flex flex-col items-center">
       <span
-        className={`font-display tabular leading-none tracking-tighter text-[3.25rem] sm:text-[4.5rem] ${
+        className={`font-display tabular leading-none tracking-tighter text-[3rem] sm:text-[4rem] ${
           dim ? "text-[var(--color-muted-foreground)]" : "glow-arena text-[var(--color-arena)]"
         }`}
       >
