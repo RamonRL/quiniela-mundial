@@ -87,6 +87,7 @@ type Variant = {
   locale: string;
   showScorer: boolean;
   winnerMode?: boolean;
+  isKnockout?: boolean;
   rows: RevealRow[];
   heading: string;
   desc: string;
@@ -104,9 +105,19 @@ const VARIANTS: Variant[] = [
     locale: "es",
     showScorer: false,
     winnerMode: true,
+    isKnockout: true,
     rows: PENA_ROWS,
-    heading: "Mi peña (14) · Modo solo ganador · ES",
-    desc: "Columna de resultado con el 1X2 (Gana México / Empate / Gana Sudáfrica), no el marcador. Verde = acertó el ganador. Empates en eliminatoria marcan «pen.». Paginado de 10 en 10 (2 páginas).",
+    heading: "Mi peña (14) · Solo ganador · FASE FINAL · ES",
+    desc: "1X2 (Gana México / Empate / Gana Sudáfrica). En eliminatoria, los empates marcan «Empate · pen.». Verde = acertó el ganador. Paginado de 10 en 10 (2 páginas).",
+  },
+  {
+    locale: "es",
+    showScorer: false,
+    winnerMode: true,
+    isKnockout: false,
+    rows: PENA_ROWS,
+    heading: "Mi peña (14) · Solo ganador · FASE DE GRUPOS · ES",
+    desc: "Misma peña, pero en grupos: los empates salen solo como «Empate», SIN «pen.» (en grupos no hay penaltis).",
   },
   {
     locale: "es",
@@ -119,9 +130,10 @@ const VARIANTS: Variant[] = [
     locale: "en",
     showScorer: false,
     winnerMode: true,
+    isKnockout: true,
     rows: PENA_ROWS,
-    heading: "Mi peña (14) · Modo solo ganador · EN",
-    desc: "Misma tabla 1X2 en inglés para revisar el i18n.",
+    heading: "Mi peña (14) · Solo ganador · FASE FINAL · EN",
+    desc: "Misma tabla 1X2 (eliminatoria) en inglés para revisar el i18n.",
   },
 ];
 
@@ -159,6 +171,7 @@ export default async function PreviewPage() {
                 rows={v.rows}
                 showScorer={v.showScorer}
                 winnerMode={v.winnerMode ?? false}
+                isKnockout={v.isKnockout ?? false}
                 homeName="México"
                 awayName="Sudáfrica"
                 t={t}

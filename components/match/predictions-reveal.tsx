@@ -50,6 +50,11 @@ export function MatchPredictionsReveal({
   winnerMode = false,
   homeName = null,
   awayName = null,
+  /**
+   * Eliminatoria: solo aquí un empate va a penaltis. En fase de grupos la
+   * etiqueta "pen." NO se muestra (un empate es solo un empate).
+   */
+  isKnockout = false,
   t,
 }: {
   rows: RevealRow[];
@@ -57,6 +62,7 @@ export function MatchPredictionsReveal({
   winnerMode?: boolean;
   homeName?: string | null;
   awayName?: string | null;
+  isKnockout?: boolean;
   t: Translator;
 }) {
   const cols = winnerMode
@@ -129,7 +135,7 @@ export function MatchPredictionsReveal({
         ) : (
           <span className="text-[var(--color-muted-foreground)]">—</span>
         )}
-        {c.willGoToPens ? (
+        {c.willGoToPens && isKnockout ? (
           <span className="font-mono text-[0.55rem] uppercase text-[var(--color-muted-foreground)]">
             {t("pen")}
           </span>

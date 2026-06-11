@@ -616,6 +616,7 @@ export default async function MatchDetailPage({
           winnerMode={mode === "solo_ganador"}
           homeName={home?.name ?? null}
           awayName={away?.name ?? null}
+          isKnockout={isKO}
           t={t}
         />
       ) : null}
