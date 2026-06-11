@@ -39,14 +39,17 @@ declare global {
 // INCIDENTE kickoff Mundial: con `max: 25` por instancia, decenas de Lambdas a
 // la vez (pico de tráfico + realtime) superaban las 400 conexiones-cliente del
 // pooler de Supabase → (EMAXCONN) max client connections reached limit: 400.
-// El cap del pooler es N_instancias × max, así que bajamos el footprint por
-// instancia: `max: 8` (decenas de instancias × 8 caben de sobra bajo 400) y
-// `idle_timeout: 8` para devolver el slot al pooler en segundos en vez de 20s.
-// Las huérfanas siguen cubiertas por withDbRetry + statement_timeout.
+// El cap de 400 es FIJO en compute Small (no se puede subir sin subir compute),
+// así que el lever es el footprint por instancia: total = N_instancias × max.
+// `max: 4` → caben ~100 instancias bajo 400. Patrón estándar serverless +
+// transaction pooler: pool pequeño por instancia; el pooler multiplexa. Las
+// queries de una página (Promise.all) pueden serializar de 4 en 4 — coste de
+// latencia mínimo (queries <100ms) frente a tumbar el pool. `idle_timeout: 8`
+// devuelve el slot al pooler en segundos. Huérfanas cubiertas por withDbRetry.
 const client =
   globalThis.__pg ??
   postgres(connectionString, {
-    max: 8,
+    max: 4,
     prepare: false,
     connect_timeout: 5,
     idle_timeout: 8,
