@@ -3,15 +3,13 @@ import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { ArrowRight, Crown, Trophy } from "lucide-react";
-import { and, eq, gt, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
   leagues,
-  matches,
   pointsLedger,
   predBracketSlot,
   predGroupRanking,
-  predMatchScorer,
   predSpecial,
   predTournamentTopScorer,
   specialPredictions,
@@ -144,7 +142,6 @@ export default async function DashboardPage({
     bracketStatus,
     bracketFilledRow,
     openMatchdays,
-    pendingScorerCount,
     myPointsRows,
     leaderboardEntries,
     leagueMemberCountFallback,
@@ -221,29 +218,6 @@ export default async function DashboardPage({
     safe(
       tournamentStarted
         ? db
-            .select({ c: sql<number>`count(*)::int` })
-            .from(matches)
-            .leftJoin(
-              predMatchScorer,
-              and(
-                eq(predMatchScorer.matchId, matches.id),
-                eq(predMatchScorer.userId, me.id),
-                eq(predMatchScorer.leagueId, leagueId),
-              ),
-            )
-            .where(
-              and(
-                gt(matches.scheduledAt, new Date()),
-                sql`${predMatchScorer.matchId} is null`,
-              ),
-            )
-        : Promise.resolve([{ c: 0 }]),
-      [{ c: 0 }] as Array<{ c: number }>,
-      "pendingScorerCount",
-    ),
-    safe(
-      tournamentStarted
-        ? db
             .select({ total: sql<number>`coalesce(sum(${pointsLedger.points}), 0)::int` })
             .from(pointsLedger)
             .where(and(eq(pointsLedger.userId, me.id), eq(pointsLedger.leagueId, leagueId)))
@@ -281,8 +255,6 @@ export default async function DashboardPage({
     sorted.length > 0 && myPoints > 0
       ? sorted.findIndex((r) => r.userId === me.id) + 1 || null
       : null;
-  const pendingScorers = pendingScorerCount[0]?.c ?? 0;
-
   const podium = sorted.slice(0, 5);
 
   // Pre-torneo progress: 3 categories — group rankings, top scorer, specials.
@@ -416,14 +388,12 @@ export default async function DashboardPage({
         position={myPosition}
         points={myPoints}
         exactScores={exactScores}
-        pendingScorers={pendingScorers}
         labels={{
           eyebrow: t("pcEyebrow"),
           position: t("pcPosition"),
           of: t("statPositionOf", { n: totalParticipants }),
           points: t("pcPts"),
           exact: t("pcExact"),
-          pending: t("pcPending"),
           noRank: t("pcNoRank"),
           view: t("pcView"),
         }}
@@ -460,13 +430,13 @@ export default async function DashboardPage({
           <header className="relative flex items-center justify-between gap-3 border-b border-[var(--color-border)] bg-[var(--color-surface-2)]/50 px-5 py-3">
             <div className="flex items-center gap-2">
               <Trophy className="size-4 text-[var(--color-arena)]" />
-              <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                {t("top5")}
+              <p className="font-mono text-sm uppercase tracking-[0.18em] text-[var(--color-foreground)]">
+                {t("top5Short")}
               </p>
             </div>
             <Link
               href="/ranking"
-              className="font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)] transition hover:text-[var(--color-arena)]"
+              className="font-mono text-xs uppercase tracking-[0.16em] text-[var(--color-muted-foreground)] transition hover:text-[var(--color-arena)]"
             >
               {t("rankingArrow")}
             </Link>
@@ -533,15 +503,6 @@ export default async function DashboardPage({
                               </span>
                             ) : null}
                           </p>
-                          {p.exactScoresCount > 0 || p.knockoutPoints > 0 ? (
-                            <p className="mt-1 font-mono text-[0.55rem] uppercase tracking-[0.22em] text-[var(--color-muted-foreground)]">
-                              {p.exactScoresCount > 0
-                                ? t("podiumExact", { count: p.exactScoresCount })
-                                : null}
-                              {p.exactScoresCount > 0 && p.knockoutPoints > 0 ? " · " : ""}
-                              {p.knockoutPoints > 0 ? `${p.knockoutPoints} KO` : null}
-                            </p>
-                          ) : null}
                         </div>
                         <span
                           className={`font-display tabular leading-none ${

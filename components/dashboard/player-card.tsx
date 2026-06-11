@@ -1,6 +1,6 @@
 import { Link } from "@/i18n/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowRight, Crown, Target, Footprints } from "lucide-react";
+import { ArrowRight, Crown, Target } from "lucide-react";
 import { initials } from "@/lib/utils";
 
 export type PlayerCardLabels = {
@@ -9,7 +9,6 @@ export type PlayerCardLabels = {
   of: string; // "de {n}" sin formatear → lo formatea el caller
   points: string;
   exact: string;
-  pending: string;
   noRank: string;
   view: string;
 };
@@ -28,7 +27,6 @@ export function DashboardPlayerCard({
   position,
   points,
   exactScores,
-  pendingScorers,
   labels,
 }: {
   userId: string;
@@ -37,7 +35,6 @@ export function DashboardPlayerCard({
   position: number | null;
   points: number;
   exactScores: number;
-  pendingScorers: number;
   labels: PlayerCardLabels;
 }) {
   const isLeader = position === 1;
@@ -90,7 +87,7 @@ export function DashboardPlayerCard({
                   {position != null ? `#${position}` : "—"}
                 </span>
                 {position != null ? (
-                  <span className="normal-case">{labels.of}</span>
+                  <span className="ml-1 normal-case">{labels.of}</span>
                 ) : (
                   <span className="normal-case lowercase">· {labels.noRank}</span>
                 )}
@@ -101,13 +98,6 @@ export function DashboardPlayerCard({
                   {exactScores}
                 </span>
                 {labels.exact}
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <Footprints className="size-3 text-[var(--color-arena)]" />
-                <span className="font-display tabular text-sm normal-case text-[var(--color-foreground)]">
-                  {pendingScorers}
-                </span>
-                {labels.pending}
               </span>
             </div>
           </div>

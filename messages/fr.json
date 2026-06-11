@@ -720,7 +720,8 @@
     "pcPending": "buteurs rest.",
     "pcNoRank": "non classé",
     "pcView": "Voir mon profil",
-    "afEmpty": "Tu n’as pas encore marqué de points"
+    "afEmpty": "Tu n’as pas encore marqué de points",
+    "top5Short": "Top 5"
   },
   "progressHub": {
     "ready": "PRÊT !",

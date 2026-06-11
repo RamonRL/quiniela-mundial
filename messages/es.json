@@ -720,7 +720,8 @@
     "pcPending": "gol. pend.",
     "pcNoRank": "sin clasificar",
     "pcView": "Ver mi perfil",
-    "afEmpty": "Aún no has sumado puntos"
+    "afEmpty": "Aún no has sumado puntos",
+    "top5Short": "Top 5"
   },
   "progressHub": {
     "ready": "¡LISTO!",

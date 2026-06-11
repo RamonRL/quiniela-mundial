@@ -28,7 +28,7 @@ export async function ActivityFeedCard({
       <header className="relative flex items-center justify-between gap-3 border-b border-[var(--color-border)] bg-[var(--color-surface-2)]/50 px-5 py-3">
         <div className="flex items-center gap-2">
           <Coins className="size-4 text-[var(--color-arena)]" />
-          <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
+          <p className="font-mono text-sm uppercase tracking-[0.18em] text-[var(--color-foreground)]">
             {t("afHeader")}
           </p>
         </div>

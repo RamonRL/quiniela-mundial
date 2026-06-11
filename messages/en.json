@@ -720,7 +720,8 @@
     "pcPending": "scorers left",
     "pcNoRank": "unranked",
     "pcView": "View my profile",
-    "afEmpty": "You haven't scored points yet"
+    "afEmpty": "You haven't scored points yet",
+    "top5Short": "Top 5"
   },
   "progressHub": {
     "ready": "DONE!",
