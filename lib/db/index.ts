@@ -36,13 +36,20 @@ declare global {
 // lo salve (la query ni empezó). 25 da margen de sobra para absorber huérfanas
 // mientras Supavisor las limpia. El `CONNECTION_CLOSED` que motivó bajarlo lo
 // cubre ahora `withDbRetry`, y las rutas críticas tienen timeout (ver retry.ts).
+// INCIDENTE kickoff Mundial: con `max: 25` por instancia, decenas de Lambdas a
+// la vez (pico de tráfico + realtime) superaban las 400 conexiones-cliente del
+// pooler de Supabase → (EMAXCONN) max client connections reached limit: 400.
+// El cap del pooler es N_instancias × max, así que bajamos el footprint por
+// instancia: `max: 8` (decenas de instancias × 8 caben de sobra bajo 400) y
+// `idle_timeout: 8` para devolver el slot al pooler en segundos en vez de 20s.
+// Las huérfanas siguen cubiertas por withDbRetry + statement_timeout.
 const client =
   globalThis.__pg ??
   postgres(connectionString, {
-    max: 25,
+    max: 8,
     prepare: false,
     connect_timeout: 5,
-    idle_timeout: 20,
+    idle_timeout: 8,
     max_lifetime: 60 * 30,
     connection: {
       statement_timeout: 7000,
