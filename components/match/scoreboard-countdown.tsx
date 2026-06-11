@@ -38,7 +38,7 @@ export function ScoreboardCountdown({
       <span className="font-mono text-[0.55rem] uppercase tracking-[0.3em] text-[var(--color-muted-foreground)]">
         {startsIn}
       </span>
-      <span className="font-display tabular glow-arena text-4xl leading-none tracking-tighter text-[var(--color-arena)] sm:text-5xl">
+      <span className="font-display tabular glow-arena text-2xl leading-none tracking-tighter text-[var(--color-arena)] sm:text-5xl">
         {d != null && d > 0
           ? `${d}${units.d} ${pad(h)}${units.h}`
           : `${pad(h)}:${pad(m)}:${pad(s)}`}

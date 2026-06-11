@@ -883,8 +883,9 @@ export function MatchScoreboard({
           </p>
         ) : null}
 
-        {/* Equipos en una línea + centro protagonista; goleadores bajo cada equipo */}
-        <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-4 sm:gap-10">
+        {/* Equipos en una línea + centro protagonista; goleadores bajo cada
+            equipo (en PC). En móvil, equipos alineados con el marcador. */}
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 sm:items-start sm:gap-10">
           <TeamColumn team={home} goals={homeGoals} align="end" t={t} />
 
           <div className="flex flex-col items-center gap-1.5 self-center">
@@ -945,6 +946,23 @@ export function MatchScoreboard({
           <TeamColumn team={away} goals={awayGoals} align="start" t={t} />
         </div>
 
+        {/* Móvil: goleadores a todo el ancho, en dos mitades (local · visitante),
+            con sitio de sobra. En PC van anidados en cada columna (arriba). */}
+        {homeGoals.length > 0 || awayGoals.length > 0 ? (
+          <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 border-t border-dashed border-[var(--color-border)] pt-3 sm:hidden">
+            <div className="flex flex-col gap-0.5">
+              {homeGoals.map((g, i) => (
+                <GoalLine key={`mh-${g.name}-${g.minute}-${i}`} g={g} end={false} compact />
+              ))}
+            </div>
+            <div className="flex flex-col gap-0.5">
+              {awayGoals.map((g, i) => (
+                <GoalLine key={`ma-${g.name}-${g.minute}-${i}`} g={g} end compact />
+              ))}
+            </div>
+          </div>
+        ) : null}
+
         {/* Abajo: fecha · estadio */}
         {dateLabel || venue ? (
           <div className="flex items-center justify-between gap-3 border-t border-dashed border-[var(--color-border)] pt-3 text-xs text-[var(--color-muted-foreground)]">
@@ -954,6 +972,37 @@ export function MatchScoreboard({
         ) : null}
       </CardContent>
     </Card>
+  );
+}
+
+/** Una línea de goleador: minuto + nombre + (p) penalti / (p.p.) en propia. */
+function GoalLine({
+  g,
+  end,
+  compact,
+}: {
+  g: ScoreboardGoal;
+  end: boolean;
+  /** Tamaño reducido para la fila de goleadores en móvil. */
+  compact?: boolean;
+}) {
+  return (
+    <div className={`flex items-baseline gap-1.5 ${end ? "justify-end" : "justify-start"}`}>
+      <span
+        className={`font-mono tabular ${compact ? "text-[0.55rem]" : "text-[0.6rem]"} ${
+          g.isFirstGoal ? "text-[var(--color-arena)] glow-arena" : "text-[var(--color-muted-foreground)]"
+        }`}
+      >
+        {g.minute != null ? `${g.minute}'` : ""}
+      </span>
+      <span className={`${compact ? "text-xs" : "text-sm"} font-medium`}>{g.name}</span>
+      {g.isPenalty ? (
+        <span className="font-mono text-[0.55rem] text-[var(--color-muted-foreground)]">(p)</span>
+      ) : null}
+      {g.isOwnGoal ? (
+        <span className="font-mono text-[0.55rem] text-[var(--color-muted-foreground)]">(p.p.)</span>
+      ) : null}
+    </div>
   );
 }
 
@@ -971,9 +1020,15 @@ function TeamColumn({
   const end = align === "end";
   const Wrapper: React.ElementType = team.href ? Link : "div";
   const props = team.href ? { href: team.href, "aria-label": team.name ?? undefined } : {};
-  const flag = <TeamFlag code={team.code} size={52} className="shrink-0" />;
+  // Bandera fluida: más pequeña en móvil (36px), 52px en PC. Así se alinea con
+  // el marcador y deja sitio para el nombre en pantallas estrechas.
+  const flag = (
+    <span className="relative size-9 shrink-0 sm:size-[52px]">
+      <TeamFlag code={team.code} fluid />
+    </span>
+  );
   const name = (
-    <span className="min-w-0 text-balance break-words font-display text-xl leading-[1.05] tracking-tight sm:text-3xl">
+    <span className="min-w-0 text-balance break-words font-display text-base leading-[1.05] tracking-tight sm:text-3xl">
       {team.name ?? t("tbd")}
     </span>
   );
@@ -981,35 +1036,17 @@ function TeamColumn({
     <div className={`flex min-w-0 flex-col gap-2 ${end ? "items-end text-right" : "items-start text-left"}`}>
       <Wrapper
         {...props}
-        className={`flex min-w-0 items-center gap-2.5 ${end ? "flex-row-reverse" : ""} ${team.href ? "transition hover:text-[var(--color-arena)]" : ""}`}
+        className={`flex min-w-0 items-center gap-2 sm:gap-2.5 ${end ? "flex-row-reverse" : ""} ${team.href ? "transition hover:text-[var(--color-arena)]" : ""}`}
       >
         {flag}
         {name}
       </Wrapper>
+      {/* PC: goleadores anidados bajo la selección (en móvil se pintan en una
+          fila aparte a todo el ancho, ver MatchScoreboard). */}
       {goals.length > 0 ? (
-        <div className="flex flex-col gap-0.5">
+        <div className="hidden flex-col gap-0.5 sm:flex">
           {goals.map((g, i) => (
-            <div
-              key={`${g.name}-${g.minute}-${i}`}
-              className={`flex items-baseline gap-1.5 ${end ? "justify-end" : "justify-start"}`}
-            >
-              <span
-                className={`font-mono text-[0.6rem] tabular ${
-                  g.isFirstGoal
-                    ? "text-[var(--color-arena)] glow-arena"
-                    : "text-[var(--color-muted-foreground)]"
-                }`}
-              >
-                {g.minute != null ? `${g.minute}'` : ""}
-              </span>
-              <span className="text-sm font-medium">{g.name}</span>
-              {g.isPenalty ? (
-                <span className="font-mono text-[0.55rem] text-[var(--color-muted-foreground)]">(p)</span>
-              ) : null}
-              {g.isOwnGoal ? (
-                <span className="font-mono text-[0.55rem] text-[var(--color-muted-foreground)]">(p.p.)</span>
-              ) : null}
-            </div>
+            <GoalLine key={`${g.name}-${g.minute}-${i}`} g={g} end={end} />
           ))}
         </div>
       ) : null}
