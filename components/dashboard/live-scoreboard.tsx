@@ -92,12 +92,9 @@ function Side({
   const nameCls = `block truncate font-display tracking-tight leading-[0.95] ${
     compact ? "text-xl" : "text-2xl sm:text-4xl"
   }`;
-  const codeCls =
-    "font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]";
   const nameBlock = (
     <span className={`min-w-0 ${align === "start" ? "text-right" : "text-left"}`}>
       <span className={nameCls}>{team?.name ?? "TBD"}</span>
-      <span className={codeCls}>{team?.code ?? "—"}</span>
     </span>
   );
   const flagEl = <TeamFlag code={team?.code} size={flag} className="shrink-0" />;
