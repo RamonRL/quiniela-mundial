@@ -712,7 +712,15 @@
     "afHeader": "Últimos puntos · tu ledger",
     "nsHeader": "Mundial al día",
     "nsSeeAll": "Ver todas",
-    "sponsorsHeader": "Patrocinadores"
+    "sponsorsHeader": "Patrocinadores",
+    "pcEyebrow": "Tu rendimiento",
+    "pcPosition": "Posición",
+    "pcPts": "pts",
+    "pcExact": "exactos",
+    "pcPending": "gol. pend.",
+    "pcNoRank": "sin clasificar",
+    "pcView": "Ver mi perfil",
+    "afEmpty": "Aún no has sumado puntos"
   },
   "progressHub": {
     "ready": "¡LISTO!",

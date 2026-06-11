@@ -712,7 +712,15 @@
     "afHeader": "Últimos pontos · seu histórico",
     "nsHeader": "Copa do Mundo no dia a dia",
     "nsSeeAll": "Ver todas",
-    "sponsorsHeader": "Patrocinadores"
+    "sponsorsHeader": "Patrocinadores",
+    "pcEyebrow": "Seu desempenho",
+    "pcPosition": "Posição",
+    "pcPts": "pts",
+    "pcExact": "exatos",
+    "pcPending": "goleadores pend.",
+    "pcNoRank": "sem classificação",
+    "pcView": "Ver meu perfil",
+    "afEmpty": "Você ainda não somou pontos"
   },
   "progressHub": {
     "ready": "PRONTO!",

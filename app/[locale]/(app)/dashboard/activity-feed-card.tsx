@@ -1,12 +1,12 @@
 import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
+import { Coins } from "lucide-react";
 import { loadActivityFeed } from "@/lib/activity-feed";
 
 /**
- * Server Component que carga el activity feed por su cuenta. Se monta en
- * el dashboard envuelto en `<Suspense>` para que el shell de la página
- * (HUD live, hero, progress hub) renderice de inmediato y este panel
- * llegue por streaming cuando estén sus queries — eso descongestiona el
- * `Promise.all` crítico del dashboard.
+ * Panel "Últimos puntos · tu ledger" — columna vertical (comparte fila con el
+ * Top 5 en el dashboard). Server Component bajo <Suspense>: streamea su HTML
+ * cuando estén sus queries, sin bloquear el shell del dashboard.
  */
 export async function ActivityFeedCard({
   userId,
@@ -17,43 +17,62 @@ export async function ActivityFeedCard({
   leagueId: number;
   myPoints: number;
 }) {
-  if (myPoints <= 0) return null;
   const tLedger = await getTranslations("ledger");
   const activity = await loadActivityFeed(userId, leagueId, 8, tLedger).catch(() => []);
-  if (activity.length === 0) return null;
   const t = await getTranslations("dashboard");
 
   return (
-    <section className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
-      <header className="flex items-center justify-between gap-3 pb-3">
-        <div className="flex items-center gap-3">
-          <span className="h-px w-6 bg-[var(--color-arena)]" />
+    <div className="rise-in relative flex h-full flex-col overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)]">
+      <span aria-hidden className="halftone pointer-events-none absolute inset-0 opacity-[0.04]" />
+      <header className="relative flex items-center justify-between gap-3 border-b border-[var(--color-border)] bg-[var(--color-surface-2)]/50 px-5 py-3">
+        <div className="flex items-center gap-2">
+          <Coins className="size-4 text-[var(--color-arena)]" />
           <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
             {t("afHeader")}
           </p>
         </div>
-        <p className="font-display text-xl tracking-tight">+{myPoints}</p>
-      </header>
-      <ul className="grid gap-2 sm:grid-cols-2">
-        {activity.map((a) => (
-          <li
-            key={a.id}
-            className="flex items-center justify-between gap-3 rounded-md border border-[var(--color-border)] bg-[var(--color-surface-2)] px-3 py-2"
+        {myPoints > 0 ? (
+          <Link
+            href={`/ranking/${userId}`}
+            className="font-display tabular text-xl leading-none tracking-tight text-[var(--color-arena)] transition hover:opacity-80"
           >
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium">{a.label}</p>
-              {a.detail ? (
-                <p className="truncate font-mono text-[0.65rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-                  {a.detail}
-                </p>
-              ) : null}
-            </div>
-            <span className="font-display tabular text-2xl text-[var(--color-arena)] glow-arena">
-              +{a.points}
+            +{myPoints}
+          </Link>
+        ) : null}
+      </header>
+      <div className="relative flex-1 p-3">
+        {activity.length === 0 ? (
+          <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+            <span className="grid size-12 place-items-center rounded-full border border-dashed border-[var(--color-border-strong)] text-[var(--color-muted-foreground)]">
+              <Coins className="size-5" />
             </span>
-          </li>
-        ))}
-      </ul>
-    </section>
+            <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
+              {t("afEmpty")}
+            </p>
+          </div>
+        ) : (
+          <ul className="space-y-2">
+            {activity.map((a) => (
+              <li
+                key={a.id}
+                className="flex items-center justify-between gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-2)] px-3 py-2.5"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">{a.label}</p>
+                  {a.detail ? (
+                    <p className="truncate font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+                      {a.detail}
+                    </p>
+                  ) : null}
+                </div>
+                <span className="font-display tabular text-2xl leading-none text-[var(--color-arena)] glow-arena">
+                  +{a.points}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
   );
 }

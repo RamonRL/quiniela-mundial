@@ -712,7 +712,15 @@
     "afHeader": "Latest points · your ledger",
     "nsHeader": "World Cup daily",
     "nsSeeAll": "See all",
-    "sponsorsHeader": "Sponsors"
+    "sponsorsHeader": "Sponsors",
+    "pcEyebrow": "Your run",
+    "pcPosition": "Position",
+    "pcPts": "pts",
+    "pcExact": "exact",
+    "pcPending": "scorers left",
+    "pcNoRank": "unranked",
+    "pcView": "View my profile",
+    "afEmpty": "You haven't scored points yet"
   },
   "progressHub": {
     "ready": "DONE!",

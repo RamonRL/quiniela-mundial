@@ -712,7 +712,15 @@
     "afHeader": "Derniers points · ton historique",
     "nsHeader": "La Coupe du Monde au jour le jour",
     "nsSeeAll": "Voir tout",
-    "sponsorsHeader": "Partenaires"
+    "sponsorsHeader": "Partenaires",
+    "pcEyebrow": "Ta saison",
+    "pcPosition": "Position",
+    "pcPts": "pts",
+    "pcExact": "exacts",
+    "pcPending": "buteurs rest.",
+    "pcNoRank": "non classé",
+    "pcView": "Voir mon profil",
+    "afEmpty": "Tu n’as pas encore marqué de points"
   },
   "progressHub": {
     "ready": "PRÊT !",

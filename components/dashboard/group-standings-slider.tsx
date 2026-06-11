@@ -90,7 +90,17 @@ export async function GroupStandingsSlider() {
             <ul className="mt-2 space-y-1.5">
               {teamsInGroup.map((t) => {
                 const s = standingByPair.get(`${group.id}-${t.id}`);
-                const advances = (s?.position ?? 99) <= 2;
+                const pos = s?.position ?? 99;
+                const hasPts = (s?.points ?? 0) > 0;
+                // 1º-2º (clasifican directo) en rojo arena; 3º (mejores
+                // terceros, provisional) en amarillo. Solo si suman puntos.
+                const ptsCls = !hasPts
+                  ? ""
+                  : pos <= 2
+                    ? "text-[var(--color-arena)] glow-arena"
+                    : pos === 3
+                      ? "text-[var(--color-warning)]"
+                      : "";
                 return (
                   <li
                     key={t.id}
@@ -102,13 +112,7 @@ export async function GroupStandingsSlider() {
                         {t.code}
                       </span>
                     </div>
-                    <span
-                      className={`font-display tabular text-base ${
-                        advances && s?.points
-                          ? "text-[var(--color-arena)] glow-arena"
-                          : ""
-                      }`}
-                    >
+                    <span className={`font-display tabular text-base ${ptsCls}`}>
                       {s?.points ?? 0}
                     </span>
                   </li>
