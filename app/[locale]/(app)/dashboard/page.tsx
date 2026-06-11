@@ -430,7 +430,7 @@ export default async function DashboardPage({
           <header className="relative flex items-center justify-between gap-3 border-b border-[var(--color-border)] bg-[var(--color-surface-2)]/50 px-5 py-3">
             <div className="flex items-center gap-2">
               <Trophy className="size-4 text-[var(--color-arena)]" />
-              <p className="font-mono text-sm uppercase tracking-[0.18em] text-[var(--color-foreground)]">
+              <p className="font-mono text-xs uppercase tracking-[0.2em] text-[var(--color-foreground)]">
                 {t("top5Short")}
               </p>
             </div>
