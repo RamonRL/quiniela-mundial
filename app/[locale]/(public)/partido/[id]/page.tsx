@@ -16,10 +16,13 @@ import {
   profiles,
   teams,
 } from "@/lib/db/schema";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  MatchPredictionsReveal,
+  type RevealRow,
+} from "@/components/match/predictions-reveal";
 import {
   MatchScoreboard,
   PickPanel,
@@ -35,7 +38,7 @@ import {
 import { RealtimeRefresher } from "@/components/realtime/realtime-refresher";
 import { getCurrentUser } from "@/lib/auth/guards";
 import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
-import { formatDateTime, initials } from "@/lib/utils";
+import { formatDateTime } from "@/lib/utils";
 import { intlLocale } from "@/lib/timezone";
 import { LocalDateTime } from "@/components/local-date-time";
 import { MapPin, Newspaper, Settings2 } from "lucide-react";
@@ -464,6 +467,31 @@ export default async function MatchDetailPage({
       }
     : null;
 
+  // Predicciones de la liga (públicas desde el saque inicial).
+  const revealRows: RevealRow[] = allCombined.map((c) => {
+    const player = c.scorerPlayerId ? playerById.get(c.scorerPlayerId) ?? null : null;
+    const scorerScored = player
+      ? sortedScorers.some((s) => s.playerId === player.id)
+      : false;
+    const exactScore =
+      match.homeScore != null &&
+      match.awayScore != null &&
+      c.homeScore === match.homeScore &&
+      c.awayScore === match.awayScore;
+    return {
+      userId: c.userId,
+      display: c.nickname || c.email.split("@")[0],
+      avatarUrl: c.avatarUrl,
+      isMe: me != null && c.userId === me.id,
+      homeScore: c.homeScore,
+      awayScore: c.awayScore,
+      willGoToPens: c.willGoToPens,
+      exactScore,
+      scorerName: player?.name ?? null,
+      scorerScored,
+    };
+  });
+
   return (
     <div className="space-y-8">
       <BreadcrumbLD
@@ -644,115 +672,14 @@ export default async function MatchDetailPage({
         </CardContent>
       </Card>
 
-      {/* Predictions reveal — visible solo para usuarios con sesión, ya que
-          las predicciones son por liga y un visitante no tiene una. */}
+      {/* Predicciones de la liga — públicas desde el saque inicial; visible
+          solo para usuarios con sesión (las predicciones son por liga). */}
       {me && predsPublic ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("predsTitle")}</CardTitle>
-            <CardDescription>
-              {t("predsDesc", { count: allCombined.length })}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {allCombined.length === 0 ? (
-              <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-                {t("predsEmpty")}
-              </p>
-            ) : (
-              <div className="overflow-hidden rounded-lg border border-[var(--color-border)]">
-                <div className="hidden grid-cols-[1fr_110px_1fr] items-center gap-2 border-b border-[var(--color-border)] bg-[var(--color-surface-2)] px-4 py-2 font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)] sm:grid">
-                  <span>{t("colParticipant")}</span>
-                  <span className="text-center">{t("colResult")}</span>
-                  <span>{t("colScorer")}</span>
-                </div>
-                <ul>
-                  {allCombined.map((c) => {
-                    const display = c.nickname || c.email.split("@")[0];
-                    const player = c.scorerPlayerId ? playerById.get(c.scorerPlayerId) : null;
-                    const playerScored =
-                      player &&
-                      sortedScorers.some((s) => s.playerId === player.id);
-                    const exactScore =
-                      match.homeScore != null &&
-                      match.awayScore != null &&
-                      c.homeScore === match.homeScore &&
-                      c.awayScore === match.awayScore;
-                    return (
-                      <li
-                        key={c.userId}
-                        className={`flex flex-col gap-1.5 border-b border-[var(--color-border)] px-4 py-3 last:border-b-0 sm:grid sm:grid-cols-[1fr_110px_1fr] sm:items-center sm:gap-2 sm:py-2.5 ${
-                          me && c.userId === me.id
-                            ? "bg-[color-mix(in_oklch,var(--color-arena)_5%,transparent)]"
-                            : ""
-                        }`}
-                      >
-                        <span className="flex items-center gap-2 truncate">
-                          <Avatar className="size-7 border border-[var(--color-border)]">
-                            {c.avatarUrl ? <AvatarImage src={c.avatarUrl} alt="" /> : null}
-                            <AvatarFallback className="text-[0.6rem]">
-                              {initials(display)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="truncate text-sm font-medium">
-                            {display}
-                            {me && c.userId === me.id ? (
-                              <span className="ml-1.5 font-mono text-[0.55rem] uppercase tracking-[0.3em] text-[var(--color-arena)]">
-                                {t("you")}
-                              </span>
-                            ) : null}
-                          </span>
-                        </span>
-                        <span
-                          className={`flex items-baseline gap-2 font-display tabular text-xl sm:justify-center ${
-                            exactScore ? "text-[var(--color-success)] glow-pitch" : ""
-                          }`}
-                        >
-                          <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)] sm:hidden">
-                            {t("colResult")}
-                          </span>
-                          {c.homeScore != null && c.awayScore != null ? (
-                            <>
-                              {c.homeScore}
-                              <span className="mx-1 opacity-60">·</span>
-                              {c.awayScore}
-                            </>
-                          ) : (
-                            <span className="text-[var(--color-muted-foreground)]">—</span>
-                          )}
-                          {c.willGoToPens ? (
-                            <span className="font-mono text-[0.55rem] uppercase text-[var(--color-muted-foreground)]">
-                              {t("pen")}
-                            </span>
-                          ) : null}
-                        </span>
-                        <span className="flex items-center gap-2 truncate text-sm">
-                          <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)] sm:hidden">
-                            {t("colScorer")}
-                          </span>
-                          {player ? (
-                            <>
-                              <span
-                                className={`size-1.5 rounded-full ${
-                                  playerScored
-                                    ? "bg-[var(--color-success)]"
-                                    : "bg-[var(--color-muted-foreground)]"
-                                }`}
-                              />
-                              <span className="truncate">{player.name}</span>
-                            </>
-                          ) : (
-                            <span className="text-[var(--color-muted-foreground)]">—</span>
-                          )}
-                        </span>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <MatchPredictionsReveal
+          rows={revealRows}
+          showScorer={mode === "completo"}
+          t={t}
+        />
       ) : null}
 
       {/* Noticias del partido (o de cualquiera de las dos selecciones).
