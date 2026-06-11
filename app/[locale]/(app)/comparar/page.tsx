@@ -40,6 +40,10 @@ export default async function CompararPage({
   searchParams: Promise<{ vs?: string }>;
 }) {
   const me = await requireUser();
+  // "Comparar" está deshabilitada de momento para todos salvo el admin: la
+  // página aún no está pulida. Cualquier no-admin que llegue por URL guardada
+  // vuelve al dashboard.
+  if (me.role !== "admin") redirect("/dashboard");
   const locale = await getLocale();
   const { timeZone, locale: dateLocale } = await getDateContext();
   const t = await getTranslations("compare");

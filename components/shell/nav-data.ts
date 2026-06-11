@@ -52,6 +52,12 @@ type BuildOptions = {
    * contenido público.
    */
   isAuthenticated?: boolean;
+  /**
+   * "Comparar" está oculta de momento para todos salvo el admin: la página
+   * aún no está pulida. Solo se muestra a admins (y dentro de una liga
+   * privada, igual que "Mi Quiniela").
+   */
+  isAdmin?: boolean;
 };
 
 export function buildNavItems(myId: string, opts: BuildOptions = {}): NavItem[] {
@@ -148,7 +154,8 @@ export function buildNavItems(myId: string, opts: BuildOptions = {}): NavItem[] 
   // Comparar solo tiene sentido en quinielas privadas (la pública es
   // demasiado masiva como para que comparar predicción a predicción
   // aporte algo). Reusamos el mismo flag que filtra "Mi Quiniela".
-  if (opts.showMyLeague) {
+  // De momento, además, solo la ve el admin: la página aún no está pulida.
+  if (opts.showMyLeague && opts.isAdmin) {
     all.push({
       href: "/comparar",
       label: "comparar",

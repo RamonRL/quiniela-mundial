@@ -66,7 +66,7 @@ export function Sidebar({
   }, []);
   const locale = useLocale();
   // Noticias solo en ES (contenido sin traducir) — fuera del nav en EN/FR/PT.
-  const items = buildNavItems(myId, { showMyLeague, isAuthenticated, showNews: locale === "es" });
+  const items = buildNavItems(myId, { showMyLeague, isAuthenticated, isAdmin, showNews: locale === "es" });
   const main = items.filter((i) => i.group === "main");
   const preds = items.filter((i) => i.group === "predicciones");
   const social = items.filter((i) => i.group === "social");

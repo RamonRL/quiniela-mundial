@@ -48,7 +48,7 @@ export function MobileBottomNav({
   const ts = useTranslations("shell");
   const locale = useLocale();
   // Noticias solo en ES (contenido sin traducir) — fuera del nav en EN/FR/PT.
-  const items = buildNavItems(myId, { showMyLeague, isAuthenticated, showNews: locale === "es" });
+  const items = buildNavItems(myId, { showMyLeague, isAuthenticated, isAdmin, showNews: locale === "es" });
   const primary = items.filter((i) => i.primaryMobile);
   // El sheet "Más" lista todos los items por grupo, no sólo los que no
   // están en la barra inferior. La duplicación es intencional: el sheet
