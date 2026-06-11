@@ -54,6 +54,8 @@ export type PickResult = {
   sign?: WinnerSign | null;
   /** Goals the predicted scorer actually scored in this match (completo). */
   scorerGoals?: number;
+  /** El partido (KO) se decidió en los penaltis → el 90' fue empate. */
+  wentToPens?: boolean;
 };
 
 export type PointSource = {
@@ -157,6 +159,7 @@ export function PickPanel({
             away={away}
             sign={pick?.sign ?? null}
             actualSign={result?.sign ?? signOf(result?.homeScore, result?.awayScore)}
+            wentToPens={result?.wentToPens ?? false}
             entries={points?.marker ?? []}
             totalPoints={sumPoints(points?.marker)}
             finished={after}
@@ -178,9 +181,13 @@ export function PickPanel({
               willGoToPens={pick?.willGoToPens ?? false}
               correct={
                 after
-                  ? matchSign(pick) != null && result?.sign != null
-                    ? matchSign(pick) === result.sign
-                    : null
+                  ? // Si predijo EMPATE y el partido (KO) se fue a penaltis, el
+                    // 90' fue empate → acertó el resultado, no marcamos fallo.
+                    matchSign(pick) === "draw" && result?.wentToPens
+                    ? null
+                    : matchSign(pick) != null && result?.sign != null
+                      ? matchSign(pick) === result.sign
+                      : null
                   : null
               }
               entries={points?.marker ?? []}
@@ -360,6 +367,7 @@ function WinnerPick({
   away,
   sign,
   actualSign,
+  wentToPens,
   entries,
   totalPoints,
   finished,
@@ -369,13 +377,21 @@ function WinnerPick({
   away: PickTeam | null;
   sign: WinnerSign | null;
   actualSign: WinnerSign | null;
+  wentToPens?: boolean;
   entries: PointSource[];
   totalPoints: number;
   finished: boolean;
   t: Translator;
 }) {
   const hasPick = sign != null;
-  const correct = finished && hasPick && actualSign != null ? sign === actualSign : null;
+  // Si predijo EMPATE (X) y el partido se fue a penaltis, el 90' fue empate →
+  // acertó; no mostramos "fallaste el ganador" en ese caso.
+  const correct =
+    finished && hasPick && actualSign != null
+      ? sign === "draw" && wentToPens
+        ? null
+        : sign === actualSign
+      : null;
 
   const options: { key: WinnerSign; label: string }[] = [
     { key: "home", label: t("winsTeam", { team: home?.name ?? t("tbd") }) },

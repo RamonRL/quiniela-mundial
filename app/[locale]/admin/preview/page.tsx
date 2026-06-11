@@ -112,7 +112,7 @@ function buildProps(v: Variant, t: Translator): PickPanelProps {
       state: "after",
       pick: { homeScore: 1, awayScore: 1, willGoToPens: true, sign: null },
       scorer: SCORER,
-      result: { homeScore: 1, awayScore: 1, sign: "home", scorerGoals: 1 },
+      result: { homeScore: 1, awayScore: 1, sign: "home", scorerGoals: 1, wentToPens: true },
       points: {
         marker: [
           { id: "ex", label: t("srcExact"), points: 5 },
