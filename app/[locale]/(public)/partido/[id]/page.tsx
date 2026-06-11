@@ -16,7 +16,6 @@ import {
   profiles,
   teams,
 } from "@/lib/db/schema";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -473,11 +472,13 @@ export default async function MatchDetailPage({
     const scorerScored = player
       ? sortedScorers.some((s) => s.playerId === player.id)
       : false;
+    // Verde = "acertó". En completo/marcador: marcador exacto. En solo ganador:
+    // acertó el 1X2 (el 90' para empates a penaltis).
+    const resolved = match.homeScore != null && match.awayScore != null;
     const exactScore =
-      match.homeScore != null &&
-      match.awayScore != null &&
-      c.homeScore === match.homeScore &&
-      c.awayScore === match.awayScore;
+      mode === "solo_ganador"
+        ? resolved && sign(c.homeScore, c.awayScore) === sign(match.homeScore, match.awayScore)
+        : resolved && c.homeScore === match.homeScore && c.awayScore === match.awayScore;
     return {
       userId: c.userId,
       display: c.nickname || c.email.split("@")[0],
@@ -606,78 +607,15 @@ export default async function MatchDetailPage({
         </Card>
       )}
 
-      {/* Scorers timeline */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("scorersTitle")}</CardTitle>
-          <CardDescription>{t("scorersDesc")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {sortedScorers.length === 0 ? (
-            <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-              {t("scorersEmpty")}
-            </p>
-          ) : (
-            <ol className="relative space-y-3 border-l-2 border-dashed border-[var(--color-border)] pl-6">
-              {sortedScorers.map((s) => {
-                const p = playerById.get(s.playerId);
-                const team = teamById.get(s.teamId);
-                return (
-                  <li key={s.id} className="relative">
-                    <span
-                      className={`absolute -left-[1.95rem] top-1 grid size-4 place-items-center rounded-full border-2 ${
-                        s.isFirstGoal
-                          ? "border-[var(--color-arena)] bg-[var(--color-arena)]"
-                          : "border-[var(--color-border-strong)] bg-[var(--color-surface)]"
-                      }`}
-                    >
-                      {s.isFirstGoal ? (
-                        <span className="size-1 rounded-full bg-white" />
-                      ) : null}
-                    </span>
-                    <div className="flex items-center justify-between gap-3 rounded-md border border-[var(--color-border)] bg-[var(--color-surface-2)] p-3">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="outline">{team?.code ?? "?"}</Badge>
-                        <span className="font-display text-base tracking-tight">
-                          {p?.name ?? t("playerFallback")}
-                        </span>
-                        {s.isFirstGoal ? (
-                          <Badge variant="default" className="text-[0.55rem]">
-                            {t("firstGoalBadge")}
-                          </Badge>
-                        ) : null}
-                        {s.isOwnGoal ? (
-                          <Badge variant="danger" className="text-[0.55rem]">
-                            {t("ownGoalBadge")}
-                          </Badge>
-                        ) : null}
-                        {s.isPenalty ? (
-                          <Badge variant="warning" className="text-[0.55rem]">
-                            {t("penaltyBadge")}
-                          </Badge>
-                        ) : null}
-                      </div>
-                      {s.minute != null ? (
-                        <span className="font-display tabular text-2xl text-[var(--color-muted-foreground)]">
-                          {s.minute}
-                          <span className="text-sm">′</span>
-                        </span>
-                      ) : null}
-                    </div>
-                  </li>
-                );
-              })}
-            </ol>
-          )}
-        </CardContent>
-      </Card>
-
       {/* Predicciones de la liga — públicas desde el saque inicial; visible
           solo para usuarios con sesión (las predicciones son por liga). */}
       {me && predsPublic ? (
         <MatchPredictionsReveal
           rows={revealRows}
           showScorer={mode === "completo"}
+          winnerMode={mode === "solo_ganador"}
+          homeName={home?.name ?? null}
+          awayName={away?.name ?? null}
           t={t}
         />
       ) : null}

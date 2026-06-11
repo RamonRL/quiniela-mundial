@@ -56,9 +56,37 @@ const ROWS_NO_SCORER: RevealRow[] = ROWS.map((r) => ({
   scorerScored: false,
 }));
 
+// Mi peña en modo SOLO GANADOR: 14 personas. La columna de resultado muestra
+// el 1X2 (Gana México / Empate / Gana Sudáfrica), no el marcador. El verde
+// marca a quien acertó el ganador del partido (México ganó).
+const PENA = [
+  "Ramón", "Lucía", "Diego", "María José", "Olivares", "Aleix", "Carmen",
+  "Pablo", "Nuria", "Javi", "Sofía", "Marc", "Elena", "Rubén",
+];
+const PENA_ROWS: RevealRow[] = PENA.map((name, i) => {
+  // 1X2 codificado: home 1-0, empate 0-0, away 0-1.
+  const pick = i % 3; // 0 home, 1 draw, 2 away
+  const homeScore = pick === 0 ? 1 : 0;
+  const awayScore = pick === 2 ? 1 : 0;
+  const willGoToPens = pick === 1; // empate en KO → penaltis
+  return {
+    userId: `p${i}`,
+    display: name,
+    avatarUrl: null,
+    isMe: i === 0,
+    homeScore,
+    awayScore,
+    willGoToPens,
+    exactScore: pick === 0, // ganó México → verde para quien dijo "Gana México"
+    scorerName: null,
+    scorerScored: false,
+  };
+});
+
 type Variant = {
   locale: string;
   showScorer: boolean;
+  winnerMode?: boolean;
   rows: RevealRow[];
   heading: string;
   desc: string;
@@ -70,21 +98,30 @@ const VARIANTS: Variant[] = [
     showScorer: true,
     rows: ROWS,
     heading: "Liga de 50 · Modo completo · ES",
-    desc: "Marcador + goleador, paginado de 20 en 20 (3 páginas). Mi fila resaltada, marcador exacto en verde, punto verde si el goleador marcó. Estrecha la ventana para el móvil.",
+    desc: "Marcador + goleador, paginado de 10 en 10 (5 páginas). Mi fila resaltada, marcador exacto en verde, punto verde si el goleador marcó. Estrecha la ventana para el móvil.",
+  },
+  {
+    locale: "es",
+    showScorer: false,
+    winnerMode: true,
+    rows: PENA_ROWS,
+    heading: "Mi peña (14) · Modo solo ganador · ES",
+    desc: "Columna de resultado con el 1X2 (Gana México / Empate / Gana Sudáfrica), no el marcador. Verde = acertó el ganador. Empates en eliminatoria marcan «pen.». Paginado de 10 en 10 (2 páginas).",
   },
   {
     locale: "es",
     showScorer: false,
     rows: ROWS_NO_SCORER,
-    heading: "Liga de 50 · Modo marcador / solo ganador · ES",
-    desc: "Sin columna de goleador (esos modos no la predicen).",
+    heading: "Liga de 50 · Modo marcador · ES",
+    desc: "Marcador exacto sin columna de goleador.",
   },
   {
     locale: "en",
-    showScorer: true,
-    rows: ROWS,
-    heading: "Liga de 50 · Modo completo · EN",
-    desc: "Misma tabla paginada en inglés para revisar el i18n.",
+    showScorer: false,
+    winnerMode: true,
+    rows: PENA_ROWS,
+    heading: "Mi peña (14) · Modo solo ganador · EN",
+    desc: "Misma tabla 1X2 en inglés para revisar el i18n.",
   },
 ];
 
@@ -102,7 +139,7 @@ export default async function PreviewPage() {
       <PageHeader
         eyebrow="Admin"
         title="Preview · Predicciones de la liga"
-        description="Cuando empieza un partido (saque inicial), cada miembro de tu liga ve las predicciones del resto. Con ligas grandes la tabla se pagina (20 por página). Mock de una liga de 50 personas."
+        description="Cuando empieza un partido (saque inicial), cada miembro de tu liga ve las predicciones del resto. La tabla se pagina de 10 en 10. Mocks: liga grande de 50 (modo completo / marcador) y una peña de 14 (modo solo ganador, 1X2)."
       />
 
       <section className="space-y-10">
@@ -118,7 +155,14 @@ export default async function PreviewPage() {
                   {v.desc}
                 </p>
               </div>
-              <MatchPredictionsReveal rows={v.rows} showScorer={v.showScorer} t={t} />
+              <MatchPredictionsReveal
+                rows={v.rows}
+                showScorer={v.showScorer}
+                winnerMode={v.winnerMode ?? false}
+                homeName="México"
+                awayName="Sudáfrica"
+                t={t}
+              />
             </div>
           );
         })}

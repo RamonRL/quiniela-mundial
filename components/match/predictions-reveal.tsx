@@ -43,15 +43,38 @@ export function MatchPredictionsReveal({
   rows,
   /** Modo de la liga: en `completo` mostramos la columna de goleador. */
   showScorer = true,
+  /**
+   * Modo solo ganador: la columna de resultado muestra el 1X2 ("Gana X /
+   * Empate / Gana Y") en vez del marcador canónico (1-0 / 0-0 / 0-1).
+   */
+  winnerMode = false,
+  homeName = null,
+  awayName = null,
   t,
 }: {
   rows: RevealRow[];
   showScorer?: boolean;
+  winnerMode?: boolean;
+  homeName?: string | null;
+  awayName?: string | null;
   t: Translator;
 }) {
-  const cols = showScorer
-    ? "sm:grid-cols-[1fr_110px_1fr]"
-    : "sm:grid-cols-[1fr_110px]";
+  const cols = winnerMode
+    ? "sm:grid-cols-[1fr_1.3fr]"
+    : showScorer
+      ? "sm:grid-cols-[1fr_110px_1fr]"
+      : "sm:grid-cols-[1fr_110px]";
+
+  // 1X2 a partir del marcador canónico (1-0 / 0-0 / 0-1) que codifica el modo
+  // solo ganador.
+  const outcomeOf = (c: RevealRow): "home" | "draw" | "away" | null =>
+    c.homeScore == null || c.awayScore == null
+      ? null
+      : c.homeScore > c.awayScore
+        ? "home"
+        : c.homeScore < c.awayScore
+          ? "away"
+          : "draw";
 
   // Filas pre-renderizadas en servidor → el Paginator (cliente) solo elige qué
   // página mostrar, sin recibir traducciones ni lógica.
@@ -77,14 +100,27 @@ export function MatchPredictionsReveal({
         </span>
       </span>
       <span
-        className={`flex items-baseline gap-2 font-display tabular text-xl sm:justify-center ${
-          c.exactScore ? "text-[var(--color-success)] glow-pitch" : ""
-        }`}
+        className={`flex items-baseline gap-2 sm:justify-center ${
+          winnerMode ? "text-sm font-medium" : "font-display tabular text-xl"
+        } ${c.exactScore ? "text-[var(--color-success)] glow-pitch" : ""}`}
       >
         <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)] sm:hidden">
           {t("colResult")}
         </span>
-        {c.homeScore != null && c.awayScore != null ? (
+        {winnerMode ? (
+          (() => {
+            const o = outcomeOf(c);
+            return o == null ? (
+              <span className="text-[var(--color-muted-foreground)]">—</span>
+            ) : o === "draw" ? (
+              <span>{t("drawPick")}</span>
+            ) : (
+              <span className="truncate">
+                {t("winsTeam", { team: (o === "home" ? homeName : awayName) ?? t("tbd") })}
+              </span>
+            );
+          })()
+        ) : c.homeScore != null && c.awayScore != null ? (
           <>
             {c.homeScore}
             <span className="mx-1 opacity-60">·</span>
@@ -145,7 +181,7 @@ export function MatchPredictionsReveal({
             </div>
             <Paginator
               items={rowNodes}
-              pageSize={20}
+              pageSize={10}
               labels={{
                 prev: t("predsPagePrev"),
                 next: t("predsPageNext"),
