@@ -60,21 +60,21 @@ export function NextMatchCountdown({ match }: { match: HeroMatch }) {
       {/* Equipos — abrazan el VS (banderas al exterior, nombres al centro).
           En hover (PC), los nombres pasan a rojo para indicar que toda la
           zona principal lleva al partido. */}
-      <div className="flex items-center justify-center gap-3 sm:gap-5">
-        <span className="flex min-w-0 flex-1 items-center justify-end gap-2.5">
-          <TeamFlag code={home?.code} size={46} className="shrink-0" />
-          <span className="text-balance break-words text-right font-display text-3xl leading-[1.05] tracking-tight transition-colors group-hover:text-[var(--color-arena)] sm:text-[2.6rem]">
+      <div className="flex items-center justify-center gap-2.5 sm:gap-5">
+        <span className="flex min-w-0 items-center justify-end gap-2.5">
+          <TeamFlag code={home?.code} size={44} className="shrink-0" />
+          <span className="min-w-0 text-balance break-words text-right font-display text-2xl leading-[1.05] tracking-tight transition-colors group-hover:text-[var(--color-arena)] sm:text-[2.6rem]">
             {home?.name ?? "TBD"}
           </span>
         </span>
         <span className="shrink-0 font-display text-base text-[var(--color-muted-foreground)] sm:text-xl">
           {t("vs")}
         </span>
-        <span className="flex min-w-0 flex-1 items-center justify-start gap-2.5">
-          <span className="text-balance break-words text-left font-display text-3xl leading-[1.05] tracking-tight transition-colors group-hover:text-[var(--color-arena)] sm:text-[2.6rem]">
+        <span className="flex min-w-0 items-center justify-start gap-2.5">
+          <span className="min-w-0 text-balance break-words text-left font-display text-2xl leading-[1.05] tracking-tight transition-colors group-hover:text-[var(--color-arena)] sm:text-[2.6rem]">
             {away?.name ?? "TBD"}
           </span>
-          <TeamFlag code={away?.code} size={46} className="shrink-0" />
+          <TeamFlag code={away?.code} size={44} className="shrink-0" />
         </span>
       </div>
 

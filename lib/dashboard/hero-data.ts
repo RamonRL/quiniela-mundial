@@ -85,13 +85,26 @@ export async function loadHeroData(args: {
   const upcoming = all.filter((m) => m.status !== "finished" && m.scheduledAt.getTime() > now);
   const finishedDesc = all.filter((m) => m.status === "finished").reverse(); // más reciente primero
 
+  // Conciso, sin año (redundante): "jue, 11 jun, 21:00".
   const dateOf = (d: Date) =>
     formatDateTime(d, {
       timeZone: timeZone ?? undefined,
       locale,
-      weekday: "long",
-      day: "2-digit",
-      month: "long",
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+      year: undefined,
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  // Para las boxes (más corto, sin día de semana): "11 jun, 21:00".
+  const shortDate = (d: Date) =>
+    formatDateTime(d, {
+      timeZone: timeZone ?? undefined,
+      locale,
+      day: "numeric",
+      month: "short",
+      year: undefined,
       hour: "2-digit",
       minute: "2-digit",
     });
@@ -138,9 +151,10 @@ export async function loadHeroData(args: {
   const asUpcomingChip = (m: MatchRow, opts?: { sameTime?: boolean }): HeroMatch => ({
     ...base(m),
     kickoffISO: m.scheduledAt.toISOString(),
+    dateLabel: shortDate(m.scheduledAt),
     note: opts?.sameTime ? t("sameTime") : null,
   });
-  const asFinishedChip = (m: MatchRow): HeroMatch => base(m);
+  const asFinishedChip = (m: MatchRow): HeroMatch => ({ ...base(m), dateLabel: shortDate(m.scheduledAt) });
 
   // ─── Protagonista en directo ───
   if (liveFeatured.length > 0) {

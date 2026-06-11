@@ -113,17 +113,13 @@ function Side({
     compact ? "text-xl" : "text-2xl sm:text-4xl"
   }`;
   const nameBlock = (
-    <span className={`min-w-0 ${align === "start" ? "text-right" : "text-left"}`}>
+    <span className={`block min-w-0 ${align === "start" ? "text-right" : "text-left"}`}>
       <span className={nameCls}>{team?.name ?? "TBD"}</span>
     </span>
   );
   const flagEl = <TeamFlag code={team?.code} size={flag} className="shrink-0" />;
   return (
-    <span
-      className={`flex min-w-0 flex-1 items-center gap-2.5 ${
-        align === "start" ? "justify-end" : "justify-start"
-      }`}
-    >
+    <span className="flex min-w-0 items-center gap-2.5">
       {align === "start" ? (
         <>
           {flagEl}

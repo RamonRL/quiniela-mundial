@@ -44,13 +44,15 @@ function Chip({ match }: { match: HeroMatch }) {
   const cls = "block min-w-0 flex-1 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-2)]/50 px-3.5 py-2.5";
   const inner = (
     <>
-      <div className="mb-1.5 flex items-center justify-between gap-2">
-        <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+      {/* Mini-barra: GRUPO/RONDA · FECHA y HORA · COUNTDOWN/estado */}
+      <div className="mb-1.5 flex items-center gap-2 font-mono text-[0.55rem] uppercase tracking-[0.16em] text-[var(--color-muted-foreground)]">
+        <span className="shrink-0 tracking-[0.18em]">
           {label}
           {note ? ` ${note}` : ""}
         </span>
-        <span className="font-mono text-[0.55rem] uppercase tracking-[0.16em] text-[var(--color-muted-foreground)]">
-          {finished ? t("final") : live ? t("live") : kickoffISO ? <Mini kickoffISO={kickoffISO} /> : dateLabel ?? ""}
+        <span className="min-w-0 flex-1 truncate text-center">{dateLabel ?? ""}</span>
+        <span className="shrink-0">
+          {finished ? t("final") : live ? t("live") : kickoffISO ? <Mini kickoffISO={kickoffISO} /> : ""}
         </span>
       </div>
       <div className="flex items-center justify-center gap-2.5">
@@ -100,15 +102,15 @@ function Mini({ kickoffISO }: { kickoffISO: string }) {
 
 function Side({ team, align, dim }: { team: HeroTeam; align: "start" | "end"; dim: boolean }) {
   const nameEl = (
-    <span className="text-balance break-words font-display text-base leading-[1.1] tracking-tight sm:text-lg">
+    <span className="min-w-0 text-balance break-words font-display text-base leading-[1.1] tracking-tight sm:text-lg">
       {team?.name ?? "TBD"}
     </span>
   );
   const flagEl = <TeamFlag code={team?.code} size={22} className="shrink-0" />;
   return (
     <span
-      className={`flex min-w-0 flex-1 items-center gap-1.5 ${
-        align === "start" ? "justify-end text-right" : "justify-start text-left"
+      className={`flex min-w-0 items-center gap-1.5 ${
+        align === "start" ? "text-right" : "text-left"
       } ${dim ? "opacity-55" : ""}`}
     >
       {align === "start" ? (
