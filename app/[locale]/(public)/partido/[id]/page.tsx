@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { localizeTeams } from "@/lib/team-names";
 import {
   groups,
@@ -35,22 +35,46 @@ import { findVenueByMatchVenue } from "@/lib/seo/venues";
 import { getNewsForMatch, listPublishedNews } from "@/lib/news/queries";
 import { NewsCard } from "@/components/news/news-card";
 
-const STAGE_LABEL: Record<string, string> = {
-  group: "Fase de grupos",
-  r32: "Dieciseisavos",
-  r16: "Octavos",
-  qf: "Cuartos",
-  sf: "Semifinales",
-  third: "Tercer puesto",
-  final: "Final",
+type Translator = Awaited<ReturnType<typeof getTranslations>>;
+
+const STAGE_KEY: Record<string, string> = {
+  group: "stageGroup",
+  r32: "stageR32",
+  r16: "stageR16",
+  qf: "stageQf",
+  sf: "stageSf",
+  third: "stageThird",
+  final: "stageFinal",
 };
+
+function stageLabel(t: Translator, stage: string): string {
+  const key = STAGE_KEY[stage];
+  return key ? t(key) : stage;
+}
+
+const SOURCE_KEY: Record<string, string> = {
+  match_exact_score: "srcExact",
+  match_outcome: "srcOutcome",
+  knockout_score_90: "src90",
+  knockout_qualifier: "srcQualified",
+  knockout_pens_bonus: "srcPens",
+  match_scorer: "srcScorer",
+  match_first_scorer: "srcFirstGoal",
+};
+
+function sourceLabel(t: Translator, source: string): string {
+  const key = SOURCE_KEY[source];
+  return key ? t(key) : source;
+}
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const dateLocale = intlLocale(await getLocale());
+  const locale = await getLocale();
+  const dateLocale = intlLocale(locale);
+  const t = await getTranslations("matchDetail");
   const { id } = await params;
   const matchId = Number(id);
   if (!Number.isFinite(matchId)) notFound();
@@ -67,11 +91,12 @@ export async function generateMetadata({
     teamIds.length > 0
       ? await db.select().from(teams).where(inArray(teams.id, teamIds))
       : [];
-  const tById = new Map(allTeams.map((t) => [t.id, t]));
-  const home = match.homeTeamId ? tById.get(match.homeTeamId)?.name : null;
-  const away = match.awayTeamId ? tById.get(match.awayTeamId)?.name : null;
-  const stage = STAGE_LABEL[match.stage] ?? match.stage;
-  const matchup = home && away ? `${home} vs ${away}` : `Partido ${match.code}`;
+  const lById = new Map(localizeTeams(allTeams, locale).map((t) => [t.id, t]));
+  const home = match.homeTeamId ? lById.get(match.homeTeamId)?.name : null;
+  const away = match.awayTeamId ? lById.get(match.awayTeamId)?.name : null;
+  const stage = stageLabel(t, match.stage);
+  const matchup =
+    home && away ? `${home} vs ${away}` : t("matchupFallback", { code: match.code });
   const date = formatDateTime(match.scheduledAt, {
     weekday: "long",
     day: "2-digit",
@@ -81,13 +106,16 @@ export async function generateMetadata({
   });
   return {
     title: matchup,
-    description: `${matchup} · ${stage} del Mundial 2026 · ${date}${
-      match.venue ? ` · ${match.venue}` : ""
-    }. Resultado, goleadores, predicciones y comentarios.`,
+    description: t("metaDescription", {
+      matchup,
+      stage,
+      date,
+      venue: match.venue ? t("metaVenueSuffix", { venue: match.venue }) : "",
+    }),
     alternates: { canonical: `/partido/${match.id}` },
     openGraph: {
-      title: `${matchup} · ${stage} · Mundial 2026`,
-      description: `${matchup} · ${stage} del Mundial 2026.`,
+      title: t("ogTitle", { matchup, stage }),
+      description: t("ogDescription", { matchup, stage }),
       url: `/partido/${match.id}`,
     },
   };
@@ -100,6 +128,8 @@ export default async function MatchDetailPage({
 }) {
   const me = await getCurrentUser();
   const leagueId = me ? await currentLeagueId(me) : null;
+  const locale = await getLocale();
+  const t = await getTranslations("matchDetail");
   const { id } = await params;
   const matchId = Number(id);
   if (!Number.isFinite(matchId)) notFound();
@@ -201,8 +231,10 @@ export default async function MatchDetailPage({
       : Promise.resolve([]),
     // Noticias vinculadas al partido (relatedMatchId). Si no hay, caemos
     // a noticias de cualquiera de las dos selecciones — sigue siendo
-    // relevante y nos da internal-linking adicional.
+    // relevante y nos da internal-linking adicional. Solo en ES (el resto
+    // de idiomas no tiene sección de noticias).
     (async () => {
+      if (locale !== "es") return [];
       const direct = await getNewsForMatch(matchId, 3);
       if (direct.length > 0) return direct;
       const teamCodes = allTeams.map((t) => t.code);
@@ -237,7 +269,6 @@ export default async function MatchDetailPage({
   // Keep a backward-compat reference for the goleadores section using only the
   // scorer player rows so the rest of the page works unchanged.
   void playerRows;
-  const locale = await getLocale();
   const dateLocale = intlLocale(locale);
   const teamById = new Map(localizeTeams(allTeams, locale).map((t) => [t.id, t]));
 
@@ -257,7 +288,11 @@ export default async function MatchDetailPage({
   );
 
   const status =
-    match.status === "finished" ? "FINAL" : match.status === "live" ? "EN VIVO" : "PROGRAMADO";
+    match.status === "finished"
+      ? t("statusFinal")
+      : match.status === "live"
+        ? t("statusLive")
+        : t("statusScheduled");
 
   // Combine result + scorer predictions per user
   type Combined = {
@@ -333,8 +368,8 @@ export default async function MatchDetailPage({
     <div className="space-y-8">
       <BreadcrumbLD
         items={[
-          { name: "Inicio", href: "/" },
-          { name: "Calendario", href: "/calendario" },
+          { name: t("breadcrumbHome"), href: "/" },
+          { name: t("breadcrumbCalendar"), href: "/calendario" },
           {
             name: home && away ? `${home.name} vs ${away.name}` : match.code,
             href: `/partido/${match.id}`,
@@ -351,7 +386,7 @@ export default async function MatchDetailPage({
           homeName: home?.name ?? null,
           awayName: away?.name ?? null,
         }}
-        stageLabel={STAGE_LABEL[match.stage] ?? match.stage}
+        stageLabel={stageLabel(t, match.stage)}
       />
       <RealtimeRefresher
         channelKey={`partido:${matchId}`}
@@ -364,14 +399,14 @@ export default async function MatchDetailPage({
         <Button asChild variant="ghost" size="sm" className="px-0 text-[var(--color-muted-foreground)]">
           <Link href="/calendario">
             <ArrowLeft />
-            Volver al calendario
+            {t("back")}
           </Link>
         </Button>
         {me?.role === "admin" ? (
           <Button asChild variant="outline" size="sm" className="gap-2">
             <Link href={`/admin/partidos/${match.id}`}>
               <Settings2 className="size-3.5" />
-              Editar resultado
+              {t("editResult")}
             </Link>
           </Button>
         ) : null}
@@ -387,11 +422,11 @@ export default async function MatchDetailPage({
             <div className="flex flex-wrap items-center gap-3">
               <span className="h-px w-8 bg-[var(--color-arena)]" />
               <span className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                {STAGE_LABEL[match.stage]} · {match.code}
+                {stageLabel(t, match.stage)} · {match.code}
               </span>
               {matchGroup ? (
                 <span className="rounded-sm border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_8%,transparent)] px-2 py-0.5 font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-arena)]">
-                  Grupo {matchGroup.code}
+                  {t("group", { code: matchGroup.code })}
                 </span>
               ) : null}
             </div>
@@ -401,7 +436,7 @@ export default async function MatchDetailPage({
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--color-arena)] opacity-70" />
                   <span className="relative inline-flex size-2 rounded-full bg-[var(--color-arena)]" />
                 </span>
-                En vivo
+                {t("live")}
               </span>
             ) : (
               <Badge variant={match.status === "finished" ? "success" : "outline"}>
@@ -420,11 +455,14 @@ export default async function MatchDetailPage({
                   {match.awayScore}
                 </span>
               ) : (
-                <KickoffCountdown scheduledAt={match.scheduledAt} />
+                <KickoffCountdown scheduledAt={match.scheduledAt} t={t} />
               )}
               {match.wentToPens ? (
                 <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                  Pen. {match.homeScorePen ?? 0} — {match.awayScorePen ?? 0}
+                  {t("pens", {
+                    home: match.homeScorePen ?? 0,
+                    away: match.awayScorePen ?? 0,
+                  })}
                 </p>
               ) : null}
             </div>
@@ -459,22 +497,20 @@ export default async function MatchDetailPage({
           }
           myLedger={myLedgerRows}
           teamById={teamById}
+          t={t}
         />
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle>¿Cómo va a quedar?</CardTitle>
-            <CardDescription>
-              Crea tu quiniela y predice marcador, ganador y goleadores de cada
-              partido del Mundial 2026.
-            </CardDescription>
+            <CardTitle>{t("visitorCtaTitle")}</CardTitle>
+            <CardDescription>{t("visitorCtaDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             <Link
               href="/login?next=%2Fpredicciones"
               className="inline-flex items-center gap-1.5 rounded-md border border-[var(--color-arena)] bg-[var(--color-arena)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white shadow-[var(--shadow-arena)]"
             >
-              Crear mi predicción
+              {t("visitorCtaButton")}
             </Link>
           </CardContent>
         </Card>
@@ -483,15 +519,13 @@ export default async function MatchDetailPage({
       {/* Scorers timeline */}
       <Card>
         <CardHeader>
-          <CardTitle>Goleadores</CardTitle>
-          <CardDescription>
-            En orden cronológico. La marca en rojo arena indica el primer gol del partido.
-          </CardDescription>
+          <CardTitle>{t("scorersTitle")}</CardTitle>
+          <CardDescription>{t("scorersDesc")}</CardDescription>
         </CardHeader>
         <CardContent>
           {sortedScorers.length === 0 ? (
             <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-              Sin goles registrados.
+              {t("scorersEmpty")}
             </p>
           ) : (
             <ol className="relative space-y-3 border-l-2 border-dashed border-[var(--color-border)] pl-6">
@@ -515,21 +549,21 @@ export default async function MatchDetailPage({
                       <div className="flex flex-wrap items-center gap-2">
                         <Badge variant="outline">{team?.code ?? "?"}</Badge>
                         <span className="font-display text-base tracking-tight">
-                          {p?.name ?? "Jugador"}
+                          {p?.name ?? t("playerFallback")}
                         </span>
                         {s.isFirstGoal ? (
                           <Badge variant="default" className="text-[0.55rem]">
-                            1er gol
+                            {t("firstGoalBadge")}
                           </Badge>
                         ) : null}
                         {s.isOwnGoal ? (
                           <Badge variant="danger" className="text-[0.55rem]">
-                            En propia
+                            {t("ownGoalBadge")}
                           </Badge>
                         ) : null}
                         {s.isPenalty ? (
                           <Badge variant="warning" className="text-[0.55rem]">
-                            Pen.
+                            {t("penaltyBadge")}
                           </Badge>
                         ) : null}
                       </div>
@@ -553,24 +587,22 @@ export default async function MatchDetailPage({
       {me && predsPublic ? (
         <Card>
           <CardHeader>
-            <CardTitle>Predicciones de la peña</CardTitle>
+            <CardTitle>{t("predsTitle")}</CardTitle>
             <CardDescription>
-              Públicas desde el pitido inicial. {allCombined.length}{" "}
-              {allCombined.length === 1 ? "participante apostó" : "participantes apostaron"} por
-              este partido.
+              {t("predsDesc", { count: allCombined.length })}
             </CardDescription>
           </CardHeader>
           <CardContent>
             {allCombined.length === 0 ? (
               <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-                Nadie predijo este partido a tiempo. ¡Os habéis dejado puntos!
+                {t("predsEmpty")}
               </p>
             ) : (
               <div className="overflow-hidden rounded-lg border border-[var(--color-border)]">
                 <div className="hidden grid-cols-[1fr_110px_1fr] items-center gap-2 border-b border-[var(--color-border)] bg-[var(--color-surface-2)] px-4 py-2 font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)] sm:grid">
-                  <span>Participante</span>
-                  <span className="text-center">Resultado</span>
-                  <span>Goleador</span>
+                  <span>{t("colParticipant")}</span>
+                  <span className="text-center">{t("colResult")}</span>
+                  <span>{t("colScorer")}</span>
                 </div>
                 <ul>
                   {allCombined.map((c) => {
@@ -604,7 +636,7 @@ export default async function MatchDetailPage({
                             {display}
                             {me && c.userId === me.id ? (
                               <span className="ml-1.5 font-mono text-[0.55rem] uppercase tracking-[0.3em] text-[var(--color-arena)]">
-                                Tú
+                                {t("you")}
                               </span>
                             ) : null}
                           </span>
@@ -615,7 +647,7 @@ export default async function MatchDetailPage({
                           }`}
                         >
                           <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)] sm:hidden">
-                            Resultado
+                            {t("colResult")}
                           </span>
                           {c.homeScore != null && c.awayScore != null ? (
                             <>
@@ -628,13 +660,13 @@ export default async function MatchDetailPage({
                           )}
                           {c.willGoToPens ? (
                             <span className="font-mono text-[0.55rem] uppercase text-[var(--color-muted-foreground)]">
-                              pen
+                              {t("pen")}
                             </span>
                           ) : null}
                         </span>
                         <span className="flex items-center gap-2 truncate text-sm">
                           <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)] sm:hidden">
-                            Goleador
+                            {t("colScorer")}
                           </span>
                           {player ? (
                             <>
@@ -661,17 +693,18 @@ export default async function MatchDetailPage({
         </Card>
       ) : null}
 
-      {/* Noticias del partido (o de cualquiera de las dos selecciones). */}
-      {matchNews.length > 0 ? (
+      {/* Noticias del partido (o de cualquiera de las dos selecciones).
+          Solo se muestra en español. */}
+      {locale === "es" && matchNews.length > 0 ? (
         <section className="space-y-5 border-t border-[var(--color-border)] pt-10">
           <header className="flex items-end justify-between gap-3">
             <div className="space-y-1">
               <p className="inline-flex items-center gap-2 font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
                 <Newspaper className="size-3.5 text-[var(--color-arena)]" />
-                Noticias del partido
+                {t("newsKicker")}
               </p>
               <h2 className="font-display text-2xl tracking-tight sm:text-3xl">
-                Previas, análisis y crónicas
+                {t("newsHeading")}
               </h2>
             </div>
           </header>
@@ -698,16 +731,6 @@ const MARKER_SOURCES = new Set([
 ]);
 const SCORER_SOURCES = new Set(["match_scorer", "match_first_scorer"]);
 
-const SOURCE_LABEL: Record<string, string> = {
-  match_exact_score: "Marcador exacto",
-  match_outcome: "Ganador acertado",
-  knockout_score_90: "Resultado en 90'",
-  knockout_qualifier: "Clasificado",
-  knockout_pens_bonus: "Penaltis",
-  match_scorer: "Goleador",
-  match_first_scorer: "Primer gol",
-};
-
 type LedgerEntry = typeof pointsLedger.$inferSelect;
 
 function MyPickPanel({
@@ -719,6 +742,7 @@ function MyPickPanel({
   myScorerGoalsInMatch,
   myLedger,
   teamById,
+  t,
 }: {
   match: typeof matches.$inferSelect;
   home: typeof teams.$inferSelect | null;
@@ -728,6 +752,7 @@ function MyPickPanel({
   myScorerGoalsInMatch: number;
   myLedger: LedgerEntry[];
   teamById: Map<number, typeof teams.$inferSelect>;
+  t: Translator;
 }) {
   const open = new Date(match.scheduledAt).getTime() > Date.now();
   const finished = match.status === "finished";
@@ -743,26 +768,26 @@ function MyPickPanel({
     <Card>
       <CardHeader className="flex flex-row items-start justify-between gap-3">
         <div>
-          <CardTitle>Tu pick</CardTitle>
+          <CardTitle>{t("yourPick")}</CardTitle>
           <CardDescription>
             {hasPick
               ? open
-                ? "Editable hasta el cierre de la jornada."
+                ? t("pickEditableOpen")
                 : finished
-                  ? "Resultado y aciertos para este partido."
-                  : "Tus picks ya están bloqueados."
+                  ? t("pickFinished")
+                  : t("pickLocked")
               : open
-                ? "Aún no has predicho este partido."
-                : "Te has dejado puntos en este partido."}
+                ? t("pickNoneOpen")
+                : t("pickNoneClosed")}
           </CardDescription>
         </div>
         <div className="flex items-center gap-3">
-          {finished && hasPick ? <TotalEarned points={totalPoints} /> : null}
+          {finished && hasPick ? <TotalEarned points={totalPoints} t={t} /> : null}
           {open && match.matchdayId != null ? (
             <Button asChild variant="outline" size="sm">
               <Link href={`/predicciones/jornada/${match.matchdayId}`}>
                 <Edit3 className="size-3.5" />
-                {hasPick ? "Editar" : "Predecir"}
+                {hasPick ? t("edit") : t("predict")}
               </Link>
             </Button>
           ) : null}
@@ -792,6 +817,7 @@ function MyPickPanel({
             totalPoints={markerPoints}
             finished={finished}
             hasPrediction={myResult != null}
+            t={t}
           />
           <ScorerPick
             player={myScorerPlayer}
@@ -800,6 +826,7 @@ function MyPickPanel({
             entries={scorerEntries}
             totalPoints={scorerPoints}
             finished={finished}
+            t={t}
           />
         </div>
       </CardContent>
@@ -807,7 +834,7 @@ function MyPickPanel({
   );
 }
 
-function TotalEarned({ points }: { points: number }) {
+function TotalEarned({ points, t }: { points: number; t: Translator }) {
   const positive = points > 0;
   return (
     <div
@@ -816,12 +843,12 @@ function TotalEarned({ points }: { points: number }) {
           ? "border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_12%,transparent)] text-[var(--color-arena)] glow-arena"
           : "border-[var(--color-border)] bg-[var(--color-surface-2)] text-[var(--color-muted-foreground)]"
       }`}
-      title="Puntos sumados a tu ranking por este partido"
+      title={t("totalEarnedTitle")}
     >
       {positive ? <span className="text-xs opacity-70">+</span> : null}
       <span className="text-xl">{points}</span>
       <span className="text-[0.55rem] uppercase tracking-[0.18em] opacity-70">
-        {points === 1 ? "pt" : "pts"}
+        {points === 1 ? t("pt") : t("pts")}
       </span>
     </div>
   );
@@ -839,6 +866,7 @@ function ScoreboardPick({
   totalPoints,
   finished,
   hasPrediction,
+  t,
 }: {
   home: typeof teams.$inferSelect | null;
   away: typeof teams.$inferSelect | null;
@@ -851,25 +879,26 @@ function ScoreboardPick({
   totalPoints: number;
   finished: boolean;
   hasPrediction: boolean;
+  t: Translator;
 }) {
   const noPick = homeScore == null || awayScore == null;
   return (
     <div className="space-y-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-2)] p-4">
       <div className="flex items-baseline justify-between gap-2">
         <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-          Marcador
+          {t("scoreboardLabel")}
         </p>
         {finished && hasPrediction ? (
-          <PointsTag points={totalPoints} />
+          <PointsTag points={totalPoints} t={t} />
         ) : null}
       </div>
       {noPick ? (
         <p className="font-display tabular text-2xl tracking-tight text-[var(--color-muted-foreground)]">
-          Sin pick
+          {t("noPick")}
         </p>
       ) : (
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-4">
-          <ScoreboardSide team={home} align="end" />
+          <ScoreboardSide team={home} align="end" t={t} />
           <div className="flex items-center gap-1.5 sm:gap-2">
             <Digit value={homeScore} />
             <span className="font-display text-2xl text-[var(--color-muted-foreground)]">
@@ -877,25 +906,27 @@ function ScoreboardPick({
             </span>
             <Digit value={awayScore} />
           </div>
-          <ScoreboardSide team={away} align="start" />
+          <ScoreboardSide team={away} align="start" t={t} />
         </div>
       )}
       {willGoToPens ? (
         <p className="text-center font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-          + Penaltis
+          {t("plusPens")}
         </p>
       ) : null}
       {winnerName ? (
         <p className="border-t border-dashed border-[var(--color-border)] pt-2 text-center text-[0.7rem] text-[var(--color-muted-foreground)]">
-          Clasificado: <span className="font-medium text-[var(--color-foreground)]">{winnerName}</span>
+          {t.rich("qualified", {
+            name: winnerName,
+            b: (chunks) => (
+              <span className="font-medium text-[var(--color-foreground)]">{chunks}</span>
+            ),
+          })}
           {winnerCorrect === true ? " ✓" : winnerCorrect === false ? " ✗" : ""}
         </p>
       ) : null}
       {finished && hasPrediction ? (
-        <PointsBreakdown
-          entries={entries}
-          emptyLabel="Sin puntos por marcador"
-        />
+        <PointsBreakdown entries={entries} emptyLabel={t("noMarkerPoints")} t={t} />
       ) : null}
     </div>
   );
@@ -912,9 +943,11 @@ function Digit({ value }: { value: number }) {
 function ScoreboardSide({
   team,
   align,
+  t,
 }: {
   team: typeof teams.$inferSelect | null;
   align: "start" | "end";
+  t: Translator;
 }) {
   const cls =
     align === "end" ? "items-end text-right" : "items-start text-left";
@@ -933,7 +966,7 @@ function ScoreboardSide({
       <p className="font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
         {team?.code ?? "—"}
       </p>
-      <p className="truncate font-display text-sm leading-tight">{team?.name ?? "TBD"}</p>
+      <p className="truncate font-display text-sm leading-tight">{team?.name ?? t("tbd")}</p>
     </Wrapper>
   );
 }
@@ -945,6 +978,7 @@ function ScorerPick({
   entries,
   totalPoints,
   finished,
+  t,
 }: {
   player: typeof players.$inferSelect | null;
   team: typeof teams.$inferSelect | null;
@@ -952,6 +986,7 @@ function ScorerPick({
   entries: LedgerEntry[];
   totalPoints: number;
   finished: boolean;
+  t: Translator;
 }) {
   const hit = goalsScored > 0;
   return (
@@ -981,9 +1016,9 @@ function ScorerPick({
 
       <div className="relative flex items-baseline justify-between gap-2">
         <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-          Goleador
+          {t("scorerLabel")}
         </p>
-        {finished && player ? <PointsTag points={totalPoints} /> : null}
+        {finished && player ? <PointsTag points={totalPoints} t={t} /> : null}
       </div>
 
       {player ? (
@@ -1026,7 +1061,7 @@ function ScorerPick({
             {hit ? (
               <p className="mt-1.5 inline-flex items-center gap-1 rounded-full border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_10%,transparent)] px-2 py-0.5 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-arena)]">
                 <Target className="size-2.5" />
-                Marcó {goalsScored} {goalsScored === 1 ? "gol" : "goles"}
+                {t("scoredGoals", { count: goalsScored })}
               </p>
             ) : null}
           </div>
@@ -1040,10 +1075,10 @@ function ScorerPick({
           </span>
           <div>
             <p className="font-display text-xl leading-tight tracking-tight text-[var(--color-muted-foreground)]">
-              Sin pick
+              {t("noPick")}
             </p>
             <p className="mt-0.5 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-              No apostaste por goleador en este partido
+              {t("noScorerPick")}
             </p>
           </div>
         </div>
@@ -1051,14 +1086,14 @@ function ScorerPick({
 
       {finished && player ? (
         <div className="relative">
-          <PointsBreakdown entries={entries} emptyLabel="No marcó · 0 pts" />
+          <PointsBreakdown entries={entries} emptyLabel={t("noGoalNoPoints")} t={t} />
         </div>
       ) : null}
     </div>
   );
 }
 
-function PointsTag({ points }: { points: number }) {
+function PointsTag({ points, t }: { points: number; t: Translator }) {
   const positive = points > 0;
   return (
     <span
@@ -1071,7 +1106,7 @@ function PointsTag({ points }: { points: number }) {
       {positive ? <span className="text-xs opacity-70">+</span> : null}
       <span>{points}</span>
       <span className="text-[0.55rem] uppercase tracking-[0.18em] opacity-70">
-        {points === 1 ? "pt" : "pts"}
+        {points === 1 ? t("pt") : t("pts")}
       </span>
     </span>
   );
@@ -1080,9 +1115,11 @@ function PointsTag({ points }: { points: number }) {
 function PointsBreakdown({
   entries,
   emptyLabel,
+  t,
 }: {
   entries: LedgerEntry[];
   emptyLabel: string;
+  t: Translator;
 }) {
   if (entries.length === 0) {
     return (
@@ -1099,7 +1136,7 @@ function PointsBreakdown({
           className="flex items-baseline justify-between gap-2 text-[0.7rem]"
         >
           <span className="text-[var(--color-foreground)]">
-            {SOURCE_LABEL[e.source] ?? e.source}
+            {sourceLabel(t, e.source)}
           </span>
           <span className="font-display tabular text-sm text-[var(--color-arena)]">
             +{e.points}
@@ -1110,19 +1147,25 @@ function PointsBreakdown({
   );
 }
 
-function KickoffCountdown({ scheduledAt }: { scheduledAt: Date | string }) {
+function KickoffCountdown({
+  scheduledAt,
+  t,
+}: {
+  scheduledAt: Date | string;
+  t: Translator;
+}) {
   const ms = new Date(scheduledAt).getTime() - Date.now();
   if (ms <= 0) {
     return (
       <span className="font-display text-6xl text-[var(--color-muted-foreground)]">
-        vs
+        {t("vs")}
       </span>
     );
   }
   return (
     <div className="flex flex-col items-center gap-1">
       <span className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-        Empieza en
+        {t("startsIn")}
       </span>
       <span className="font-display tabular text-5xl leading-none tracking-tighter text-[var(--color-arena)] glow-arena sm:text-7xl">
         {formatRemaining(ms)}
