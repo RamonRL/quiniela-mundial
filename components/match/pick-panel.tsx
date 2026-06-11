@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { TeamFlag } from "@/components/brand/team-flag";
 import { PlayerAvatar } from "@/components/brand/player-avatar";
+import { ScoreboardCountdown } from "./scoreboard-countdown";
 
 /** A translator bound to the `matchDetail` namespace. */
 type Translator = Awaited<ReturnType<typeof getTranslations>>;
@@ -734,14 +735,28 @@ const SB_STAGE_KEY: Record<string, string> = {
   final: "stageFinal",
 };
 
+export type ScoreboardGoal = {
+  /** Lado bajo el que se muestra = equipo al que CUENTA el gol (autogol incl.). */
+  side: "home" | "away";
+  name: string;
+  minute: number | null;
+  isFirstGoal?: boolean;
+  isPenalty?: boolean;
+  isOwnGoal?: boolean;
+};
+
 /**
- * Cabecera de marcador del partido (parte superior de la ficha), tal cual irá a
- * producción: arriba "FASE DE GRUPOS · GRUPO A" + estado; en el centro los dos
- * equipos SIEMPRE en una línea (banderas + nombres grandes, con salto de línea
- * para nombres largos) y, según el estado, "vs" (antes), marcador en vivo +
- * EN VIVO (durante) o marcador final + FINAL (después); abajo fecha · estadio.
- * Fondo de estadio (spotlight + halftone), sin la cuadrícula. Se intensifica el
- * resplandor cuando hay directo.
+ * Cabecera de marcador del partido, tal cual irá a producción:
+ *  - Arriba: "FASE DE GRUPOS · GRUPO A".
+ *  - Centro PROTAGONISTA según estado: cuenta atrás grande (antes), marcador +
+ *    minuto en vivo (durante) o marcador + FINAL (después, con penaltis si los
+ *    hubo en fase final).
+ *  - Equipos SIEMPRE en una línea (banderas grandes, nombres con salto de línea).
+ *  - Los GOLEADORES van bajo la selección que marcó cada gol (los autogoles, bajo
+ *    el equipo al que cuentan, aunque el jugador sea del rival) — sin etiquetas de
+ *    selección. Se remarca primer gol (rojo), penalti "(p)" y propia "(p.p.)".
+ *  - Abajo: fecha · estadio.
+ * Fondo de estadio (spotlight + halftone), sin cuadrícula; resplandor intensificado en directo.
  */
 export function MatchScoreboard({
   home,
@@ -752,6 +767,12 @@ export function MatchScoreboard({
   homeScore,
   awayScore,
   minute,
+  kickoffISO,
+  wentToPens,
+  homePenScore,
+  awayPenScore,
+  winnerName,
+  goals = [],
   dateLabel,
   venue,
   t,
@@ -764,6 +785,12 @@ export function MatchScoreboard({
   homeScore?: number | null;
   awayScore?: number | null;
   minute?: number | null;
+  kickoffISO?: string | null;
+  wentToPens?: boolean;
+  homePenScore?: number | null;
+  awayPenScore?: number | null;
+  winnerName?: string | null;
+  goals?: ScoreboardGoal[];
   dateLabel?: string | null;
   venue?: string | null;
   t: Translator;
@@ -772,6 +799,20 @@ export function MatchScoreboard({
   const finished = state === "after";
   const showScore = (live || finished) && homeScore != null && awayScore != null;
   const stageLabel = stage && SB_STAGE_KEY[stage] ? t(SB_STAGE_KEY[stage]) : null;
+  const homeGoals = goals.filter((g) => g.side === "home");
+  const awayGoals = goals.filter((g) => g.side === "away");
+
+  const score = (
+    <span
+      className={`font-display tabular text-5xl leading-none tracking-tighter sm:text-6xl ${
+        live ? "text-[var(--color-arena)] glow-arena" : ""
+      }`}
+    >
+      {homeScore}
+      <span className="mx-1 text-[var(--color-muted-foreground)] opacity-50 sm:mx-2">·</span>
+      {awayScore}
+    </span>
+  );
 
   return (
     <Card className="relative overflow-hidden">
@@ -781,47 +822,74 @@ export function MatchScoreboard({
       />
       <div aria-hidden className="halftone pointer-events-none absolute inset-0 opacity-[0.04]" />
       <CardContent className="relative space-y-4 p-5 sm:p-7">
-        {/* Arriba: fase/grupo + estado */}
-        <div className="flex items-center justify-between gap-2">
-          <span className="min-w-0 truncate font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
+        {/* Arriba: fase · grupo */}
+        {stageLabel ? (
+          <p className="text-center font-mono text-[0.6rem] uppercase tracking-[0.3em] text-[var(--color-muted-foreground)]">
             {stageLabel}
             {group ? ` · ${t("group", { code: group })}` : ""}
-          </span>
-          {live ? (
-            <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[var(--color-arena)]/60 bg-[color-mix(in_oklch,var(--color-arena)_10%,transparent)] px-2.5 py-1 font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-arena)]">
-              <span className="relative flex size-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--color-arena)] opacity-70" />
-                <span className="relative inline-flex size-2 rounded-full bg-[var(--color-arena)]" />
-              </span>
-              {t("statusLive")}
-              {minute != null ? ` · ${minute}'` : ""}
-            </span>
-          ) : (
-            <span className="shrink-0 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-2)] px-2.5 py-1 font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
-              {finished ? t("statusFinal") : t("statusScheduled")}
-            </span>
-          )}
-        </div>
+          </p>
+        ) : null}
 
-        {/* Equipos SIEMPRE en una línea */}
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-5">
-          <ScoreTeam team={home} align="end" t={t} />
-          {showScore ? (
-            <span
-              className={`shrink-0 font-display tabular text-5xl leading-none tracking-tighter sm:text-7xl ${
-                live ? "text-[var(--color-arena)] glow-arena" : ""
-              }`}
-            >
-              {homeScore}
-              <span className="mx-1 text-[var(--color-muted-foreground)] opacity-50 sm:mx-2">·</span>
-              {awayScore}
-            </span>
-          ) : (
-            <span className="shrink-0 font-display text-2xl text-[var(--color-muted-foreground)] sm:text-3xl">
-              {t("vs")}
-            </span>
-          )}
-          <ScoreTeam team={away} align="start" t={t} />
+        {/* Equipos en una línea + centro protagonista; goleadores bajo cada equipo */}
+        <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-2 sm:gap-5">
+          <TeamColumn team={home} goals={homeGoals} align="end" t={t} />
+
+          <div className="flex flex-col items-center gap-1.5 self-center">
+            {state === "before" ? (
+              kickoffISO ? (
+                <ScoreboardCountdown
+                  kickoffISO={kickoffISO}
+                  startsIn={t("startsIn")}
+                  units={{ d: "d", h: "h", m: "m", s: "s" }}
+                />
+              ) : (
+                <span className="font-display text-2xl text-[var(--color-muted-foreground)] sm:text-3xl">
+                  {t("vs")}
+                </span>
+              )
+            ) : (
+              <>
+                {live ? (
+                  <span className="inline-flex items-center gap-1.5 font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-arena)]">
+                    <span className="relative flex size-2">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--color-arena)] opacity-70" />
+                      <span className="relative inline-flex size-2 rounded-full bg-[var(--color-arena)]" />
+                    </span>
+                    {t("statusLive")}
+                  </span>
+                ) : null}
+                {showScore ? score : null}
+                {live && minute != null ? (
+                  <span className="font-display tabular text-2xl leading-none text-[var(--color-arena)] glow-arena">
+                    {minute}
+                    <span className="text-base">′</span>
+                  </span>
+                ) : null}
+                {finished && wentToPens && homePenScore != null && awayPenScore != null ? (
+                  <span className="font-mono text-[0.65rem] uppercase tracking-[0.2em] text-[var(--color-arena)]">
+                    {t("pens", { home: homePenScore, away: awayPenScore })}
+                  </span>
+                ) : null}
+                {finished ? (
+                  <span className="rounded-md border border-[var(--color-border-strong)] bg-[var(--color-surface-2)] px-3 py-1 font-mono text-[0.6rem] uppercase tracking-[0.3em] text-[var(--color-muted-foreground)]">
+                    {t("statusFinal")}
+                  </span>
+                ) : null}
+                {finished && winnerName ? (
+                  <span className="text-[0.7rem] text-[var(--color-muted-foreground)]">
+                    {t.rich("qualified", {
+                      name: winnerName,
+                      b: (chunks) => (
+                        <span className="font-medium text-[var(--color-foreground)]">{chunks}</span>
+                      ),
+                    })}
+                  </span>
+                ) : null}
+              </>
+            )}
+          </div>
+
+          <TeamColumn team={away} goals={awayGoals} align="start" t={t} />
         </div>
 
         {/* Abajo: fecha · estadio */}
@@ -836,29 +904,62 @@ export function MatchScoreboard({
   );
 }
 
-function ScoreTeam({
+function TeamColumn({
   team,
+  goals,
   align,
   t,
 }: {
   team: PickTeam;
+  goals: ScoreboardGoal[];
   align: "start" | "end";
   t: Translator;
 }) {
-  // Bandera al exterior, nombre hacia el centro; nombre grande con salto de
-  // línea (no truncado) para selecciones de nombre largo.
-  const cls = align === "end" ? "flex-row-reverse text-right" : "text-left";
+  const end = align === "end";
   const Wrapper: React.ElementType = team.href ? Link : "div";
   const props = team.href ? { href: team.href, "aria-label": team.name ?? undefined } : {};
+  const flag = <TeamFlag code={team.code} size={52} className="shrink-0" />;
+  const name = (
+    <span className="min-w-0 text-balance break-words font-display text-xl leading-[1.05] tracking-tight sm:text-3xl">
+      {team.name ?? t("tbd")}
+    </span>
+  );
   return (
-    <Wrapper
-      {...props}
-      className={`flex min-w-0 items-center gap-2.5 ${cls} ${team.href ? "transition hover:text-[var(--color-arena)]" : ""}`}
-    >
-      <TeamFlag code={team.code} size={52} className="shrink-0" />
-      <span className="min-w-0 text-balance break-words font-display text-xl leading-[1.05] tracking-tight sm:text-3xl">
-        {team.name ?? t("tbd")}
-      </span>
-    </Wrapper>
+    <div className={`flex min-w-0 flex-col gap-2 ${end ? "items-end text-right" : "items-start text-left"}`}>
+      <Wrapper
+        {...props}
+        className={`flex min-w-0 items-center gap-2.5 ${end ? "flex-row-reverse" : ""} ${team.href ? "transition hover:text-[var(--color-arena)]" : ""}`}
+      >
+        {flag}
+        {name}
+      </Wrapper>
+      {goals.length > 0 ? (
+        <div className="flex flex-col gap-0.5">
+          {goals.map((g, i) => (
+            <div
+              key={`${g.name}-${g.minute}-${i}`}
+              className={`flex items-baseline gap-1.5 ${end ? "justify-end" : "justify-start"}`}
+            >
+              <span
+                className={`font-mono text-[0.6rem] tabular ${
+                  g.isFirstGoal
+                    ? "text-[var(--color-arena)] glow-arena"
+                    : "text-[var(--color-muted-foreground)]"
+                }`}
+              >
+                {g.minute != null ? `${g.minute}'` : ""}
+              </span>
+              <span className="text-sm font-medium">{g.name}</span>
+              {g.isPenalty ? (
+                <span className="font-mono text-[0.55rem] text-[var(--color-muted-foreground)]">(p)</span>
+              ) : null}
+              {g.isOwnGoal ? (
+                <span className="font-mono text-[0.55rem] text-[var(--color-muted-foreground)]">(p.p.)</span>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      ) : null}
+    </div>
   );
 }
