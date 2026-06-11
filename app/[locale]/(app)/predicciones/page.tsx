@@ -240,7 +240,7 @@ export default async function PrediccionesHub() {
                   }
             }
             done={answeredSpecials >= totalSpecials && totalSpecials > 0}
-            locked={false}
+            locked={!preTorneoOpen}
           />
         </div>
       </Section>
