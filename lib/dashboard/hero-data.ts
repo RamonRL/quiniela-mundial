@@ -23,6 +23,8 @@ type MatchRow = {
   status: "scheduled" | "live" | "finished";
   homeScore: number | null;
   awayScore: number | null;
+  liveMinute: number | null;
+  livePhase: string | null;
   scheduledAt: Date;
   venue: string | null;
   matchdayId: number | null;
@@ -64,6 +66,8 @@ export async function loadHeroData(args: {
         status: matches.status,
         homeScore: matches.homeScore,
         awayScore: matches.awayScore,
+        liveMinute: matches.liveMinute,
+        livePhase: matches.livePhase,
         scheduledAt: matches.scheduledAt,
         venue: matches.venue,
         matchdayId: matches.matchdayId,
@@ -145,7 +149,9 @@ export async function loadHeroData(args: {
 
   const asLive = (m: MatchRow): HeroMatch => ({
     ...base(m),
-    minute: liveMinute(m.scheduledAt),
+    // Minuto real de la API; si aún no se ha sincronizado, cae al reloj.
+    minute: m.liveMinute ?? liveMinute(m.scheduledAt),
+    phase: m.livePhase,
     scorers: scorersByMatch.get(m.id) ?? [],
   });
   const asUpcomingChip = (m: MatchRow, opts?: { sameTime?: boolean }): HeroMatch => ({

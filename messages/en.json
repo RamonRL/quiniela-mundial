@@ -1954,7 +1954,8 @@
     "stageQf": "Quarter-finals",
     "stageSf": "Semi-finals",
     "stageThird": "Third place",
-    "stageFinal": "Final"
+    "stageFinal": "Final",
+    "halftime": "Half-time"
   },
   "matchDetail": {
     "back": "Back to schedule",
@@ -2038,6 +2039,7 @@
     "pensPick": "Penalties · {team} wins",
     "predsPagePrev": "Previous",
     "predsPageNext": "Next",
-    "predsPageInfo": "{from}–{to} of {total}"
+    "predsPageInfo": "{from}–{to} of {total}",
+    "halftime": "Half-time"
   }
 }

@@ -195,10 +195,18 @@ async function syncOne(c: Candidate): Promise<{ changed: boolean; pendingCount: 
     awayPenScore: f.awayPenScore,
     scorerKeys: providerScorers.map((s) => scorerKey(s.side, s.minute, s.isOwnGoal, s.isPenalty)),
   };
+  // Minuto/fase en vivo (API). Solo mientras está en directo.
+  const liveMinute = f.status === "live" ? f.elapsed : null;
+  const livePhase = f.status === "live" ? f.rawStatus : null;
+
   const current = await dbSnapshot(c.id, c.homeTeamId, c.awayTeamId);
   if (!diffMatch(current, next)) {
-    // Sin cambios: solo sella lastSyncedAt para el watchdog.
-    await db.update(matches).set({ lastSyncedAt: new Date() }).where(eq(matches.id, c.id));
+    // Sin cambios "puntuables": sella lastSyncedAt (watchdog) y refresca el
+    // minuto/fase en vivo (cambia cada minuto sin tocar marcador/goleadores).
+    await db
+      .update(matches)
+      .set({ lastSyncedAt: new Date(), liveMinute, livePhase })
+      .where(eq(matches.id, c.id));
     return { changed: false, pendingCount: 0 };
   }
 
@@ -218,6 +226,8 @@ async function syncOne(c: Candidate): Promise<{ changed: boolean; pendingCount: 
       awayScorePen: f.awayPenScore,
       winnerTeamId,
       scorers: resolved,
+      liveMinute,
+      livePhase,
     },
     { actor: "auto" },
   );

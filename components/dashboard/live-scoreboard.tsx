@@ -13,7 +13,9 @@ import { TeamFlag } from "@/components/brand/team-flag";
  */
 export function LiveScoreboard({ match, compact }: { match: HeroMatch; compact?: boolean }) {
   const t = useTranslations("hero");
-  const { home, away, homeScore, awayScore, minute, scorers, href } = match;
+  const { home, away, homeScore, awayScore, minute, phase, scorers, href } = match;
+  // HT (descanso) y BT (pausa antes/entre prórroga) → "Descanso" en vez del minuto.
+  const isBreak = phase === "HT" || phase === "BT";
   const label = match.group
     ? t("group", { g: match.group })
     : match.stage && STAGE_LABEL_KEY[match.stage]
@@ -39,7 +41,11 @@ export function LiveScoreboard({ match, compact }: { match: HeroMatch; compact?:
             {label}
           </span>
         ) : null}
-        {minute != null ? (
+        {isBreak ? (
+          <span className="ml-auto font-mono text-[0.6rem] uppercase tracking-[0.22em] text-[var(--color-arena)]">
+            {t("halftime")}
+          </span>
+        ) : minute != null ? (
           <span className="ml-auto font-display tabular text-xl leading-none text-[var(--color-arena)] glow-arena sm:text-2xl">
             {minute}
             <span className="text-sm">′</span>

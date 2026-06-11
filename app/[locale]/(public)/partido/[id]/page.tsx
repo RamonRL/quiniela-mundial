@@ -550,7 +550,8 @@ export default async function MatchDetailPage({
         group={matchGroup?.code ?? null}
         homeScore={match.homeScore}
         awayScore={match.awayScore}
-        minute={null}
+        minute={match.liveMinute}
+        phase={match.livePhase}
         kickoffISO={match.scheduledAt.toISOString()}
         wentToPens={match.wentToPens}
         homePenScore={match.homeScorePen}

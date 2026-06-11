@@ -21,7 +21,9 @@ export type HeroMatch = {
   status: "live" | "upcoming" | "finished";
   homeScore?: number | null;
   awayScore?: number | null;
-  minute?: number | null; // live
+  minute?: number | null; // live (minuto real de la API)
+  /** Fase del proveedor: "1H","HT","2H","ET","BT","P". HT/BT → "Descanso". */
+  phase?: string | null;
   kickoffISO?: string; // upcoming → contador
   dateLabel?: string | null;
   venue?: string | null;

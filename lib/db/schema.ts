@@ -456,6 +456,13 @@ export const matches = pgTable(
     homeScorePen: smallint("home_score_pen"),
     awayScorePen: smallint("away_score_pen"),
     winnerTeamId: integer("winner_team_id").references(() => teams.id, { onDelete: "set null" }),
+    // Minuto real del partido en vivo, tomado de API-Football (status.elapsed).
+    // Null si no está en vivo. Evita calcular el minuto desde el reloj (que
+    // ignora el descanso/tiempo añadido).
+    liveMinute: smallint("live_minute"),
+    // Fase cruda del proveedor (status.short): "1H","HT","2H","ET","BT","P"…
+    // Permite mostrar "Descanso" (HT/BT) en vez de un minuto.
+    livePhase: text("live_phase"),
     // ─── Automatización (sync con API-Football) ───
     // Id del fixture en API-Football, casado una vez por fecha + equipos.
     providerFixtureId: integer("provider_fixture_id"),

@@ -820,6 +820,7 @@ export function MatchScoreboard({
   homeScore,
   awayScore,
   minute,
+  phase,
   kickoffISO,
   wentToPens,
   homePenScore,
@@ -838,6 +839,8 @@ export function MatchScoreboard({
   homeScore?: number | null;
   awayScore?: number | null;
   minute?: number | null;
+  /** Fase del proveedor: "HT"/"BT" → "Descanso"; resto → minuto. */
+  phase?: string | null;
   kickoffISO?: string | null;
   wentToPens?: boolean;
   homePenScore?: number | null;
@@ -915,7 +918,11 @@ export function MatchScoreboard({
                   </span>
                 ) : null}
                 {showScore ? score : null}
-                {live && minute != null ? (
+                {live && (phase === "HT" || phase === "BT") ? (
+                  <span className="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-[var(--color-arena)]">
+                    {t("halftime")}
+                  </span>
+                ) : live && minute != null ? (
                   <span className="font-display tabular text-2xl leading-none text-[var(--color-arena)] glow-arena">
                     {minute}
                     <span className="text-base">′</span>

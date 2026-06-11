@@ -23,6 +23,10 @@ export type MatchUpdateInput = {
   awayScorePen: number | null;
   winnerTeamId: number | null;
   scorers: MatchScorerInput[];
+  /** Minuto real (API). Null fuera de directo. */
+  liveMinute?: number | null;
+  /** Fase del proveedor (status.short): "1H","HT","2H"… para mostrar "Descanso". */
+  livePhase?: string | null;
 };
 
 export type ApplyOptions = {
@@ -74,6 +78,10 @@ export async function applyMatchUpdate(
         homeScorePen: reverting ? null : input.homeScorePen ?? null,
         awayScorePen: reverting ? null : input.awayScorePen ?? null,
         winnerTeamId: reverting ? null : input.winnerTeamId ?? null,
+        // Minuto/fase en vivo: solo mientras está en directo. Al finalizar o
+        // revertir se limpian (un partido acabado no tiene minuto en curso).
+        liveMinute: input.status === "live" ? input.liveMinute ?? null : null,
+        livePhase: input.status === "live" ? input.livePhase ?? null : null,
         // Precedencia y watchdog.
         ...(opts.actor === "admin"
           ? { resultSource: "manual" }

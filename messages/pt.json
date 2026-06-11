@@ -1954,7 +1954,8 @@
     "stageQf": "Quartas",
     "stageSf": "Semifinais",
     "stageThird": "Terceiro lugar",
-    "stageFinal": "Final"
+    "stageFinal": "Final",
+    "halftime": "Intervalo"
   },
   "matchDetail": {
     "back": "Voltar ao calendário",
@@ -2038,6 +2039,7 @@
     "pensPick": "Pénaltis · {team} vence",
     "predsPagePrev": "Anterior",
     "predsPageNext": "Seguinte",
-    "predsPageInfo": "{from}–{to} de {total}"
+    "predsPageInfo": "{from}–{to} de {total}",
+    "halftime": "Intervalo"
   }
 }

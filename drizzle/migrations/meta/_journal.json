@@ -197,6 +197,13 @@
       "when": 1781004663499,
       "tag": "0027_careless_enchantress",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1781208189872,
+      "tag": "0028_colossal_demogoblin",
+      "breakpoints": true
     }
   ]
 }

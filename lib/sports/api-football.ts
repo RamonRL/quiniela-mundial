@@ -51,6 +51,8 @@ export type ProviderFixture = {
   fixtureId: number;
   rawStatus: string;
   status: ProviderStatus;
+  /** Minuto transcurrido (status.elapsed). Null si no aplica / no en vivo. */
+  elapsed: number | null;
   homeScore: number | null;
   awayScore: number | null;
   wentToPens: boolean;
@@ -87,6 +89,7 @@ export function parseFixture(item: AfFixtureItem): ProviderFixture {
     fixtureId: item.fixture.id,
     rawStatus: short,
     status: mapFixtureStatus(short),
+    elapsed: item.fixture.status.elapsed,
     homeScore: item.goals.home,
     awayScore: item.goals.away,
     wentToPens: short === "PEN",

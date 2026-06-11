@@ -1954,7 +1954,8 @@
     "stageQf": "Quarts",
     "stageSf": "Demi-finales",
     "stageThird": "Petite finale",
-    "stageFinal": "Finale"
+    "stageFinal": "Finale",
+    "halftime": "Mi-temps"
   },
   "matchDetail": {
     "back": "Retour au calendrier",
@@ -2038,6 +2039,7 @@
     "pensPick": "Tirs au but · {team} gagne",
     "predsPagePrev": "Précédent",
     "predsPageNext": "Suivant",
-    "predsPageInfo": "{from}–{to} sur {total}"
+    "predsPageInfo": "{from}–{to} sur {total}",
+    "halftime": "Mi-temps"
   }
 }
