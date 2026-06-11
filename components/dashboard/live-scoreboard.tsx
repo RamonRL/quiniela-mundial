@@ -1,3 +1,4 @@
+import { Link } from "@/i18n/navigation";
 import { TeamFlag } from "@/components/brand/team-flag";
 import { roundOrGroupLabel, type HeroMatch, type HeroTeam } from "./hero-card";
 
@@ -8,11 +9,11 @@ import { roundOrGroupLabel, type HeroMatch, type HeroTeam } from "./hero-card";
  * marcador (banderas al exterior) para aprovechar el espacio.
  */
 export function LiveScoreboard({ match, compact }: { match: HeroMatch; compact?: boolean }) {
-  const { home, away, homeScore, awayScore, minute, scorers } = match;
+  const { home, away, homeScore, awayScore, minute, scorers, href } = match;
   const label = roundOrGroupLabel(match);
   const flag = compact ? 40 : 56;
 
-  return (
+  const body = (
     <div className="flex flex-col gap-3">
       {/* Eyebrow: En vivo · ronda/grupo · minuto */}
       <div className="flex flex-wrap items-center gap-2.5">
@@ -75,6 +76,17 @@ export function LiveScoreboard({ match, compact }: { match: HeroMatch; compact?:
         </div>
       ) : null}
     </div>
+  );
+
+  if (!href) return body;
+  return (
+    <Link
+      href={href}
+      aria-label={`${home?.name ?? "TBD"} vs ${away?.name ?? "TBD"}`}
+      className="block rounded-xl outline-none transition hover:opacity-95 focus-visible:ring-2 focus-visible:ring-[var(--color-arena)]"
+    >
+      {body}
+    </Link>
   );
 }
 

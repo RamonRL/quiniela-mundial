@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Link } from "@/i18n/navigation";
 import { TeamFlag } from "@/components/brand/team-flag";
 import { roundOrGroupLabel, type HeroMatch, type HeroTeam } from "./hero-card";
 
@@ -21,7 +22,7 @@ export function ContextStrip({ rows }: { rows: HeroMatch[] }) {
 }
 
 function Chip({ match }: { match: HeroMatch }) {
-  const { home, away, status, homeScore, awayScore, kickoffISO, dateLabel, note } = match;
+  const { home, away, status, homeScore, awayScore, kickoffISO, dateLabel, note, href } = match;
   const finished = status === "finished";
   const live = status === "live";
   const label = roundOrGroupLabel(match);
@@ -34,8 +35,9 @@ function Chip({ match }: { match: HeroMatch }) {
           : "draw"
       : null;
 
-  return (
-    <div className="min-w-0 flex-1 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-2)]/50 px-3.5 py-2.5">
+  const cls = "block min-w-0 flex-1 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-2)]/50 px-3.5 py-2.5";
+  const inner = (
+    <>
       <div className="mb-1.5 flex items-center justify-between gap-2">
         <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
           {label}
@@ -60,7 +62,14 @@ function Chip({ match }: { match: HeroMatch }) {
         </span>
         <Side team={away} align="end" dim={winner === "home"} />
       </div>
-    </div>
+    </>
+  );
+
+  if (!href) return <div className={cls}>{inner}</div>;
+  return (
+    <Link href={href} className={`${cls} outline-none transition hover:border-[var(--color-arena)]/50 focus-visible:ring-2 focus-visible:ring-[var(--color-arena)]`}>
+      {inner}
+    </Link>
   );
 }
 

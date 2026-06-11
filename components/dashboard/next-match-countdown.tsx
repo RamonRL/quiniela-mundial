@@ -12,7 +12,7 @@ import { roundOrGroupLabel, type HeroMatch } from "./hero-card";
  * recordatorio de pronóstico integrado inline en rojo arena (sin caja amarilla).
  */
 export function NextMatchCountdown({ match }: { match: HeroMatch }) {
-  const { home, away, dateLabel, venue, kickoffISO, prediction } = match;
+  const { home, away, dateLabel, venue, kickoffISO, prediction, href } = match;
   const label = roundOrGroupLabel(match);
   const target = kickoffISO ? new Date(kickoffISO).getTime() : 0;
   const [remaining, setRemaining] = useState<number | null>(null);
@@ -34,7 +34,15 @@ export function NextMatchCountdown({ match }: { match: HeroMatch }) {
   const pad = (n: number | null) => (n == null ? "--" : n.toString().padStart(2, "0"));
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="relative">
+      {href ? (
+        <Link
+          href={href}
+          aria-label={`${home?.name ?? "TBD"} vs ${away?.name ?? "TBD"}`}
+          className="absolute inset-0 z-0 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-arena)]"
+        />
+      ) : null}
+      <div className={`relative z-10 flex flex-col gap-4 ${href ? "pointer-events-none" : ""}`}>
       {/* Eyebrow */}
       <div className="flex flex-wrap items-center gap-2.5">
         <span className="h-px w-7 bg-[var(--color-arena)]" />
@@ -91,6 +99,7 @@ export function NextMatchCountdown({ match }: { match: HeroMatch }) {
         </p>
         {prediction && !live ? <PredictionPill prediction={prediction} /> : null}
       </div>
+      </div>
     </div>
   );
 }
@@ -100,7 +109,7 @@ function PredictionPill({ prediction }: { prediction: { hasResult: boolean; href
     return (
       <Link
         href={prediction.href}
-        className="group inline-flex items-center gap-1.5 font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[var(--color-muted-foreground)] transition hover:text-[var(--color-arena)]"
+        className="group pointer-events-auto relative z-10 inline-flex items-center gap-1.5 font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[var(--color-muted-foreground)] transition hover:text-[var(--color-arena)]"
       >
         <PencilLine className="size-3.5" />
         Pronóstico listo · editar
@@ -111,7 +120,7 @@ function PredictionPill({ prediction }: { prediction: { hasResult: boolean; href
   return (
     <Link
       href={prediction.href}
-      className="group inline-flex items-center gap-2 rounded-full border border-[var(--color-arena)]/55 bg-[color-mix(in_oklch,var(--color-arena)_14%,transparent)] px-3 py-1.5 text-[var(--color-arena)] transition hover:bg-[color-mix(in_oklch,var(--color-arena)_22%,transparent)]"
+      className="group pointer-events-auto relative z-10 inline-flex items-center gap-2 rounded-full border border-[var(--color-arena)]/55 bg-[color-mix(in_oklch,var(--color-arena)_14%,transparent)] px-3 py-1.5 text-[var(--color-arena)] transition hover:bg-[color-mix(in_oklch,var(--color-arena)_22%,transparent)]"
     >
       <span className="relative flex size-3.5 items-center justify-center">
         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--color-arena)] opacity-50" />

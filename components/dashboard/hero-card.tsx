@@ -30,6 +30,8 @@ export type HeroMatch = {
   prediction?: { hasResult: boolean; href: string };
   /** Etiqueta extra para la tira (p.ej. "· a la vez"). */
   note?: string | null;
+  /** Enlace a la página del partido (/partido/[id]). Hace la card clicable. */
+  href?: string;
 };
 
 export type HeroData = {

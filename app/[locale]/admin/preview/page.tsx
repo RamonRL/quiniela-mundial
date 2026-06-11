@@ -30,7 +30,7 @@ export default async function PreviewPage() {
     db.select().from(teams),
     db.select({ id: groups.id, code: groups.code }).from(groups),
     db
-      .select({ code: matches.code, gid: matches.groupId, h: matches.homeTeamId, a: matches.awayTeamId, venue: matches.venue })
+      .select({ id: matches.id, code: matches.code, gid: matches.groupId, h: matches.homeTeamId, a: matches.awayTeamId, venue: matches.venue })
       .from(matches)
       .where(eq(matches.stage, "group"))
       .orderBy(asc(matches.scheduledAt)),
@@ -74,6 +74,7 @@ export default async function PreviewPage() {
     prediction: o.prediction,
     note: o.note,
     stage: o.stage,
+    href: o.href ?? (r.id != null ? `/partido/${r.id}` : undefined),
   });
 
   const last3 = gm.slice(-3); // [M72, M69, M70] por scheduledAt
