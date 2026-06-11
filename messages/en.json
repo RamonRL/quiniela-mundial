@@ -2041,5 +2041,20 @@
     "predsPageNext": "Next",
     "predsPageInfo": "{from}–{to} of {total}",
     "halftime": "Half-time"
+  },
+  "ledger": {
+    "matchExact": "Exact score",
+    "outcomeTeam": "Winner + one team's goals",
+    "outcome": "Correct winner",
+    "goalsOneTeam": "One team's goals",
+    "drawExactPens": "Exact draw + shootout",
+    "drawPens": "Draw + shootout winner",
+    "scorer": "Match scorer",
+    "firstScorer": "First scorer bonus",
+    "groupPosition": "Group position",
+    "groupTop2Swap": "Top-2, order swapped",
+    "bracketSlot": "Bracket hit",
+    "topScorer": "Golden Boot",
+    "special": "Special prediction"
   }
 }

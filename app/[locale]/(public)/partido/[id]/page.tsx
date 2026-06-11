@@ -45,6 +45,7 @@ import { BreadcrumbLD, MatchLD } from "@/components/seo/jsonld";
 import { findVenueByMatchVenue } from "@/lib/seo/venues";
 import { getNewsForMatch, listPublishedNews } from "@/lib/news/queries";
 import { NewsCard } from "@/components/news/news-card";
+import { MARKER_SOURCES, SCORER_SOURCES, ledgerLabelKey } from "@/lib/scoring/ledger-labels";
 
 type Translator = Awaited<ReturnType<typeof getTranslations>>;
 
@@ -61,21 +62,6 @@ const STAGE_KEY: Record<string, string> = {
 function stageLabel(t: Translator, stage: string): string {
   const key = STAGE_KEY[stage];
   return key ? t(key) : stage;
-}
-
-const SOURCE_KEY: Record<string, string> = {
-  match_exact_score: "srcExact",
-  match_outcome: "srcOutcome",
-  knockout_score_90: "src90",
-  knockout_qualifier: "srcQualified",
-  knockout_pens_bonus: "srcPens",
-  match_scorer: "srcScorer",
-  match_first_scorer: "srcFirstGoal",
-};
-
-function sourceLabel(t: Translator, source: string): string {
-  const key = SOURCE_KEY[source];
-  return key ? t(key) : source;
 }
 
 export async function generateMetadata({
@@ -141,6 +127,7 @@ export default async function MatchDetailPage({
   const leagueId = me ? await currentLeagueId(me) : null;
   const locale = await getLocale();
   const t = await getTranslations("matchDetail");
+  const tLedger = await getTranslations("ledger");
   const { id } = await params;
   const matchId = Number(id);
   if (!Number.isFinite(matchId)) notFound();
@@ -439,12 +426,16 @@ export default async function MatchDetailPage({
           wentToPens: match.wentToPens,
           pensWinner: sideOfTeam(match.winnerTeamId),
         };
+  const labelOf = (e: (typeof myLedgerRows)[number]) => {
+    const key = ledgerLabelKey(e.source, e.sourceRef as Record<string, unknown>, e.points);
+    return key ? tLedger(key) : e.source;
+  };
   const markerPts = myLedgerRows
     .filter((e) => MARKER_SOURCES.has(e.source))
-    .map((e) => ({ id: e.id, label: sourceLabel(t, e.source), points: e.points }));
+    .map((e) => ({ id: e.id, label: labelOf(e), points: e.points }));
   const scorerPts = myLedgerRows
     .filter((e) => SCORER_SOURCES.has(e.source))
-    .map((e) => ({ id: e.id, label: sourceLabel(t, e.source), points: e.points }));
+    .map((e) => ({ id: e.id, label: labelOf(e), points: e.points }));
   const pickPoints: PickPoints | null =
     sbState === "after"
       ? {
@@ -650,15 +641,6 @@ export default async function MatchDetailPage({
     </div>
   );
 }
-
-const MARKER_SOURCES = new Set([
-  "match_exact_score",
-  "match_outcome",
-  "knockout_score_90",
-  "knockout_qualifier",
-  "knockout_pens_bonus",
-]);
-const SCORER_SOURCES = new Set(["match_scorer", "match_first_scorer"]);
 
 function VenueLink({ venue }: { venue: string | null }) {
   if (!venue) return null;

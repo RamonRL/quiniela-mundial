@@ -2041,5 +2041,20 @@
     "predsPageNext": "Suivant",
     "predsPageInfo": "{from}–{to} sur {total}",
     "halftime": "Mi-temps"
+  },
+  "ledger": {
+    "matchExact": "Score exact",
+    "outcomeTeam": "Vainqueur + buts d'une équipe",
+    "outcome": "Bon vainqueur",
+    "goalsOneTeam": "Buts d'une équipe",
+    "drawExactPens": "Nul exact + tirs au but",
+    "drawPens": "Nul + vainqueur aux tirs",
+    "scorer": "Buteur du match",
+    "firstScorer": "Bonus premier buteur",
+    "groupPosition": "Position de groupe",
+    "groupTop2Swap": "Top-2, ordre inversé",
+    "bracketSlot": "Bon pronostic (tableau)",
+    "topScorer": "Soulier d'or",
+    "special": "Prédiction spéciale"
   }
 }

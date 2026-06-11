@@ -26,13 +26,6 @@ import { loadActivityFeed } from "@/lib/activity-feed";
 import { getDateContext } from "@/lib/timezone-server";
 import { formatDate, formatDateTime, initials } from "@/lib/utils";
 
-const KNOCKOUT_SOURCES = [
-  "bracket_slot",
-  "knockout_qualifier",
-  "knockout_pens_bonus",
-  "knockout_score_90",
-] as const;
-
 type CategoryGroup = {
   key: string;
   labelKey: string;
@@ -46,7 +39,9 @@ const CATEGORY_GROUPS: CategoryGroup[] = [
     key: "match",
     labelKey: "catMatch",
     descKey: "catMatchDesc",
-    sources: ["match_exact_score", "match_outcome"],
+    // El resultado de partido emite una sola entrada: match_result (modos
+    // completo/marcador) o solo_winner (modo solo ganador), grupos y KO.
+    sources: ["match_result", "solo_winner", "solo_winner_pens"],
     icon: Target,
   },
   {
@@ -67,12 +62,7 @@ const CATEGORY_GROUPS: CategoryGroup[] = [
     key: "bracket",
     labelKey: "catBracket",
     descKey: "catBracketDesc",
-    sources: [
-      "bracket_slot",
-      "knockout_qualifier",
-      "knockout_pens_bonus",
-      "knockout_score_90",
-    ],
+    sources: ["bracket_slot"],
     icon: Network,
   },
   {
@@ -192,10 +182,13 @@ export default async function ParticipantDetailPage({
     const s = stats.get(e.userId);
     if (!s) continue;
     s.totalPoints += e.points;
-    if (e.source === "match_exact_score" || e.source === "knockout_score_90") {
+    const ref = (e.sourceRef ?? {}) as Record<string, unknown>;
+    // Marcador exacto: entrada de resultado con exact=true.
+    if (e.source === "match_result" && (ref.exact === true || ref.exact === "true")) {
       s.exactScoresCount += 1;
     }
-    if ((KNOCKOUT_SOURCES as readonly string[]).includes(e.source)) {
+    // Puntos de fase final: cualquier entrada de fase KO + aciertos del cuadro.
+    if (ref.phase === "ko" || e.source === "bracket_slot") {
       s.knockoutPoints += e.points;
     }
   }
@@ -232,8 +225,9 @@ export default async function ParticipantDetailPage({
     byCategory.set(e.source, existing);
   }
 
+  const tLedger = await getTranslations("ledger");
   const recent =
-    leagueId != null ? await loadActivityFeed(userId, leagueId, 12) : [];
+    leagueId != null ? await loadActivityFeed(userId, leagueId, 12, tLedger) : [];
 
   const display = user.nickname || user.email.split("@")[0];
   const isMe = user.id === me.id;

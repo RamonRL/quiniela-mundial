@@ -2041,5 +2041,20 @@
     "predsPageNext": "Seguinte",
     "predsPageInfo": "{from}–{to} de {total}",
     "halftime": "Intervalo"
+  },
+  "ledger": {
+    "matchExact": "Placar exato",
+    "outcomeTeam": "Vencedor + gols de uma seleção",
+    "outcome": "Vencedor certo",
+    "goalsOneTeam": "Gols de uma seleção",
+    "drawExactPens": "Empate exato + pênaltis",
+    "drawPens": "Empate + vencedor nos pênaltis",
+    "scorer": "Goleador da partida",
+    "firstScorer": "Bônus primeiro goleador",
+    "groupPosition": "Posição no grupo",
+    "groupTop2Swap": "Top-2 com ordem trocada",
+    "bracketSlot": "Acerto no chaveamento",
+    "topScorer": "Chuteira de Ouro",
+    "special": "Predição especial"
   }
 }

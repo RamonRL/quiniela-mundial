@@ -2041,5 +2041,20 @@
     "predsPageNext": "Siguiente",
     "predsPageInfo": "{from}–{to} de {total}",
     "halftime": "Descanso"
+  },
+  "ledger": {
+    "matchExact": "Marcador exacto",
+    "outcomeTeam": "Ganador + goles de un equipo",
+    "outcome": "Ganador acertado",
+    "goalsOneTeam": "Goles de un equipo",
+    "drawExactPens": "Empate exacto + penaltis",
+    "drawPens": "Empate + ganador de penaltis",
+    "scorer": "Goleador del partido",
+    "firstScorer": "Bonus primer goleador",
+    "groupPosition": "Posición de grupo",
+    "groupTop2Swap": "Top-2 con orden cambiado",
+    "bracketSlot": "Acierto en el cuadro",
+    "topScorer": "Bota de Oro",
+    "special": "Predicción especial"
   }
 }

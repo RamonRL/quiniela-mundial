@@ -18,7 +18,8 @@ export async function ActivityFeedCard({
   myPoints: number;
 }) {
   if (myPoints <= 0) return null;
-  const activity = await loadActivityFeed(userId, leagueId, 8).catch(() => []);
+  const tLedger = await getTranslations("ledger");
+  const activity = await loadActivityFeed(userId, leagueId, 8, tLedger).catch(() => []);
   if (activity.length === 0) return null;
   const t = await getTranslations("dashboard");
 

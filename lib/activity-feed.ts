@@ -8,6 +8,7 @@ import {
   specialPredictions,
   teams,
 } from "@/lib/db/schema";
+import { ledgerLabelKey } from "@/lib/scoring/ledger-labels";
 
 export type ActivityEntry = {
   id: number;
@@ -17,30 +18,20 @@ export type ActivityEntry = {
   detail: string | null;
 };
 
-const SOURCE_LABEL: Record<string, string> = {
-  match_exact_score: "Marcador exacto",
-  match_outcome: "Ganador acertado",
-  knockout_score_90: "Resultado en 90'",
-  knockout_qualifier: "Clasificado acertado",
-  knockout_pens_bonus: "Penaltis acertados",
-  match_scorer: "Goleador acertado",
-  match_first_scorer: "Primer gol acertado",
-  group_position: "Posición de grupo",
-  group_top2_swap: "Top-2 con orden cambiado",
-  bracket_slot: "Acierto en bracket",
-  tournament_top_scorer: "Bota de Oro",
-  special_prediction: "Predicción especial",
-};
+/** Traductor del namespace `ledger` (next-intl); admite params. */
+type LedgerTranslator = (key: string) => string;
 
 /**
  * Recent points the user has earned. We hydrate references from sourceRef
  * so each entry can show a human-readable detail (e.g. "MEX vs RSA",
- * "Lamine Yamal").
+ * "Lamine Yamal"). `t` traduce la etiqueta de cada categoría (namespace
+ * `ledger`); si no se pasa, se cae a la clave/clave-raw.
  */
 export async function loadActivityFeed(
   userId: string,
   leagueId: number,
   limit = 8,
+  t?: LedgerTranslator,
 ): Promise<ActivityEntry[]> {
   const rows = await db
     .select()
@@ -69,10 +60,19 @@ export async function loadActivityFeed(
     if (typeof ref.specialId === "number") specialIds.add(ref.specialId);
   }
 
-  const [matchRows, teamRows, playerRows, groupRows, specialRows] = await Promise.all([
+  // Los partidos primero: necesitamos sus equipos local/visitante para el
+  // detalle "MEX vs RSA" (antes solo se cargaban los equipos de `ref.teamId`,
+  // de ahí el "? vs ?").
+  const matchRows =
     matchIds.size > 0
-      ? db.select().from(matches).where(inArray(matches.id, [...matchIds]))
-      : Promise.resolve([]),
+      ? await db.select().from(matches).where(inArray(matches.id, [...matchIds]))
+      : [];
+  for (const m of matchRows) {
+    if (m.homeTeamId != null) teamIds.add(m.homeTeamId);
+    if (m.awayTeamId != null) teamIds.add(m.awayTeamId);
+  }
+
+  const [teamRows, playerRows, groupRows, specialRows] = await Promise.all([
     teamIds.size > 0
       ? db.select().from(teams).where(inArray(teams.id, [...teamIds]))
       : Promise.resolve([]),
@@ -98,7 +98,8 @@ export async function loadActivityFeed(
 
   return rows.map((r) => {
     const ref = (r.sourceRef ?? {}) as Record<string, unknown>;
-    const label = SOURCE_LABEL[r.source] ?? r.source;
+    const key = ledgerLabelKey(r.source, ref, r.points);
+    const label = key && t ? t(key) : key ?? r.source;
     let detail: string | null = null;
 
     if (typeof ref.matchId === "number") {
