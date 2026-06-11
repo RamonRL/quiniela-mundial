@@ -16,7 +16,6 @@ import { useDateFormat } from "@/components/shell/timezone-provider";
 import { cn, formatDateTime } from "@/lib/utils";
 import type { PredictionMode } from "@/lib/prediction-modes";
 import { ScorerPicker, type PlayerCardData } from "./scorer-picker";
-import { saveMatchPrediction } from "./actions";
 import { saveMatchdayPredictions } from "../actions";
 
 type TeamLite = { id: number; code: string; name: string };
@@ -103,9 +102,11 @@ export function MatchdayTourClient({
   const wheelMode = mode !== "completo";
   const [wheelLeaving, setWheelLeaving] = useState(false);
   const toldEntryToast = useRef(false);
-  // Guardados en vuelo (en segundo plano). Al finalizar esperamos a que
-  // terminen + un guardado masivo de respaldo, para no perder nada.
-  const pendingSaves = useRef<Set<Promise<unknown>>>(new Set());
+  // Autosave con debounce: en vez de un guardado por paso (que disparaba ~23
+  // server actions concurrentes, saturaba el pool de conexiones y colgaba el
+  // "Guardando…" indefinidamente), coalesce los cambios en UN guardado masivo
+  // idempotente cuando el usuario hace una pausa.
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (toldEntryToast.current) return;
@@ -124,6 +125,14 @@ export function MatchdayTourClient({
       router.replace(url.pathname + url.search, { scroll: false });
     }
   }, [step, router]);
+
+  // Limpia el timer de autosave al desmontar.
+  useEffect(
+    () => () => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+    },
+    [],
+  );
 
   const current = matches[step];
   if (!current) return null;
@@ -145,37 +154,16 @@ export function MatchdayTourClient({
     return null;
   }
 
-  // Guarda un partido en SEGUNDO PLANO: no bloqueamos la navegación esperando
-  // al servidor. El upsert es idempotente (usuario+liga+partido), así que
-  // reintentos o guardados solapados no duplican. Si falla, no molestamos: el
-  // guardado masivo de `flushAll` al finalizar lo recupera.
-  function queueSave(matchId: number, p: LocalPrediction) {
-    const promise = saveMatchPrediction({
-      matchId,
-      homeScore: p.homeScore,
-      awayScore: p.awayScore,
-      willGoToPens: p.willGoToPens,
-      winnerTeamId: p.winnerTeamId,
-      scorerPlayerId: showScorer ? p.scorerPlayerId : null,
-    })
-      .then((res) => {
-        if (res.ok) flashSavedToast();
-      })
-      .catch(() => {})
-      .finally(() => pendingSaves.current.delete(promise));
-    pendingSaves.current.add(promise);
-  }
-
-  // Red de seguridad al terminar: espera los guardados en vuelo y persiste
-  // toda la jornada de una sola vez (idempotente) por si alguno de fondo falló.
-  async function flushAll() {
-    await Promise.allSettled([...pendingSaves.current]);
+  // Construye el payload de la jornada con las predicciones LISTAS (sin motivo
+  // de bloqueo). Al finalizar todas lo están; a mitad de tour, las hechas.
+  function buildReadyPayload(): { count: number; fd: FormData } {
+    const ready = matches.filter((m) => !blockReason(preds[m.id]));
     const fd = new FormData();
     fd.set(
       "payload",
       JSON.stringify({
         matchdayId,
-        predictions: matches.map((m) => {
+        predictions: ready.map((m) => {
           const p = preds[m.id];
           return {
             matchId: m.id,
@@ -189,7 +177,28 @@ export function MatchdayTourClient({
         }),
       }),
     );
-    await saveMatchdayPredictions({ ok: false }, fd);
+    return { count: ready.length, fd };
+  }
+
+  // Guardado masivo idempotente en UNA sola server action (todas las listas).
+  async function bulkSave(): Promise<{ ok: boolean; error?: string }> {
+    const { count, fd } = buildReadyPayload();
+    if (count === 0) return { ok: true };
+    return saveMatchdayPredictions({ ok: false }, fd);
+  }
+
+  // Autosave en segundo plano con debounce: cancela el anterior y reprograma,
+  // así una ráfaga de pasos rápidos se convierte en UN guardado al hacer pausa.
+  function scheduleAutosave() {
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      saveTimer.current = null;
+      bulkSave()
+        .then((r) => {
+          if (r.ok) flashSavedToast();
+        })
+        .catch(() => {});
+    }, 1200);
   }
 
   // Cambia de paso. En la ruleta, primero deja salir al actual (fase
@@ -214,7 +223,7 @@ export function MatchdayTourClient({
     if (step === 0 || wheelLeaving) return;
     const p = preds[current.id];
     // Solo guardamos si el paso ya es válido; volver atrás nunca bloquea.
-    if (!blockReason(p)) queueSave(current.id, p);
+    if (!blockReason(p)) scheduleAutosave();
     commitStep("left", step - 1);
   }
 
@@ -236,17 +245,38 @@ export function MatchdayTourClient({
     }
     if (reason) return;
 
-    // Guardado en segundo plano + avance INMEDIATO (sin esperar al servidor).
-    queueSave(current.id, p);
-
     if (step === matches.length - 1) {
-      // Último paso: aquí sí esperamos a que todo quede persistido.
+      // Último paso: cancelamos el autosave pendiente y persistimos todo en UN
+      // guardado masivo. Con timeout duro + manejo de error para que el botón
+      // "Guardando…" SIEMPRE termine (nunca se cuelga); si falla, avisamos y
+      // dejamos reintentar en vez de quedarnos colgados.
+      if (saveTimer.current) {
+        clearTimeout(saveTimer.current);
+        saveTimer.current = null;
+      }
       startTransition(async () => {
-        await flushAll();
-        router.push("/predicciones");
+        let result: { ok: boolean; error?: string };
+        try {
+          result = await Promise.race([
+            bulkSave(),
+            new Promise<{ ok: boolean; error?: string }>((resolve) =>
+              setTimeout(() => resolve({ ok: false, error: "timeout" }), 15000),
+            ),
+          ]);
+        } catch {
+          result = { ok: false, error: "error" };
+        }
+        if (result.ok) {
+          router.push("/predicciones");
+        } else {
+          toast.error(t("saveErrorTitle"), { description: t("saveErrorDesc") });
+        }
       });
       return;
     }
+
+    // Avance INMEDIATO (client-side); el autosave masivo va por detrás.
+    scheduleAutosave();
     commitStep("right", step + 1);
   }
 

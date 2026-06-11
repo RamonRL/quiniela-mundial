@@ -979,7 +979,9 @@
     "noPosition": "Sans poste",
     "unofficialTitle": "Effectif non officiel",
     "unofficialDesc": "Cette équipe n'a pas encore confirmé sa liste pour la Coupe du monde. Le joueur que tu choisis pourrait être écarté.",
-    "scorerPickedLabel": "Ton buteur"
+    "scorerPickedLabel": "Ton buteur",
+    "saveErrorTitle": "Échec de l'enregistrement",
+    "saveErrorDesc": "Réessaie dans un instant."
   },
   "predBracket": {
     "eyebrow": "Catégorie 4",

@@ -979,7 +979,9 @@
     "noPosition": "Sem posição",
     "unofficialTitle": "Convocação não oficial",
     "unofficialDesc": "Esta seleção ainda não confirmou sua lista para a Copa. O jogador que você escolher pode ficar de fora.",
-    "scorerPickedLabel": "Seu artilheiro"
+    "scorerPickedLabel": "Seu artilheiro",
+    "saveErrorTitle": "Não foi possível guardar",
+    "saveErrorDesc": "Tenta de novo num instante."
   },
   "predBracket": {
     "eyebrow": "Categoria 4",

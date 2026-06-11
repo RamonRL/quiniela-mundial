@@ -979,7 +979,9 @@
     "noPosition": "Sin posición",
     "unofficialTitle": "Convocatoria no oficial",
     "unofficialDesc": "Esta selección aún no ha confirmado su lista para el Mundial. El jugador que elijas podría quedarse fuera.",
-    "scorerPickedLabel": "Tu goleador"
+    "scorerPickedLabel": "Tu goleador",
+    "saveErrorTitle": "No se pudo guardar",
+    "saveErrorDesc": "Inténtalo de nuevo en un momento."
   },
   "predBracket": {
     "eyebrow": "Categoría 4",

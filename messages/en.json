@@ -979,7 +979,9 @@
     "noPosition": "No position",
     "unofficialTitle": "Unofficial squad",
     "unofficialDesc": "This team hasn't confirmed its World Cup squad yet. The player you pick could be left out.",
-    "scorerPickedLabel": "Your scorer"
+    "scorerPickedLabel": "Your scorer",
+    "saveErrorTitle": "Couldn't save",
+    "saveErrorDesc": "Please try again in a moment."
   },
   "predBracket": {
     "eyebrow": "Category 4",
