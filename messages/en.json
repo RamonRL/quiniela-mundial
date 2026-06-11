@@ -1931,5 +1931,27 @@
         "Custom billing and terms"
       ]
     }
+  },
+  "hero": {
+    "nextMatch": "Next match",
+    "vs": "VS",
+    "live": "Live",
+    "final": "Final",
+    "inPlay": "Kicking off!",
+    "days": "days",
+    "hours": "hrs",
+    "mins": "min",
+    "secs": "sec",
+    "group": "Group {g}",
+    "sameTime": "· same time",
+    "predMissing": "You're missing your prediction",
+    "predDone": "Prediction set · edit",
+    "stageGroup": "Group stage",
+    "stageR32": "Round of 32",
+    "stageR16": "Round of 16",
+    "stageQf": "Quarter-finals",
+    "stageSf": "Semi-finals",
+    "stageThird": "Third place",
+    "stageFinal": "Final"
   }
 }

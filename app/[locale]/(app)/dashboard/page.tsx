@@ -3,15 +3,12 @@ import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { TeamFlag } from "@/components/brand/team-flag";
-import { ArrowRight, ArrowUpRight, CalendarDays, Crown, Flame, Trophy } from "lucide-react";
-import { and, asc, desc, eq, gt, sql } from "drizzle-orm";
+import { ArrowRight, CalendarDays, Crown, Trophy } from "lucide-react";
+import { and, desc, eq, gt, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
   leagues,
-  matchScorers,
-  matchdays,
   matches,
-  players,
   pointsLedger,
   predBracketSlot,
   predGroupRanking,
@@ -22,8 +19,6 @@ import {
   teams,
 } from "@/lib/db/schema";
 import { LeagueWelcomeDialog } from "@/components/leagues/league-welcome-dialog";
-import { localizedMatchdayName } from "@/lib/matchday-names";
-import { Badge } from "@/components/ui/badge";
 import { RealtimeRefresher } from "@/components/realtime/realtime-refresher";
 import { requireUser } from "@/lib/auth/guards";
 import { TutorialAutoStart } from "@/components/tutorial/auto-start";
@@ -42,6 +37,8 @@ import { GroupStandingsSlider } from "@/components/dashboard/group-standings-sli
 import { PatchNotesBoard } from "@/components/dashboard/patch-notes-board";
 import { SponsorStrip } from "@/components/dashboard/sponsor-strip";
 import { loadLeagueSponsors, type SponsorLogo } from "@/lib/sponsors";
+import { HeroCard, type HeroData } from "@/components/dashboard/hero-card";
+import { loadHeroData } from "@/lib/dashboard/hero-data";
 import {
   countLeagueMembers,
   loadLeaderboard,
@@ -147,7 +144,6 @@ export default async function DashboardPage({
   const { timeZone: userTz } = await getDateContext();
   const kickoff = new Date(KICKOFF);
   const tournamentStarted = kickoff.getTime() <= Date.now();
-  const days = Math.max(0, Math.ceil((kickoff.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
 
   // Pre-torneo nadie tiene puntos: no hay nada que rankear ni actividad
   // que listar, así que evitamos por completo `myPoints`, `leagueHasPoints`,
@@ -156,14 +152,11 @@ export default async function DashboardPage({
   const computeRanking = tournamentStarted;
 
   const [
-    upcomingMatchdays,
     groupCount,
     topScorerSet,
     mySpecialsRow,
     totalSpecialsRow,
     recentMatch,
-    nextMatch,
-    liveMatchRows,
     bracketStatus,
     bracketFilledRow,
     openMatchdays,
@@ -172,17 +165,8 @@ export default async function DashboardPage({
     leaderboardEntries,
     leagueMemberCountFallback,
     sponsorRows,
+    heroData,
   ] = await Promise.all([
-    safe(
-      db
-        .select()
-        .from(matchdays)
-        .where(gt(matchdays.predictionDeadlineAt, new Date()))
-        .orderBy(asc(matchdays.predictionDeadlineAt))
-        .limit(1),
-      [] as Array<typeof matchdays.$inferSelect>,
-      "upcomingMatchdays",
-    ),
     safe(
       db
         .select({ c: sql<number>`count(*)::int` })
@@ -232,26 +216,6 @@ export default async function DashboardPage({
         .limit(3),
       [] as Array<typeof matches.$inferSelect>,
       "recentMatch",
-    ),
-    safe(
-      db
-        .select()
-        .from(matches)
-        .where(gt(matches.scheduledAt, new Date()))
-        .orderBy(asc(matches.scheduledAt))
-        .limit(1),
-      [] as Array<typeof matches.$inferSelect>,
-      "nextMatch",
-    ),
-    safe(
-      db
-        .select()
-        .from(matches)
-        .where(eq(matches.status, "live"))
-        .orderBy(asc(matches.scheduledAt))
-        .limit(1),
-      [] as Array<typeof matches.$inferSelect>,
-      "liveMatchRows",
     ),
     safe(
       getBracketStatus(),
@@ -324,6 +288,11 @@ export default async function DashboardPage({
       "leagueMemberCountFallback",
     ),
     safe(loadLeagueSponsors(leagueId), [] as SponsorLogo[], "sponsors"),
+    safe(
+      loadHeroData({ userId: me.id, leagueId, locale, timeZone: userTz }),
+      null as HeroData | null,
+      "heroData",
+    ),
   ]);
   const sponsors = sponsorRows;
   const myPoints = myPointsRows[0]?.total ?? 0;
@@ -332,7 +301,6 @@ export default async function DashboardPage({
   // <Suspense> más abajo — descongestiona el critical path: la página
   // hace su primer paint sin esperar a `loadActivityFeed`, que streamea
   // su HTML cuando esté listo.
-  const liveMatch = liveMatchRows[0] ?? null;
   const sorted = leaderboardEntries;
   const totalParticipants = computeRanking ? sorted.length : leagueMemberCountFallback;
   const myPosition =
@@ -341,7 +309,8 @@ export default async function DashboardPage({
       : null;
   const pendingScorers = pendingScorerCount[0]?.c ?? 0;
 
-  const teamIds = [...recentMatch, ...nextMatch, ...(liveMatch ? [liveMatch] : [])]
+  // Banderas para el panel de "Resultados recientes".
+  const teamIds = recentMatch
     .flatMap((m) => [m.homeTeamId, m.awayTeamId])
     .filter((x): x is number => x != null);
   const teamRows =
@@ -356,46 +325,7 @@ export default async function DashboardPage({
         )
       : [];
   const teamById = new Map(localizeTeams(teamRows, locale).map((tm) => [tm.id, tm]));
-  const next = nextMatch[0];
-  const nextHome = next?.homeTeamId ? teamById.get(next.homeTeamId) ?? null : null;
-  const nextAway = next?.awayTeamId ? teamById.get(next.awayTeamId) ?? null : null;
 
-  // Live HUD data: the active match's flags, scorers in chronological order.
-  const liveHome = liveMatch?.homeTeamId ? teamById.get(liveMatch.homeTeamId) ?? null : null;
-  const liveAway = liveMatch?.awayTeamId ? teamById.get(liveMatch.awayTeamId) ?? null : null;
-  const liveScorerRows = liveMatch
-    ? await safe(
-        db.select().from(matchScorers).where(eq(matchScorers.matchId, liveMatch.id)),
-        [] as Array<typeof matchScorers.$inferSelect>,
-        "liveScorerRows",
-      )
-    : [];
-
-  const liveScorerPlayerIds = liveScorerRows.map((s) => s.playerId);
-  const livePlayerRows =
-    liveScorerPlayerIds.length > 0
-      ? await safe(
-          db
-            .select()
-            .from(players)
-            .where(sql`id = ANY(${sql.raw(`ARRAY[${liveScorerPlayerIds.join(",")}]::int[]`)})`),
-          [] as Array<typeof players.$inferSelect>,
-          "livePlayerRows",
-        )
-      : [];
-  const livePlayerById = new Map(livePlayerRows.map((p) => [p.id, p]));
-  const liveMinute =
-    liveMatch != null
-      ? Math.max(
-          1,
-          Math.min(
-            120,
-            Math.floor((Date.now() - new Date(liveMatch.scheduledAt).getTime()) / 60000),
-          ),
-        )
-      : null;
-
-  const greeting = me.nickname || me.email.split("@")[0];
   const podium = sorted.slice(0, 5);
 
   // Pre-torneo progress: 3 categories — group rankings, top scorer, specials.
@@ -503,214 +433,21 @@ export default async function DashboardPage({
         </div>
       </div>
 
-      {/* Live HUD — appears only when a match is currently in play */}
-      {liveMatch ? (
-        <div className="group relative overflow-hidden rounded-2xl border-2 border-[var(--color-arena)]/60 bg-[color-mix(in_oklch,var(--color-arena)_8%,var(--color-surface))] shadow-[var(--shadow-arena)] transition-all hover:-translate-y-0.5">
-          <Link
-            href={`/partido/${liveMatch.id}`}
-            aria-label={`Partido ${liveMatch.code}`}
-            className="absolute inset-0 z-0 rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-arena)]"
-          />
+      {/* Card principal: marcador de retransmisión — directos (1 o 2) o el
+          siguiente partido. Sustituye al hero antiguo y al Live HUD. */}
+      {heroData ? (
+        <>
           <RealtimeRefresher
-            channelKey={`live-hud:${liveMatch.id}`}
-            subscriptions={[
-              { table: "matches", filter: `id=eq.${liveMatch.id}` },
-              { table: "match_scorers", filter: `match_id=eq.${liveMatch.id}` },
-            ]}
+            channelKey="dashboard-hero"
+            subscriptions={
+              heroData.featuredKind === "live"
+                ? [{ table: "matches" }, { table: "match_scorers" }]
+                : [{ table: "matches" }]
+            }
           />
-          <div className="halftone pointer-events-none absolute inset-0 opacity-[0.06]" aria-hidden />
-          <div className="relative space-y-4 p-5 sm:p-7">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5">
-                <span className="relative flex size-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--color-arena)] opacity-70" />
-                  <span className="relative inline-flex size-2 rounded-full bg-[var(--color-arena)]" />
-                </span>
-                <span className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-                  {t("live")} · {liveMatch.code}
-                </span>
-              </div>
-              {liveMinute != null ? (
-                <span className="font-display tabular text-2xl text-[var(--color-arena)] glow-arena">
-                  {liveMinute}
-                  <span className="text-base">′</span>
-                </span>
-              ) : null}
-            </div>
-            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-6">
-              <LiveTeam team={liveHome} />
-              <span className="font-display tabular text-5xl leading-none tracking-tighter sm:text-7xl">
-                {liveMatch.homeScore ?? 0}
-                <span className="mx-1 text-[var(--color-muted-foreground)] opacity-60 sm:mx-2">·</span>
-                {liveMatch.awayScore ?? 0}
-              </span>
-              <LiveTeam team={liveAway} align="end" />
-            </div>
-            {liveScorerRows.length > 0 ? (
-              <div className="flex flex-wrap items-center gap-2 border-t border-dashed border-[var(--color-arena)]/30 pt-3">
-                <span className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                  {t("goals")}
-                </span>
-                {[...liveScorerRows]
-                  .sort((a, b) => (a.minute ?? 999) - (b.minute ?? 999))
-                  .map((s) => {
-                    const p = livePlayerById.get(s.playerId);
-                    const scorerTeam = teamById.get(s.teamId);
-                    return (
-                      <span
-                        key={s.id}
-                        className="flex items-center gap-1.5 rounded-md border border-[var(--color-border)] bg-[var(--color-surface-2)] px-2 py-1 text-xs"
-                      >
-                        <Badge variant="outline" className="text-[0.55rem]">
-                          {scorerTeam?.code ?? "?"}
-                        </Badge>
-                        <span className="font-medium">{p?.name ?? t("player")}</span>
-                        {s.minute != null ? (
-                          <span className="font-mono text-[0.6rem] text-[var(--color-muted-foreground)]">
-                            {s.minute}′
-                          </span>
-                        ) : null}
-                      </span>
-                    );
-                  })}
-              </div>
-            ) : null}
-          </div>
-        </div>
+          <HeroCard data={heroData} />
+        </>
       ) : null}
-
-      {/* Hero */}
-      <section className="rise-in relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)]">
-        <div className="spotlight absolute inset-0" aria-hidden />
-        <div className="pitch-grid absolute inset-0 opacity-30" aria-hidden />
-        <div className="relative grid gap-8 p-6 sm:p-10 lg:grid-cols-[1.4fr_1fr]">
-          <div className="flex flex-col justify-between gap-8">
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <span className="h-px w-8 bg-[var(--color-arena)]" />
-                <span className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                  {t("hi")} · {greeting}
-                </span>
-              </div>
-              <p className="font-editorial text-lg italic leading-snug text-[var(--color-muted-foreground)]">
-                {t("countdownLead")}
-              </p>
-            </div>
-            <div className="-my-2 flex items-end gap-4">
-              <span className="font-display glow-arena text-[8rem] leading-[0.85] tracking-tighter sm:text-[11rem]">
-                {days.toString().padStart(2, "0")}
-              </span>
-              <div className="mb-4 flex flex-col gap-1">
-                <span className="font-display text-3xl tracking-tight">
-                  {t("days")}
-                </span>
-                <span className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                  {t("toKickoff")}
-                </span>
-              </div>
-            </div>
-            <p className="font-editorial text-base italic text-[var(--color-muted-foreground)] sm:text-lg">
-              {formatDateTime(kickoff, {
-                timeZone: userTz,
-                locale,
-                weekday: "long",
-                day: "2-digit",
-                month: "long",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </p>
-          </div>
-
-          {/* Right column — next match & up next deadline */}
-          <div className="flex flex-col gap-4">
-            {next ? (
-              <div className="group relative overflow-hidden rounded-xl border border-[var(--color-border-strong)] bg-[var(--color-surface-2)] transition-colors hover:border-[var(--color-arena)]/60">
-                <Link
-                  href={`/partido/${next.id}`}
-                  aria-label={`Partido ${next.code}`}
-                  className="absolute inset-0 z-0 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-arena)]"
-                />
-                <div className="pointer-events-none relative flex items-center justify-between gap-3 border-b border-[var(--color-border)] bg-[var(--color-surface-3)]/40 px-4 py-2">
-                  <span className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                    {t("nextMatch")} · {next.code}
-                  </span>
-                  <ArrowUpRight className="size-3.5 text-[var(--color-muted-foreground)] transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
-                </div>
-                <div className="pointer-events-none relative space-y-4 p-4">
-                  <div className="flex items-center justify-between gap-2">
-                    <TeamCell team={nextHome} align="start" />
-                    <span className="font-display text-2xl text-[var(--color-muted-foreground)]">
-                      {t("vs")}
-                    </span>
-                    <TeamCell team={nextAway} align="end" />
-                  </div>
-                  <div className="flex items-center justify-between border-t border-dashed border-[var(--color-border)] pt-3 text-xs text-[var(--color-muted-foreground)]">
-                    <span>
-                      {formatDateTime(next.scheduledAt, {
-                        timeZone: userTz,
-                        locale,
-                        weekday: "short",
-                        day: "2-digit",
-                        month: "short",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                    {next.venue ? (
-                      <span className="truncate">{next.venue.split("·")[0].trim()}</span>
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface-2)] p-6 text-center text-sm text-[var(--color-muted-foreground)]">
-                {t("noUpcoming")}
-              </div>
-            )}
-
-            <Link
-              href={
-                upcomingMatchdays[0]
-                  ? `/predicciones/jornada/${upcomingMatchdays[0].id}`
-                  : "/predicciones"
-              }
-              className="group flex items-center justify-between rounded-xl border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_8%,transparent)] p-4 transition hover:border-[var(--color-arena)]"
-            >
-              <div className="flex items-center gap-3">
-                <Flame className="size-5 text-[var(--color-arena)]" />
-                <div>
-                  <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-                    {t("nextDeadline")}
-                  </p>
-                  <p className="font-display text-xl tracking-tight">
-                    {upcomingMatchdays[0]
-                      ? localizedMatchdayName(
-                          upcomingMatchdays[0].name,
-                          upcomingMatchdays[0].stage,
-                          locale,
-                        )
-                      : t("noActiveMatchday")}
-                  </p>
-                  {upcomingMatchdays[0] ? (
-                    <p className="text-xs text-[var(--color-muted-foreground)]">
-                      {formatDateTime(upcomingMatchdays[0].predictionDeadlineAt, {
-                        timeZone: userTz,
-                        locale,
-                        day: "2-digit",
-                        month: "short",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
-                  ) : null}
-                </div>
-              </div>
-              <ArrowRight className="size-4 text-[var(--color-arena)] transition-transform group-hover:translate-x-1" />
-            </Link>
-          </div>
-        </div>
-      </section>
 
       {/* Puesto de mando — wrap del tutorial. ProgressHub es el
           centerpiece visual (donut + satellites pre-torneo · countdown
@@ -1119,68 +856,6 @@ function Stat({
     </Link>
   ) : (
     <div className={className}>{inner}</div>
-  );
-}
-
-function LiveTeam({
-  team,
-  align,
-}: {
-  team: { code: string; name: string; flagUrl: string | null } | null;
-  align?: "start" | "end";
-}) {
-  const cls = align === "end" ? "flex-row-reverse text-right" : "";
-  const Wrapper: React.ElementType = team ? Link : "div";
-  const wrapperProps = team
-    ? { href: `/equipos/${team.code}`, "aria-label": team.name }
-    : {};
-  return (
-    <Wrapper
-      {...wrapperProps}
-      className={`relative z-10 flex min-w-0 items-center gap-2.5 ${cls} ${
-        team ? "transition hover:text-[var(--color-arena)]" : ""
-      }`}
-    >
-      <TeamFlag code={team?.code} size={40} />
-      <div className="min-w-0">
-        <p className="truncate font-display text-lg leading-none tracking-tight sm:text-2xl">
-          {team?.name ?? "TBD"}
-        </p>
-        <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-          {team?.code ?? "—"}
-        </p>
-      </div>
-    </Wrapper>
-  );
-}
-
-function TeamCell({
-  team,
-  align,
-}: {
-  team: { code: string; name: string; flagUrl: string | null } | null;
-  align: "start" | "end";
-}) {
-  const cls = align === "end" ? "flex-row-reverse text-right" : "";
-  const Wrapper: React.ElementType = team ? Link : "div";
-  const wrapperProps = team
-    ? { href: `/equipos/${team.code}`, "aria-label": team.name }
-    : {};
-  return (
-    <Wrapper
-      {...wrapperProps}
-      className={`relative z-10 flex min-w-0 items-center gap-3 ${cls} ${
-        team ? "pointer-events-auto transition hover:text-[var(--color-arena)]" : ""
-      }`}
-    >
-      <TeamFlag code={team?.code} size={36} />
-      <div className="min-w-0">
-        <p className="truncate font-display text-lg leading-none">{team?.name ?? "TBD"}</p>
-        <p className="font-mono text-[0.65rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-          {team?.code ?? "—"}
-        </p>
-      </div>
-    </Wrapper>
   );
 }
 

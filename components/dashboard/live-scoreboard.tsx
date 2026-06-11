@@ -1,6 +1,9 @@
+"use client";
+
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { STAGE_LABEL_KEY, type HeroMatch, type HeroTeam } from "./hero-card";
 import { TeamFlag } from "@/components/brand/team-flag";
-import { roundOrGroupLabel, type HeroMatch, type HeroTeam } from "./hero-card";
 
 /**
  * Marcador de retransmisión para un partido EN DIRECTO. Marcador grande con
@@ -9,8 +12,13 @@ import { roundOrGroupLabel, type HeroMatch, type HeroTeam } from "./hero-card";
  * marcador (banderas al exterior) para aprovechar el espacio.
  */
 export function LiveScoreboard({ match, compact }: { match: HeroMatch; compact?: boolean }) {
+  const t = useTranslations("hero");
   const { home, away, homeScore, awayScore, minute, scorers, href } = match;
-  const label = roundOrGroupLabel(match);
+  const label = match.group
+    ? t("group", { g: match.group })
+    : match.stage && STAGE_LABEL_KEY[match.stage]
+      ? t(STAGE_LABEL_KEY[match.stage])
+      : "";
   const flag = compact ? 40 : 56;
 
   const body = (
@@ -23,7 +31,7 @@ export function LiveScoreboard({ match, compact }: { match: HeroMatch; compact?:
             <span className="relative inline-flex size-2 rounded-full bg-[var(--color-arena)]" />
           </span>
           <span className="font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-arena)]">
-            En vivo
+            {t("live")}
           </span>
         </span>
         {label ? (

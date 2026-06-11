@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { STAGE_LABEL_KEY, type HeroMatch, type HeroTeam } from "./hero-card";
 import { TeamFlag } from "@/components/brand/team-flag";
-import { roundOrGroupLabel, type HeroMatch, type HeroTeam } from "./hero-card";
 
 /**
  * Tira secundaria de contexto bajo el protagonista: partidos vecinos (anterior,
@@ -22,10 +23,15 @@ export function ContextStrip({ rows }: { rows: HeroMatch[] }) {
 }
 
 function Chip({ match }: { match: HeroMatch }) {
+  const t = useTranslations("hero");
   const { home, away, status, homeScore, awayScore, kickoffISO, dateLabel, note, href } = match;
   const finished = status === "finished";
   const live = status === "live";
-  const label = roundOrGroupLabel(match);
+  const label = match.group
+    ? t("group", { g: match.group })
+    : match.stage && STAGE_LABEL_KEY[match.stage]
+      ? t(STAGE_LABEL_KEY[match.stage])
+      : "";
   const winner =
     finished && homeScore != null && awayScore != null
       ? homeScore > awayScore
@@ -44,7 +50,7 @@ function Chip({ match }: { match: HeroMatch }) {
           {note ? ` ${note}` : ""}
         </span>
         <span className="font-mono text-[0.55rem] uppercase tracking-[0.16em] text-[var(--color-muted-foreground)]">
-          {finished ? "Final" : live ? "En vivo" : kickoffISO ? <Mini kickoffISO={kickoffISO} /> : dateLabel ?? ""}
+          {finished ? t("final") : live ? t("live") : kickoffISO ? <Mini kickoffISO={kickoffISO} /> : dateLabel ?? ""}
         </span>
       </div>
       <div className="flex items-center justify-center gap-2.5">
@@ -57,7 +63,7 @@ function Chip({ match }: { match: HeroMatch }) {
               {awayScore ?? 0}
             </>
           ) : (
-            <span className="font-mono text-xs text-[var(--color-muted-foreground)]">vs</span>
+            <span className="font-mono text-xs text-[var(--color-muted-foreground)]">{t("vs")}</span>
           )}
         </span>
         <Side team={away} align="end" dim={winner === "home"} />

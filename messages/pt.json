@@ -1931,5 +1931,27 @@
         "Faturamento e condições sob medida"
       ]
     }
+  },
+  "hero": {
+    "nextMatch": "Próximo jogo",
+    "vs": "VS",
+    "live": "Ao vivo",
+    "final": "Final",
+    "inPlay": "Começando!",
+    "days": "dias",
+    "hours": "h",
+    "mins": "min",
+    "secs": "seg",
+    "group": "Grupo {g}",
+    "sameTime": "· ao mesmo tempo",
+    "predMissing": "Falta o teu palpite",
+    "predDone": "Palpite pronto · editar",
+    "stageGroup": "Fase de grupos",
+    "stageR32": "16-avos",
+    "stageR16": "Oitavas",
+    "stageQf": "Quartas",
+    "stageSf": "Semifinais",
+    "stageThird": "Terceiro lugar",
+    "stageFinal": "Final"
   }
 }

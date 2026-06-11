@@ -41,22 +41,16 @@ export type HeroData = {
   context: HeroMatch[];
 };
 
-const STAGE_LABEL: Record<string, string> = {
-  group: "Fase de grupos",
-  r32: "Dieciseisavos",
-  r16: "Octavos",
-  qf: "Cuartos",
-  sf: "Semifinal",
-  third: "Tercer puesto",
-  final: "Final",
+/** stage → clave i18n del namespace "hero" para la etiqueta de ronda. */
+export const STAGE_LABEL_KEY: Record<string, string> = {
+  group: "stageGroup",
+  r32: "stageR32",
+  r16: "stageR16",
+  qf: "stageQf",
+  sf: "stageSf",
+  third: "stageThird",
+  final: "stageFinal",
 };
-
-/** Etiqueta de un partido: "Grupo X" en fase de grupos; la ronda en KO. */
-export function roundOrGroupLabel(m: { group?: string | null; stage?: string }): string {
-  if (m.group) return `Grupo ${m.group}`;
-  if (m.stage && STAGE_LABEL[m.stage]) return STAGE_LABEL[m.stage];
-  return "";
-}
 
 /**
  * Card principal del dashboard en modo torneo — lenguaje de marcador de

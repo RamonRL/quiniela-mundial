@@ -1931,5 +1931,27 @@
         "Facturation et conditions sur mesure"
       ]
     }
+  },
+  "hero": {
+    "nextMatch": "Prochain match",
+    "vs": "VS",
+    "live": "En direct",
+    "final": "Terminé",
+    "inPlay": "Ça commence !",
+    "days": "j",
+    "hours": "h",
+    "mins": "min",
+    "secs": "s",
+    "group": "Groupe {g}",
+    "sameTime": "· même heure",
+    "predMissing": "Il te manque ton pronostic",
+    "predDone": "Pronostic enregistré · modifier",
+    "stageGroup": "Phase de groupes",
+    "stageR32": "Seizièmes",
+    "stageR16": "Huitièmes",
+    "stageQf": "Quarts",
+    "stageSf": "Demi-finales",
+    "stageThird": "Petite finale",
+    "stageFinal": "Finale"
   }
 }

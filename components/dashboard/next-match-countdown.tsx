@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { AlertTriangle, ArrowRight, PencilLine } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { STAGE_LABEL_KEY, type HeroMatch } from "./hero-card";
 import { TeamFlag } from "@/components/brand/team-flag";
-import { roundOrGroupLabel, type HeroMatch } from "./hero-card";
 
 /**
  * Protagonista cuando NO hay directo: el siguiente partido como marcador de
@@ -12,8 +13,13 @@ import { roundOrGroupLabel, type HeroMatch } from "./hero-card";
  * recordatorio de pronóstico integrado inline en rojo arena (sin caja amarilla).
  */
 export function NextMatchCountdown({ match }: { match: HeroMatch }) {
+  const t = useTranslations("hero");
   const { home, away, dateLabel, venue, kickoffISO, prediction, href } = match;
-  const label = roundOrGroupLabel(match);
+  const label = match.group
+    ? t("group", { g: match.group })
+    : match.stage && STAGE_LABEL_KEY[match.stage]
+      ? t(STAGE_LABEL_KEY[match.stage])
+      : "";
   const target = kickoffISO ? new Date(kickoffISO).getTime() : 0;
   const [remaining, setRemaining] = useState<number | null>(null);
 
@@ -42,7 +48,7 @@ export function NextMatchCountdown({ match }: { match: HeroMatch }) {
       <div className="flex flex-wrap items-center gap-2.5">
         <span className="h-px w-7 bg-[var(--color-arena)]" />
         <span className="font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
-          Próximo partido
+          {t("nextMatch")}
         </span>
         {label ? (
           <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface-2)] px-2 py-0.5 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
@@ -62,7 +68,7 @@ export function NextMatchCountdown({ match }: { match: HeroMatch }) {
           </span>
         </span>
         <span className="shrink-0 font-display text-base text-[var(--color-muted-foreground)] sm:text-xl">
-          VS
+          {t("vs")}
         </span>
         <span className="flex min-w-0 flex-1 items-center justify-start gap-2.5">
           <span className="text-balance break-words text-left font-display text-3xl leading-[1.05] tracking-tight transition-colors group-hover:text-[var(--color-arena)] sm:text-[2.6rem]">
@@ -75,14 +81,14 @@ export function NextMatchCountdown({ match }: { match: HeroMatch }) {
       {/* Cuenta atrás (pieza central) */}
       {live ? (
         <span className="text-center font-display glow-arena text-5xl leading-none tracking-tighter text-[var(--color-arena)] sm:text-6xl">
-          ¡En juego!
+          {t("inPlay")}
         </span>
       ) : (
         <div className="flex items-end justify-center gap-3 sm:gap-5">
-          {d == null || d > 0 ? <Segment value={pad(d)} label="días" /> : null}
-          <Segment value={pad(h)} label="horas" />
-          <Segment value={pad(m)} label="min" />
-          <Segment value={pad(s)} label="seg" dim />
+          {d == null || d > 0 ? <Segment value={pad(d)} label={t("days")} /> : null}
+          <Segment value={pad(h)} label={t("hours")} />
+          <Segment value={pad(m)} label={t("mins")} />
+          <Segment value={pad(s)} label={t("secs")} dim />
         </div>
       )}
     </>
@@ -117,6 +123,7 @@ export function NextMatchCountdown({ match }: { match: HeroMatch }) {
 }
 
 function PredictionPill({ prediction }: { prediction: { hasResult: boolean; href: string } }) {
+  const t = useTranslations("hero");
   if (prediction.hasResult) {
     return (
       <Link
@@ -124,7 +131,7 @@ function PredictionPill({ prediction }: { prediction: { hasResult: boolean; href
         className="group pointer-events-auto relative z-10 inline-flex items-center gap-1.5 font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[var(--color-muted-foreground)] transition hover:text-[var(--color-arena)]"
       >
         <PencilLine className="size-3.5" />
-        Pronóstico listo · editar
+        {t("predDone")}
         <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
       </Link>
     );
@@ -138,7 +145,7 @@ function PredictionPill({ prediction }: { prediction: { hasResult: boolean; href
         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--color-arena)] opacity-50" />
         <AlertTriangle className="relative size-3.5" />
       </span>
-      <span className="text-xs font-semibold">Te falta tu pronóstico</span>
+      <span className="text-xs font-semibold">{t("predMissing")}</span>
       <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
     </Link>
   );
