@@ -25,7 +25,6 @@ import { formatDateTime, initials } from "@/lib/utils";
 import { intlLocale } from "@/lib/timezone";
 import { BreadcrumbLD } from "@/components/seo/jsonld";
 import { GROUP_ANALYSES } from "@/lib/seo/group-analysis";
-import { IntervalRefresher } from "@/components/realtime/interval-refresher";
 
 export async function generateMetadata({
   params,
@@ -161,9 +160,6 @@ export default async function GroupDetailPage({
 
   return (
     <div className="space-y-8">
-      {/* Auto-refresh ligero (5 min, desincronizado): actualiza la
-          clasificación para quien esté parado en la página, sin estampida. */}
-      <IntervalRefresher />
       <BreadcrumbLD
         items={[
           { name: "Inicio", href: "/" },
