@@ -44,6 +44,11 @@ export type Pick = {
   /** 1X2 sign (solo_ganador). */
   sign?: WinnerSign | null;
   willGoToPens?: boolean;
+  /**
+   * Ganador de la tanda elegido por el usuario (solo KO + empate). Predecir
+   * empate en eliminatoria obliga a elegir quién pasa en los penaltis.
+   */
+  pensWinner?: "home" | "away" | null;
 };
 
 /** The actual outcome (during / after). */
@@ -56,6 +61,8 @@ export type PickResult = {
   scorerGoals?: number;
   /** El partido (KO) se decidió en los penaltis → el 90' fue empate. */
   wentToPens?: boolean;
+  /** Lado que realmente ganó la tanda de penaltis (KO). */
+  pensWinner?: "home" | "away" | null;
 };
 
 export type PointSource = {
@@ -132,6 +139,38 @@ export function PickPanel({
 
   const total = points?.total ?? 0;
 
+  // ── Ganador (incluida la tanda de penaltis en KO) ──────────────────────
+  // El usuario predijo empate (por marcador en completo/marcador, o signo en
+  // solo_ganador). En eliminatoria, un empate lleva además el ganador de la
+  // tanda elegido por el usuario.
+  const pickedDraw =
+    mode === "solo_ganador" ? pick?.sign === "draw" : matchSign(pick) === "draw";
+  const pensPickSide = pick?.pensWinner ?? null;
+  const pensPickTeam =
+    pensPickSide === "home" ? home : pensPickSide === "away" ? away : null;
+  // Solo mostramos el ganador de penaltis si fue un empate con tanda y, en el
+  // estado final, solo si el partido realmente se decidió en los penaltis.
+  const showPensPick =
+    pickedDraw &&
+    (pick?.willGoToPens ?? false) &&
+    pensPickTeam?.name != null &&
+    (!after || (result?.wentToPens ?? false));
+  const pensPickName = showPensPick ? (pensPickTeam?.name ?? null) : null;
+
+  // Corrección del "ganador": en un empate que va a penaltis, lo que se juzga
+  // es el ganador de la tanda; en cualquier otro caso, el resultado 1X2.
+  const pickSign = mode === "solo_ganador" ? (pick?.sign ?? null) : matchSign(pick);
+  const actualSign = result?.sign ?? signOf(result?.homeScore, result?.awayScore);
+  const winnerCorrect: boolean | null = !after
+    ? null
+    : pickedDraw && pick?.willGoToPens && result?.wentToPens
+      ? pensPickSide != null && result?.pensWinner != null
+        ? pensPickSide === result.pensWinner
+        : null
+      : pickSign != null && actualSign != null
+        ? pickSign === actualSign
+        : null;
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-start justify-between gap-3">
@@ -158,8 +197,8 @@ export function PickPanel({
             home={home}
             away={away}
             sign={pick?.sign ?? null}
-            actualSign={result?.sign ?? signOf(result?.homeScore, result?.awayScore)}
-            wentToPens={result?.wentToPens ?? false}
+            correct={winnerCorrect}
+            pensPickName={pensPickName}
             entries={points?.marker ?? []}
             totalPoints={sumPoints(points?.marker)}
             finished={after}
@@ -179,17 +218,8 @@ export function PickPanel({
               homeScore={pick?.homeScore ?? null}
               awayScore={pick?.awayScore ?? null}
               willGoToPens={pick?.willGoToPens ?? false}
-              correct={
-                after
-                  ? // Si predijo EMPATE y el partido (KO) se fue a penaltis, el
-                    // 90' fue empate → acertó el resultado, no marcamos fallo.
-                    matchSign(pick) === "draw" && result?.wentToPens
-                    ? null
-                    : matchSign(pick) != null && result?.sign != null
-                      ? matchSign(pick) === result.sign
-                      : null
-                  : null
-              }
+              pensPickName={pensPickName}
+              correct={winnerCorrect}
               entries={points?.marker ?? []}
               totalPoints={sumPoints(points?.marker)}
               finished={after}
@@ -258,6 +288,7 @@ function ScoreboardPick({
   homeScore,
   awayScore,
   willGoToPens,
+  pensPickName,
   correct,
   entries,
   totalPoints,
@@ -270,6 +301,8 @@ function ScoreboardPick({
   homeScore: number | null;
   awayScore: number | null;
   willGoToPens: boolean;
+  /** Nombre del ganador de la tanda que predijo el usuario (KO + empate). */
+  pensPickName: string | null;
   correct: boolean | null;
   entries: PointSource[];
   totalPoints: number;
@@ -303,7 +336,11 @@ function ScoreboardPick({
           <ScoreboardSide team={away} align="start" t={t} />
         </div>
       )}
-      {willGoToPens ? (
+      {pensPickName ? (
+        <p className="text-center font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
+          {t("pensPick", { team: pensPickName })}
+        </p>
+      ) : willGoToPens ? (
         <p className="text-center font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
           {t("plusPens")}
         </p>
@@ -366,8 +403,8 @@ function WinnerPick({
   home,
   away,
   sign,
-  actualSign,
-  wentToPens,
+  correct,
+  pensPickName,
   entries,
   totalPoints,
   finished,
@@ -376,22 +413,16 @@ function WinnerPick({
   home: PickTeam | null;
   away: PickTeam | null;
   sign: WinnerSign | null;
-  actualSign: WinnerSign | null;
-  wentToPens?: boolean;
+  /** Corrección del ganador (incluye la tanda en KO); la calcula PickPanel. */
+  correct: boolean | null;
+  /** Nombre del ganador de la tanda que predijo el usuario (KO + empate). */
+  pensPickName: string | null;
   entries: PointSource[];
   totalPoints: number;
   finished: boolean;
   t: Translator;
 }) {
   const hasPick = sign != null;
-  // Si predijo EMPATE (X) y el partido se fue a penaltis, el 90' fue empate →
-  // acertó; no mostramos "fallaste el ganador" en ese caso.
-  const correct =
-    finished && hasPick && actualSign != null
-      ? sign === "draw" && wentToPens
-        ? null
-        : sign === actualSign
-      : null;
 
   const options: { key: WinnerSign; label: string }[] = [
     { key: "home", label: t("winsTeam", { team: home?.name ?? t("tbd") }) },
@@ -451,6 +482,12 @@ function WinnerPick({
           {t("noPick")}
         </p>
       )}
+
+      {pensPickName ? (
+        <p className="text-center font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
+          {t("pensPick", { team: pensPickName })}
+        </p>
+      ) : null}
 
       {correct != null ? (
         <p className="border-t border-dashed border-[var(--color-border)] pt-2 text-center text-[0.7rem] text-[var(--color-muted-foreground)]">

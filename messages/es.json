@@ -2034,6 +2034,7 @@
     "drawPick": "Empate",
     "winnerCorrect": "Acertaste el ganador",
     "winnerWrong": "Fallaste el ganador",
-    "liveBadge": "En vivo"
+    "liveBadge": "En vivo",
+    "pensPick": "Penaltis · Gana {team}"
   }
 }

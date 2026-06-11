@@ -2034,6 +2034,7 @@
     "drawPick": "Draw",
     "winnerCorrect": "You called the winner",
     "winnerWrong": "Wrong winner",
-    "liveBadge": "Live"
+    "liveBadge": "Live",
+    "pensPick": "Penalties · {team} wins"
   }
 }

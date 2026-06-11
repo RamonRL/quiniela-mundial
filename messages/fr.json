@@ -2034,6 +2034,7 @@
     "drawPick": "Match nul",
     "winnerCorrect": "Vainqueur trouvé",
     "winnerWrong": "Mauvais vainqueur",
-    "liveBadge": "En direct"
+    "liveBadge": "En direct",
+    "pensPick": "Tirs au but · {team} gagne"
   }
 }

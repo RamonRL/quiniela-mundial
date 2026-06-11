@@ -63,7 +63,8 @@ const VARIANTS: Variant[] = [
   { mode: "solo_ganador", state: "before", locale: "fr", heading: "Solo ganador · Avant (FR)", desc: "Choix 1X2, aucun score. Grand compte à rebours." },
   { mode: "solo_ganador", state: "during", locale: "fr", heading: "Solo ganador · En direct (FR)", desc: "1X2 verrouillé; buteurs sous chaque équipe." },
   { mode: "solo_ganador", state: "after", locale: "fr", heading: "Solo ganador · Terminé (FR)", desc: "Bon/mauvais vainqueur + points." },
-  { mode: "completo", state: "after", locale: "es", pens: true, heading: "Fase final · Penaltis (ES)", desc: "Eliminatoria 1-1 resuelta en los penaltis (Pen. 4-3), con el clasificado." },
+  { mode: "completo", state: "after", locale: "es", pens: true, heading: "Fase final · Penaltis — ganador acertado (ES)", desc: "Eliminatoria 1-1 a penaltis (Pen. 4-3). Predijo empate + pase de México: muestra «Penaltis · Gana México» y «Acertaste el ganador ✓»." },
+  { mode: "solo_ganador", state: "after", locale: "es", pens: true, heading: "Fase final · Penaltis — ganador fallado (ES)", desc: "Solo ganador: predijo Empate + pase de Sudáfrica, pero pasó México. Muestra «Penaltis · Gana Sudáfrica» y «Fallaste el ganador ✗»." },
 ];
 
 function scoreboardProps(v: Variant, at: (min: number) => string) {
@@ -104,15 +105,29 @@ function scoreboardProps(v: Variant, at: (min: number) => string) {
 function buildProps(v: Variant, t: Translator): PickPanelProps {
   const base = { home: HOME, away: AWAY, editHref: "/predicciones/jornada/1", t };
 
+  if (v.pens && v.mode === "solo_ganador") {
+    // Solo ganador, final a penaltis: predijo EMPATE + pase de Sudáfrica, pero
+    // pasó México → acertó el 1X2 (empate al 90'), pero falló la tanda.
+    return {
+      ...base,
+      mode: "solo_ganador",
+      state: "after",
+      pick: { sign: "draw", willGoToPens: true, pensWinner: "away" },
+      result: { homeScore: 1, awayScore: 1, sign: "draw", wentToPens: true, pensWinner: "home" },
+      points: { marker: [{ id: "ou", label: t("srcOutcome"), points: 3 }], scorer: [], total: 3 },
+    };
+  }
+
   if (v.pens) {
-    // Completo, final, eliminatoria a penaltis: predijo 1-1 + pase de México.
+    // Completo, final, eliminatoria a penaltis: predijo 1-1 + pase de México
+    // (y México pasó) → acierta el ganador de la tanda.
     return {
       ...base,
       mode: "completo",
       state: "after",
-      pick: { homeScore: 1, awayScore: 1, willGoToPens: true, sign: null },
+      pick: { homeScore: 1, awayScore: 1, willGoToPens: true, sign: null, pensWinner: "home" },
       scorer: SCORER,
-      result: { homeScore: 1, awayScore: 1, sign: "home", scorerGoals: 1, wentToPens: true },
+      result: { homeScore: 1, awayScore: 1, sign: "draw", scorerGoals: 1, wentToPens: true, pensWinner: "home" },
       points: {
         marker: [
           { id: "ex", label: t("srcExact"), points: 5 },
