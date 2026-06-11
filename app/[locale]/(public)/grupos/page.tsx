@@ -12,6 +12,7 @@ import { ArrowUpRight, Users } from "lucide-react";
 import { BreadcrumbLD } from "@/components/seo/jsonld";
 import { BrandCTA } from "@/components/seo/brand-cta";
 import { GroupsTabs } from "./groups-tabs";
+import { IntervalRefresher } from "@/components/realtime/interval-refresher";
 
 // Clasificación de grupos: cambia cuando finaliza un partido. ISR a 60s
 // la mantiene fresca sin pegar a Postgres en cada navegación.
@@ -54,6 +55,10 @@ export default async function GroupsPage() {
 
   return (
     <div className="space-y-8">
+      {/* Auto-refresh ligero (5 min, desincronizado): la clasificación cambia
+          al acabar un partido; el servidor ya revalida, esto la actualiza para
+          quien esté parado en la página, sin estampida sobre el pool. */}
+      <IntervalRefresher />
       <BreadcrumbLD
         items={[
           { name: tt("home"), href: "/" },
