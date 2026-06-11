@@ -15,7 +15,6 @@ import { intlLocale } from "@/lib/timezone";
 import { LocalDateTime } from "@/components/local-date-time";
 import { CalendarFilters, type ActiveFilter } from "./calendar-filters";
 import { BreadcrumbLD, SportsEventLD } from "@/components/seo/jsonld";
-import { RealtimeRefresher } from "@/components/realtime/realtime-refresher";
 import { BrandCTA } from "@/components/seo/brand-cta";
 
 export const metadata = {
@@ -140,10 +139,6 @@ export default async function CalendarPage({
 
   return (
     <div className="space-y-10">
-      {/* Marcadores en vivo: refresca cuando cambia el marcador/estado de un
-          partido. El calendario muestra el resultado (vive en `matches`), no
-          los goleadores → basta con suscribirse a `matches`. */}
-      <RealtimeRefresher channelKey="calendario" subscriptions={[{ table: "matches" }]} />
       <SportsEventLD />
       <BreadcrumbLD
         items={[
