@@ -77,6 +77,18 @@ export default async function PreviewPage() {
     href: o.href ?? (r.id != null ? `/partido/${r.id}` : undefined),
   });
 
+  // Localiza un partido real por la pareja de selecciones (en cualquier orden).
+  const codeOf = (id: number | null | undefined) => (id != null ? team.get(id)?.code : undefined);
+  const M = (x: string, y: string): Row => {
+    const r = gm.find((m) => {
+      const hc = codeOf(m.h);
+      const ac = codeOf(m.a);
+      return (hc === x && ac === y) || (hc === y && ac === x);
+    });
+    if (!r) throw new Error(`Partido no encontrado en la BD: ${x}-${y}`);
+    return r;
+  };
+
   const last3 = gm.slice(-3); // [M72, M69, M70] por scheduledAt
   const koFeatured: HeroMatch = {
     code: "M89", stage: "r16", status: "upcoming",
@@ -152,6 +164,49 @@ export default async function PreviewPage() {
         context: [
           { code: "M88", stage: "r16", status: "finished", home: teamByCode.get("KOR") ?? null, away: teamByCode.get("CIV") ?? null, homeScore: 2, awayScore: 1 },
           { code: "M90", stage: "r16", status: "upcoming", home: teamByCode.get("USA") ?? null, away: teamByCode.get("KSA") ?? null, dateLabel: "Mañana · 18:00" },
+        ],
+      },
+    },
+    {
+      title: "H · Dos en directo + los dos siguientes también a la misma hora",
+      desc: "Jornada 3: la pareja de un grupo en vivo (Suiza-Canadá + Bosnia-Qatar) y, en la tira, la pareja del siguiente grupo, ambos a la misma hora con mini-contador.",
+      data: {
+        featuredKind: "live",
+        featured: [
+          mk(M("SUI", "CAN"), { status: "live", homeScore: 1, awayScore: 0, minute: 38, scorers: [scorer(M("SUI", "CAN").h, 0, 12)] }),
+          mk(M("BIH", "QAT"), { status: "live", homeScore: 0, awayScore: 0, minute: 38 }),
+        ],
+        context: [
+          mk(M("SCO", "BRA"), { kickoffISO: at(150), note: "· a la vez" }),
+          mk(M("MAR", "HAI"), { kickoffISO: at(150), note: "· a la vez" }),
+        ],
+      },
+    },
+    {
+      title: "I · Los dos próximos a la misma hora, y los dos anteriores también",
+      desc: "Jornada 3 sin directo: el siguiente con cuenta atrás, y en la tira su pareja simultánea (· a la vez) + los dos anteriores, que también se jugaron a la vez.",
+      data: {
+        featuredKind: "next",
+        featured: [mk(M("SCO", "BRA"), { kickoffISO: at(200), dateLabel: dateOf(200), withVenue: true, prediction: { hasResult: false, href: "/predicciones" } })],
+        context: [
+          mk(M("MAR", "HAI"), { kickoffISO: at(200), note: "· a la vez" }),
+          mk(M("SUI", "CAN"), { status: "finished", homeScore: 2, awayScore: 1 }),
+          mk(M("BIH", "QAT"), { status: "finished", homeScore: 0, awayScore: 0 }),
+        ],
+      },
+    },
+    {
+      title: "J · Los dos últimos de grupos en directo (los previos también a la vez)",
+      desc: "Cierre de la fase de grupos: la última pareja en vivo (Jordania-Argentina + Argelia-Austria) y, en la tira, la pareja anterior ya jugada a la vez (RD Congo-Uzbekistán + Colombia-Portugal).",
+      data: {
+        featuredKind: "live",
+        featured: [
+          mk(M("JOR", "ARG"), { status: "live", homeScore: 0, awayScore: 2, minute: 55, scorers: [scorer(M("JOR", "ARG").a, 0, 23), scorer(M("JOR", "ARG").a, 1, 41)] }),
+          mk(M("ALG", "AUT"), { status: "live", homeScore: 1, awayScore: 1, minute: 55, scorers: [scorer(M("ALG", "AUT").h, 0, 30), scorer(M("ALG", "AUT").a, 0, 48)] }),
+        ],
+        context: [
+          mk(M("COD", "UZB"), { status: "finished", homeScore: 1, awayScore: 1, note: "· a la vez" }),
+          mk(M("COL", "POR"), { status: "finished", homeScore: 2, awayScore: 0, note: "· a la vez" }),
         ],
       },
     },
