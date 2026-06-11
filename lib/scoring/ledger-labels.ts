@@ -10,6 +10,39 @@
  * distintos (5/3/2/1), así que la derivación es inequívoca.
  */
 
+/** Categoría padre de una entrada del ledger (para color + icono en la UI). */
+export type LedgerCategory =
+  | "match"
+  | "scorer"
+  | "group"
+  | "bracket"
+  | "topScorer"
+  | "special";
+
+/** Categoría padre a partir del `source`. Null si no se reconoce. */
+export function ledgerCategory(source: string): LedgerCategory | null {
+  switch (source) {
+    case "match_result":
+    case "solo_winner":
+    case "solo_winner_pens":
+      return "match";
+    case "match_scorer":
+    case "match_first_scorer":
+      return "scorer";
+    case "group_position":
+    case "group_top2_swap":
+      return "group";
+    case "bracket_slot":
+      return "bracket";
+    case "tournament_top_scorer":
+      return "topScorer";
+    case "special_prediction":
+      return "special";
+    default:
+      return null;
+  }
+}
+
 /** Fuentes que cuentan como "marcador/resultado" (vs goleador). */
 export const MARKER_SOURCES = new Set(["match_result", "solo_winner", "solo_winner_pens"]);
 /** Fuentes de goleador. */

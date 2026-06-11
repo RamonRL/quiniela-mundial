@@ -1194,7 +1194,7 @@
     "behindLeaderPts": "{lead, plural, one {A # punto del líder.} other {A # puntos del líder.}}",
     "unranked": "Sin clasificar.",
     "distanceToLeader": "Distancia al líder",
-    "subExact": "Marcadores ex.",
+    "subExact": "Marcadores exactos",
     "subKO": "Pts en KO",
     "subHits": "Aciertos",
     "categoryBreakdown": "Desglose por categoría",

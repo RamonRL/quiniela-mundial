@@ -8,7 +8,7 @@ import {
   specialPredictions,
   teams,
 } from "@/lib/db/schema";
-import { ledgerLabelKey } from "@/lib/scoring/ledger-labels";
+import { ledgerCategory, ledgerLabelKey, type LedgerCategory } from "@/lib/scoring/ledger-labels";
 
 export type ActivityEntry = {
   id: number;
@@ -16,6 +16,8 @@ export type ActivityEntry = {
   computedAt: string;
   label: string;
   detail: string | null;
+  /** Categoría padre (para color + icono en la UI). */
+  category: LedgerCategory | null;
 };
 
 /** Traductor del namespace `ledger` (next-intl); admite params. */
@@ -137,6 +139,7 @@ export async function loadActivityFeed(
       computedAt: r.computedAt.toISOString(),
       label,
       detail,
+      category: ledgerCategory(r.source),
     };
   });
 }

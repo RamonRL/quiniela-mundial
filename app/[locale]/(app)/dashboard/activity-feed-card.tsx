@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Coins } from "lucide-react";
 import { loadActivityFeed } from "@/lib/activity-feed";
+import { CATEGORY_META } from "@/components/scoring/category-style";
 
 /**
  * Panel "Últimos puntos · tu ledger" — columna vertical (comparte fila con el
@@ -52,24 +53,35 @@ export async function ActivityFeedCard({
           </div>
         ) : (
           <ul className="space-y-2">
-            {activity.map((a) => (
-              <li
-                key={a.id}
-                className="flex items-center justify-between gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-2)] px-3 py-2.5"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{a.label}</p>
-                  {a.detail ? (
-                    <p className="truncate font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-                      {a.detail}
-                    </p>
-                  ) : null}
-                </div>
-                <span className="font-display tabular text-2xl leading-none text-[var(--color-arena)] glow-arena">
-                  +{a.points}
-                </span>
-              </li>
-            ))}
+            {activity.map((a) => {
+              const meta = a.category ? CATEGORY_META[a.category] : null;
+              const Icon = meta?.Icon ?? Coins;
+              const color = meta?.color ?? "var(--color-arena)";
+              return (
+                <li
+                  key={a.id}
+                  className="flex items-center justify-between gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-2)] px-3 py-2.5"
+                >
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <Icon className="size-4 shrink-0" style={{ color }} />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">{a.label}</p>
+                      {a.detail ? (
+                        <p className="truncate font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+                          {a.detail}
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+                  <span
+                    className="glow-cat font-display tabular text-2xl leading-none"
+                    style={{ color }}
+                  >
+                    +{a.points}
+                  </span>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>

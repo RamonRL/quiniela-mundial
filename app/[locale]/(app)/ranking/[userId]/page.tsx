@@ -21,8 +21,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { compareForRanking } from "@/lib/scoring/tiebreaker";
 import { requireUser } from "@/lib/auth/guards";
-import { currentLeagueId, inLeagueFilter } from "@/lib/leagues";
+import { currentLeagueId, getLeagueModes, inLeagueFilter } from "@/lib/leagues";
 import { loadActivityFeed } from "@/lib/activity-feed";
+import { CATEGORY_META, categoryColor } from "@/components/scoring/category-style";
+import type { LedgerCategory } from "@/lib/scoring/ledger-labels";
 import { getDateContext } from "@/lib/timezone-server";
 import { formatDate, formatDateTime, initials } from "@/lib/utils";
 
@@ -228,6 +230,10 @@ export default async function ParticipantDetailPage({
   const tLedger = await getTranslations("ledger");
   const recent =
     leagueId != null ? await loadActivityFeed(userId, leagueId, 12, tLedger) : [];
+  // Modo de la liga activa: en Marcador / Solo Ganador no hay desglose por
+  // categorías y los KPIs se simplifican.
+  const mode = leagueId != null ? (await getLeagueModes([leagueId])).get(leagueId) ?? "completo" : "completo";
+  const onlyMatches = mode !== "completo";
 
   const display = user.nickname || user.email.split("@")[0];
   const isMe = user.id === me.id;
@@ -357,16 +363,44 @@ export default async function ParticipantDetailPage({
               </div>
             ) : null}
 
-            <div className="grid grid-cols-3 gap-3">
-              <SubStat label={t("subExact")} value={myStats.exactScoresCount} />
-              <SubStat label={t("subKO")} value={myStats.knockoutPoints} />
-              <SubStat label={t("subHits")} value={theirLedger.length} />
-            </div>
+            {(() => {
+              // KPIs por modo: Completo → exactos + KO + aciertos; Marcador →
+              // exactos + aciertos; Solo Ganador → solo aciertos.
+              const items =
+                mode === "completo"
+                  ? [
+                      { label: t("subExact"), value: myStats.exactScoresCount },
+                      { label: t("subKO"), value: myStats.knockoutPoints },
+                      { label: t("subHits"), value: theirLedger.length },
+                    ]
+                  : mode === "marcador"
+                    ? [
+                        { label: t("subExact"), value: myStats.exactScoresCount },
+                        { label: t("subHits"), value: theirLedger.length },
+                      ]
+                    : [{ label: t("subHits"), value: theirLedger.length }];
+              const cols =
+                items.length === 1
+                  ? "grid-cols-1"
+                  : items.length === 2
+                    ? "grid-cols-2"
+                    : "grid-cols-3";
+              return (
+                <div className={`grid gap-3 ${cols}`}>
+                  {items.map((s) => (
+                    <SubStat key={s.label} label={s.label} value={s.value} />
+                  ))}
+                </div>
+              );
+            })()}
           </div>
         </div>
       </section>
 
       {/* CATEGORY BREAKDOWN ──────────────────────────────────── */}
+      {/* Solo en modo Completo: las quinielas simples (Marcador / Solo Ganador)
+          puntúan una sola categoría, así que el desglose no aporta. */}
+      {!onlyMatches ? (
       <section className="space-y-3">
         <header className="flex items-center gap-3">
           <span className="h-px w-6 bg-[var(--color-arena)]" />
@@ -392,32 +426,44 @@ export default async function ParticipantDetailPage({
                 : 0;
             const Icon = g.icon;
             const earned = total > 0;
+            // Color identificativo de la categoría (MARCADORES = arena).
+            const color = categoryColor(g.key as LedgerCategory);
             return (
               <article
                 key={g.key}
-                className={`rounded-xl border p-4 transition ${
+                className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 transition"
+                style={
                   earned
-                    ? "border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_3%,var(--color-surface))]"
-                    : "border-[var(--color-border)] bg-[var(--color-surface)]"
-                }`}
+                    ? {
+                        borderColor: `color-mix(in oklch, ${color} 30%, transparent)`,
+                        background: `color-mix(in oklch, ${color} 3%, var(--color-surface))`,
+                      }
+                    : undefined
+                }
               >
                 <header className="flex items-start justify-between gap-3">
                   <div
                     className={`flex size-10 items-center justify-center rounded-lg border ${
-                      earned
-                        ? "border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_8%,var(--color-surface-2))] text-[var(--color-arena)]"
-                        : "border-[var(--color-border)] bg-[var(--color-surface-2)] text-[var(--color-muted-foreground)]"
+                      earned ? "" : "border-[var(--color-border)] bg-[var(--color-surface-2)] text-[var(--color-muted-foreground)]"
                     }`}
+                    style={
+                      earned
+                        ? {
+                            color,
+                            borderColor: `color-mix(in oklch, ${color} 40%, transparent)`,
+                            background: `color-mix(in oklch, ${color} 8%, var(--color-surface-2))`,
+                          }
+                        : undefined
+                    }
                   >
                     <Icon className="size-5" />
                   </div>
                   <div className="text-right">
                     <p
                       className={`font-display tabular text-3xl leading-none ${
-                        earned
-                          ? "text-[var(--color-arena)] glow-arena"
-                          : "text-[var(--color-muted-foreground)]"
+                        earned ? "glow-cat" : "text-[var(--color-muted-foreground)]"
                       }`}
+                      style={earned ? { color } : undefined}
                     >
                       {earned ? `+${total}` : "0"}
                     </p>
@@ -434,8 +480,11 @@ export default async function ParticipantDetailPage({
                 </div>
                 <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[var(--color-surface-2)]">
                   <div
-                    className="h-full rounded-full bg-[var(--color-arena)]/80 transition-all"
-                    style={{ width: `${Math.min(100, pct)}%` }}
+                    className="h-full rounded-full transition-all"
+                    style={{
+                      width: `${Math.min(100, pct)}%`,
+                      backgroundColor: `color-mix(in oklch, ${color} 80%, transparent)`,
+                    }}
                   />
                 </div>
                 <p className="mt-1 text-right font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
@@ -446,6 +495,7 @@ export default async function ParticipantDetailPage({
           })}
         </div>
       </section>
+      ) : null}
 
       {/* RECENT ACTIVITY ─────────────────────────────────────── */}
       {recent.length > 0 ? (
@@ -459,23 +509,31 @@ export default async function ParticipantDetailPage({
           </header>
           <div className="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)]">
             <ul>
-              {recent.map((a) => (
-                <li
-                  key={a.id}
-                  className="flex items-center justify-between gap-3 border-b border-[var(--color-border)] px-4 py-3 last:border-b-0"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{a.label}</p>
-                    <p className="truncate font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-                      {a.detail ??
-                        formatDateTime(a.computedAt, { timeZone, locale, day: "2-digit", month: "short" })}
-                    </p>
-                  </div>
-                  <span className="font-display tabular text-2xl text-[var(--color-arena)] glow-arena">
-                    +{a.points}
-                  </span>
-                </li>
-              ))}
+              {recent.map((a) => {
+                const meta = a.category ? CATEGORY_META[a.category] : null;
+                const Icon = meta?.Icon ?? Target;
+                const color = meta?.color ?? "var(--color-arena)";
+                return (
+                  <li
+                    key={a.id}
+                    className="flex items-center justify-between gap-3 border-b border-[var(--color-border)] px-4 py-3 last:border-b-0"
+                  >
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <Icon className="size-4 shrink-0" style={{ color }} />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">{a.label}</p>
+                        <p className="truncate font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+                          {a.detail ??
+                            formatDateTime(a.computedAt, { timeZone, locale, day: "2-digit", month: "short" })}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="glow-cat font-display tabular text-2xl" style={{ color }}>
+                      +{a.points}
+                    </span>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </section>
