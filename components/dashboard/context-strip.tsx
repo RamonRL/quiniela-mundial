@@ -85,7 +85,7 @@ function Mini({ kickoffISO }: { kickoffISO: string }) {
 
 function Side({ team, align, dim }: { team: HeroTeam; align: "start" | "end"; dim: boolean }) {
   const nameEl = (
-    <span className="truncate font-display text-base leading-[0.95] tracking-tight sm:text-lg">
+    <span className="line-clamp-2 text-balance font-display text-base leading-[0.95] tracking-tight sm:text-lg">
       {team?.name ?? "TBD"}
     </span>
   );
