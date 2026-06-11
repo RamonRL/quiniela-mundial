@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { requireAdmin } from "@/lib/auth/guards";
 import { PageHeader } from "@/components/shell/page-header";
 import {
+  MatchScoreboard,
   PickPanel,
   ScorersCard,
   type PickMode,
@@ -16,23 +17,24 @@ export const dynamic = "force-dynamic";
 type Translator = Awaited<ReturnType<typeof getTranslations>>;
 
 // ── Mock fixture: España vs Alemania ──────────────────────────────────────
-const HOME = { code: "ESP", name: "España", href: "/equipos/ESP" };
-const AWAY = { code: "GER", name: "Alemania", href: "/equipos/GER" };
+const HOME = { code: "MEX", name: "México", href: "/equipos/MEX" };
+const AWAY = { code: "RSA", name: "Sudáfrica", href: "/equipos/RSA" };
 
 const SCORER = {
-  name: "Lamine Yamal",
-  jerseyNumber: 19,
+  name: "Santiago Giménez",
+  jerseyNumber: 9,
   position: "DEL",
-  teamCode: "ESP",
-  teamHref: "/equipos/ESP",
+  teamCode: "MEX",
+  teamHref: "/equipos/MEX",
   photoUrl: null,
 };
 
-// Real-looking goal timeline for the during/after states.
+// Goleadores reales para durante/después: gol de México, penalti de Sudáfrica
+// y un GOL EN PROPIA de Sudáfrica (cuenta para México) → marcador 2-1.
 const SCORERS: ScorerEvent[] = [
-  { id: 1, playerName: "Lamine Yamal", teamCode: "ESP", minute: 23, isFirstGoal: true },
-  { id: 2, playerName: "Kai Havertz", teamCode: "GER", minute: 41, isPenalty: true },
-  { id: 3, playerName: "Dani Olmo", teamCode: "ESP", minute: 67 },
+  { id: 1, playerName: "Santiago Giménez", teamCode: "MEX", minute: 23, isFirstGoal: true },
+  { id: 2, playerName: "Percy Tau", teamCode: "RSA", minute: 41, isPenalty: true },
+  { id: 3, playerName: "Mothobi Mvala", teamCode: "RSA", minute: 67, isOwnGoal: true },
 ];
 
 type Variant = {
@@ -162,6 +164,16 @@ export default async function PreviewPage() {
                   {v.desc}
                 </p>
               </div>
+              <MatchScoreboard
+                home={HOME}
+                away={AWAY}
+                state={v.state}
+                homeScore={v.state === "before" ? null : 2}
+                awayScore={v.state === "before" ? null : 1}
+                minute={v.state === "during" ? 67 : null}
+                kickoffLabel={v.state === "before" ? "11 jun · 21:00" : null}
+                t={t}
+              />
               {showScorers ? <ScorersCard scorers={SCORERS} t={t} /> : null}
               <PickPanel {...props} />
             </div>

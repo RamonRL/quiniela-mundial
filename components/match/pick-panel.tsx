@@ -721,3 +721,118 @@ export function ScorersCard({
     </Card>
   );
 }
+
+// ─────────────────────────── Marcador superior ───────────────────────────
+
+/**
+ * Cabecera de marcador del partido (parte superior de la ficha): banderas +
+ * nombres y, según el estado, hueco "vs" + PROGRAMADO (antes), marcador en vivo
+ * + minuto + EN VIVO (durante) o marcador final + FINAL (después). Mismo
+ * lenguaje visual que el resto de la card.
+ */
+export function MatchScoreboard({
+  home,
+  away,
+  state,
+  homeScore,
+  awayScore,
+  minute,
+  kickoffLabel,
+  t,
+}: {
+  home: PickTeam;
+  away: PickTeam;
+  state: PickState;
+  homeScore?: number | null;
+  awayScore?: number | null;
+  minute?: number | null;
+  kickoffLabel?: string | null;
+  t: Translator;
+}) {
+  const live = state === "during";
+  const finished = state === "after";
+  const showScore = (live || finished) && homeScore != null && awayScore != null;
+
+  return (
+    <Card>
+      <CardContent className="relative space-y-4 p-5 sm:p-7">
+        {/* Estado */}
+        <div className="flex items-center justify-center">
+          {live ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-arena)]/60 bg-[color-mix(in_oklch,var(--color-arena)_10%,transparent)] px-2.5 py-1 font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-arena)]">
+              <span className="relative flex size-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--color-arena)] opacity-70" />
+                <span className="relative inline-flex size-2 rounded-full bg-[var(--color-arena)]" />
+              </span>
+              {t("statusLive")}
+              {minute != null ? ` · ${minute}'` : ""}
+            </span>
+          ) : finished ? (
+            <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface-2)] px-2.5 py-1 font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
+              {t("statusFinal")}
+            </span>
+          ) : (
+            <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface-2)] px-2.5 py-1 font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
+              {t("statusScheduled")}
+            </span>
+          )}
+        </div>
+
+        {/* Marcador */}
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-5">
+          <ScoreTeam team={home} align="end" t={t} />
+          {showScore ? (
+            <span
+              className={`font-display tabular text-5xl leading-none tracking-tighter sm:text-7xl ${
+                live ? "text-[var(--color-arena)] glow-arena" : ""
+              }`}
+            >
+              {homeScore}
+              <span className="mx-1 text-[var(--color-muted-foreground)] opacity-50 sm:mx-2">·</span>
+              {awayScore}
+            </span>
+          ) : (
+            <span className="font-display text-2xl text-[var(--color-muted-foreground)] sm:text-3xl">
+              {t("vs")}
+            </span>
+          )}
+          <ScoreTeam team={away} align="start" t={t} />
+        </div>
+
+        {!showScore && kickoffLabel ? (
+          <p className="text-center font-editorial text-sm italic text-[var(--color-muted-foreground)]">
+            {kickoffLabel}
+          </p>
+        ) : null}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ScoreTeam({
+  team,
+  align,
+  t,
+}: {
+  team: PickTeam;
+  align: "start" | "end";
+  t: Translator;
+}) {
+  const cls = align === "end" ? "items-end text-right" : "items-start text-left";
+  const Wrapper: React.ElementType = team.href ? Link : "div";
+  const props = team.href ? { href: team.href, "aria-label": team.name ?? undefined } : {};
+  return (
+    <Wrapper
+      {...props}
+      className={`flex min-w-0 flex-col gap-1.5 ${cls} ${team.href ? "transition hover:text-[var(--color-arena)]" : ""}`}
+    >
+      <TeamFlag code={team.code} size={44} />
+      <span className="truncate font-display text-lg leading-tight tracking-tight sm:text-2xl">
+        {team.name ?? t("tbd")}
+      </span>
+      <span className="font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
+        {team.code ?? "—"}
+      </span>
+    </Wrapper>
+  );
+}
