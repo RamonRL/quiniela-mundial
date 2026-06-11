@@ -21,7 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { compareForRanking } from "@/lib/scoring/tiebreaker";
 import { requireUser } from "@/lib/auth/guards";
-import { currentLeagueId, getLeagueModes, inLeagueFilter } from "@/lib/leagues";
+import { currentLeagueId, getLeagueModes, inLeagueFilter, isMemberOf } from "@/lib/leagues";
 import { loadActivityFeed } from "@/lib/activity-feed";
 import { CATEGORY_META, categoryColor } from "@/components/scoring/category-style";
 import type { LedgerCategory } from "@/lib/scoring/ledger-labels";
@@ -132,12 +132,14 @@ export default async function ParticipantDetailPage({
 
   const [user] = await db.select().from(profiles).where(eq(profiles.id, userId)).limit(1);
   if (!user) notFound();
-  if (
-    me.role !== "admin" &&
-    leagueId != null &&
-    user.leagueId !== leagueId &&
-    user.role !== "admin"
-  ) {
+  // Visible si: el que mira es admin, el perfil es admin (global), o el perfil
+  // es MIEMBRO de la liga activa del que mira. Ojo: hay que comprobar
+  // pertenencia (leagueMemberships), NO `profiles.leagueId` (la liga ACTIVA del
+  // usuario), porque un miembro puede tener activa otra liga y aun así aparece
+  // en el ranking — comprobar la activa daba 404 a esos perfiles para no-admins.
+  const sameLeagueMember =
+    leagueId != null && (await isMemberOf(userId, leagueId));
+  if (me.role !== "admin" && user.role !== "admin" && !sameLeagueMember) {
     notFound();
   }
 
