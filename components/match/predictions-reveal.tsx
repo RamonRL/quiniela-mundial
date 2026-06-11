@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { initials } from "@/lib/utils";
+import { Paginator } from "@/components/ui/paginator";
 
 type Translator = Awaited<ReturnType<typeof getTranslations>>;
 
@@ -51,6 +52,77 @@ export function MatchPredictionsReveal({
   const cols = showScorer
     ? "sm:grid-cols-[1fr_110px_1fr]"
     : "sm:grid-cols-[1fr_110px]";
+
+  // Filas pre-renderizadas en servidor → el Paginator (cliente) solo elige qué
+  // página mostrar, sin recibir traducciones ni lógica.
+  const rowNodes = rows.map((c) => (
+    <li
+      key={c.userId}
+      className={`flex flex-col gap-1.5 border-b border-[var(--color-border)] px-4 py-3 last:border-b-0 sm:grid sm:items-center sm:gap-2 sm:py-2.5 ${cols} ${
+        c.isMe ? "bg-[color-mix(in_oklch,var(--color-arena)_5%,transparent)]" : ""
+      }`}
+    >
+      <span className="flex items-center gap-2 truncate">
+        <Avatar className="size-7 border border-[var(--color-border)]">
+          {c.avatarUrl ? <AvatarImage src={c.avatarUrl} alt="" /> : null}
+          <AvatarFallback className="text-[0.6rem]">{initials(c.display)}</AvatarFallback>
+        </Avatar>
+        <span className="truncate text-sm font-medium">
+          {c.display}
+          {c.isMe ? (
+            <span className="ml-1.5 font-mono text-[0.55rem] uppercase tracking-[0.3em] text-[var(--color-arena)]">
+              {t("you")}
+            </span>
+          ) : null}
+        </span>
+      </span>
+      <span
+        className={`flex items-baseline gap-2 font-display tabular text-xl sm:justify-center ${
+          c.exactScore ? "text-[var(--color-success)] glow-pitch" : ""
+        }`}
+      >
+        <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)] sm:hidden">
+          {t("colResult")}
+        </span>
+        {c.homeScore != null && c.awayScore != null ? (
+          <>
+            {c.homeScore}
+            <span className="mx-1 opacity-60">·</span>
+            {c.awayScore}
+          </>
+        ) : (
+          <span className="text-[var(--color-muted-foreground)]">—</span>
+        )}
+        {c.willGoToPens ? (
+          <span className="font-mono text-[0.55rem] uppercase text-[var(--color-muted-foreground)]">
+            {t("pen")}
+          </span>
+        ) : null}
+      </span>
+      {showScorer ? (
+        <span className="flex items-center gap-2 truncate text-sm">
+          <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)] sm:hidden">
+            {t("colScorer")}
+          </span>
+          {c.scorerName ? (
+            <>
+              <span
+                className={`size-1.5 rounded-full ${
+                  c.scorerScored
+                    ? "bg-[var(--color-success)]"
+                    : "bg-[var(--color-muted-foreground)]"
+                }`}
+              />
+              <span className="truncate">{c.scorerName}</span>
+            </>
+          ) : (
+            <span className="text-[var(--color-muted-foreground)]">—</span>
+          )}
+        </span>
+      ) : null}
+    </li>
+  ));
+
   return (
     <Card>
       <CardHeader>
@@ -71,79 +143,15 @@ export function MatchPredictionsReveal({
               <span className="text-center">{t("colResult")}</span>
               {showScorer ? <span>{t("colScorer")}</span> : null}
             </div>
-            <ul>
-              {rows.map((c) => (
-                <li
-                  key={c.userId}
-                  className={`flex flex-col gap-1.5 border-b border-[var(--color-border)] px-4 py-3 last:border-b-0 sm:grid sm:items-center sm:gap-2 sm:py-2.5 ${cols} ${
-                    c.isMe
-                      ? "bg-[color-mix(in_oklch,var(--color-arena)_5%,transparent)]"
-                      : ""
-                  }`}
-                >
-                  <span className="flex items-center gap-2 truncate">
-                    <Avatar className="size-7 border border-[var(--color-border)]">
-                      {c.avatarUrl ? <AvatarImage src={c.avatarUrl} alt="" /> : null}
-                      <AvatarFallback className="text-[0.6rem]">
-                        {initials(c.display)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="truncate text-sm font-medium">
-                      {c.display}
-                      {c.isMe ? (
-                        <span className="ml-1.5 font-mono text-[0.55rem] uppercase tracking-[0.3em] text-[var(--color-arena)]">
-                          {t("you")}
-                        </span>
-                      ) : null}
-                    </span>
-                  </span>
-                  <span
-                    className={`flex items-baseline gap-2 font-display tabular text-xl sm:justify-center ${
-                      c.exactScore ? "text-[var(--color-success)] glow-pitch" : ""
-                    }`}
-                  >
-                    <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)] sm:hidden">
-                      {t("colResult")}
-                    </span>
-                    {c.homeScore != null && c.awayScore != null ? (
-                      <>
-                        {c.homeScore}
-                        <span className="mx-1 opacity-60">·</span>
-                        {c.awayScore}
-                      </>
-                    ) : (
-                      <span className="text-[var(--color-muted-foreground)]">—</span>
-                    )}
-                    {c.willGoToPens ? (
-                      <span className="font-mono text-[0.55rem] uppercase text-[var(--color-muted-foreground)]">
-                        {t("pen")}
-                      </span>
-                    ) : null}
-                  </span>
-                  {showScorer ? (
-                    <span className="flex items-center gap-2 truncate text-sm">
-                      <span className="font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)] sm:hidden">
-                        {t("colScorer")}
-                      </span>
-                      {c.scorerName ? (
-                        <>
-                          <span
-                            className={`size-1.5 rounded-full ${
-                              c.scorerScored
-                                ? "bg-[var(--color-success)]"
-                                : "bg-[var(--color-muted-foreground)]"
-                            }`}
-                          />
-                          <span className="truncate">{c.scorerName}</span>
-                        </>
-                      ) : (
-                        <span className="text-[var(--color-muted-foreground)]">—</span>
-                      )}
-                    </span>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
+            <Paginator
+              items={rowNodes}
+              pageSize={20}
+              labels={{
+                prev: t("predsPagePrev"),
+                next: t("predsPageNext"),
+                info: t.raw("predsPageInfo") as string,
+              }}
+            />
           </div>
         )}
       </CardContent>

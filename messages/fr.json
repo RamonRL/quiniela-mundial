@@ -2035,6 +2035,9 @@
     "winnerCorrect": "Vainqueur trouvé",
     "winnerWrong": "Mauvais vainqueur",
     "liveBadge": "En direct",
-    "pensPick": "Tirs au but · {team} gagne"
+    "pensPick": "Tirs au but · {team} gagne",
+    "predsPagePrev": "Précédent",
+    "predsPageNext": "Suivant",
+    "predsPageInfo": "{from}–{to} sur {total}"
   }
 }

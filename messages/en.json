@@ -2035,6 +2035,9 @@
     "winnerCorrect": "You called the winner",
     "winnerWrong": "Wrong winner",
     "liveBadge": "Live",
-    "pensPick": "Penalties · {team} wins"
+    "pensPick": "Penalties · {team} wins",
+    "predsPagePrev": "Previous",
+    "predsPageNext": "Next",
+    "predsPageInfo": "{from}–{to} of {total}"
   }
 }

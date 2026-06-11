@@ -2035,6 +2035,9 @@
     "winnerCorrect": "Acertaste o vencedor",
     "winnerWrong": "Falhaste o vencedor",
     "liveBadge": "Ao vivo",
-    "pensPick": "Pénaltis · {team} vence"
+    "pensPick": "Pénaltis · {team} vence",
+    "predsPagePrev": "Anterior",
+    "predsPageNext": "Seguinte",
+    "predsPageInfo": "{from}–{to} de {total}"
   }
 }

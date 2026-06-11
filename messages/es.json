@@ -2035,6 +2035,9 @@
     "winnerCorrect": "Acertaste el ganador",
     "winnerWrong": "Fallaste el ganador",
     "liveBadge": "En vivo",
-    "pensPick": "Penaltis · Gana {team}"
+    "pensPick": "Penaltis · Gana {team}",
+    "predsPagePrev": "Anterior",
+    "predsPageNext": "Siguiente",
+    "predsPageInfo": "{from}–{to} de {total}"
   }
 }

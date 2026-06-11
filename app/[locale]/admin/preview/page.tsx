@@ -11,93 +11,45 @@ export const dynamic = "force-dynamic";
 
 type Translator = Awaited<ReturnType<typeof getTranslations>>;
 
-// ── Mock: México vs Sudáfrica, marcador real 2-1 (autogol incluido). Estas
-//    son las predicciones que la liga ve a partir del saque inicial. ─────────
-//
-// Casos representados:
-//  - Yo: marcador exacto (2-1) acertado + goleador que marcó → fila resaltada,
-//    marcador en verde, punto verde en el goleador.
-//  - Acertó ganador y goles de un equipo, goleador que no marcó.
-//  - Predijo empate (1-1), sin goleador.
-//  - Marcador exacto pero su goleador no marcó.
-//  - Sin enviar marcador (—) pero con goleador.
-//  - Eliminatoria: empate + penaltis (etiqueta "pen.").
-const ROWS: RevealRow[] = [
-  {
-    userId: "me",
-    display: "Ramón",
-    avatarUrl: null,
-    isMe: true,
-    homeScore: 2,
-    awayScore: 1,
-    willGoToPens: false,
-    exactScore: true,
-    scorerName: "Santiago Giménez",
-    scorerScored: true,
-  },
-  {
-    userId: "u2",
-    display: "Lucía",
-    avatarUrl: null,
-    isMe: false,
-    homeScore: 3,
-    awayScore: 1,
-    willGoToPens: false,
-    exactScore: false,
-    scorerName: "Raúl Jiménez",
-    scorerScored: false,
-  },
-  {
-    userId: "u3",
-    display: "Diego",
-    avatarUrl: null,
-    isMe: false,
-    homeScore: 1,
-    awayScore: 1,
-    willGoToPens: false,
-    exactScore: false,
-    scorerName: null,
-    scorerScored: false,
-  },
-  {
-    userId: "u4",
-    display: "María José",
-    avatarUrl: null,
-    isMe: false,
-    homeScore: 2,
-    awayScore: 1,
-    willGoToPens: false,
-    exactScore: true,
-    scorerName: "Hirving Lozano",
-    scorerScored: false,
-  },
-  {
-    userId: "u5",
-    display: "Olivares",
-    avatarUrl: null,
-    isMe: false,
-    homeScore: null,
-    awayScore: null,
-    willGoToPens: false,
-    exactScore: false,
-    scorerName: "Percy Tau",
-    scorerScored: true,
-  },
-  {
-    userId: "u6",
-    display: "Aleix",
-    avatarUrl: null,
-    isMe: false,
-    homeScore: 1,
-    awayScore: 1,
-    willGoToPens: true,
-    exactScore: false,
-    scorerName: "Edson Álvarez",
-    scorerScored: false,
-  },
+// ── Mock: liga de 50 personas. Marcador real del partido: 2-1. Las filas son
+//    las predicciones que la liga ve a partir del saque inicial. ─────────────
+const NAMES = [
+  "Ramón", "Lucía", "Diego", "María José", "Olivares", "Aleix", "Carmen", "Pablo",
+  "Nuria", "Javi", "Sofía", "Marc", "Elena", "Rubén", "Paula", "Iker", "Noa",
+  "Hugo", "Vega", "Bruno", "Alba", "Mateo", "Lola", "Gonzalo", "Irene", "Pol",
+  "Daniela", "Unai", "Claudia", "Sergio", "Ainhoa", "Adrián", "Marta", "Nico",
+  "Valeria", "Álvaro", "Jimena", "Cristian", "Lara", "Manu", "Ángela", "Joel",
+  "Rocío", "Saúl", "Teresa", "Izan", "Candela", "Borja", "Greta", "Dani",
 ];
 
-// Sin goleador (modos marcador / solo ganador): misma tabla sin esa columna.
+const SCORERS = [
+  "Santiago Giménez", "Raúl Jiménez", "Hirving Lozano", "Edson Álvarez",
+  "Percy Tau", "Themba Zwane", null, null,
+];
+
+// Genera 50 filas deterministas (sin Math.random, no disponible aquí). Variamos
+// marcadores, goleadores, empates/penaltis y aciertos de forma cíclica.
+const ROWS: RevealRow[] = NAMES.map((name, i) => {
+  const homeScore = i % 7 === 6 ? null : (i % 4); // alguna fila sin enviar
+  const awayScore = homeScore == null ? null : (i % 3);
+  const willGoToPens = homeScore != null && homeScore === awayScore && i % 5 === 0;
+  const exactScore = homeScore === 2 && awayScore === 1;
+  const scorerName = SCORERS[i % SCORERS.length];
+  const scorerScored = scorerName === "Santiago Giménez" || scorerName === "Percy Tau";
+  return {
+    userId: `u${i}`,
+    display: name,
+    avatarUrl: null,
+    isMe: i === 0,
+    homeScore,
+    awayScore,
+    willGoToPens,
+    exactScore,
+    scorerName,
+    scorerScored: scorerName != null && scorerScored,
+  };
+});
+
 const ROWS_NO_SCORER: RevealRow[] = ROWS.map((r) => ({
   ...r,
   scorerName: null,
@@ -117,22 +69,22 @@ const VARIANTS: Variant[] = [
     locale: "es",
     showScorer: true,
     rows: ROWS,
-    heading: "Modo completo · ES",
-    desc: "Marcador + goleador. Mi fila resaltada, marcador exacto en verde y punto verde si el goleador marcó. Estrecha la ventana para ver el móvil.",
+    heading: "Liga de 50 · Modo completo · ES",
+    desc: "Marcador + goleador, paginado de 20 en 20 (3 páginas). Mi fila resaltada, marcador exacto en verde, punto verde si el goleador marcó. Estrecha la ventana para el móvil.",
   },
   {
     locale: "es",
     showScorer: false,
     rows: ROWS_NO_SCORER,
-    heading: "Modo marcador / solo ganador · ES",
+    heading: "Liga de 50 · Modo marcador / solo ganador · ES",
     desc: "Sin columna de goleador (esos modos no la predicen).",
   },
   {
     locale: "en",
     showScorer: true,
     rows: ROWS,
-    heading: "Modo completo · EN",
-    desc: "Misma tabla en inglés para revisar el i18n.",
+    heading: "Liga de 50 · Modo completo · EN",
+    desc: "Misma tabla paginada en inglés para revisar el i18n.",
   },
 ];
 
@@ -150,7 +102,7 @@ export default async function PreviewPage() {
       <PageHeader
         eyebrow="Admin"
         title="Preview · Predicciones de la liga"
-        description="Cuando empieza un partido (saque inicial), cada miembro de tu liga ve las predicciones del resto para ese partido. Así se ve la tabla en la página del partido."
+        description="Cuando empieza un partido (saque inicial), cada miembro de tu liga ve las predicciones del resto. Con ligas grandes la tabla se pagina (20 por página). Mock de una liga de 50 personas."
       />
 
       <section className="space-y-10">
