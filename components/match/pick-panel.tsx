@@ -844,8 +844,10 @@ export function MatchScoreboard({
   awayPenScore?: number | null;
   winnerName?: string | null;
   goals?: ScoreboardGoal[];
-  dateLabel?: string | null;
-  venue?: string | null;
+  /** Acepta string (preview) o nodo (p. ej. <LocalDateTime/> en producción). */
+  dateLabel?: React.ReactNode;
+  /** Acepta string (preview) o nodo (p. ej. <VenueLink/> en producción). */
+  venue?: React.ReactNode;
   t: Translator;
 }) {
   const live = state === "during";
