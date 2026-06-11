@@ -724,42 +724,71 @@ export function ScorersCard({
 
 // ─────────────────────────── Marcador superior ───────────────────────────
 
+const SB_STAGE_KEY: Record<string, string> = {
+  group: "stageGroup",
+  r32: "stageR32",
+  r16: "stageR16",
+  qf: "stageQf",
+  sf: "stageSf",
+  third: "stageThird",
+  final: "stageFinal",
+};
+
 /**
- * Cabecera de marcador del partido (parte superior de la ficha): banderas +
- * nombres y, según el estado, hueco "vs" + PROGRAMADO (antes), marcador en vivo
- * + minuto + EN VIVO (durante) o marcador final + FINAL (después). Mismo
- * lenguaje visual que el resto de la card.
+ * Cabecera de marcador del partido (parte superior de la ficha), tal cual irá a
+ * producción: arriba "FASE DE GRUPOS · GRUPO A" + estado; en el centro los dos
+ * equipos SIEMPRE en una línea (banderas + nombres grandes, con salto de línea
+ * para nombres largos) y, según el estado, "vs" (antes), marcador en vivo +
+ * EN VIVO (durante) o marcador final + FINAL (después); abajo fecha · estadio.
+ * Fondo de estadio (spotlight + halftone), sin la cuadrícula. Se intensifica el
+ * resplandor cuando hay directo.
  */
 export function MatchScoreboard({
   home,
   away,
   state,
+  stage,
+  group,
   homeScore,
   awayScore,
   minute,
-  kickoffLabel,
+  dateLabel,
+  venue,
   t,
 }: {
   home: PickTeam;
   away: PickTeam;
   state: PickState;
+  stage?: string | null;
+  group?: string | null;
   homeScore?: number | null;
   awayScore?: number | null;
   minute?: number | null;
-  kickoffLabel?: string | null;
+  dateLabel?: string | null;
+  venue?: string | null;
   t: Translator;
 }) {
   const live = state === "during";
   const finished = state === "after";
   const showScore = (live || finished) && homeScore != null && awayScore != null;
+  const stageLabel = stage && SB_STAGE_KEY[stage] ? t(SB_STAGE_KEY[stage]) : null;
 
   return (
-    <Card>
+    <Card className="relative overflow-hidden">
+      <div
+        aria-hidden
+        className={`spotlight pointer-events-none absolute inset-0 ${live ? "opacity-100" : "opacity-40"}`}
+      />
+      <div aria-hidden className="halftone pointer-events-none absolute inset-0 opacity-[0.04]" />
       <CardContent className="relative space-y-4 p-5 sm:p-7">
-        {/* Estado */}
-        <div className="flex items-center justify-center">
+        {/* Arriba: fase/grupo + estado */}
+        <div className="flex items-center justify-between gap-2">
+          <span className="min-w-0 truncate font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
+            {stageLabel}
+            {group ? ` · ${t("group", { code: group })}` : ""}
+          </span>
           {live ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-arena)]/60 bg-[color-mix(in_oklch,var(--color-arena)_10%,transparent)] px-2.5 py-1 font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-arena)]">
+            <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[var(--color-arena)]/60 bg-[color-mix(in_oklch,var(--color-arena)_10%,transparent)] px-2.5 py-1 font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-arena)]">
               <span className="relative flex size-2">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--color-arena)] opacity-70" />
                 <span className="relative inline-flex size-2 rounded-full bg-[var(--color-arena)]" />
@@ -767,23 +796,19 @@ export function MatchScoreboard({
               {t("statusLive")}
               {minute != null ? ` · ${minute}'` : ""}
             </span>
-          ) : finished ? (
-            <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface-2)] px-2.5 py-1 font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
-              {t("statusFinal")}
-            </span>
           ) : (
-            <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface-2)] px-2.5 py-1 font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
-              {t("statusScheduled")}
+            <span className="shrink-0 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-2)] px-2.5 py-1 font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
+              {finished ? t("statusFinal") : t("statusScheduled")}
             </span>
           )}
         </div>
 
-        {/* Marcador */}
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-5">
+        {/* Equipos SIEMPRE en una línea */}
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-5">
           <ScoreTeam team={home} align="end" t={t} />
           {showScore ? (
             <span
-              className={`font-display tabular text-5xl leading-none tracking-tighter sm:text-7xl ${
+              className={`shrink-0 font-display tabular text-5xl leading-none tracking-tighter sm:text-7xl ${
                 live ? "text-[var(--color-arena)] glow-arena" : ""
               }`}
             >
@@ -792,17 +817,19 @@ export function MatchScoreboard({
               {awayScore}
             </span>
           ) : (
-            <span className="font-display text-2xl text-[var(--color-muted-foreground)] sm:text-3xl">
+            <span className="shrink-0 font-display text-2xl text-[var(--color-muted-foreground)] sm:text-3xl">
               {t("vs")}
             </span>
           )}
           <ScoreTeam team={away} align="start" t={t} />
         </div>
 
-        {!showScore && kickoffLabel ? (
-          <p className="text-center font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-            {kickoffLabel}
-          </p>
+        {/* Abajo: fecha · estadio */}
+        {dateLabel || venue ? (
+          <div className="flex items-center justify-between gap-3 border-t border-dashed border-[var(--color-border)] pt-3 text-xs text-[var(--color-muted-foreground)]">
+            <span className="shrink-0">{dateLabel}</span>
+            {venue ? <span className="min-w-0 truncate text-right">{venue}</span> : null}
+          </div>
         ) : null}
       </CardContent>
     </Card>
@@ -818,20 +845,19 @@ function ScoreTeam({
   align: "start" | "end";
   t: Translator;
 }) {
-  const cls = align === "end" ? "items-end text-right" : "items-start text-left";
+  // Bandera al exterior, nombre hacia el centro; nombre grande con salto de
+  // línea (no truncado) para selecciones de nombre largo.
+  const cls = align === "end" ? "flex-row-reverse text-right" : "text-left";
   const Wrapper: React.ElementType = team.href ? Link : "div";
   const props = team.href ? { href: team.href, "aria-label": team.name ?? undefined } : {};
   return (
     <Wrapper
       {...props}
-      className={`flex min-w-0 flex-col gap-1.5 ${cls} ${team.href ? "transition hover:text-[var(--color-arena)]" : ""}`}
+      className={`flex min-w-0 items-center gap-2.5 ${cls} ${team.href ? "transition hover:text-[var(--color-arena)]" : ""}`}
     >
-      <TeamFlag code={team.code} size={44} />
-      <span className="truncate font-display text-lg leading-tight tracking-tight sm:text-2xl">
+      <TeamFlag code={team.code} size={52} className="shrink-0" />
+      <span className="min-w-0 text-balance break-words font-display text-xl leading-[1.05] tracking-tight sm:text-3xl">
         {team.name ?? t("tbd")}
-      </span>
-      <span className="font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
-        {team.code ?? "—"}
       </span>
     </Wrapper>
   );

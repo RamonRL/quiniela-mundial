@@ -168,10 +168,13 @@ export default async function PreviewPage() {
                 home={HOME}
                 away={AWAY}
                 state={v.state}
+                stage="group"
+                group="A"
                 homeScore={v.state === "before" ? null : 2}
                 awayScore={v.state === "before" ? null : 1}
                 minute={v.state === "during" ? 67 : null}
-                kickoffLabel={v.state === "before" ? "11 jun · 21:00" : null}
+                dateLabel="11 jun · 21:00"
+                venue="Estadio Azteca · Ciudad de México"
                 t={t}
               />
               {showScorers ? <ScorersCard scorers={SCORERS} t={t} /> : null}
