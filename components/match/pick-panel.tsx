@@ -831,7 +831,7 @@ export function MatchScoreboard({
         ) : null}
 
         {/* Equipos en una línea + centro protagonista; goleadores bajo cada equipo */}
-        <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-2 sm:gap-5">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-4 sm:gap-10">
           <TeamColumn team={home} goals={homeGoals} align="end" t={t} />
 
           <div className="flex flex-col items-center gap-1.5 self-center">
