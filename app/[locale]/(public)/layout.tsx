@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { cookies } from "next/headers";
 import { getCurrentUser } from "@/lib/auth/guards";
 import { currentLeagueId, getMembershipsForUser } from "@/lib/leagues";
@@ -6,7 +5,6 @@ import { canUseBranding } from "@/lib/league-tiers";
 import { AppHeader } from "@/components/shell/header";
 import { Sidebar } from "@/components/shell/sidebar";
 import { MobileBottomNav } from "@/components/shell/mobile-nav";
-import { DeadlineSlot } from "@/components/shell/deadline-slot";
 import { TimezoneSync } from "@/components/shell/timezone-sync";
 
 /**
@@ -40,7 +38,6 @@ export default async function PublicLayout({
 
   const activeMembership = memberships.find((m) => m.id === activeLeagueId);
   const showMyLeague = activeMembership ? !activeMembership.isPublic : false;
-  const deadlineLeagueId = me ? activeLeagueId ?? me.leagueId ?? null : null;
   // Branding de la liga activa — mismo criterio que (app)/layout.tsx, para
   // que la marca de la empresa NO desaparezca al pasar a Calendario, Grupos,
   // etc. Solo lo ve quien tiene esa liga premium como activa; visitantes y
@@ -72,11 +69,6 @@ export default async function PublicLayout({
         squareLogoUrl={squareLogoUrl}
       />
       <div className="flex min-w-0 flex-1 flex-col">
-        {me && deadlineLeagueId != null ? (
-          <Suspense fallback={<div aria-hidden />}>
-            <DeadlineSlot userId={me.id} leagueId={deadlineLeagueId} />
-          </Suspense>
-        ) : null}
         <AppHeader
           email={me?.email ?? null}
           nickname={me?.nickname ?? null}
