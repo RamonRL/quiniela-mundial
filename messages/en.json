@@ -2028,6 +2028,12 @@
     "srcQualified": "Qualified",
     "srcPens": "Penalties",
     "srcScorer": "Scorer",
-    "srcFirstGoal": "First goal"
+    "srcFirstGoal": "First goal",
+    "winnerPickLabel": "Your winner",
+    "winsTeam": "{team} wins",
+    "drawPick": "Draw",
+    "winnerCorrect": "You called the winner",
+    "winnerWrong": "Wrong winner",
+    "liveBadge": "Live"
   }
 }

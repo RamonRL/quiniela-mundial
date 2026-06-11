@@ -2028,6 +2028,12 @@
     "srcQualified": "Qualifié",
     "srcPens": "Tirs au but",
     "srcScorer": "Buteur",
-    "srcFirstGoal": "Premier but"
+    "srcFirstGoal": "Premier but",
+    "winnerPickLabel": "Ton vainqueur",
+    "winsTeam": "{team} gagne",
+    "drawPick": "Match nul",
+    "winnerCorrect": "Vainqueur trouvé",
+    "winnerWrong": "Mauvais vainqueur",
+    "liveBadge": "En direct"
   }
 }

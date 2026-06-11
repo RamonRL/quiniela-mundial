@@ -2028,6 +2028,12 @@
     "srcQualified": "Apurado",
     "srcPens": "Pénaltis",
     "srcScorer": "Marcador",
-    "srcFirstGoal": "Primeiro golo"
+    "srcFirstGoal": "Primeiro golo",
+    "winnerPickLabel": "O teu vencedor",
+    "winsTeam": "{team} vence",
+    "drawPick": "Empate",
+    "winnerCorrect": "Acertaste o vencedor",
+    "winnerWrong": "Falhaste o vencedor",
+    "liveBadge": "Ao vivo"
   }
 }

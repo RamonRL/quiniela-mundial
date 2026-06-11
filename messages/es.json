@@ -2028,6 +2028,12 @@
     "srcQualified": "Clasificado",
     "srcPens": "Penaltis",
     "srcScorer": "Goleador",
-    "srcFirstGoal": "Primer gol"
+    "srcFirstGoal": "Primer gol",
+    "winnerPickLabel": "Tu ganador",
+    "winsTeam": "Gana {team}",
+    "drawPick": "Empate",
+    "winnerCorrect": "Acertaste el ganador",
+    "winnerWrong": "Fallaste el ganador",
+    "liveBadge": "En vivo"
   }
 }
