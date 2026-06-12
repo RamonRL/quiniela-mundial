@@ -832,7 +832,8 @@
     "howScored": "How scoring works",
     "closeMeta": "Closes · {date}",
     "jornadasNotPublished": "Matchdays aren't published yet.",
-    "upcoming": "Upcoming"
+    "upcoming": "Upcoming",
+    "consult": "View (closed)"
   },
   "predGroups": {
     "eyebrow": "Category 1",

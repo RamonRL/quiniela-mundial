@@ -73,6 +73,10 @@ export function SpecialsForm({ specials, existing, players, teams }: Props) {
 
   const [values, setValues] = useState(initialMap);
   const [state, action, pending] = useActionState(saveSpecialPredictions, initial);
+  // Solo lectura: si NINGUNA especial está abierta (todas cerradas), no se
+  // muestra la barra de guardar. Aun así, la server action rechaza cualquier
+  // escritura de una especial cerrada (closesAt <= now) — doble candado.
+  const anyOpen = specials.some((s) => new Date(s.closesAt).getTime() > Date.now());
 
   usePredictionSaveToast(state, {
     successTitle: t("savedTitle"),
@@ -210,9 +214,11 @@ export function SpecialsForm({ specials, existing, players, teams }: Props) {
         })}
       </div>
 
-      <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+5.5rem)] z-10 flex justify-center rounded-xl border border-[var(--color-border)] bg-[color-mix(in_oklch,var(--color-surface)_92%,transparent)] p-2 backdrop-blur-md sm:bottom-3">
-        <SavePredictionButton pending={pending} />
-      </div>
+      {anyOpen ? (
+        <div className="sticky bottom-[calc(env(safe-area-inset-bottom)+5.5rem)] z-10 flex justify-center rounded-xl border border-[var(--color-border)] bg-[color-mix(in_oklch,var(--color-surface)_92%,transparent)] p-2 backdrop-blur-md sm:bottom-3">
+          <SavePredictionButton pending={pending} />
+        </div>
+      ) : null}
 
       <SaveOverlay open={pending} />
     </form>

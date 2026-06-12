@@ -832,7 +832,8 @@
     "howScored": "Como pontua",
     "closeMeta": "Fecha · {date}",
     "jornadasNotPublished": "As rodadas ainda não foram publicadas.",
-    "upcoming": "Próxima"
+    "upcoming": "Próxima",
+    "consult": "Consultar (fechada)"
   },
   "predGroups": {
     "eyebrow": "Categoria 1",

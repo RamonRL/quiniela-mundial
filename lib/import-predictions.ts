@@ -2,7 +2,6 @@ import { and, eq, or, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
   matches,
-  matchdays,
   predBracketSlot,
   predGroupRanking,
   predMatchResult,
@@ -400,7 +399,12 @@ export async function importPredictionsBetweenLeagues(args: {
       }
     }
 
-    // ─── Match results — solo los de partidos cuyo deadline aún no pasó ───
+    // ─── Match results — SOLO partidos cuyo kickoff aún no llegó ───
+    // El cierre es POR PARTIDO (match.scheduledAt), igual que `isMatchClosed`
+    // y la server action de guardado. Usar el deadline de la jornada sería
+    // incorrecto: una jornada puede seguir "abierta" mientras un partido suyo
+    // ya empezó — copiar ese pick sería una vía de trampa (puntos en un
+    // partido ya jugado). Mismo criterio que el import de goleadores, abajo.
     const resultSrc = await tx
       .select({
         userId: predMatchResult.userId,
@@ -409,11 +413,10 @@ export async function importPredictionsBetweenLeagues(args: {
         awayScore: predMatchResult.awayScore,
         willGoToPens: predMatchResult.willGoToPens,
         winnerTeamId: predMatchResult.winnerTeamId,
-        deadline: matchdays.predictionDeadlineAt,
+        scheduledAt: matches.scheduledAt,
       })
       .from(predMatchResult)
       .innerJoin(matches, eq(matches.id, predMatchResult.matchId))
-      .innerJoin(matchdays, eq(matchdays.id, matches.matchdayId))
       .where(
         and(
           eq(predMatchResult.userId, userId),
@@ -422,7 +425,7 @@ export async function importPredictionsBetweenLeagues(args: {
       );
     const now = new Date();
     for (const p of resultSrc) {
-      if (new Date(p.deadline).getTime() <= now.getTime()) continue;
+      if (new Date(p.scheduledAt).getTime() <= now.getTime()) continue;
       await tx
         .insert(predMatchResult)
         .values({

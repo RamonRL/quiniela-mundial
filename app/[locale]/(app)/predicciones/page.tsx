@@ -6,6 +6,7 @@ import {
   Calculator,
   CheckCircle2,
   Circle,
+  Eye,
   Lock,
   Sparkles,
   Swords,
@@ -207,6 +208,7 @@ export default async function PrediccionesHub() {
             }
             done={groupPredCount === 12}
             locked={!preTorneoOpen}
+            viewLabel={t("consult")}
           />
           <CategoryCard
             cat="02"
@@ -221,6 +223,7 @@ export default async function PrediccionesHub() {
             }
             done={!!topScorerPred}
             locked={!preTorneoOpen}
+            viewLabel={t("consult")}
           />
           <CategoryCard
             cat="03"
@@ -241,6 +244,7 @@ export default async function PrediccionesHub() {
             }
             done={answeredSpecials >= totalSpecials && totalSpecials > 0}
             locked={!preTorneoOpen}
+            viewLabel={t("consult")}
           />
         </div>
       </Section>
@@ -382,6 +386,7 @@ function CategoryCard({
   statusBadge,
   done,
   locked,
+  viewLabel,
 }: {
   cat: string;
   href: string;
@@ -391,12 +396,14 @@ function CategoryCard({
   statusBadge: { variant: "success" | "warning"; text: string };
   done: boolean;
   locked: boolean;
+  /** Texto del CTA cuando está cerrada (solo consulta). */
+  viewLabel: string;
 }) {
   const Inner = (
     <article
       className={`relative flex h-full flex-col overflow-hidden rounded-xl border bg-[var(--color-surface)] p-5 transition-all duration-200 ${
         locked
-          ? "border-[var(--color-border)] opacity-70"
+          ? "border-[var(--color-border)] opacity-70 hover:opacity-100 hover:border-[var(--color-arena)]/40"
           : "border-[var(--color-border)] hover:-translate-y-0.5 hover:border-[var(--color-arena)]/50 hover:shadow-[var(--shadow-elev-2)]"
       }`}
     >
@@ -432,13 +439,23 @@ function CategoryCard({
         <p className="font-editorial text-sm italic leading-relaxed text-[var(--color-muted-foreground)]">
           {description}
         </p>
-        <Badge variant={statusBadge.variant} className="mt-auto self-start">
-          {statusBadge.text}
-        </Badge>
+        <div className="mt-auto flex items-center justify-between gap-2">
+          <Badge variant={statusBadge.variant} className="self-start">
+            {statusBadge.text}
+          </Badge>
+          {locked ? (
+            <span className="inline-flex items-center gap-1 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)] transition group-hover:text-[var(--color-arena)]">
+              <Eye className="size-3" />
+              {viewLabel}
+            </span>
+          ) : null}
+        </div>
       </div>
     </article>
   );
-  if (locked) return Inner;
+  // Cerrada → sigue siendo navegable, pero SOLO LECTURA: la página renderiza el
+  // form con open=false (inputs deshabilitados, sin botón de guardar) y la
+  // server action rechaza cualquier escritura tras el cierre. Doble candado.
   return (
     <Link href={href} className="group block">
       {Inner}

@@ -832,7 +832,8 @@
     "howScored": "Comment ça se compte",
     "closeMeta": "Clôture · {date}",
     "jornadasNotPublished": "Les journées ne sont pas encore publiées.",
-    "upcoming": "Prochaine"
+    "upcoming": "Prochaine",
+    "consult": "Consulter (fermée)"
   },
   "predGroups": {
     "eyebrow": "Catégorie 1",

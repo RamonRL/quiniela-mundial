@@ -832,7 +832,8 @@
     "howScored": "Cómo se puntúa",
     "closeMeta": "Cierre · {date}",
     "jornadasNotPublished": "Las jornadas aún no están publicadas.",
-    "upcoming": "Próxima"
+    "upcoming": "Próxima",
+    "consult": "Consultar (cerrada)"
   },
   "predGroups": {
     "eyebrow": "Categoría 1",
