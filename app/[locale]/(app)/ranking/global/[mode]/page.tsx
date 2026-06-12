@@ -5,7 +5,7 @@ import { Globe2 } from "lucide-react";
 import { EmptyState } from "@/components/shell/empty-state";
 import { PageHeader } from "@/components/shell/page-header";
 import { requireUser } from "@/lib/auth/guards";
-import { getPublicLeagueByMode, isPredictionMode, PREDICTION_MODES } from "@/lib/leagues";
+import { isPredictionMode, PREDICTION_MODES } from "@/lib/leagues";
 import { loadGlobalLeaderboard } from "@/lib/leaderboard";
 import { cn } from "@/lib/utils";
 import { GlobalStandings } from "./global-standings";
@@ -25,10 +25,7 @@ export default async function GlobalRankingPage({
   if (!isPredictionMode(modeRaw)) notFound();
   const mode = modeRaw;
 
-  const [ranked, publicLeague] = await Promise.all([
-    loadGlobalLeaderboard(mode),
-    getPublicLeagueByMode(mode),
-  ]);
+  const ranked = await loadGlobalLeaderboard(mode);
   const myIndex = ranked.findIndex((r) => r.userId === me.id);
 
   return (
@@ -89,7 +86,7 @@ export default async function GlobalRankingPage({
           description={t("globalEmptyDesc")}
         />
       ) : (
-        <GlobalStandings entries={ranked} meId={me.id} leagueId={publicLeague?.id ?? null} />
+        <GlobalStandings entries={ranked} meId={me.id} />
       )}
 
       {myIndex < 0 ? (
