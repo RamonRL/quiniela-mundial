@@ -66,10 +66,17 @@ const sameRank = (a: ThirdPlaceTeam, b: ThirdPlaceTeam) =>
   a.points === b.points && gd(a) === gd(b) && a.goalsFor === b.goalsFor;
 
 /**
- * `thirds` puede tener entre 0 y 12 equipos (uno por grupo cerrado). La
- * asignación de casillas solo se calcula con los 12 y sin empate en el corte.
+ * `thirds` puede tener entre 0 y 12 equipos. Ahora siempre llegan los 12 (cada
+ * grupo tiene un 3.º provisional, incluso sin jugar), así que "completo" NO es
+ * tener 12 filas, sino que la fase de grupos haya TERMINADO de verdad
+ * (`groupStageComplete`). La asignación de casillas solo se calcula entonces y
+ * sin empate en el corte. Default `true` para no romper llamadas/tests que solo
+ * prueban la ordenación con datos finales.
  */
-export function resolveThirdPlaces(thirds: ThirdPlaceTeam[]): ThirdPlaceResult {
+export function resolveThirdPlaces(
+  thirds: ThirdPlaceTeam[],
+  groupStageComplete = true,
+): ThirdPlaceResult {
   const sorted = [...thirds].sort(compareThirds);
   const ranked: RankedThird[] = sorted.map((t, i) => ({
     ...t,
@@ -78,7 +85,7 @@ export function resolveThirdPlaces(thirds: ThirdPlaceTeam[]): ThirdPlaceResult {
     qualifies: i < 8,
   }));
 
-  const complete = thirds.length === 12;
+  const complete = thirds.length === 12 && groupStageComplete;
   // El corte es ambiguo si el 8.º y el 9.º empatan en pts/DG/GF: no podemos
   // decidir qué grupo entra sin los criterios FIFA 4-5.
   const ambiguousCut =

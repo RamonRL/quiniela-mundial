@@ -59,8 +59,14 @@ export type ThirdsComputation = {
 
 /** Calcula el ranking + asignación de terceros desde el estado actual. */
 export async function computeThirds(): Promise<ThirdsComputation> {
-  const thirds = await loadThirds();
-  const result = resolveThirdPlaces(thirds);
+  const [thirds, groupStageComplete] = await Promise.all([
+    loadThirds(),
+    isGroupStageComplete(),
+  ]);
+  // `complete` (y por tanto la asignación de casillas) solo cuando la fase de
+  // grupos ha terminado de verdad — no por el mero hecho de tener 12 terceros
+  // provisionales (ahora siempre los hay, aunque no se haya jugado).
+  const result = resolveThirdPlaces(thirds, groupStageComplete);
   const teamIdByGroup = new Map(thirds.map((t) => [t.group, t.teamId]));
   return { thirds, result, teamIdByGroup };
 }

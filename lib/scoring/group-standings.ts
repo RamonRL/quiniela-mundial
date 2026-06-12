@@ -1,6 +1,6 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNotNull } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { groupStandings, matches } from "@/lib/db/schema";
+import { groupStandings, matches, teams } from "@/lib/db/schema";
 import { rankGroupStandings, type H2HMatch } from "./group-standings-rank";
 
 /**
@@ -29,10 +29,21 @@ import { rankGroupStandings, type H2HMatch } from "./group-standings-rank";
 export async function recomputeAllGroupStandings(): Promise<{
   groupCount: number;
 }> {
-  const groupMatches = await db
-    .select()
-    .from(matches)
-    .where(and(eq(matches.stage, "group"), eq(matches.status, "finished")));
+  const [groupMatches, groupTeams] = await Promise.all([
+    db
+      .select()
+      .from(matches)
+      .where(and(eq(matches.stage, "group"), eq(matches.status, "finished"))),
+    // TODOS los equipos asignados a un grupo. Es la pieza clave del fix: un
+    // equipo que aún no ha jugado debe aparecer con 0/0/0 y ordenarse por DG
+    // (0 > -2), no quedarse fuera de la tabla cayendo al fondo. Además así
+    // CADA grupo tiene su tabla completa (4 equipos), aunque no haya jugado
+    // ningún partido — necesario para la tabla de mejores terceros.
+    db
+      .select({ id: teams.id, groupId: teams.groupId })
+      .from(teams)
+      .where(isNotNull(teams.groupId)),
+  ]);
 
   type Agg = {
     groupId: number;
@@ -63,6 +74,13 @@ export async function recomputeAllGroupStandings(): Promise<{
     };
     agg.set(key, fresh);
     return fresh;
+  }
+
+  // Semilla: todos los equipos de cada grupo arrancan a 0/0/0. Sobre esto se
+  // suman los partidos finalizados. Así un equipo que perdió (DG negativa)
+  // queda por DEBAJO de uno que aún no ha jugado (DG 0).
+  for (const gt of groupTeams) {
+    if (gt.groupId != null) ensure(gt.groupId, gt.id);
   }
 
   for (const m of groupMatches) {
