@@ -1,9 +1,10 @@
 import { Link } from "@/i18n/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { ArrowRight, ChevronRight } from "lucide-react";
 import { asc } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { groups, groupStandings, teams } from "@/lib/db/schema";
+import { localizeTeams } from "@/lib/team-names";
 import { TeamFlag } from "@/components/brand/team-flag";
 
 /**
@@ -25,6 +26,8 @@ export async function GroupStandingsSlider() {
 
   if (allGroups.length === 0) return null;
   const t = await getTranslations("dashboard");
+  const locale = await getLocale();
+  const allTeamsLoc = localizeTeams(allTeams, locale);
 
   // Indexamos por (groupId, teamId) para mirar el standing de cada equipo
   // en O(1) sin un join SQL más pesado.
@@ -38,7 +41,7 @@ export async function GroupStandingsSlider() {
   // por orden alfabético — la card mostrará 0 pts pero igual representa
   // el reparto, lo cual es útil incluso antes del kickoff.
   const cards = allGroups.map((g) => {
-    const teamsInGroup = allTeams.filter((t) => t.groupId === g.id);
+    const teamsInGroup = allTeamsLoc.filter((t) => t.groupId === g.id);
     const sorted = teamsInGroup.sort((a, b) => {
       const sa = standingByPair.get(`${g.id}-${a.id}`)?.position ?? 99;
       const sb = standingByPair.get(`${g.id}-${b.id}`)?.position ?? 99;
@@ -88,31 +91,31 @@ export async function GroupStandingsSlider() {
               </span>
             </header>
             <ul className="mt-2 space-y-1.5">
-              {teamsInGroup.map((t) => {
-                const s = standingByPair.get(`${group.id}-${t.id}`);
+              {teamsInGroup.map((tm) => {
+                const s = standingByPair.get(`${group.id}-${tm.id}`);
                 const pos = s?.position ?? 99;
-                const hasPts = (s?.points ?? 0) > 0;
-                // 1º-2º (clasifican directo) en rojo arena; 3º (mejores
-                // terceros, provisional) en amarillo. Solo si suman puntos.
-                const ptsCls = !hasPts
-                  ? ""
-                  : pos <= 2
+                // Coloreado por POSICIÓN (no por puntos): 1º-2º (clasifican
+                // directo) en rojo arena, 3º (mejores terceros, provisional)
+                // en amarillo. Se aplica siempre, aunque vayan a 0 puntos.
+                const ptsCls =
+                  pos <= 2
                     ? "text-[var(--color-arena)] glow-arena"
                     : pos === 3
                       ? "text-[var(--color-warning)]"
                       : "";
                 return (
                   <li
-                    key={t.id}
+                    key={tm.id}
                     className="flex items-center justify-between gap-2"
                   >
                     <div className="flex min-w-0 items-center gap-2">
-                      <TeamFlag code={t.code} size={20} />
-                      <span className="truncate font-mono text-[0.65rem] uppercase tracking-[0.18em] text-[var(--color-foreground)]">
-                        {t.code}
+                      <TeamFlag code={tm.code} size={20} />
+                      {/* Nombre completo; elipsis (truncate) si no cabe. */}
+                      <span className="truncate text-sm font-medium text-[var(--color-foreground)]">
+                        {tm.name}
                       </span>
                     </div>
-                    <span className={`font-display tabular text-base ${ptsCls}`}>
+                    <span className={`shrink-0 font-display tabular text-base ${ptsCls}`}>
                       {s?.points ?? 0}
                     </span>
                   </li>
