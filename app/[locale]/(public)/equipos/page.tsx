@@ -48,7 +48,6 @@ export default async function TeamsPage() {
     arr.push(t);
     teamsByGroup.set(t.groupId, arr);
   }
-  const squadByTeam = new Map(squadCounts.map((r) => [r.teamId, r.count]));
   const totalSquadPlayers = squadCounts.reduce((s, r) => s + r.count, 0);
 
   return (
@@ -96,34 +95,22 @@ export default async function TeamsPage() {
                   </p>
                 </header>
                 <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-                  {groupTeams.map((t) => {
-                    const squadSize = squadByTeam.get(t.id) ?? 0;
-                    return (
-                      <Link
-                        key={t.id}
-                        href={`/equipos/${t.code}`}
-                        className="group flex items-center gap-3 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2.5 transition hover:-translate-y-0.5 hover:border-[var(--color-arena)]/40 hover:shadow-[var(--shadow-elev-1)]"
-                      >
-                        <TeamFlag code={t.code} size={32} />
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium">{t.name}</p>
-                          <p className="flex items-center gap-2 font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
-                            <span>{t.code}</span>
-                            {squadSize > 0 ? (
-                              <>
-                                <span aria-hidden className="size-1 rounded-full bg-[var(--color-border-strong)]" />
-                                <span className="inline-flex items-center gap-1 text-[var(--color-arena)]">
-                                  <Users className="size-3" />
-                                  {squadSize}
-                                </span>
-                              </>
-                            ) : null}
-                          </p>
-                        </div>
-                        <ChevronRight className="size-4 text-[var(--color-muted-foreground)] opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100" />
-                      </Link>
-                    );
-                  })}
+                  {groupTeams.map((t) => (
+                    <Link
+                      key={t.id}
+                      href={`/equipos/${t.code}`}
+                      className="group flex items-center gap-3 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2.5 transition hover:-translate-y-0.5 hover:border-[var(--color-arena)]/40 hover:shadow-[var(--shadow-elev-1)]"
+                    >
+                      <TeamFlag code={t.code} size={32} />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-display text-lg leading-tight tracking-tight">{t.name}</p>
+                        <p className="font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
+                          {t.code}
+                        </p>
+                      </div>
+                      <ChevronRight className="size-4 text-[var(--color-muted-foreground)] opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100" />
+                    </Link>
+                  ))}
                 </div>
               </section>
             );

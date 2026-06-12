@@ -88,6 +88,8 @@ export function buildNavItems(myId: string, opts: BuildOptions = {}): NavItem[] 
       group: "main",
       primaryMobile: !isAuthed,
     },
+    // Selecciones — visible para todos, justo debajo de Grupos.
+    { href: "/equipos", label: "selecciones", icon: Flag, group: "main" },
     { href: "/bracket", label: "bracket", icon: Swords, group: "main" },
     { href: "/goleadores", label: "goleadores", icon: Target, group: "main" },
     ...(opts.showNews !== false
@@ -169,10 +171,8 @@ export function buildNavItems(myId: string, opts: BuildOptions = {}): NavItem[] 
   // El logueado tiene atajos directos desde /equipos/[code] y /partido/[id],
   // así que las sacamos de su navegación para no saturarle el menú.
   if (!isAuthed) {
-    all.push(
-      { href: "/equipos", label: "selecciones", icon: Flag, group: "main" },
-      { href: "/sedes", label: "sedes", icon: MapPin, group: "main" },
-    );
+    // Selecciones ya va arriba (main) para todos; aquí solo Sedes (visitante).
+    all.push({ href: "/sedes", label: "sedes", icon: MapPin, group: "main" });
   }
   // Ayuda — públicas para que también las indexen Googlebot y compañía.
   // FAQ tiene su propio FAQPageLD; Contacto contiene la presentación del

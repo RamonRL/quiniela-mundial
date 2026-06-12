@@ -214,7 +214,6 @@ export default async function TeamDetailPage({
     else squadOther.push(p);
   }
 
-  const analysis = TEAM_ANALYSES[upper];
   const matchesPlayed = standing?.played ?? 0;
   const totalMatches = teamMatches.length;
   const goalsFor = standing?.goalsFor ?? 0;
@@ -339,29 +338,6 @@ export default async function TeamDetailPage({
           </div>
         </div>
       </section>
-
-      {/* ─── Análisis editorial (SEO) ─── */}
-      {analysis ? (
-        <section className="space-y-4">
-          <SectionHeader title={t("analysisTitle")} />
-          <article className="space-y-6 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 sm:p-8">
-            <p className="font-editorial text-base italic leading-relaxed text-[var(--color-foreground)] sm:text-lg">
-              {analysis.intro}
-            </p>
-            <div className="grid gap-5 sm:grid-cols-3">
-              <AnalysisColumn label={t("analysisStar")} title={analysis.star.title} text={analysis.star.text} />
-              <AnalysisColumn label={t("analysisStrengths")} title={analysis.strengths.title} text={analysis.strengths.text} />
-              <AnalysisColumn label={t("analysisRisks")} title={analysis.risks.title} text={analysis.risks.text} />
-            </div>
-            <div className="rounded-md border-l-2 border-[var(--color-arena)] bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface-2))] px-4 py-3">
-              <p className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-                {t("tournamentExpectation")}
-              </p>
-              <p className="pt-1 text-sm leading-relaxed">{analysis.expectation}</p>
-            </div>
-          </article>
-        </section>
-      ) : null}
 
       {/* ─── Próximo partido ─── */}
       {nextMatch ? (
@@ -736,26 +712,6 @@ function Stat({
           {hint}
         </p>
       ) : null}
-    </div>
-  );
-}
-
-function AnalysisColumn({
-  label,
-  title,
-  text,
-}: {
-  label: string;
-  title: string;
-  text: string;
-}) {
-  return (
-    <div className="space-y-1.5">
-      <p className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-        {label}
-      </p>
-      <p className="font-display text-lg tracking-tight">{title}</p>
-      <p className="text-sm leading-relaxed text-[var(--color-muted-foreground)]">{text}</p>
     </div>
   );
 }
