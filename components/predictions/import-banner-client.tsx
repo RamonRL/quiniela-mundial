@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowDownToLine, Sparkles } from "lucide-react";
 import { toast } from "sonner";
@@ -16,6 +16,8 @@ import { importPredictionsAction, type ImportFormState } from "@/app/predictions
 import type { LeagueWithPicks } from "./import-banner";
 
 const initial: ImportFormState = { ok: false };
+// Descarte permanente del banner: una vez pulsas "Ahora no", no vuelve a salir.
+const DISMISS_KEY = "qm:import-preds-dismissed";
 
 export function ImportBannerClient({ sources }: { sources: LeagueWithPicks[] }) {
   const t = useTranslations("importPreds");
@@ -26,12 +28,29 @@ export function ImportBannerClient({ sources }: { sources: LeagueWithPicks[] }) 
   const [sourceId, setSourceId] = useState<string>(
     sources[0] ? String(sources[0].id) : "",
   );
-  const [dismissed, setDismissed] = useState(false);
+  // Arranca oculto para evitar flash; el efecto decide con localStorage.
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    try {
+      setVisible(localStorage.getItem(DISMISS_KEY) !== "1");
+    } catch {
+      setVisible(true);
+    }
+  }, []);
+
+  const dismiss = () => {
+    try {
+      localStorage.setItem(DISMISS_KEY, "1");
+    } catch {
+      /* storage no disponible → solo ocultamos esta sesión */
+    }
+    setVisible(false);
+  };
 
   if (state.ok && state.message) {
     toast.success(state.message, { duration: 6000 });
   }
-  if (state.ok || dismissed) return null;
+  if (state.ok || !visible) return null;
 
   return (
     <section className="relative overflow-hidden rounded-2xl border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface))] p-5 sm:p-6">
@@ -78,12 +97,7 @@ export function ImportBannerClient({ sources }: { sources: LeagueWithPicks[] }) 
             <ArrowDownToLine className="size-3.5" />
             {pending ? t("importing") : t("import")}
           </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => setDismissed(true)}
-          >
+          <Button type="button" variant="ghost" size="sm" onClick={dismiss}>
             {t("notNow")}
           </Button>
         </form>
