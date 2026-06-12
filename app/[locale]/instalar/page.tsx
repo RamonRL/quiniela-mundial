@@ -1,28 +1,29 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { InstallExperience } from "@/components/install/install-experience";
 
 /**
  * Landing pública del QR del tutorial → flujo de instalación PWA.
- *
- * Sin shell (no hereda layout de `(app)` ni de `(public)` porque vive
- * directamente bajo `app/`), sin auth: cualquiera que escanee el QR
- * aterriza aquí. Toda la heurística por plataforma vive en
- * `<InstallExperience />` (client) — esta página solo renderiza el
- * marco y aporta metadata.
+ * Toda la heurística por plataforma vive en `<InstallExperience />` (client);
+ * esta página solo renderiza el marco y aporta metadata. Internacionalizada.
  */
-export const metadata: Metadata = {
-  title: "Instalar la app",
-  description: "Instala Quiniela Mundial en tu móvil — sin AppStore ni Google Play, en dos toques.",
-  robots: {
-    // No-index: es una landing de utilidad, no contenido SEO.
-    index: false,
-    follow: true,
-  },
-  alternates: { canonical: "/instalar" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("install");
+  return {
+    title: t("metaTitle"),
+    description: t("metaDescription"),
+    robots: {
+      // No-index: es una landing de utilidad, no contenido SEO.
+      index: false,
+      follow: true,
+    },
+    alternates: { canonical: "/instalar" },
+  };
+}
 
-export default function InstalarPage() {
+export default async function InstalarPage() {
+  const t = await getTranslations("install");
   return (
     <div className="relative min-h-dvh overflow-hidden bg-[var(--color-bg)]">
       {/* Halftone arena de fondo — mismo lenguaje visual que el
@@ -41,7 +42,7 @@ export default function InstalarPage() {
             href="/"
             className="font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)] transition hover:text-[var(--color-arena)]"
           >
-            Saltar →
+            {t("skip")} →
           </Link>
         </header>
 

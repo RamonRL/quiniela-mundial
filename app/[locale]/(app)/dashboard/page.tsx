@@ -28,6 +28,7 @@ import { getBracketStatus } from "@/lib/bracket-state";
 import { ProgressHub, type ProgressHubProps } from "@/components/dashboard/progress-hub";
 import { GroupStandingsSlider } from "@/components/dashboard/group-standings-slider";
 import { DashboardPlayerCard } from "@/components/dashboard/player-card";
+import { InstallBanner } from "@/components/install/install-banner";
 import { PatchNotesBoard } from "@/components/dashboard/patch-notes-board";
 import { SponsorStrip } from "@/components/dashboard/sponsor-strip";
 import { loadLeagueSponsors, type SponsorLogo } from "@/lib/sponsors";
@@ -365,6 +366,10 @@ export default async function DashboardPage({
           ))}
         </div>
       </div>
+
+      {/* Banner promo de instalación de la app — encima de la card principal.
+          Se cierra y no vuelve a salir (localStorage). */}
+      <InstallBanner />
 
       {/* Card principal: marcador de retransmisión — directos (1 o 2) o el
           siguiente partido. Sustituye al hero antiguo y al Live HUD. */}

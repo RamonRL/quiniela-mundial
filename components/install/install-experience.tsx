@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -144,24 +145,21 @@ export function InstallExperience() {
 // ──────────────────────────────────────────────────────────────
 
 function AlreadyInstalled() {
+  const t = useTranslations("install");
   return (
     <div className="mt-10 flex flex-1 flex-col items-center justify-center text-center">
       <span className="grid size-16 place-items-center rounded-full bg-[var(--color-arena)]/15 text-[var(--color-arena)]">
         <Check className="size-8" />
       </span>
-      <h1 className="mt-5 font-display text-3xl tracking-tight">
-        Ya la tienes instalada
-      </h1>
+      <h1 className="mt-5 font-display text-3xl tracking-tight">{t("aiTitle")}</h1>
       <p className="mt-3 max-w-xs font-editorial text-base italic leading-snug text-[var(--color-muted-foreground)]">
-        Búscala como{" "}
-        <span className="font-mono not-italic">Quiniela Mundial</span> en tu
-        pantalla de inicio y ábrela desde ahí.
+        {t("aiBody")}
       </p>
       <Link
         href="/dashboard"
         className="mt-8 inline-flex h-12 items-center gap-2 rounded-md bg-[var(--color-arena)] px-6 font-mono text-[0.7rem] uppercase tracking-[0.2em] text-white shadow-[var(--shadow-arena)] transition hover:opacity-90"
       >
-        Ir al dashboard <ArrowRight className="size-4" />
+        {t("aiCta")} <ArrowRight className="size-4" />
       </Link>
     </div>
   );
@@ -174,13 +172,10 @@ function Android({
   canPrompt: boolean;
   onInstall: () => void;
 }) {
+  const t = useTranslations("install");
   return (
     <div className="mt-8 flex flex-1 flex-col">
-      <Header
-        eyebrow="Android · Chrome"
-        title="Instala la app"
-        body="Sin AppStore ni Google Play. Se queda en tu pantalla de inicio igual que cualquier otra."
-      />
+      <Header eyebrow={t("andEyebrow")} title={t("andTitle")} body={t("andBody")} />
 
       {canPrompt ? (
         <button
@@ -189,28 +184,26 @@ function Android({
           className="mt-8 inline-flex h-14 w-full items-center justify-center gap-3 rounded-md bg-[var(--color-arena)] font-mono text-sm uppercase tracking-[0.16em] text-white shadow-[var(--shadow-arena)] transition hover:opacity-90"
         >
           <Download className="size-5" />
-          Instalar app
+          {t("andInstall")}
         </button>
       ) : (
         <div className="mt-6 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
           <p className="font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-arena)]">
-            Pasos manuales
+            {t("andManualLabel")}
           </p>
           <ol className="mt-3 space-y-3 font-editorial text-sm leading-snug text-[var(--color-foreground)]">
             <Step n={1}>
-              Toca el menú{" "}
-              <MoreVertical className="inline size-4 align-text-bottom" /> arriba
-              a la derecha en Chrome.
+              {t.rich("andStep1", {
+                icon: () => <MoreVertical className="inline size-4 align-text-bottom" />,
+              })}
             </Step>
             <Step n={2}>
-              Pulsa <strong>&quot;Instalar app&quot;</strong> o{" "}
-              <strong>&quot;Añadir a pantalla de inicio&quot;</strong>.
+              {t.rich("andStep2", { b: (c) => <strong>{c}</strong> })}
             </Step>
-            <Step n={3}>Confirma. Listo.</Step>
+            <Step n={3}>{t("andStep3")}</Step>
           </ol>
           <p className="mt-4 font-editorial text-xs italic leading-snug text-[var(--color-muted-foreground)]">
-            Si no ves la opción, sigue navegando un minuto y vuelve a este menú —
-            Chrome a veces espera a ver que la usas antes de ofrecerla.
+            {t("andManualNote")}
           </p>
         </div>
       )}
@@ -221,43 +214,40 @@ function Android({
 }
 
 function IOSSafari() {
+  const t = useTranslations("install");
   return (
     <div className="mt-8 flex flex-1 flex-col">
-      <Header
-        eyebrow="iPhone · Safari"
-        title="Llévatela al Home"
-        body="Apple no deja instalarla con un toque, pero en tres pasos la tienes."
-      />
+      <Header eyebrow={t("iosEyebrow")} title={t("iosTitle")} body={t("iosBody")} />
 
       <ol className="mt-8 space-y-4">
         <BigStep
           n={1}
           icon={<Share className="size-5" />}
-          title="Toca el botón compartir"
-          body="Está en la barra inferior de Safari — el cuadrado con la flecha hacia arriba."
+          title={t("iosS1Title")}
+          body={t("iosS1Body")}
           highlight
         />
         <BigStep
           n={2}
           icon={<Plus className="size-5" />}
-          title="Pulsa “Añadir a pantalla de inicio”"
-          body="Desliza el menú hacia abajo si no lo ves de entrada."
+          title={t("iosS2Title")}
+          body={t("iosS2Body")}
         />
         <BigStep
           n={3}
           icon={<Check className="size-5" />}
-          title="Confirma con “Añadir”"
-          body="Arriba a la derecha. Aparece como app en tu Home."
+          title={t("iosS3Title")}
+          body={t("iosS3Body")}
         />
       </ol>
 
-      <HomeScreenPreview caption="Así queda en tu Home" />
+      <HomeScreenPreview caption={t("iosHomeCaption")} />
 
       {/* Pista visual que apunta a la zona donde está el botón
           compartir — el del medio de la barra inferior de Safari. */}
       <div className="mt-10 flex flex-col items-center text-[var(--color-arena)]">
         <p className="font-mono text-[0.6rem] uppercase tracking-[0.28em]">
-          Botón compartir abajo
+          {t("iosShareHint")}
         </p>
         <ChevronDown
           className="install-ios-chevron mt-1 size-7"
@@ -279,6 +269,7 @@ function IOSSafari() {
 }
 
 function IOSChrome() {
+  const t = useTranslations("install");
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -294,17 +285,13 @@ function IOSChrome() {
 
   return (
     <div className="mt-8 flex flex-1 flex-col">
-      <Header
-        eyebrow="iPhone · Chrome / Edge / Firefox"
-        title="Tienes que abrirlo en Safari"
-        body="Apple solo deja añadir apps a la pantalla de inicio desde Safari. Una pena, pero es lo que hay."
-      />
+      <Header eyebrow={t("icEyebrow")} title={t("icTitle")} body={t("icBody")} />
 
       <div className="mt-8 space-y-4">
         <BigStep
           n={1}
           icon={<Copy className="size-5" />}
-          title="Copia el enlace"
+          title={t("icS1Title")}
           body={
             <button
               type="button"
@@ -313,7 +300,7 @@ function IOSChrome() {
             >
               {copied ? (
                 <>
-                  <Check className="size-3.5" /> Copiado
+                  <Check className="size-3.5" /> {t("icCopied")}
                 </>
               ) : (
                 <>
@@ -327,18 +314,18 @@ function IOSChrome() {
         <BigStep
           n={2}
           icon={<Apple className="size-5" />}
-          title="Abre Safari y pega"
-          body="Pestaña nueva → pega la URL → enter."
+          title={t("icS2Title")}
+          body={t("icS2Body")}
         />
         <BigStep
           n={3}
           icon={<Plus className="size-5" />}
-          title="Vuelve aquí en Safari"
-          body="Te enseñamos los 3 toques para añadirla."
+          title={t("icS3Title")}
+          body={t("icS3Body")}
         />
       </div>
 
-      <HomeScreenPreview caption="Así te quedará en el Home" />
+      <HomeScreenPreview caption={t("icHomeCaption")} />
 
       <Footer />
     </div>
@@ -346,13 +333,10 @@ function IOSChrome() {
 }
 
 function Desktop() {
+  const t = useTranslations("install");
   return (
     <div className="mt-8 flex flex-1 flex-col">
-      <Header
-        eyebrow="Estás en PC"
-        title="Escanéalo con tu móvil"
-        body="La app vive en el bolsillo. Apunta la cámara del móvil al código y aterrizarás aquí mismo en tu teléfono."
-      />
+      <Header eyebrow={t("deskEyebrow")} title={t("deskTitle")} body={t("deskBody")} />
 
       <div className="mt-8 flex flex-col items-center gap-4">
         <div className="relative rounded-xl border-2 border-[var(--color-arena)]/40 bg-white p-3 shadow-[var(--shadow-arena)]">
@@ -372,8 +356,7 @@ function Desktop() {
           </span>
         </div>
         <p className="max-w-xs text-center font-editorial text-sm italic leading-snug text-[var(--color-muted-foreground)]">
-          Cuando aterrices en el móvil, te enseñamos los 1-3 toques para
-          añadirla a tu pantalla de inicio.
+          {t("deskQrNote")}
         </p>
       </div>
 
@@ -382,7 +365,7 @@ function Desktop() {
           href="/dashboard"
           className="inline-flex items-center gap-1.5 font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)] transition hover:text-[var(--color-arena)]"
         >
-          Continuar en PC al dashboard <ExternalLink className="size-3" />
+          {t("deskContinue")} <ExternalLink className="size-3" />
         </Link>
       </div>
 
@@ -392,17 +375,15 @@ function Desktop() {
 }
 
 function Unknown() {
+  const t = useTranslations("install");
   return (
     <div className="mt-10 flex flex-1 flex-col items-center justify-center text-center">
       <span className="grid size-14 place-items-center rounded-full bg-[var(--color-arena)]/15 text-[var(--color-arena)]">
         <MonitorSmartphone className="size-7" />
       </span>
-      <h1 className="mt-5 font-display text-2xl tracking-tight">
-        No reconozco tu dispositivo
-      </h1>
+      <h1 className="mt-5 font-display text-2xl tracking-tight">{t("unkTitle")}</h1>
       <p className="mt-3 max-w-xs font-editorial text-base italic leading-snug text-[var(--color-muted-foreground)]">
-        Abre <span className="font-mono not-italic">{APP_URL}</span> en Chrome
-        (Android) o Safari (iPhone) para añadirla a tu pantalla de inicio.
+        {t("unkBody")}
       </p>
     </div>
   );
@@ -522,11 +503,11 @@ function HomeScreenPreview({ caption }: { caption: string }) {
 }
 
 function Footer() {
+  const t = useTranslations("install");
   return (
     <div className="mt-auto pt-10">
       <p className="text-center font-editorial text-xs italic text-[var(--color-muted-foreground)]">
-        Es una Progressive Web App — sin descargas pesadas, sin permisos raros.
-        Notificaciones opcionales, ocupa menos de 1 MB.
+        {t("footer")}
       </p>
     </div>
   );
