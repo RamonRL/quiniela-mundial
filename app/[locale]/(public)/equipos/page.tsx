@@ -1,9 +1,10 @@
 import { Link } from "@/i18n/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { asc, sql } from "drizzle-orm";
 import { ChevronRight, Globe, Users } from "lucide-react";
 import { db } from "@/lib/db";
 import { groups, players, teams } from "@/lib/db/schema";
+import { localizeTeams } from "@/lib/team-names";
 import { TeamFlag } from "@/components/brand/team-flag";
 import { PageHeader } from "@/components/shell/page-header";
 import { EmptyState } from "@/components/shell/empty-state";
@@ -28,9 +29,10 @@ export const metadata = {
 };
 
 export default async function TeamsPage() {
+  const locale = await getLocale();
   const t = await getTranslations("teamsPage");
   const tt = await getTranslations("tournament");
-  const [allGroups, allTeams, squadCounts] = await Promise.all([
+  const [allGroups, allTeamsRaw, squadCounts] = await Promise.all([
     db.select().from(groups).orderBy(asc(groups.code)),
     db.select().from(teams).orderBy(asc(teams.name)),
     db
@@ -41,6 +43,9 @@ export default async function TeamsPage() {
       .from(players)
       .groupBy(players.teamId),
   ]);
+  // Localiza los nombres (EN/FR/PT) tras el fetch — el render de las cards
+  // no cambia y el sort por grupo ya reordena por el nombre localizado.
+  const allTeams = localizeTeams(allTeamsRaw, locale);
   const teamsByGroup = new Map<number, typeof allTeams>();
   for (const t of allTeams) {
     if (t.groupId == null) continue;
