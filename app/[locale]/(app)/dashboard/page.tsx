@@ -251,8 +251,12 @@ export default async function DashboardPage({
   // su HTML cuando esté listo.
   const sorted = leaderboardEntries;
   const totalParticipants = computeRanking ? sorted.length : leagueMemberCountFallback;
+  // Posición real en el ranking. El leaderboard incluye a TODOS los miembros
+  // (LEFT JOIN al ledger → 0 pts cuentan), así que un participante con 0 puntos
+  // SÍ tiene posición; no debe salir "sin clasificar". Null solo si no está en
+  // la lista (p. ej. pre-torneo, cuando no se calcula el ranking).
   const myPosition =
-    sorted.length > 0 && myPoints > 0
+    sorted.length > 0
       ? sorted.findIndex((r) => r.userId === me.id) + 1 || null
       : null;
   const podium = sorted.slice(0, 5);
