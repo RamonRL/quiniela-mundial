@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-const ROUTES_TO_LINK = ["/precios", "/contacto", "/puntuacion"] as const;
+const ROUTES_TO_LINK = ["/precios", "/contacto", "/puntuacion", "/predicciones", "/comparar"] as const;
 type LinkableRoute = (typeof ROUTES_TO_LINK)[number];
 const ROUTE_RE = new RegExp(`(${ROUTES_TO_LINK.join("|")})`, "g");
 const ROUTE_SET = new Set<string>(ROUTES_TO_LINK);
