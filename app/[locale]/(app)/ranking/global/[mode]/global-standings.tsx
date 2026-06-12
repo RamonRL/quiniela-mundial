@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TablePagination } from "@/components/ranking/table-pagination";
 import { cn, initials } from "@/lib/utils";
@@ -20,9 +21,12 @@ export type GlobalStandingsEntry = {
 export function GlobalStandings({
   entries,
   meId,
+  leagueId,
 }: {
   entries: GlobalStandingsEntry[];
   meId: string;
+  /** Liga pública de este modo — el perfil se abre en su contexto (?league). */
+  leagueId: number | null;
 }) {
   const t = useTranslations("ranking");
   const [page, setPage] = useState(1);
@@ -37,35 +41,38 @@ export function GlobalStandings({
             const display = r.nickname || r.email.split("@")[0];
             const isMe = r.userId === meId;
             const pos = (page - 1) * PAGE_SIZE + i + 1;
+            const href = leagueId != null ? `/ranking/${r.userId}?league=${leagueId}` : `/ranking/${r.userId}`;
             return (
-              <li
-                key={r.userId}
-                className={cn(
-                  "flex items-center gap-3 px-4 py-2.5",
-                  isMe ? "bg-[color-mix(in_oklch,var(--color-arena)_6%,transparent)]" : "",
-                )}
-              >
-                <span
+              <li key={r.userId}>
+                <Link
+                  href={href}
                   className={cn(
-                    "w-6 text-center font-display tabular text-base",
-                    pos <= 3 ? "text-[var(--color-arena)] glow-arena" : "text-[var(--color-muted-foreground)]",
+                    "group flex items-center gap-3 px-4 py-2.5 outline-none transition hover:bg-[var(--color-surface-2)] focus-visible:bg-[var(--color-surface-2)]",
+                    isMe ? "bg-[color-mix(in_oklch,var(--color-arena)_6%,transparent)]" : "",
                   )}
                 >
-                  {pos}
-                </span>
-                <Avatar className="size-8 border border-[var(--color-border)]">
-                  {r.avatarUrl ? <AvatarImage src={r.avatarUrl} alt="" /> : null}
-                  <AvatarFallback className="text-[0.6rem]">{initials(display)}</AvatarFallback>
-                </Avatar>
-                <span className="min-w-0 flex-1 truncate text-sm font-medium">
-                  {display}
-                  {isMe ? (
-                    <span className="ml-1.5 font-mono text-[0.5rem] uppercase tracking-[0.18em] text-[var(--color-arena)]">
-                      {t("youLower")}
-                    </span>
-                  ) : null}
-                </span>
-                <span className="font-display tabular text-base">{r.totalPoints}</span>
+                  <span
+                    className={cn(
+                      "w-6 text-center font-display tabular text-base",
+                      pos <= 3 ? "text-[var(--color-arena)] glow-arena" : "text-[var(--color-muted-foreground)]",
+                    )}
+                  >
+                    {pos}
+                  </span>
+                  <Avatar className="size-8 border border-[var(--color-border)]">
+                    {r.avatarUrl ? <AvatarImage src={r.avatarUrl} alt="" /> : null}
+                    <AvatarFallback className="text-[0.6rem]">{initials(display)}</AvatarFallback>
+                  </Avatar>
+                  <span className="min-w-0 flex-1 truncate text-sm font-medium transition-colors group-hover:text-[var(--color-arena)]">
+                    {display}
+                    {isMe ? (
+                      <span className="ml-1.5 font-mono text-[0.5rem] uppercase tracking-[0.18em] text-[var(--color-arena)]">
+                        {t("youLower")}
+                      </span>
+                    ) : null}
+                  </span>
+                  <span className="font-display tabular text-base">{r.totalPoints}</span>
+                </Link>
               </li>
             );
           })}

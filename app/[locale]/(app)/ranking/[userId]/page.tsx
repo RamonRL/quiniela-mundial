@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { pointsLedger, profiles } from "@/lib/db/schema";
+import { leagues, pointsLedger, profiles } from "@/lib/db/schema";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -121,14 +121,36 @@ export const metadata = { title: "Detalle de participante" };
 
 export default async function ParticipantDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ userId: string }>;
+  searchParams: Promise<{ league?: string }>;
 }) {
   const me = await requireUser();
   const { timeZone, locale } = await getDateContext();
   const t = await getTranslations("ranking");
   const { userId } = await params;
-  const leagueId = await currentLeagueId(me);
+  const { league: leagueParam } = await searchParams;
+
+  // Liga objetivo: por defecto la activa del que mira. Pero si llega `?league`
+  // (rankings globales), usamos ESA — así puedes abrir un perfil del ranking
+  // global de CUALQUIER modo, estés en la liga que estés, y ver sus puntos en
+  // ese modo. Solo si el que mira puede verla: pública = cualquiera; privada =
+  // miembro o admin (no se puede espiar una privada ajena por la URL).
+  let leagueId = await currentLeagueId(me);
+  const requestedId = leagueParam != null ? Number(leagueParam) : NaN;
+  if (Number.isFinite(requestedId) && requestedId !== leagueId) {
+    const [reqLeague] = await db
+      .select({ id: leagues.id, isPublic: leagues.isPublic })
+      .from(leagues)
+      .where(eq(leagues.id, requestedId))
+      .limit(1);
+    if (reqLeague) {
+      const viewerAllowed =
+        reqLeague.isPublic || me.role === "admin" || (await isMemberOf(me.id, requestedId));
+      if (viewerAllowed) leagueId = requestedId;
+    }
+  }
 
   const [user] = await db.select().from(profiles).where(eq(profiles.id, userId)).limit(1);
   if (!user) notFound();
