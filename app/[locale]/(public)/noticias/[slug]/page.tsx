@@ -43,9 +43,9 @@ export async function generateMetadata({
   }
   const title = article.seoTitle ?? article.title;
   const description = article.excerpt;
-  const ogImages = article.coverUrl
-    ? [{ url: article.coverUrl, alt: article.coverAlt ?? article.title }]
-    : undefined;
+  // `og:image` / `twitter:image` los aporta el route `opengraph-image.tsx`
+  // de este segmento (marcador broadcast para crónicas, portada propia para
+  // el resto). No los declaramos aquí para no emitir tags duplicados.
   return {
     title,
     description,
@@ -59,13 +59,11 @@ export async function generateMetadata({
       modifiedTime: article.updatedAt.toISOString(),
       section: NEWS_CATEGORIES[article.category].label,
       tags: article.tags,
-      images: ogImages,
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: article.coverUrl ? [article.coverUrl] : undefined,
     },
     keywords: [
       ...article.tags,

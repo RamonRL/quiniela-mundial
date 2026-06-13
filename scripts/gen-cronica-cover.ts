@@ -14,31 +14,8 @@
  * caller la capture.
  */
 import { writeFile } from "node:fs/promises";
-import { and, asc, eq, inArray } from "drizzle-orm";
-import { db } from "@/lib/db";
-import { groups, matches, teams } from "@/lib/db/schema";
-import { renderCronicaCover, type CronicaCoverData } from "@/lib/og/cronica-cover";
-
-const STAGE_LABEL: Record<string, string> = {
-  r32: "Dieciseisavos",
-  r16: "Octavos",
-  qf: "Cuartos",
-  sf: "Semifinales",
-  third: "Tercer puesto",
-  final: "Final",
-};
-
-function dateLabel(d: Date): string {
-  return new Intl.DateTimeFormat("es-ES", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    timeZone: "Europe/Madrid",
-  })
-    .format(d)
-    .replace(/\./g, "")
-    .toUpperCase();
-}
+import { renderCronicaCover } from "@/lib/og/cronica-cover";
+import { loadCronicaCoverData } from "@/lib/og/cronica-cover-data";
 
 async function main() {
   const argv = process.argv.slice(2);
@@ -54,62 +31,19 @@ async function main() {
     process.exit(1);
   }
 
-  const [m] = await db.select().from(matches).where(eq(matches.code, code)).limit(1);
-  if (!m) {
-    console.error(`NO_MATCH: no existe el partido ${code}`);
+  const data = await loadCronicaCoverData({ code });
+  if (!data) {
+    console.error(
+      `SIN_DATOS: el partido ${code} no existe o no tiene resultado en la BD`,
+    );
     process.exit(1);
   }
-  if (m.homeScore == null || m.awayScore == null) {
-    console.error(`SIN_MARCADOR: el partido ${code} no tiene resultado en la BD`);
-    process.exit(1);
-  }
-
-  const tids = [m.homeTeamId, m.awayTeamId].filter(Boolean) as number[];
-  const ts = tids.length ? await db.select().from(teams).where(inArray(teams.id, tids)) : [];
-  const tById = new Map(ts.map((t) => [t.id, t]));
-  const home = m.homeTeamId ? tById.get(m.homeTeamId) : null;
-  const away = m.awayTeamId ? tById.get(m.awayTeamId) : null;
-
-  // Etiqueta de fase: en grupos, el código del grupo ("GRUPO A").
-  let stageLabel = STAGE_LABEL[m.stage] ?? m.stage.toUpperCase();
-  if (m.stage === "group" && home?.groupId) {
-    const [g] = await db
-      .select()
-      .from(groups)
-      .where(eq(groups.id, home.groupId))
-      .limit(1);
-    if (g?.code) stageLabel = `Grupo ${g.code}`;
-  }
-
-  const winner: CronicaCoverData["winner"] = m.winnerTeamId
-    ? m.winnerTeamId === m.homeTeamId
-      ? "home"
-      : m.winnerTeamId === m.awayTeamId
-        ? "away"
-        : null
-    : null;
-
-  const data: CronicaCoverData = {
-    homeName: home?.name ?? "?",
-    awayName: away?.name ?? "?",
-    homeCode: home?.code ?? null,
-    awayCode: away?.code ?? null,
-    homeScore: m.homeScore,
-    awayScore: m.awayScore,
-    wentToPens: m.wentToPens ?? false,
-    homePen: m.homeScorePen,
-    awayPen: m.awayScorePen,
-    stageLabel: stageLabel.toUpperCase(),
-    dateLabel: m.scheduledAt ? dateLabel(m.scheduledAt) : null,
-    venue: m.venue,
-    winner,
-  };
 
   const image = await renderCronicaCover(data);
   const buf = Buffer.from(await image.arrayBuffer());
   await writeFile(out, buf);
   console.error(
-    `✔ Portada generada: ${home?.name} ${m.homeScore}-${m.awayScore} ${away?.name} (${stageLabel})`,
+    `✔ Portada generada: ${data.homeName} ${data.homeScore}-${data.awayScore} ${data.awayName} (${data.stageLabel})`,
   );
   // Última línea de stdout = la ruta, para que el caller la capture.
   console.log(out);
