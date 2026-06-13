@@ -53,8 +53,9 @@ export function LiveScoreboard({ match, compact }: { match: HeroMatch; compact?:
         ) : null}
       </div>
 
-      {/* Marcador — nombres abrazan el resultado */}
-      <div className="flex items-center justify-center gap-3 sm:gap-5">
+      {/* Marcador — nombres abrazan el resultado. Móvil: apilado en vertical
+          (cada equipo a ancho completo); PC: horizontal con mitades iguales. */}
+      <div className="flex flex-col items-center justify-center gap-2 sm:flex-row sm:gap-5">
         <Side team={home} align="start" flag={flag} compact={compact} />
         <span
           className={`shrink-0 font-display tabular leading-none tracking-tighter text-[var(--color-arena)] glow-arena ${
@@ -115,17 +116,23 @@ function Side({
   flag: number;
   compact?: boolean;
 }) {
-  const nameCls = `text-balance break-words font-display tracking-tight leading-[1.05] transition-colors group-hover:text-[var(--color-arena)] ${
+  const nameCls = `text-balance font-display tracking-tight leading-[1.05] transition-colors group-hover:text-[var(--color-arena)] ${
     compact ? "text-xl" : "text-2xl sm:text-4xl"
   }`;
   const nameBlock = (
-    <span className={`block min-w-0 ${align === "start" ? "text-right" : "text-left"}`}>
+    <span
+      className={`block text-center sm:min-w-0 ${align === "start" ? "sm:text-right" : "sm:text-left"}`}
+    >
       <span className={nameCls}>{team?.name ?? "TBD"}</span>
     </span>
   );
   const flagEl = <TeamFlag code={team?.code} size={flag} className="shrink-0" />;
   return (
-    <span className="flex min-w-0 items-center gap-2.5">
+    <span
+      className={`flex items-center justify-center gap-2.5 sm:min-w-0 sm:flex-1 ${
+        align === "start" ? "sm:justify-end" : "sm:justify-start"
+      }`}
+    >
       {align === "start" ? (
         <>
           {flagEl}
