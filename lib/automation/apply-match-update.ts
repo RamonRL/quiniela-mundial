@@ -23,6 +23,13 @@ export type MatchUpdateInput = {
   awayScorePen: number | null;
   winnerTeamId: number | null;
   scorers: MatchScorerInput[];
+  /**
+   * Minutos de goleadores aún SIN MAPEAR (cola de reconciliación) de este
+   * partido. Si hay uno tan temprano o más que el primer gol conocido, no se
+   * adjudica primer goleador hasta resolverlo. Lo pasa el sync con su lote
+   * actual de pendientes; en la entrada manual va vacío.
+   */
+  pendingScorerMinutes?: (number | null)[];
   /** Minuto real (API). Null fuera de directo. */
   liveMinute?: number | null;
   /** Fase del proveedor (status.short): "1H","HT","2H"… para mostrar "Descanso". */
@@ -54,8 +61,9 @@ export async function applyMatchUpdate(
   input: MatchUpdateInput,
   opts: ApplyOptions,
 ): Promise<void> {
-  // Primer gol = minuto más bajo entre los que NO son autogol.
-  const scorers = computeFirstGoal(input.scorers);
+  // Primer gol del partido (contando autogoles). Si el primer gol es en propia
+  // —o hay un goleador pendiente igual de temprano— no se adjudica a nadie.
+  const scorers = computeFirstGoal(input.scorers, input.pendingScorerMinutes ?? []);
 
   const reverting = input.status === "scheduled";
 

@@ -108,11 +108,17 @@ export async function reconcileScorer(formData: FormData): Promise<ActionResult>
 
     // Re-derivar "primer gol" entre todos los goleadores del partido con la
     // lógica central (computeFirstGoal): el primer gol del partido contando
-    // autogoles; si ese primer gol es en propia, nadie es primer goleador.
+    // autogoles; si ese primer gol es en propia, nadie es primer goleador. Y
+    // si AÚN quedan goleadores sin mapear de este partido, tampoco se adjudica
+    // hasta resolverlos (uno temprano podría ser el verdadero primer gol).
     const all = await tx
       .select({ id: matchScorers.id, minute: matchScorers.minute, isOwnGoal: matchScorers.isOwnGoal })
       .from(matchScorers)
       .where(eq(matchScorers.matchId, pend.matchId));
+    const stillPending = await tx
+      .select({ minute: pendingScorers.minute })
+      .from(pendingScorers)
+      .where(eq(pendingScorers.matchId, pend.matchId));
     const flagged = computeFirstGoal(
       all.map((s) => ({
         id: s.id,
@@ -123,6 +129,7 @@ export async function reconcileScorer(formData: FormData): Promise<ActionResult>
         isPenalty: false,
         isFirstGoal: false,
       })),
+      stillPending.map((p) => p.minute),
     );
     for (const s of flagged) {
       await tx.update(matchScorers).set({ isFirstGoal: s.isFirstGoal }).where(eq(matchScorers.id, s.id));

@@ -55,4 +55,25 @@ describe("computeFirstGoal", () => {
   it("lista vacía → vacía", () => {
     expect(computeFirstGoal([])).toEqual([]);
   });
+
+  it("goleador PENDIENTE más temprano → no se adjudica primer goleador", () => {
+    const r = computeFirstGoal(
+      [s({ playerId: 1, minute: 30 }), s({ playerId: 2, minute: 60 })],
+      [12], // gol sin mapear en el minuto 12 (antes del primer gol conocido)
+    );
+    expect(r.every((x) => !x.isFirstGoal)).toBe(true);
+  });
+
+  it("goleador pendiente POSTERIOR no afecta al primer gol conocido", () => {
+    const r = computeFirstGoal(
+      [s({ playerId: 1, minute: 30 }), s({ playerId: 2, minute: 60 })],
+      [75], // pendiente posterior → el primer gol ya se conoce
+    );
+    expect(r.find((x) => x.playerId === 1)!.isFirstGoal).toBe(true);
+  });
+
+  it("pendiente en el MISMO minuto que el primer gol → se suprime (ambiguo)", () => {
+    const r = computeFirstGoal([s({ playerId: 1, minute: 30 })], [30]);
+    expect(r.every((x) => !x.isFirstGoal)).toBe(true);
+  });
 });

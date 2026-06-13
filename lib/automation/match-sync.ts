@@ -226,6 +226,10 @@ async function syncOne(c: Candidate): Promise<{ changed: boolean; pendingCount: 
       awayScorePen: f.awayPenScore,
       winnerTeamId,
       scorers: resolved,
+      // Goleadores aún sin mapear de este lote → bloquean el bonus de primer
+      // goleador hasta que se reconcilien (un pendiente temprano podría ser el
+      // verdadero primer gol del partido).
+      pendingScorerMinutes: pending.map((p) => p.minute),
       liveMinute,
       livePhase,
     },
