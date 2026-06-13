@@ -107,7 +107,17 @@ Revive el partido en la [ficha del encuentro](/partido/<id>), consulta el [Grupo
 - **relatedMatchId**: el `id` numérico del partido (del paso 1) — clave para que la crónica salga vinculada en la página del partido.
 - **coverAlt**: `"<Local> <X>-<Y> <Visitante> · crónica del Mundial 2026"`.
 
-### 5. Generar JSON
+### 5. Generar la portada (marcador broadcast)
+
+Genera la portada custom del partido (marcador de retransmisión: banderas + resultado con glow arena, sello "CRÓNICA"). Lee los hechos de la BD, así que el marcador siempre cuadra:
+
+```bash
+pnpm db:gen-cronica-cover $ARGUMENTS
+```
+
+Escribe el PNG en `/tmp/cronica-cover-$ARGUMENTS.png` (la última línea de stdout es la ruta). Si fallara (red de banderas caída, etc.), no abortes la crónica: omite `coverFile` en el JSON y `upsert-news` caerá al cover por defecto.
+
+### 6. Generar JSON
 
 Escribe `/tmp/cronica-$ARGUMENTS.json`:
 
@@ -122,32 +132,33 @@ Escribe `/tmp/cronica-$ARGUMENTS.json`:
   "tags": ["...", "..."],
   "relatedTeamCodes": ["<CODE_LOCAL>", "<CODE_VISITANTE>"],
   "relatedMatchId": <id>,
+  "coverFile": "/tmp/cronica-cover-$ARGUMENTS.png",
   "coverAlt": "<Local> <X>-<Y> <Visitante> · crónica del Mundial 2026"
 }
 ```
 
-No declares `coverFile`: el script intenta resolver el cover desde el primer `relatedTeamCodes` (la bandera del local). Si no hay, no es error — la noticia sale sin cover.
+`coverFile` apunta a la portada generada en el paso 5 — es la portada custom del marcador (NO la bandera de la convocatoria). Si el paso 5 falló, omite la línea `coverFile`.
 
 **Validación mental antes del script:** `body` bien escapado (sin saltos crudos); `seoTitle` ≤ 70; `excerpt` ≤ 280; `coverAlt` ≤ 200; `relatedMatchId` es un número.
 
-### 6. Insertar en DB
+### 7. Insertar en DB
 
 Dry-run primero:
 ```bash
 pnpm db:upsert-news /tmp/cronica-$ARGUMENTS.json --dry-run
 ```
-Si el output cuadra (título, excerpt, categoría cronica, match vinculado), aplica:
+Si el output cuadra (título, excerpt, categoría cronica, **cover localizado desde `coverFile`**, match vinculado), aplica:
 ```bash
 pnpm db:upsert-news /tmp/cronica-$ARGUMENTS.json
 ```
-INSERTA si el slug es nuevo, ACTUALIZA si ya existe (idempotente).
+INSERTA si el slug es nuevo, ACTUALIZA si ya existe (idempotente). Si reescribes una crónica ya publicada y quieres regenerar también la portada, añade `--force-cover`.
 
-### 7. Limpieza
+### 8. Limpieza
 ```bash
-rm /tmp/cronica-$ARGUMENTS.json
+rm -f /tmp/cronica-$ARGUMENTS.json /tmp/cronica-cover-$ARGUMENTS.png
 ```
 
-### 8. Reporte final al user
+### 9. Reporte final al user
 
 Resume en 4-5 líneas: slug y title; INSERT o UPDATE; resultado y goleadores (de la BD); 1 anécdota destacada; y la URL pública `https://quinielamundial.es/noticias/<slug>`. Bloque `Sources:` con los enlaces consultados como markdown links.
 
