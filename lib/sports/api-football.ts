@@ -108,10 +108,13 @@ export function parseFixture(item: AfFixtureItem): ProviderFixture {
 /**
  * Eventos → goleadores. Solo cuenta `type === "Goal"` EXCLUYENDO
  * "Missed Penalty" (penalti fallado no es gol). El minuto suma `elapsed` +
- * `extra` (descuento). `side` se resuelve comparando `event.team.id` con los
- * ids de equipo del fixture: API-Football atribuye el evento de gol (incluido
- * el autogol) al equipo del JUGADOR que lo marca, así que `side` es la
- * plantilla del jugador (para mapearlo a nuestros players).
+ * `extra` (descuento).
+ *
+ * `side` es SIEMPRE la plantilla del JUGADOR (para mapearlo a nuestros
+ * players y porque `matchScorers.teamId` = equipo del jugador). Ojo con los
+ * AUTOGOLES: API-Football atribuye el evento de gol en propia al equipo
+ * BENEFICIARIO (al que cuenta el gol), no al del jugador, así que para
+ * autogoles invertimos el lado — el jugador es del rival.
  */
 export function mapEventsToScorers(
   events: AfEvent[],
@@ -123,14 +126,22 @@ export function mapEventsToScorers(
     .map((e) => {
       const minute =
         e.time.elapsed != null ? e.time.elapsed + (e.time.extra ?? 0) : null;
-      const side: "home" | "away" =
+      const isOwnGoal = e.detail === "Own Goal";
+      const eventSide: "home" | "away" =
         e.team.id === homeProviderTeamId ? "home" : "away";
+      // En autogoles el evento viene a nombre del beneficiario → el jugador
+      // está en el equipo contrario.
+      const side: "home" | "away" = isOwnGoal
+        ? eventSide === "home"
+          ? "away"
+          : "home"
+        : eventSide;
       return {
         providerPlayerId: e.player.id,
         playerName: e.player.name ?? "—",
         side,
         minute,
-        isOwnGoal: e.detail === "Own Goal",
+        isOwnGoal,
         isPenalty: e.detail === "Penalty",
       };
     });

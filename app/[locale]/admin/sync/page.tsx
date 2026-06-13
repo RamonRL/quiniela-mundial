@@ -1,6 +1,6 @@
 import { asc, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { appSettings, matches, pendingScorers, players } from "@/lib/db/schema";
+import { appSettings, matches, pendingScorers, players, teams } from "@/lib/db/schema";
 import { requireAdmin } from "@/lib/auth/guards";
 import { PageHeader } from "@/components/shell/page-header";
 import {
@@ -45,18 +45,33 @@ export default async function SyncPage() {
       lastSyncedAt: matches.lastSyncedAt,
       homeScore: matches.homeScore,
       awayScore: matches.awayScore,
+      homeTeamId: matches.homeTeamId,
+      awayTeamId: matches.awayTeamId,
     })
     .from(matches)
     .orderBy(asc(matches.scheduledAt));
 
   const mapped = matchRows.filter((m) => m.providerFixtureId != null).length;
 
-  // Goleadores en espera de reconciliación + jugadores del equipo para el selector.
+  // Goleadores en espera de reconciliación + jugadores candidatos para el
+  // selector. Para un AUTOGOL el goleador es del equipo RIVAL al que se le
+  // apunta el gol, así que ofrecemos las plantillas de AMBOS equipos del
+  // partido (no solo `pendingScorers.teamId`).
   const pend = await db
     .select()
     .from(pendingScorers)
     .orderBy(desc(pendingScorers.createdAt));
-  const teamIds = [...new Set(pend.map((p) => p.teamId).filter((x): x is number => x != null))];
+  const matchTeams = new Map(
+    matchRows.map((m) => [m.id, { home: m.homeTeamId, away: m.awayTeamId }]),
+  );
+  const candidateTeamIds = (p: (typeof pend)[number]): number[] => {
+    if (p.isOwnGoal) {
+      const mt = matchTeams.get(p.matchId);
+      return [mt?.home, mt?.away].filter((x): x is number => x != null);
+    }
+    return p.teamId != null ? [p.teamId] : [];
+  };
+  const teamIds = [...new Set(pend.flatMap(candidateTeamIds))];
   const roster = teamIds.length
     ? await db
         .select({ id: players.id, teamId: players.teamId, name: players.name, jerseyNumber: players.jerseyNumber })
@@ -64,6 +79,16 @@ export default async function SyncPage() {
         .where(inArray(players.teamId, teamIds))
         .orderBy(asc(players.jerseyNumber))
     : [];
+  const teamCodeById = new Map(
+    teamIds.length
+      ? (
+          await db
+            .select({ id: teams.id, code: teams.code })
+            .from(teams)
+            .where(inArray(teams.id, teamIds))
+        ).map((t) => [t.id, t.code] as const)
+      : [],
+  );
   const matchById = new Map(matchRows.map((m) => [m.id, m.code]));
 
   // ─── Transición a R32 (mejores terceros) ───
@@ -213,8 +238,15 @@ export default async function SyncPage() {
                 isOwnGoal={p.isOwnGoal}
                 isPenalty={p.isPenalty}
                 teamPlayers={roster
-                  .filter((r) => r.teamId === p.teamId)
-                  .map((r) => ({ id: r.id, label: `${r.jerseyNumber ?? "·"} · ${r.name}` }))}
+                  .filter((r) => r.teamId != null && candidateTeamIds(p).includes(r.teamId))
+                  .map((r) => ({
+                    id: r.id,
+                    // En autogoles mostramos el código de equipo para
+                    // distinguir las dos plantillas del partido.
+                    label: p.isOwnGoal
+                      ? `${teamCodeById.get(r.teamId as number) ?? "?"} · ${r.jerseyNumber ?? "·"} · ${r.name}`
+                      : `${r.jerseyNumber ?? "·"} · ${r.name}`,
+                  }))}
               />
             ))}
           </div>
