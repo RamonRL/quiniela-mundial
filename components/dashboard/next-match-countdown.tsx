@@ -58,23 +58,22 @@ export function NextMatchCountdown({ match }: { match: HeroMatch }) {
       </div>
 
       {/* Equipos — abrazan el VS (banderas al exterior, nombres al centro).
-          Móvil: apilados en vertical (cada equipo a ancho completo, así el
-          nombre solo salta de línea si es de verdad largo, y nunca a mitad
-          de palabra). PC: en horizontal con mitades iguales (flex-1) para
-          que el VS quede centrado de verdad. En hover (PC) los nombres pasan
-          a rojo para indicar que toda la zona principal lleva al partido. */}
-      <div className="flex flex-col items-center justify-center gap-2 sm:flex-row sm:gap-5">
-        <span className="flex items-center justify-center gap-2.5 sm:min-w-0 sm:flex-1 sm:justify-end">
+          Los dos lados ocupan media card cada uno (flex-1), así el VS queda
+          centrado de verdad y la composición es simétrica aunque un nombre
+          ocupe más líneas que el otro. En hover (PC) los nombres pasan a rojo
+          para indicar que toda la zona principal lleva al partido. */}
+      <div className="flex items-center justify-center gap-2.5 sm:gap-5">
+        <span className="flex min-w-0 flex-1 items-center justify-end gap-2.5">
           <TeamFlag code={home?.code} size={44} className="shrink-0" />
-          <span className="text-balance text-center font-display text-2xl leading-[1.05] tracking-tight transition-colors group-hover:text-[var(--color-arena)] sm:min-w-0 sm:text-right sm:text-[2.6rem]">
+          <span className="min-w-0 text-balance break-words text-right font-display text-2xl leading-[1.05] tracking-tight transition-colors group-hover:text-[var(--color-arena)] sm:text-[2.6rem]">
             {home?.name ?? "TBD"}
           </span>
         </span>
         <span className="shrink-0 font-display text-base text-[var(--color-muted-foreground)] sm:text-xl">
           {t("vs")}
         </span>
-        <span className="flex items-center justify-center gap-2.5 sm:min-w-0 sm:flex-1 sm:justify-start">
-          <span className="text-balance text-center font-display text-2xl leading-[1.05] tracking-tight transition-colors group-hover:text-[var(--color-arena)] sm:min-w-0 sm:text-left sm:text-[2.6rem]">
+        <span className="flex min-w-0 flex-1 items-center justify-start gap-2.5">
+          <span className="min-w-0 text-balance break-words text-left font-display text-2xl leading-[1.05] tracking-tight transition-colors group-hover:text-[var(--color-arena)] sm:text-[2.6rem]">
             {away?.name ?? "TBD"}
           </span>
           <TeamFlag code={away?.code} size={44} className="shrink-0" />
