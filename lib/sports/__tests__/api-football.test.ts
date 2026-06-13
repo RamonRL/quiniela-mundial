@@ -81,7 +81,9 @@ describe("mapEventsToScorers", () => {
     const scorers = mapEventsToScorers(
       [
         ev({ time: { elapsed: 45, extra: 2 }, detail: "Penalty" }),
-        ev({ player: { id: 200, name: "Defensa" }, detail: "Own Goal", team: { id: 20, name: "B" } }),
+        // API-Football atribuye el evento del autogol al equipo BENEFICIARIO
+        // (aquí home, id 10), aunque el jugador (id 200) sea del rival.
+        ev({ player: { id: 200, name: "Defensa" }, detail: "Own Goal", team: { id: 10, name: "A" } }),
       ],
       10,
       20,
@@ -90,7 +92,7 @@ describe("mapEventsToScorers", () => {
     expect(scorers[0].isPenalty).toBe(true);
     expect(scorers[0].side).toBe("home");
     expect(scorers[1].isOwnGoal).toBe(true);
-    // El autogol se atribuye a la plantilla del jugador (lado away aquí).
+    // El lado del autogol se invierte al del JUGADOR (away), no el beneficiario.
     expect(scorers[1].side).toBe("away");
   });
 });

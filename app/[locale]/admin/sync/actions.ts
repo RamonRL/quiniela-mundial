@@ -7,6 +7,7 @@ import { matchScorers, matches, pendingScorers, players } from "@/lib/db/schema"
 import { requireAdmin } from "@/lib/auth/guards";
 import { logAdminAction } from "@/lib/admin/audit";
 import { recomputeMatchScoringForAllUsers } from "@/lib/scoring/persistence";
+import { computeFirstGoal } from "@/lib/automation/first-goal";
 import { syncLiveMatches } from "@/lib/automation/match-sync";
 import {
   populateR32ThirdPlaces,
@@ -105,19 +106,26 @@ export async function reconcileScorer(formData: FormData): Promise<ActionResult>
     });
     await tx.delete(pendingScorers).where(eq(pendingScorers.id, pendingId));
 
-    // Re-derivar "primer gol" entre todos los goleadores del partido.
+    // Re-derivar "primer gol" entre todos los goleadores del partido con la
+    // lógica central (computeFirstGoal): el primer gol del partido contando
+    // autogoles; si ese primer gol es en propia, nadie es primer goleador.
     const all = await tx
-      .select({ id: matchScorers.id, minute: matchScorers.minute, og: matchScorers.isOwnGoal })
+      .select({ id: matchScorers.id, minute: matchScorers.minute, isOwnGoal: matchScorers.isOwnGoal })
       .from(matchScorers)
       .where(eq(matchScorers.matchId, pend.matchId));
-    const valid = all.filter((s) => !s.og);
-    const minMinute =
-      valid.length > 0
-        ? Math.min(...valid.map((s) => (s.minute == null ? Number.POSITIVE_INFINITY : s.minute)))
-        : null;
-    for (const s of all) {
-      const isFirst = !s.og && s.minute != null && s.minute === minMinute;
-      await tx.update(matchScorers).set({ isFirstGoal: isFirst }).where(eq(matchScorers.id, s.id));
+    const flagged = computeFirstGoal(
+      all.map((s) => ({
+        id: s.id,
+        playerId: 0,
+        teamId: 0,
+        minute: s.minute,
+        isOwnGoal: s.isOwnGoal,
+        isPenalty: false,
+        isFirstGoal: false,
+      })),
+    );
+    for (const s of flagged) {
+      await tx.update(matchScorers).set({ isFirstGoal: s.isFirstGoal }).where(eq(matchScorers.id, s.id));
     }
   });
 

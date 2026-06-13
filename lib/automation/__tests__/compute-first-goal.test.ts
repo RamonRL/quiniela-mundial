@@ -21,13 +21,30 @@ describe("computeFirstGoal", () => {
     expect(r.filter((x) => x.isFirstGoal)).toHaveLength(1);
   });
 
-  it("ignora los autogoles al elegir el primer gol", () => {
+  it("si el PRIMER gol del partido es en propia, nadie es primer goleador", () => {
     const r = computeFirstGoal([
       s({ playerId: 1, minute: 5, isOwnGoal: true }),
       s({ playerId: 2, minute: 20 }),
     ]);
-    expect(r.find((x) => x.playerId === 1)!.isFirstGoal).toBe(false);
+    expect(r.every((x) => !x.isFirstGoal)).toBe(true);
+  });
+
+  it("autogol POSTERIOR al primer gol real → el primer gol real cuenta", () => {
+    const r = computeFirstGoal([
+      s({ playerId: 1, minute: 10 }),
+      s({ playerId: 2, minute: 20, isOwnGoal: true }),
+    ]);
+    expect(r.find((x) => x.playerId === 1)!.isFirstGoal).toBe(true);
+    expect(r.find((x) => x.playerId === 2)!.isFirstGoal).toBe(false);
+  });
+
+  it("autogol y gol real en el mismo minuto → el gol real cuenta", () => {
+    const r = computeFirstGoal([
+      s({ playerId: 1, minute: 12, isOwnGoal: true }),
+      s({ playerId: 2, minute: 12 }),
+    ]);
     expect(r.find((x) => x.playerId === 2)!.isFirstGoal).toBe(true);
+    expect(r.filter((x) => x.isFirstGoal)).toHaveLength(1);
   });
 
   it("sin goles válidos, ninguno es primer gol", () => {
