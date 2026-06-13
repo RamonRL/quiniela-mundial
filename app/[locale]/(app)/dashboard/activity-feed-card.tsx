@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { Coins } from "lucide-react";
+import { ArrowRight, Coins } from "lucide-react";
 import { loadActivityFeed } from "@/lib/activity-feed";
 import { CATEGORY_META } from "@/components/scoring/category-style";
 
@@ -19,7 +19,7 @@ export async function ActivityFeedCard({
   myPoints: number;
 }) {
   const tLedger = await getTranslations("ledger");
-  const activity = await loadActivityFeed(userId, leagueId, 8, tLedger).catch(() => []);
+  const activity = await loadActivityFeed(userId, leagueId, 5, tLedger).catch(() => []);
   const t = await getTranslations("dashboard");
 
   return (
@@ -85,6 +85,15 @@ export async function ActivityFeedCard({
           </ul>
         )}
       </div>
+      {activity.length > 0 ? (
+        <Link
+          href={`/ranking/${userId}`}
+          className="group relative flex items-center justify-center gap-1.5 border-t border-[var(--color-border)] px-5 py-2.5 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-[var(--color-muted-foreground)] transition hover:text-[var(--color-arena)]"
+        >
+          {t("afViewAll")}
+          <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
+        </Link>
+      ) : null}
     </div>
   );
 }

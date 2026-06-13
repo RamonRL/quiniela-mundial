@@ -721,6 +721,7 @@
     "pcNoRank": "unranked",
     "pcView": "View my profile",
     "afEmpty": "You haven't scored points yet",
+    "afViewAll": "View all",
     "top5Short": "Top 5"
   },
   "progressHub": {
