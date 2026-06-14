@@ -41,7 +41,7 @@ export async function loadActivityFeed(
     .where(
       and(eq(pointsLedger.userId, userId), eq(pointsLedger.leagueId, leagueId)),
     )
-    .orderBy(desc(pointsLedger.computedAt))
+    .orderBy(desc(pointsLedger.computedAt), desc(pointsLedger.id))
     .limit(limit);
   if (rows.length === 0) return [];
 

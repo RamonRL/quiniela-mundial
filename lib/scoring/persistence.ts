@@ -60,6 +60,13 @@ type LedgerInsert = {
   sourceKey: string;
   sourceRef: unknown;
   points: number;
+  /**
+   * Marca temporal de la entrada. Para entradas de partido la fijamos al
+   * `scheduledAt` del partido (no al `now()` del recompute), así "Aciertos
+   * recientes" se ordena por la cronología real del torneo y no se desordena
+   * cada vez que se recomputa. Si se omite, la columna usa su default `now()`.
+   */
+  computedAt?: Date;
 };
 
 /** Acumula las entradas frescas de un (user, league) en el buffer de inserción. */
@@ -68,6 +75,7 @@ function collectEntries(
   userId: string,
   leagueId: number,
   entries: LedgerEntry[],
+  computedAt?: Date,
 ) {
   for (const e of entries) {
     out.push({
@@ -77,6 +85,7 @@ function collectEntries(
       sourceKey: e.sourceKey,
       sourceRef: e.sourceRef as unknown,
       points: e.points,
+      ...(computedAt ? { computedAt } : {}),
     });
   }
 }
@@ -163,26 +172,11 @@ export async function recomputeMatchScoringForAllUsers(matchId: number) {
   //   - completo/marcador → reglas de match-result (exacto/ganador/KO).
   //   - solo_ganador → solo el signo (solo_winner / solo_winner_pens).
   // El goleador (scorer + primer goleador) solo aplica en modo completo.
-  const fresh: Array<{
-    userId: string;
-    leagueId: number;
-    source: LedgerEntry["source"];
-    sourceKey: string;
-    sourceRef: unknown;
-    points: number;
-  }> = [];
-  const push = (userId: string, leagueId: number, entries: LedgerEntry[]) => {
-    for (const e of entries) {
-      fresh.push({
-        userId,
-        leagueId,
-        source: e.source,
-        sourceKey: e.sourceKey,
-        sourceRef: e.sourceRef as unknown,
-        points: e.points,
-      });
-    }
-  };
+  // computedAt = fecha del partido (no el `now()` del recompute), para que
+  // "Aciertos recientes" se ordene por la cronología real del torneo y no se
+  // desordene al recomputar.
+  const computedAt = match.scheduledAt ?? undefined;
+  const fresh: LedgerInsert[] = [];
 
   for (const p of resultPreds) {
     const mode = modes.get(p.leagueId) ?? "completo";
@@ -197,7 +191,7 @@ export async function recomputeMatchScoringForAllUsers(matchId: number) {
       mode === "solo_ganador"
         ? scoreSoloGanadorPrediction({ match: outcome, prediction, rules })
         : scoreMatchResultPrediction({ match: outcome, prediction, rules });
-    push(p.userId, p.leagueId, entries);
+    collectEntries(fresh, p.userId, p.leagueId, entries, computedAt);
   }
 
   for (const p of scorerPreds) {
@@ -207,7 +201,7 @@ export async function recomputeMatchScoringForAllUsers(matchId: number) {
       prediction: { matchId: p.matchId, playerId: p.playerId },
       rules,
     });
-    push(p.userId, p.leagueId, entries);
+    collectEntries(fresh, p.userId, p.leagueId, entries, computedAt);
   }
 
   // Escritura ATÓMICA: en UNA transacción borramos todo el scope del match y

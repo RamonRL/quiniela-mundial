@@ -161,7 +161,7 @@ export default async function ParticipantDetailPage({
               eq(pointsLedger.leagueId, leagueId),
             ),
           )
-          .orderBy(desc(pointsLedger.computedAt))
+          .orderBy(desc(pointsLedger.computedAt), desc(pointsLedger.id))
       : Promise.resolve([] as (typeof pointsLedger.$inferSelect)[]),
   ]);
 
