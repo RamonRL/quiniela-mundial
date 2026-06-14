@@ -1,4 +1,4 @@
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, sql, type SQL } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
   groupStandings,
@@ -53,40 +53,46 @@ export async function loadScoringRules(): Promise<ScoringRules> {
   return result;
 }
 
-async function replaceLedgerEntries(args: {
+type LedgerInsert = {
   userId: string;
   leagueId: number;
   source: LedgerEntry["source"];
-  sourceKeys: string[];
-  fresh: LedgerEntry[];
-}) {
-  const { userId, leagueId, source, sourceKeys, fresh } = args;
-  if (sourceKeys.length === 0 && fresh.length === 0) return;
+  sourceKey: string;
+  sourceRef: unknown;
+  points: number;
+};
 
+/** Acumula las entradas frescas de un (user, league) en el buffer de inserción. */
+function collectEntries(
+  out: LedgerInsert[],
+  userId: string,
+  leagueId: number,
+  entries: LedgerEntry[],
+) {
+  for (const e of entries) {
+    out.push({
+      userId,
+      leagueId,
+      source: e.source,
+      sourceKey: e.sourceKey,
+      sourceRef: e.sourceRef as unknown,
+      points: e.points,
+    });
+  }
+}
+
+/**
+ * Escritura ATÓMICA de un recompute: en UNA transacción borra todo el scope
+ * (`where`) y reinserta lo fresco en lotes. Completa de una pasada o no escribe
+ * nada — nunca a medias. Sustituye al patrón antiguo de una transacción por
+ * predicción (miles de round-trips → minutos → el cron se cortaba dejando a
+ * unos usuarios puntuados y a otros no).
+ */
+async function writeLedgerBatch(where: SQL, fresh: LedgerInsert[]) {
   await db.transaction(async (tx) => {
-    if (sourceKeys.length > 0) {
-      await tx
-        .delete(pointsLedger)
-        .where(
-          and(
-            eq(pointsLedger.userId, userId),
-            eq(pointsLedger.leagueId, leagueId),
-            eq(pointsLedger.source, source),
-            inArray(pointsLedger.sourceKey, sourceKeys),
-          ),
-        );
-    }
-    if (fresh.length > 0) {
-      await tx.insert(pointsLedger).values(
-        fresh.map((e) => ({
-          userId,
-          leagueId,
-          source: e.source,
-          sourceKey: e.sourceKey,
-          sourceRef: e.sourceRef as unknown,
-          points: e.points,
-        })),
-      );
+    await tx.delete(pointsLedger).where(where);
+    for (let i = 0; i < fresh.length; i += 1000) {
+      await tx.insert(pointsLedger).values(fresh.slice(i, i + 1000));
     }
   });
 }
@@ -261,9 +267,10 @@ export async function recomputeGroupScoringForAllUsers(groupId: number) {
   // Grupos solo puntúan en ligas de modo completo.
   const modes = await modesFor(preds.map((p) => p.leagueId));
 
+  const fresh: LedgerInsert[] = [];
   for (const p of preds) {
     if ((modes.get(p.leagueId) ?? "completo") !== "completo") continue;
-    const fresh = scoreGroupPrediction({
+    const entries = scoreGroupPrediction({
       groupId,
       prediction: {
         pos1TeamId: p.pos1TeamId,
@@ -274,24 +281,16 @@ export async function recomputeGroupScoringForAllUsers(groupId: number) {
       actual,
       rules,
     });
-    const teamKeys = [p.pos1TeamId, p.pos2TeamId, p.pos3TeamId, p.pos4TeamId]
-      .filter((x): x is number => x != null)
-      .map((tid) => `group:${groupId}:team:${tid}`);
-    await replaceLedgerEntries({
-      userId: p.userId,
-      leagueId: p.leagueId,
-      source: "group_position",
-      sourceKeys: teamKeys,
-      fresh: fresh.filter((e) => e.source === "group_position"),
-    });
-    await replaceLedgerEntries({
-      userId: p.userId,
-      leagueId: p.leagueId,
-      source: "group_top2_swap",
-      sourceKeys: [`group:${groupId}:top2_swap`],
-      fresh: fresh.filter((e) => e.source === "group_top2_swap"),
-    });
+    collectEntries(fresh, p.userId, p.leagueId, entries);
   }
+
+  await writeLedgerBatch(
+    and(
+      inArray(pointsLedger.source, ["group_position", "group_top2_swap"]),
+      sql`${pointsLedger.sourceKey} like ${`group:${groupId}:%`}`,
+    )!,
+    fresh,
+  );
 }
 
 function clampPosition(p: number): 1 | 2 | 3 | 4 {
@@ -339,22 +338,24 @@ export async function recomputeBracketStageForAllUsers(
     void preds;
   }
 
+  const fresh: LedgerInsert[] = [];
   for (const { userId, leagueId, teams: predictedTeamIds } of byUserLeague.values()) {
-    const fresh = scoreBracketStage({
+    const entries = scoreBracketStage({
       stageKey,
       predictedTeamIds,
       actualAdvancingTeamIds,
       rules,
     });
-    const allKeys = predictedTeamIds.map((tid) => `bracket:${stageKey}:team:${tid}`);
-    await replaceLedgerEntries({
-      userId,
-      leagueId,
-      source: "bracket_slot",
-      sourceKeys: allKeys,
-      fresh,
-    });
+    collectEntries(fresh, userId, leagueId, entries);
   }
+
+  await writeLedgerBatch(
+    and(
+      eq(pointsLedger.source, "bracket_slot"),
+      sql`${pointsLedger.sourceKey} like ${`bracket:${stageKey}:%`}`,
+    )!,
+    fresh,
+  );
 }
 
 function mapBracketStageToMatchStage(stage: BracketStageKey) {
@@ -380,22 +381,20 @@ export async function recomputeTopScorerForAllUsers(topScorerRanking: number[]) 
   // Bota de oro solo puntúa en ligas de modo completo.
   const modes = await modesFor(preds.map((p) => p.leagueId));
 
+  const fresh: LedgerInsert[] = [];
   for (const p of preds) {
     if ((modes.get(p.leagueId) ?? "completo") !== "completo") continue;
-    const fresh = scoreTopScorerPrediction({
+    const entries = scoreTopScorerPrediction({
       predictedPlayerId: p.playerId,
       topScorerRanking,
       rules,
     });
-    const sourceKeys = p.playerId ? [`tournament_top_scorer:${p.playerId}`] : [];
-    await replaceLedgerEntries({
-      userId: p.userId,
-      leagueId: p.leagueId,
-      source: "tournament_top_scorer",
-      sourceKeys,
-      fresh,
-    });
+    collectEntries(fresh, p.userId, p.leagueId, entries);
   }
+
+  // Recompute global de la categoría → borra todas las entradas de bota y
+  // reinserta lo fresco.
+  await writeLedgerBatch(eq(pointsLedger.source, "tournament_top_scorer"), fresh);
 }
 
 // ───────────────────────── special predictions ─────────────────────────
@@ -415,9 +414,10 @@ export async function recomputeSpecialPredictionForAllUsers(specialId: number) {
   // Especiales solo puntúan en ligas de modo completo.
   const modes = await modesFor(preds.map((p) => p.leagueId));
 
+  const fresh: LedgerInsert[] = [];
   for (const p of preds) {
     if ((modes.get(p.leagueId) ?? "completo") !== "completo") continue;
-    const fresh = scoreSpecialPrediction({
+    const entries = scoreSpecialPrediction({
       special: {
         id: def.id,
         key: def.key,
@@ -428,14 +428,16 @@ export async function recomputeSpecialPredictionForAllUsers(specialId: number) {
       },
       userValueJson: p.valueJson,
     });
-    await replaceLedgerEntries({
-      userId: p.userId,
-      leagueId: p.leagueId,
-      source: "special_prediction",
-      sourceKeys: [`special:${specialId}`],
-      fresh,
-    });
+    collectEntries(fresh, p.userId, p.leagueId, entries);
   }
+
+  await writeLedgerBatch(
+    and(
+      eq(pointsLedger.source, "special_prediction"),
+      eq(pointsLedger.sourceKey, `special:${specialId}`),
+    )!,
+    fresh,
+  );
 }
 
 // ───────────────────────── scoring rule edits ─────────────────────────
