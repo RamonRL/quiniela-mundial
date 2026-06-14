@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RealtimeRefresher } from "@/components/realtime/realtime-refresher";
 import { useDateFormat } from "@/components/shell/timezone-provider";
-import { formatTime, initials } from "@/lib/utils";
+import { formatDateTime, formatTime, initials } from "@/lib/utils";
 import { deleteMessage, sendMessage, type FormState } from "./actions";
 
 const initial: FormState = { ok: false };
@@ -42,6 +42,16 @@ export function ChatThread({
   const [state, action, pending] = useActionState(sendMessage, initial);
   const formRef = useRef<HTMLFormElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Timestamp del mensaje: solo la hora si es de las últimas 24 h; si es más
+  // antiguo, añade día y mes para no confundir mensajes de días distintos.
+  const now = Date.now();
+  const stamp = (iso: string) => {
+    const opts = { timeZone, locale, hour: "2-digit", minute: "2-digit" } as const;
+    return now - new Date(iso).getTime() > 86_400_000
+      ? formatDateTime(iso, { ...opts, day: "2-digit", month: "short" })
+      : formatTime(iso, opts);
+  };
 
   useEffect(() => {
     if (state.ok) formRef.current?.reset();
@@ -95,12 +105,7 @@ export function ChatThread({
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-semibold">{display}</span>
                       <span className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-[var(--color-muted-foreground)]">
-                        {formatTime(m.createdAt, {
-                          timeZone,
-                          locale,
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                        {stamp(m.createdAt)}
                       </span>
                     </div>
                     <div
