@@ -93,6 +93,21 @@ async function replaceLedgerEntries(args: {
 
 // ───────────────────────── match (resultado + goleador) ─────────────────────────
 
+/** Todas las fuentes de ledger con scope de partido (clave `match:<id>:…`). */
+const MATCH_LEDGER_SOURCES = [
+  "match_result",
+  "solo_winner",
+  "match_scorer",
+  "match_first_scorer",
+  // Fuentes del modelo viejo — inertes salvo datos pre-existentes.
+  "match_exact_score",
+  "match_outcome",
+  "knockout_score_90",
+  "knockout_qualifier",
+  "knockout_pens_bonus",
+  "solo_winner_pens",
+] as const;
+
 export async function recomputeMatchScoringForAllUsers(matchId: number) {
   const rules = await loadScoringRules();
 
@@ -127,18 +142,44 @@ export async function recomputeMatchScoringForAllUsers(matchId: number) {
     })),
   };
 
-  // Result predictions — un row por (user, league, match). El scoring del
-  // resultado depende del MODO de la liga:
-  //   - completo/marcador → mismas reglas de match-result (exacto/ganador/KO).
+  // Predicciones de resultado y goleador del partido (en TODAS las ligas).
+  const [resultPreds, scorerPreds] = await Promise.all([
+    db.select().from(predMatchResult).where(eq(predMatchResult.matchId, matchId)),
+    db.select().from(predMatchScorer).where(eq(predMatchScorer.matchId, matchId)),
+  ]);
+  const modes = await modesFor([
+    ...resultPreds.map((p) => p.leagueId),
+    ...scorerPreds.map((p) => p.leagueId),
+  ]);
+
+  // Calculamos TODAS las entradas frescas en memoria (sin tocar la DB). El
+  // scoring del resultado depende del MODO de la liga:
+  //   - completo/marcador → reglas de match-result (exacto/ganador/KO).
   //   - solo_ganador → solo el signo (solo_winner / solo_winner_pens).
-  const resultPreds = await db
-    .select()
-    .from(predMatchResult)
-    .where(eq(predMatchResult.matchId, matchId));
-  const resultModes = await modesFor(resultPreds.map((p) => p.leagueId));
+  // El goleador (scorer + primer goleador) solo aplica en modo completo.
+  const fresh: Array<{
+    userId: string;
+    leagueId: number;
+    source: LedgerEntry["source"];
+    sourceKey: string;
+    sourceRef: unknown;
+    points: number;
+  }> = [];
+  const push = (userId: string, leagueId: number, entries: LedgerEntry[]) => {
+    for (const e of entries) {
+      fresh.push({
+        userId,
+        leagueId,
+        source: e.source,
+        sourceKey: e.sourceKey,
+        sourceRef: e.sourceRef as unknown,
+        points: e.points,
+      });
+    }
+  };
 
   for (const p of resultPreds) {
-    const mode = resultModes.get(p.leagueId) ?? "completo";
+    const mode = modes.get(p.leagueId) ?? "completo";
     const prediction = {
       matchId: p.matchId,
       homeScore: p.homeScore,
@@ -146,81 +187,42 @@ export async function recomputeMatchScoringForAllUsers(matchId: number) {
       willGoToPens: p.willGoToPens,
       winnerTeamId: p.winnerTeamId ?? null,
     };
-
-    if (mode === "solo_ganador") {
-      const fresh = scoreSoloGanadorPrediction({ match: outcome, prediction, rules });
-      await replaceLedgerEntries({
-        userId: p.userId,
-        leagueId: p.leagueId,
-        source: "solo_winner",
-        sourceKeys: [`match:${matchId}:solo_winner`],
-        fresh,
-      });
-      continue;
-    }
-
-    // completo + marcador → una sola entrada `match_result` con el tier.
-    const fresh = scoreMatchResultPrediction({ match: outcome, prediction, rules });
-    await replaceLedgerEntries({
-      userId: p.userId,
-      leagueId: p.leagueId,
-      source: "match_result",
-      sourceKeys: [`match:${matchId}:result`],
-      fresh,
-    });
+    const entries =
+      mode === "solo_ganador"
+        ? scoreSoloGanadorPrediction({ match: outcome, prediction, rules })
+        : scoreMatchResultPrediction({ match: outcome, prediction, rules });
+    push(p.userId, p.leagueId, entries);
   }
 
-  // Scorer predictions — solo aplican en modo completo. (En marcador y
-  // solo_ganador el UI no expone goleador; el modo es inmutable, así que
-  // saltamos defensivamente las ligas no-completo.)
-  const scorerPreds = await db
-    .select()
-    .from(predMatchScorer)
-    .where(eq(predMatchScorer.matchId, matchId));
-  const scorerModes = await modesFor(scorerPreds.map((p) => p.leagueId));
-
   for (const p of scorerPreds) {
-    if ((scorerModes.get(p.leagueId) ?? "completo") !== "completo") continue;
-    const fresh = scoreMatchScorerPrediction({
+    if ((modes.get(p.leagueId) ?? "completo") !== "completo") continue;
+    const entries = scoreMatchScorerPrediction({
       match: outcome,
       prediction: { matchId: p.matchId, playerId: p.playerId },
       rules,
     });
-    for (const source of ["match_scorer", "match_first_scorer"] as const) {
-      const sourceKeys = [
-        `match:${matchId}:scorer:${p.playerId}`,
-        `match:${matchId}:first_scorer:${p.playerId}`,
-      ].filter((k) => keyBelongsToSource(k, source));
-      await replaceLedgerEntries({
-        userId: p.userId,
-        leagueId: p.leagueId,
-        source,
-        sourceKeys,
-        fresh: fresh.filter((e) => e.source === source),
-      });
-    }
+    push(p.userId, p.leagueId, entries);
   }
-}
 
-function keyBelongsToSource(key: string, source: LedgerEntry["source"]) {
-  switch (source) {
-    case "match_exact_score":
-      return key.endsWith(":exact");
-    case "match_outcome":
-      return key.endsWith(":outcome");
-    case "knockout_score_90":
-      return key.endsWith(":score90");
-    case "knockout_qualifier":
-      return key.endsWith(":qualifier");
-    case "knockout_pens_bonus":
-      return key.endsWith(":pens_bonus");
-    case "match_scorer":
-      return key.includes(":scorer:") && !key.includes(":first_scorer:");
-    case "match_first_scorer":
-      return key.includes(":first_scorer:");
-    default:
-      return false;
-  }
+  // Escritura ATÓMICA: en UNA transacción borramos todo el scope del match y
+  // reinsertamos lo fresco. Antes esto era una transacción por predicción
+  // (miles de round-trips → minutos): si el cron de sync se cortaba a mitad,
+  // unos usuarios quedaban puntuados y otros no. Ahora es 1 DELETE + 1 INSERT
+  // (en lotes): completa en una pasada o no hace nada — nunca a medias.
+  const prefix = `match:${matchId}:`;
+  await db.transaction(async (tx) => {
+    await tx
+      .delete(pointsLedger)
+      .where(
+        and(
+          inArray(pointsLedger.source, [...MATCH_LEDGER_SOURCES]),
+          sql`${pointsLedger.sourceKey} like ${prefix + "%"}`,
+        ),
+      );
+    for (let i = 0; i < fresh.length; i += 1000) {
+      await tx.insert(pointsLedger).values(fresh.slice(i, i + 1000));
+    }
+  });
 }
 
 async function clearMatchLedger(matchId: number) {
@@ -231,19 +233,7 @@ async function clearMatchLedger(matchId: number) {
     .delete(pointsLedger)
     .where(
       and(
-        inArray(pointsLedger.source, [
-          "match_result",
-          "solo_winner",
-          "match_scorer",
-          "match_first_scorer",
-          // Fuentes del modelo viejo — inertes salvo datos pre-existentes.
-          "match_exact_score",
-          "match_outcome",
-          "knockout_score_90",
-          "knockout_qualifier",
-          "knockout_pens_bonus",
-          "solo_winner_pens",
-        ]),
+        inArray(pointsLedger.source, [...MATCH_LEDGER_SOURCES]),
         sql`${pointsLedger.sourceKey} like ${prefix + "%"}`,
       ),
     );
