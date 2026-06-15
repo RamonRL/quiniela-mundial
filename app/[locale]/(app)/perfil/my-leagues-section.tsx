@@ -2,6 +2,7 @@
 
 import { Link } from "@/i18n/navigation";
 import { useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Check, Copy, LogOut, Plus, Trophy } from "lucide-react";
 import { toast } from "sonner";
@@ -38,6 +39,7 @@ export function MyLeaguesSection({
   const tShell = useTranslations("shellExtra");
   const tModes = useTranslations("modes");
   const [pending, start] = useTransition();
+  const router = useRouter();
 
   // Nombre localizado: las públicas se componen "<público> · <modo>" (su
   // nombre en BD está en español); las privadas conservan el suyo.
@@ -45,10 +47,9 @@ export function MyLeaguesSection({
     m.isPublic ? `${tShell("publicPool")} · ${tModes(m.predictionMode)}` : m.name;
 
   const setActive = (id: number) => {
-    const fd = new FormData();
-    fd.set("leagueId", String(id));
     start(async () => {
-      await setActiveLeague(fd);
+      await setActiveLeague(id);
+      router.refresh();
     });
   };
 
