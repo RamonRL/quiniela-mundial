@@ -261,9 +261,6 @@ export default async function DashboardPage({
       ? sorted.findIndex((r) => r.userId === me.id) + 1 || null
       : null;
   const podium = sorted.slice(0, 5);
-  // Datos del propio usuario para el footer del Top 5 (cuando está fuera del 5).
-  const meEntry = sorted.find((r) => r.userId === me.id);
-  const myDisplay = meEntry ? meEntry.nickname || meEntry.email.split("@")[0] : "";
 
   // Pre-torneo progress: 3 categories — group rankings, top scorer, specials.
   const groupsFilled = groupCount[0]?.c ?? 0;
@@ -540,8 +537,8 @@ export default async function DashboardPage({
               >
                 <span className="min-w-0 truncate">
                   {t("pcPosition")} ·{" "}
-                  <span className="font-display text-base text-[var(--color-arena)]">#{myPosition}</span>
-                  {myDisplay ? ` · ${myDisplay}` : ""} ·{" "}
+                  <span className="font-display text-base text-[var(--color-arena)]">#{myPosition}</span>{" "}
+                  ·{" "}
                   <span className="font-display text-base text-[var(--color-arena)]">{myPoints}</span>{" "}
                   {t("pcPts")}
                 </span>
