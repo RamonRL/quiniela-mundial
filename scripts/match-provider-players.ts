@@ -86,16 +86,27 @@ function matchSquad(ours: OurPlayer[], api: AfSquadPlayer[]) {
 
   const pick = (cands: AfSquadPlayer[]) => cands.filter((a) => !usedApi.has(a.id));
 
+  // Apellidos (último token) que se repiten en NUESTRA plantilla → no fiables
+  // como apellido (nombres con apellido delante, p. ej. coreano). No casamos
+  // por último token en esos casos: mejor dejarlo sin casar (lo resuelve la
+  // herramienta de admin, que sabe usar el primer token).
+  const ourSurnameCounts = new Map<string, number>();
+  for (const p of ours) {
+    const sn = surnameOf(p.name);
+    if (sn.length >= 3) ourSurnameCounts.set(sn, (ourSurnameCounts.get(sn) ?? 0) + 1);
+  }
+
   for (const p of ours) {
     if (p.providerPlayerId != null) continue; // ya confirmado, no tocar
     const nFull = norm(p.name);
     const sn = surnameOf(p.name);
+    const surnameReliable = sn.length >= 3 && (ourSurnameCounts.get(sn) ?? 0) === 1;
 
     // 1) nombre completo exacto
     let cands = pick(api).filter((a) => norm(a.name) === nFull);
     let how = "nombre";
-    // 2) apellido único
-    if (cands.length !== 1) {
+    // 2) apellido único (solo si el apellido es fiable en nuestra plantilla)
+    if (cands.length !== 1 && surnameReliable) {
       const bySurname = pick(api).filter((a) => surnameOf(a.name) === sn && sn.length >= 3);
       if (bySurname.length === 1) {
         cands = bySurname;

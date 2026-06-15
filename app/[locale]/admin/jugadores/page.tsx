@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { asc, eq } from "drizzle-orm";
+import { Link2 } from "lucide-react";
 import { db } from "@/lib/db";
 import { players, teams } from "@/lib/db/schema";
 import { PageHeader } from "@/components/shell/page-header";
@@ -26,6 +28,12 @@ export default async function AdminPlayersPage({
         title="Plantillas y jugadores"
         description="26 jugadores por selección. Importa en bulk pegando una lista."
       />
+      <Link
+        href="/admin/jugadores/vincular"
+        className="inline-flex items-center gap-1.5 rounded-md border border-[var(--color-border)] px-3 py-1.5 font-mono text-xs uppercase tracking-[0.18em] transition hover:border-[var(--color-arena)]/40 hover:text-[var(--color-arena)]"
+      >
+        <Link2 className="size-3.5" /> Vincular con API-Football
+      </Link>
       <JugadoresWorkspace
         teams={allTeams.map((t) => ({ id: t.id, code: t.code, name: t.name, flagUrl: t.flagUrl }))}
         currentTeamId={teamId}
