@@ -5,8 +5,9 @@ import { requireAdmin } from "@/lib/auth/guards";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
 import { SponsorStrip } from "@/components/dashboard/sponsor-strip";
-import { loadLeagueSponsors } from "@/lib/sponsors";
+import { loadLeagueSponsors, loadGlobalBannerRaw } from "@/lib/sponsors";
 import { SponsorsManager } from "./sponsors-manager";
+import { GlobalBannerForm } from "./global-banner-form";
 
 export const metadata = { title: "Patrocinadores · Admin" };
 export const dynamic = "force-dynamic";
@@ -31,6 +32,7 @@ export default async function SponsorsAdminPage({
       : null;
 
   const sponsors = selected ? await loadLeagueSponsors(selected.id) : [];
+  const globalBanner = await loadGlobalBannerRaw();
 
   return (
     <div className="space-y-8">
@@ -39,6 +41,8 @@ export default async function SponsorsAdminPage({
         title="Patrocinadores"
         description="Elige una liga y sube los logos de sus patrocinadores. Aparecerán arriba del dashboard de esa liga, sustituyendo al logo de la FIFA World Cup."
       />
+
+      <GlobalBannerForm current={globalBanner} />
 
       <form method="get" className="flex flex-wrap items-end gap-3">
         <label className="space-y-1 text-sm">

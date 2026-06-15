@@ -3,10 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { and, asc, eq, gt, lt, desc, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { leagueSponsors, leagues } from "@/lib/db/schema";
+import { appSettings, leagueSponsors, leagues } from "@/lib/db/schema";
 import { requireAdmin } from "@/lib/auth/guards";
 import { logAdminAction } from "@/lib/admin/audit";
 import { deleteImage, uploadImage } from "@/lib/storage";
+import { GLOBAL_BANNER_KEY, loadGlobalBannerRaw } from "@/lib/sponsors";
 
 export type ActionResult = { ok: boolean; error?: string; message?: string };
 
@@ -176,4 +177,77 @@ export async function updateSponsorLink(formData: FormData): Promise<ActionResul
   revalidatePath("/admin/patrocinadores");
   revalidatePath("/dashboard");
   return { ok: true, message: url ? "Enlace guardado." : "Enlace quitado." };
+}
+
+function revalidateSponsorPlacements() {
+  revalidatePath("/admin/patrocinadores");
+  revalidatePath("/dashboard");
+  revalidatePath("/ranking");
+  revalidatePath("/predicciones");
+}
+
+/**
+ * Guarda/actualiza el BANNER DE AFILIADO GLOBAL (en app_settings). Se muestra
+ * en todas las quinielas —públicas y privadas— que aún NO tengan patrocinador
+ * propio. Las que ya tienen el suyo no lo ven.
+ */
+export async function saveGlobalBanner(formData: FormData): Promise<ActionResult> {
+  const me = await requireAdmin();
+  const alt = String(formData.get("alt") ?? "").trim() || null;
+  const enabled = formData.get("enabled") === "on";
+  const { url: linkUrl, error: linkErr } = normalizeLink(String(formData.get("link") ?? ""));
+  if (linkErr) return { ok: false, error: linkErr };
+  const file = formData.get("logo");
+
+  const existing = await loadGlobalBannerRaw();
+  let imageUrl = existing?.imageUrl ?? "";
+  let storagePath = existing?.storagePath ?? "";
+
+  if (file instanceof File && file.size > 0) {
+    if (file.size > MAX_BYTES) return { ok: false, error: "El banner supera 2 MB." };
+    if (file.type && !ALLOWED.includes(file.type)) {
+      return { ok: false, error: "Formato no soportado (usa PNG, JPG, WEBP o SVG)." };
+    }
+    const path = `global/${crypto.randomUUID()}.${extFor(file)}`;
+    imageUrl = await uploadImage({ kind: "sponsor", path, file });
+    if (existing?.storagePath) await deleteImage({ kind: "sponsor", path: existing.storagePath }).catch(() => {});
+    storagePath = path;
+  }
+
+  if (!imageUrl) return { ok: false, error: "Sube una imagen para el banner." };
+
+  const value = { imageUrl, storagePath, alt, linkUrl, enabled };
+  await db
+    .insert(appSettings)
+    .values({ key: GLOBAL_BANNER_KEY, valueJson: value })
+    .onConflictDoUpdate({
+      target: appSettings.key,
+      set: { valueJson: value, updatedAt: new Date() },
+    });
+
+  await logAdminAction({
+    adminId: me.id,
+    action: "sponsor.global_save",
+    payload: { enabled, hasLink: !!linkUrl },
+  });
+  revalidateSponsorPlacements();
+  return {
+    ok: true,
+    message: enabled
+      ? "Banner global guardado y activo en las quinielas sin patrocinador."
+      : "Banner global guardado (desactivado).",
+  };
+}
+
+/** Elimina el banner de afiliado global (imagen + ajuste). */
+export async function deleteGlobalBanner(): Promise<ActionResult> {
+  const me = await requireAdmin();
+  const existing = await loadGlobalBannerRaw();
+  if (existing?.storagePath) {
+    await deleteImage({ kind: "sponsor", path: existing.storagePath }).catch(() => {});
+  }
+  await db.delete(appSettings).where(eq(appSettings.key, GLOBAL_BANNER_KEY));
+  await logAdminAction({ adminId: me.id, action: "sponsor.global_delete", payload: {} });
+  revalidateSponsorPlacements();
+  return { ok: true, message: "Banner global eliminado." };
 }

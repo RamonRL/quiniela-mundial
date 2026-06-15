@@ -12,6 +12,8 @@ import { PageHeader } from "@/components/shell/page-header";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, PREDICTION_MODES } from "@/lib/leagues";
 import { loadLeaderboard, type LeaderboardEntry } from "@/lib/leaderboard";
+import { loadEffectiveSponsors } from "@/lib/sponsors";
+import { SponsorStrip } from "@/components/dashboard/sponsor-strip";
 import { LeagueStandings } from "./league-standings";
 import { RankingTabs } from "./ranking-tabs";
 import { initials } from "@/lib/utils";
@@ -23,6 +25,7 @@ export default async function RankingPage() {
   const t = await getTranslations("ranking");
   const tModes = await getTranslations("modes");
   const leagueId = (await currentLeagueId(me))!;
+  const sponsors = await loadEffectiveSponsors(leagueId);
   // Las quinielas públicas no tienen ranking propio: redirigimos al ranking
   // global del modo de esa pública.
   const [activeLeague] = await db
@@ -169,6 +172,8 @@ export default async function RankingPage() {
           de sus tarjetas de arriba) y pagina de 10 en 10: las quinielas
           premium pueden tener cientos de miembros. */}
       <LeagueStandings entries={ranked} meId={me.id} />
+
+      {sponsors.length > 0 ? <SponsorStrip sponsors={sponsors} /> : null}
     </div>
   );
 }

@@ -31,7 +31,7 @@ import { DashboardPlayerCard } from "@/components/dashboard/player-card";
 import { InstallBanner } from "@/components/install/install-banner";
 import { PatchNotesBoard } from "@/components/dashboard/patch-notes-board";
 import { SponsorStrip } from "@/components/dashboard/sponsor-strip";
-import { loadLeagueSponsors, type SponsorLogo } from "@/lib/sponsors";
+import { loadEffectiveSponsors, type SponsorLogo } from "@/lib/sponsors";
 import { HeroCard, type HeroData } from "@/components/dashboard/hero-card";
 import { loadHeroData } from "@/lib/dashboard/hero-data";
 import {
@@ -236,7 +236,7 @@ export default async function DashboardPage({
       0,
       "leagueMemberCountFallback",
     ),
-    safe(loadLeagueSponsors(leagueId), [] as SponsorLogo[], "sponsors"),
+    safe(loadEffectiveSponsors(leagueId), [] as SponsorLogo[], "sponsors"),
     safe(
       loadHeroData({ userId: me.id, leagueId, locale, timeZone: userTz }),
       null as HeroData | null,

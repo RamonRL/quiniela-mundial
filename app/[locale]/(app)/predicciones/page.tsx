@@ -29,6 +29,8 @@ import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/shell/page-header";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
+import { loadEffectiveSponsors } from "@/lib/sponsors";
+import { SponsorStrip } from "@/components/dashboard/sponsor-strip";
 import { getDateContext } from "@/lib/timezone-server";
 import { formatDateTime } from "@/lib/utils";
 import { computeMatchdayStates, type Stage } from "@/lib/matchday-state";
@@ -48,6 +50,7 @@ export default async function PrediccionesHub() {
   const { timeZone, locale } = await getDateContext();
   const now = new Date();
   const leagueId = (await currentLeagueId(me))!;
+  const sponsors = await loadEffectiveSponsors(leagueId);
   // Modo de la liga activa. Marcador y Solo Ganador solo predicen partidos:
   // ocultan Pre-torneo (grupos/bota/especiales) y Eliminatoria (bracket).
   const mode = (await getLeagueModes([leagueId])).get(leagueId) ?? "completo";
@@ -327,6 +330,8 @@ export default async function PrediccionesHub() {
         <BracketCard status={bracketStatus.state} closesAt={bracketStatus.closesAt} timeZone={timeZone} locale={locale} />
       </Section>
       ) : null}
+
+      {sponsors.length > 0 ? <SponsorStrip sponsors={sponsors} /> : null}
     </div>
   );
 }
