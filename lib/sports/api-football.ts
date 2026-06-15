@@ -240,3 +240,29 @@ export async function fetchFixtureById(fixtureId: number): Promise<AfFixtureItem
 export function fetchFixtureEvents(fixtureId: number): Promise<AfEvent[]> {
   return afFetch<AfEvent[]>("/fixtures/events", { fixture: fixtureId });
 }
+
+/** Equipos del torneo (id + nombre del proveedor). */
+export function fetchLeagueTeams(): Promise<{ team: { id: number; name: string } }[]> {
+  return afFetch("/teams", {
+    league: WORLD_CUP_LEAGUE_ID,
+    season: WORLD_CUP_SEASON,
+  });
+}
+
+/** Jugador en la plantilla del proveedor. */
+export type AfSquadPlayer = {
+  id: number;
+  name: string;
+  number: number | null;
+  position: string | null;
+};
+
+/**
+ * Plantilla de un equipo del proveedor (`/players/squads`). Devuelve un array
+ * con un único elemento `{ team, players }`.
+ */
+export function fetchTeamSquad(
+  providerTeamId: number,
+): Promise<{ team: { id: number; name: string }; players: AfSquadPlayer[] }[]> {
+  return afFetch("/players/squads", { team: providerTeamId });
+}
