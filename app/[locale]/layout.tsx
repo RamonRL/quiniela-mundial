@@ -10,6 +10,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { NavigationProgress } from "@/components/shell/navigation-progress";
 import { OrganizationLD, WebApplicationLD } from "@/components/seo/jsonld";
 import { GoogleTag } from "@/components/analytics/google-tag";
+import { Analytics } from "@vercel/analytics/next";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -216,6 +217,9 @@ export default async function RootLayout({
           <OrganizationLD />
           <WebApplicationLD />
           <GoogleTag />
+          {/* Analítica de tráfico (pageviews, países, top pages) — anónima,
+              sin cookies, así que no requiere banner de consentimiento. */}
+          <Analytics />
         </NextIntlClientProvider>
       </body>
     </html>
