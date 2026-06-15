@@ -1,0 +1,1 @@
+ALTER TABLE "league_sponsors" ADD COLUMN "link_url" text;

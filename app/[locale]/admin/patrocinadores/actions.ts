@@ -20,12 +20,30 @@ function extFor(file: File): string {
   return "png";
 }
 
+/** Normaliza el enlace de destino: "" → null; sin esquema añade https://. */
+function normalizeLink(raw: string): { url: string | null; error?: string } {
+  const v = raw.trim();
+  if (!v) return { url: null };
+  const withScheme = /^https?:\/\//i.test(v) ? v : `https://${v}`;
+  try {
+    const u = new URL(withScheme);
+    if (u.protocol !== "http:" && u.protocol !== "https:") {
+      return { url: null, error: "El enlace debe ser http(s)." };
+    }
+    return { url: u.toString() };
+  } catch {
+    return { url: null, error: "Enlace no válido." };
+  }
+}
+
 /** Sube un logo de patrocinador a una liga (al final de la fila). */
 export async function addSponsor(formData: FormData): Promise<ActionResult> {
   const me = await requireAdmin();
   const leagueId = Number(formData.get("leagueId"));
   const alt = String(formData.get("alt") ?? "").trim() || null;
   const file = formData.get("logo");
+  const { url: linkUrl, error: linkErr } = normalizeLink(String(formData.get("link") ?? ""));
+  if (linkErr) return { ok: false, error: linkErr };
 
   if (!Number.isFinite(leagueId) || leagueId <= 0) {
     return { ok: false, error: "Liga no válida." };
@@ -59,13 +77,14 @@ export async function addSponsor(formData: FormData): Promise<ActionResult> {
     imageUrl,
     storagePath: path,
     alt,
+    linkUrl,
     orderIndex: nextOrder,
   });
 
   await logAdminAction({
     adminId: me.id,
     action: "sponsor.add",
-    payload: { leagueId, path, alt },
+    payload: { leagueId, path, alt, linkUrl },
   });
   revalidatePath("/admin/patrocinadores");
   revalidatePath("/dashboard");
@@ -135,4 +154,26 @@ export async function moveSponsor(formData: FormData): Promise<ActionResult> {
   revalidatePath("/admin/patrocinadores");
   revalidatePath("/dashboard");
   return { ok: true };
+}
+
+/** Fija/edita el enlace de destino de un patrocinador (enlace de afiliado). */
+export async function updateSponsorLink(formData: FormData): Promise<ActionResult> {
+  const me = await requireAdmin();
+  const id = Number(formData.get("id"));
+  if (!Number.isFinite(id)) return { ok: false, error: "Id no válido." };
+  const { url, error } = normalizeLink(String(formData.get("link") ?? ""));
+  if (error) return { ok: false, error };
+
+  const [row] = await db
+    .select({ id: leagueSponsors.id })
+    .from(leagueSponsors)
+    .where(eq(leagueSponsors.id, id))
+    .limit(1);
+  if (!row) return { ok: false, error: "No encontrado." };
+
+  await db.update(leagueSponsors).set({ linkUrl: url }).where(eq(leagueSponsors.id, id));
+  await logAdminAction({ adminId: me.id, action: "sponsor.link", payload: { id, hasLink: !!url } });
+  revalidatePath("/admin/patrocinadores");
+  revalidatePath("/dashboard");
+  return { ok: true, message: url ? "Enlace guardado." : "Enlace quitado." };
 }

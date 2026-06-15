@@ -82,7 +82,12 @@ export default async function SponsorsAdminPage({
 
           <SponsorsManager
             leagueId={selected.id}
-            sponsors={sponsors.map((s) => ({ id: s.id, imageUrl: s.imageUrl, alt: s.alt }))}
+            sponsors={sponsors.map((s) => ({
+              id: s.id,
+              imageUrl: s.imageUrl,
+              alt: s.alt,
+              linkUrl: s.linkUrl,
+            }))}
           />
         </div>
       ) : (

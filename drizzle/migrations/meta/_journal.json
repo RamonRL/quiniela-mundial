@@ -204,6 +204,13 @@
       "when": 1781208189872,
       "tag": "0028_colossal_demogoblin",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1781561904887,
+      "tag": "0029_clammy_captain_stacy",
+      "breakpoints": true
     }
   ]
 }

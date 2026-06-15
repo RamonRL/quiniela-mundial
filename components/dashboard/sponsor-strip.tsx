@@ -29,11 +29,8 @@ export async function SponsorStrip({ sponsors }: { sponsors: SponsorLogo[] }) {
         // Banner único: ancho completo en móvil, acotado y centrado en PC.
         // h-auto + max-h preservan el aspecto (un banner ancho queda bajo el
         // tope de altura; uno casi cuadrado se limita por altura sin deformar).
-        // eslint-disable-next-line @next/next/no-img-element -- banner de aspecto variable
-        <img
-          src={sponsors[0].imageUrl}
-          alt={sponsors[0].alt ?? "Patrocinador"}
-          loading="lazy"
+        <SponsorImg
+          sponsor={sponsors[0]}
           className="mx-auto block h-auto w-full max-w-2xl max-h-24 object-contain sm:max-w-3xl sm:max-h-28"
         />
       ) : (
@@ -43,11 +40,8 @@ export async function SponsorStrip({ sponsors }: { sponsors: SponsorLogo[] }) {
               key={s.id}
               className="flex basis-1/4 items-center justify-center px-3 py-2 sm:basis-1/6 sm:px-4 lg:basis-[12.5%]"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element -- logos de aspecto variable; <img> con altura fija es lo correcto */}
-              <img
-                src={s.imageUrl}
-                alt={s.alt ?? "Patrocinador"}
-                loading="lazy"
+              <SponsorImg
+                sponsor={s}
                 className="h-9 w-auto max-w-full object-contain sm:h-11 lg:h-12"
               />
             </li>
@@ -55,5 +49,33 @@ export async function SponsorStrip({ sponsors }: { sponsors: SponsorLogo[] }) {
         </ul>
       )}
     </div>
+  );
+}
+
+/**
+ * Logo del patrocinador. Si tiene `linkUrl` se vuelve clicable en pestaña
+ * nueva con `rel="sponsored noopener noreferrer"` — obligatorio para enlaces
+ * de pago/afiliado (Google lo exige; evita penalización SEO).
+ */
+function SponsorImg({ sponsor, className }: { sponsor: SponsorLogo; className: string }) {
+  const img = (
+    // eslint-disable-next-line @next/next/no-img-element -- logo de aspecto variable
+    <img
+      src={sponsor.imageUrl}
+      alt={sponsor.alt ?? "Patrocinador"}
+      loading="lazy"
+      className={className}
+    />
+  );
+  if (!sponsor.linkUrl) return img;
+  return (
+    <a
+      href={sponsor.linkUrl}
+      target="_blank"
+      rel="sponsored noopener noreferrer"
+      className="block transition hover:opacity-90"
+    >
+      {img}
+    </a>
   );
 }

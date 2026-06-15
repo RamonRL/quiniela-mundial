@@ -353,6 +353,9 @@ export const leagueSponsors = pgTable(
     storagePath: text("storage_path").notNull(),
     // Texto alternativo / nombre de la marca.
     alt: text("alt"),
+    // Enlace de destino al hacer clic (web del patrocinador / enlace de
+    // afiliado). Si está, el logo se vuelve clicable con rel="sponsored".
+    linkUrl: text("link_url"),
     // Orden de aparición de izquierda a derecha (asc).
     orderIndex: integer("order_index").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

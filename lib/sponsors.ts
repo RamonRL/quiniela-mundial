@@ -7,6 +7,7 @@ export type SponsorLogo = {
   imageUrl: string;
   storagePath: string;
   alt: string | null;
+  linkUrl: string | null;
   orderIndex: number;
 };
 
@@ -18,6 +19,7 @@ export async function loadLeagueSponsors(leagueId: number): Promise<SponsorLogo[
       imageUrl: leagueSponsors.imageUrl,
       storagePath: leagueSponsors.storagePath,
       alt: leagueSponsors.alt,
+      linkUrl: leagueSponsors.linkUrl,
       orderIndex: leagueSponsors.orderIndex,
     })
     .from(leagueSponsors)
