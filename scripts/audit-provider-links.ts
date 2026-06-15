@@ -5,10 +5,12 @@
  * pasa con nombres de apellido-delante, p. ej. coreano "Son"/"Cho" comparten
  * "min"). Esos vínculos pueden acreditar un gol al jugador equivocado.
  *
- *   pnpm db:audit-provider-links          # solo lista los sospechosos
- *   pnpm db:audit-provider-links --fix     # los limpia (vuelven a 'pendiente',
- *                                          # que es seguro; re-vincúlalos en
- *                                          # /admin/jugadores/vincular)
+ *   pnpm db:audit-provider-links            # lista los sospechosos (todos)
+ *   pnpm db:audit-provider-links --fix       # los limpia (vuelven a 'pendiente',
+ *                                            # seguro; re-vincúlalos en
+ *                                            # /admin/jugadores/vincular)
+ *   pnpm db:audit-provider-links KOR         # solo una selección (dry-run)
+ *   pnpm db:audit-provider-links KOR --fix   # solo una selección, limpiando
  *
  * Requiere API_FOOTBALL_KEY. Solo limpia, nunca crea vínculos.
  */
@@ -20,6 +22,7 @@ import { fetchLeagueTeams, fetchTeamSquad } from "@/lib/sports/api-football";
 import { norm, PROVIDER_TEAM_ALIASES } from "@/lib/sports/player-matching";
 
 const FIX = process.argv.includes("--fix");
+const ONLY = process.argv.find((a) => /^[A-Z]{3}$/.test(a)) ?? null;
 const toks = (s: string) => norm(s).split(" ").filter(Boolean);
 const lastTok = (s: string) => {
   const t = toks(s);
@@ -31,7 +34,10 @@ async function main() {
   if (!process.env.API_FOOTBALL_KEY) throw new Error("Falta API_FOOTBALL_KEY");
 
   const apiTeams = await fetchLeagueTeams();
-  const allTeams = await db.select().from(teams).orderBy(asc(teams.code));
+  const allTeams = (await db.select().from(teams).orderBy(asc(teams.code))).filter(
+    (t) => (ONLY ? t.code === ONLY : true),
+  );
+  if (ONLY && allTeams.length === 0) throw new Error(`No existe la selección "${ONLY}".`);
 
   let suspect = 0;
   for (const t of allTeams) {
