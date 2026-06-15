@@ -1205,6 +1205,8 @@
     "pctOfTotal": "{pct}% del total",
     "noPointsYet": "Sin puntos aún",
     "recentHits": "Aciertos recientes",
+    "prev": "Anterior",
+    "next": "Siguiente",
     "catMatch": "Marcadores",
     "catMatchDesc": "Resultados exactos y ganador del partido.",
     "catScorer": "Goleadores del partido",

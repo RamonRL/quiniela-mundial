@@ -3,6 +3,7 @@ import { Link } from "@/i18n/navigation";
 import { ArrowRight, Coins } from "lucide-react";
 import { loadActivityFeed } from "@/lib/activity-feed";
 import { CATEGORY_META } from "@/components/scoring/category-style";
+import { ActivityDetail } from "@/components/dashboard/activity-detail";
 
 /**
  * Panel "Últimos puntos · tu ledger" — columna vertical (comparte fila con el
@@ -12,11 +13,9 @@ import { CATEGORY_META } from "@/components/scoring/category-style";
 export async function ActivityFeedCard({
   userId,
   leagueId,
-  myPoints,
 }: {
   userId: string;
   leagueId: number;
-  myPoints: number;
 }) {
   const tLedger = await getTranslations("ledger");
   const activity = await loadActivityFeed(userId, leagueId, 5, tLedger).catch(() => []);
@@ -32,14 +31,6 @@ export async function ActivityFeedCard({
             {t("afHeader")}
           </p>
         </div>
-        {myPoints > 0 ? (
-          <Link
-            href={`/ranking/${userId}`}
-            className="font-display tabular text-xl leading-none tracking-tight text-[var(--color-arena)] transition hover:opacity-80"
-          >
-            +{myPoints}
-          </Link>
-        ) : null}
       </header>
       <div className="relative flex-1 p-3">
         {activity.length === 0 ? (
@@ -66,11 +57,7 @@ export async function ActivityFeedCard({
                     <Icon className="size-4 shrink-0" style={{ color }} />
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium">{a.label}</p>
-                      {a.detail ? (
-                        <p className="truncate font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-                          {a.detail}
-                        </p>
-                      ) : null}
+                      <ActivityDetail match={a.match} detail={a.detail} />
                     </div>
                   </div>
                   <span

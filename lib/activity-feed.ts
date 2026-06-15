@@ -16,9 +16,20 @@ export type ActivityEntry = {
   computedAt: string;
   label: string;
   detail: string | null;
+  /** Partido al que hace referencia (para pintar banderas + códigos). */
+  match: { homeCode: string | null; awayCode: string | null } | null;
   /** Categoría padre (para color + icono en la UI). */
   category: LedgerCategory | null;
 };
+
+/** Total de entradas del ledger de un usuario en una liga (para paginar). */
+export async function countActivityFeed(userId: string, leagueId: number): Promise<number> {
+  const rows = await db
+    .select({ id: pointsLedger.id })
+    .from(pointsLedger)
+    .where(and(eq(pointsLedger.userId, userId), eq(pointsLedger.leagueId, leagueId)));
+  return rows.length;
+}
 
 /** Traductor del namespace `ledger` (next-intl); admite params. */
 type LedgerTranslator = (key: string) => string;
@@ -34,6 +45,7 @@ export async function loadActivityFeed(
   leagueId: number,
   limit = 8,
   t?: LedgerTranslator,
+  offset = 0,
 ): Promise<ActivityEntry[]> {
   const rows = await db
     .select()
@@ -42,7 +54,8 @@ export async function loadActivityFeed(
       and(eq(pointsLedger.userId, userId), eq(pointsLedger.leagueId, leagueId)),
     )
     .orderBy(desc(pointsLedger.computedAt), desc(pointsLedger.id))
-    .limit(limit);
+    .limit(limit)
+    .offset(offset);
   if (rows.length === 0) return [];
 
   // Collect referenced ids per type.
@@ -103,24 +116,27 @@ export async function loadActivityFeed(
     const key = ledgerLabelKey(r.source, ref, r.points);
     const label = key && t ? t(key) : key ?? r.source;
     let detail: string | null = null;
+    // El partido (si lo hay) se expone aparte para pintar banderas; el `detail`
+    // queda para el texto extra (goleador, equipo, grupo, especial).
+    let match: ActivityEntry["match"] = null;
 
     if (typeof ref.matchId === "number") {
       const m = matchById.get(ref.matchId);
       if (m) {
         const home = m.homeTeamId ? teamById.get(m.homeTeamId) : null;
         const away = m.awayTeamId ? teamById.get(m.awayTeamId) : null;
-        detail = `${home?.code ?? "?"} vs ${away?.code ?? "?"}`;
+        match = { homeCode: home?.code ?? null, awayCode: away?.code ?? null };
       }
     }
     if (typeof ref.playerId === "number") {
       const p = playerById.get(ref.playerId);
-      if (p) detail = detail ? `${detail} · ${p.name}` : p.name;
+      if (p) detail = p.name;
     }
     if (typeof ref.predictedPlayerId === "number" && !detail) {
       const p = playerById.get(ref.predictedPlayerId);
       if (p) detail = p.name;
     }
-    if (typeof ref.teamId === "number" && !detail) {
+    if (typeof ref.teamId === "number" && !detail && !match) {
       const t = teamById.get(ref.teamId);
       if (t) detail = t.name;
     }
@@ -139,6 +155,7 @@ export async function loadActivityFeed(
       computedAt: r.computedAt.toISOString(),
       label,
       detail,
+      match,
       category: ledgerCategory(r.source),
     };
   });

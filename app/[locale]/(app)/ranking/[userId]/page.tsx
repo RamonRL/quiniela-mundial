@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import {
   ArrowLeft,
+  ArrowRight,
   Award,
   Crown,
   Footprints,
@@ -23,6 +24,7 @@ import { compareForRanking } from "@/lib/scoring/tiebreaker";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, getLeagueModes, inLeagueFilter, isMemberOf } from "@/lib/leagues";
 import { loadActivityFeed } from "@/lib/activity-feed";
+import { ActivityDetail } from "@/components/dashboard/activity-detail";
 import { CATEGORY_META, categoryColor } from "@/components/scoring/category-style";
 import type { LedgerCategory } from "@/lib/scoring/ledger-labels";
 import { getDateContext } from "@/lib/timezone-server";
@@ -121,13 +123,16 @@ export const metadata = { title: "Detalle de participante" };
 
 export default async function ParticipantDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ userId: string }>;
+  searchParams: Promise<{ page?: string }>;
 }) {
   const me = await requireUser();
   const { timeZone, locale } = await getDateContext();
   const t = await getTranslations("ranking");
   const { userId } = await params;
+  const { page: pageParam } = await searchParams;
   const leagueId = await currentLeagueId(me);
 
   const [user] = await db.select().from(profiles).where(eq(profiles.id, userId)).limit(1);
@@ -230,8 +235,22 @@ export default async function ParticipantDetailPage({
   }
 
   const tLedger = await getTranslations("ledger");
+  // "Aciertos recientes" paginado: 10 por página. El total es el nº de
+  // entradas del ledger del usuario en la liga (= theirLedger.length).
+  const RECENT_PAGE_SIZE = 10;
+  const totalRecent = theirLedger.length;
+  const totalRecentPages = Math.max(1, Math.ceil(totalRecent / RECENT_PAGE_SIZE));
+  const recentPage = Math.min(Math.max(1, Number(pageParam) || 1), totalRecentPages);
   const recent =
-    leagueId != null ? await loadActivityFeed(userId, leagueId, 12, tLedger) : [];
+    leagueId != null
+      ? await loadActivityFeed(
+          userId,
+          leagueId,
+          RECENT_PAGE_SIZE,
+          tLedger,
+          (recentPage - 1) * RECENT_PAGE_SIZE,
+        )
+      : [];
   // Modo de la liga activa: en Marcador / Solo Ganador no hay desglose por
   // categorías y los KPIs se simplifican.
   const mode = leagueId != null ? (await getLeagueModes([leagueId])).get(leagueId) ?? "completo" : "completo";
@@ -524,10 +543,16 @@ export default async function ParticipantDetailPage({
                       <Icon className="size-4 shrink-0" style={{ color }} />
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium">{a.label}</p>
-                        <p className="truncate font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-                          {a.detail ??
-                            formatDateTime(a.computedAt, { timeZone, locale, day: "2-digit", month: "short" })}
-                        </p>
+                        <ActivityDetail
+                          match={a.match}
+                          detail={a.detail}
+                          fallback={formatDateTime(a.computedAt, {
+                            timeZone,
+                            locale,
+                            day: "2-digit",
+                            month: "short",
+                          })}
+                        />
                       </div>
                     </div>
                     <span className="glow-cat font-display tabular text-2xl" style={{ color }}>
@@ -538,6 +563,31 @@ export default async function ParticipantDetailPage({
               })}
             </ul>
           </div>
+          {totalRecentPages > 1 ? (
+            <nav className="flex items-center justify-between gap-3 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-[var(--color-muted-foreground)]">
+              {recentPage > 1 ? (
+                <Link
+                  href={`/ranking/${userId}?page=${recentPage - 1}`}
+                  className="inline-flex items-center gap-1 transition hover:text-[var(--color-arena)]"
+                >
+                  <ArrowLeft className="size-3" /> {t("prev")}
+                </Link>
+              ) : (
+                <span />
+              )}
+              <span>{t("pageOf", { page: recentPage, total: totalRecentPages })}</span>
+              {recentPage < totalRecentPages ? (
+                <Link
+                  href={`/ranking/${userId}?page=${recentPage + 1}`}
+                  className="inline-flex items-center gap-1 transition hover:text-[var(--color-arena)]"
+                >
+                  {t("next")} <ArrowRight className="size-3" />
+                </Link>
+              ) : (
+                <span />
+              )}
+            </nav>
+          ) : null}
         </section>
       ) : null}
     </div>

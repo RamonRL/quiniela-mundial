@@ -261,6 +261,9 @@ export default async function DashboardPage({
       ? sorted.findIndex((r) => r.userId === me.id) + 1 || null
       : null;
   const podium = sorted.slice(0, 5);
+  // Datos del propio usuario para el footer del Top 5 (cuando está fuera del 5).
+  const meEntry = sorted.find((r) => r.userId === me.id);
+  const myDisplay = meEntry ? meEntry.nickname || meEntry.email.split("@")[0] : "";
 
   // Pre-torneo progress: 3 categories — group rankings, top scorer, specials.
   const groupsFilled = groupCount[0]?.c ?? 0;
@@ -535,10 +538,14 @@ export default async function DashboardPage({
                 href={`/ranking/${me.id}`}
                 className="flex items-center justify-between gap-2 font-mono text-[0.6rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)] transition hover:text-[var(--color-arena)]"
               >
-                <span>
-                  {t("pcPosition")} · <span className="font-display text-base text-[var(--color-arena)]">#{myPosition}</span>
+                <span className="min-w-0 truncate">
+                  {t("pcPosition")} ·{" "}
+                  <span className="font-display text-base text-[var(--color-arena)]">#{myPosition}</span>
+                  {myDisplay ? ` · ${myDisplay}` : ""} ·{" "}
+                  <span className="font-display text-base text-[var(--color-arena)]">{myPoints}</span>{" "}
+                  {t("pcPts")}
                 </span>
-                <span className="flex items-center gap-1">
+                <span className="flex shrink-0 items-center gap-1">
                   {t("pcView")} <ArrowRight className="size-3" />
                 </span>
               </Link>
@@ -548,7 +555,7 @@ export default async function DashboardPage({
 
         {/* Últimos puntos · tu ledger (derecha) — streamed via Suspense. */}
         <Suspense fallback={null}>
-          <ActivityFeedCard userId={me.id} leagueId={leagueId} myPoints={myPoints} />
+          <ActivityFeedCard userId={me.id} leagueId={leagueId} />
         </Suspense>
       </section>
 
