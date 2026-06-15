@@ -1,7 +1,5 @@
 "use client";
 
-import { useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { Check, ChevronsUpDown, Plus } from "lucide-react";
@@ -27,17 +25,7 @@ export function LeagueSwitcher({
 }) {
   const t = useTranslations("shellExtra");
   const tModes = useTranslations("modes");
-  const router = useRouter();
-  const [pending, startSwitch] = useTransition();
   const active = memberships.find((m) => m.id === activeLeagueId) ?? null;
-
-  // Cambia la liga y refresca la ruta actual: así "Mis predicciones" (y sus
-  // subpáginas) muestran al instante lo predicho en la nueva liga, sin navegar.
-  const switchTo = (id: number) =>
-    startSwitch(async () => {
-      await setActiveLeague(id);
-      router.refresh();
-    });
 
   // Las quinielas públicas tienen el nombre en español en BD ("Quiniela
   // pública (Completo)"). Lo componemos localizado: "<público> · <modo>".
@@ -84,36 +72,37 @@ export function LeagueSwitcher({
         {memberships.map((m) => {
           const isActive = m.id === activeLeagueId;
           return (
-            <DropdownMenuItem
-              key={m.id}
-              asChild
-              className={isActive ? "bg-[var(--color-surface-2)]" : ""}
-            >
-              <button
-                type="button"
-                disabled={pending}
-                onClick={() => switchTo(m.id)}
-                className="flex w-full items-center gap-2"
+            <form key={m.id} action={setActiveLeague}>
+              <input type="hidden" name="leagueId" value={m.id} />
+              <DropdownMenuItem
+                asChild
+                className={isActive ? "bg-[var(--color-surface-2)]" : ""}
               >
-                {!m.isPublic ? (
-                  <Avatar className="size-6 shrink-0 border border-[var(--color-border)]">
-                    {m.logoUrl ? <AvatarImage src={m.logoUrl} alt={m.name} /> : null}
-                    <AvatarFallback className="text-[0.5rem] font-semibold">
-                      {initials(m.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                ) : null}
-                <span className="min-w-0 flex-1 truncate text-left">
-                  <span className="font-medium">{nameOf(m)}</span>
-                  {!m.isPublic && m.joinCode ? (
-                    <span className="ml-1.5 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
-                      · {m.joinCode}
-                    </span>
+                <button type="submit" className="flex w-full items-center gap-2">
+                  {!m.isPublic ? (
+                    <Avatar className="size-6 shrink-0 border border-[var(--color-border)]">
+                      {m.logoUrl ? (
+                        <AvatarImage src={m.logoUrl} alt={m.name} />
+                      ) : null}
+                      <AvatarFallback className="text-[0.5rem] font-semibold">
+                        {initials(m.name)}
+                      </AvatarFallback>
+                    </Avatar>
                   ) : null}
-                </span>
-                {isActive ? <Check className="size-3.5 text-[var(--color-arena)]" /> : null}
-              </button>
-            </DropdownMenuItem>
+                  <span className="min-w-0 flex-1 truncate text-left">
+                    <span className="font-medium">{nameOf(m)}</span>
+                    {!m.isPublic && m.joinCode ? (
+                      <span className="ml-1.5 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-[var(--color-muted-foreground)]">
+                        · {m.joinCode}
+                      </span>
+                    ) : null}
+                  </span>
+                  {isActive ? (
+                    <Check className="size-3.5 text-[var(--color-arena)]" />
+                  ) : null}
+                </button>
+              </DropdownMenuItem>
+            </form>
           );
         })}
         <DropdownMenuSeparator />

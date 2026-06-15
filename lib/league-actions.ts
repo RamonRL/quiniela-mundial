@@ -212,17 +212,15 @@ export async function joinLeagueByCode(
 }
 
 /**
- * Cambia la liga activa del usuario. Valida que sea miembro. Revalida el
- * layout para cachés/navegaciones futuras; el cliente además hace
- * `router.refresh()` para re-renderizar la ruta actual (p. ej. /predicciones)
- * con las predicciones de la nueva liga sin tener que navegar.
+ * Cambia la liga activa del usuario. Valida que sea miembro.
  */
-export async function setActiveLeague(leagueId: number) {
+export async function setActiveLeague(formData: FormData) {
   const me = await requireUser();
-  if (!Number.isFinite(leagueId)) return;
-  const member = await isMemberOf(me.id, leagueId);
+  const id = Number(formData.get("leagueId"));
+  if (!Number.isFinite(id)) return;
+  const member = await isMemberOf(me.id, id);
   if (!member) return;
-  await db.update(profiles).set({ leagueId }).where(eq(profiles.id, me.id));
+  await db.update(profiles).set({ leagueId: id }).where(eq(profiles.id, me.id));
   revalidatePath("/", "layout");
 }
 
