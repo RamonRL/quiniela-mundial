@@ -38,6 +38,7 @@
     "db:pending-cronicas": "tsx --env-file-if-exists=.env.local --env-file-if-exists=.env scripts/pending-cronicas.ts",
     "db:gen-cronica-cover": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/gen-cronica-cover.ts",
     "db:match-provider-players": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/match-provider-players.ts",
+    "db:audit-provider-links": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/audit-provider-links.ts",
     "db:upsert-patch-note": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/upsert-patch-note.ts",
     "db:telegram-chat-id": "tsx --env-file=.env.local --env-file-if-exists=.env scripts/telegram-get-chat-id.ts",
     "db:backup-storage": "tsx --env-file-if-exists=.env.local --env-file-if-exists=.env scripts/backup-storage.ts",
