@@ -60,6 +60,9 @@
       "ctaCreate": "Crear quiniela",
       "ctaJoin": "Unirme con código",
       "kickoff": "T-{days} días al kickoff",
+      "kpiUsers": "Jugadores registrados",
+      "kpiLeagues": "Quinielas privadas",
+      "kpiVisitors": "Visitantes al día",
       "phones": "Así se ve la app",
       "teamsQualified": "Las {count} selecciones clasificadas"
     },

@@ -9,6 +9,8 @@ interface CounterProps {
   duration?: number;
   prefix?: string;
   suffix?: string;
+  /** Si se indica (BCP-47), formatea con separador de miles (p. ej. "50.000"). */
+  locale?: string;
   className?: string;
 }
 
@@ -18,7 +20,7 @@ const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
  * Cuenta de 0 a `to` la primera vez que entra en viewport. SSR renderiza el
  * valor final (bueno para SEO); reduced-motion / sin IO muestra `to` directo.
  */
-export function Counter({ to, duration = 1200, prefix = "", suffix = "", className }: CounterProps) {
+export function Counter({ to, duration = 1200, prefix = "", suffix = "", locale, className }: CounterProps) {
   const ref = useRef<HTMLSpanElement | null>(null);
   const [value, setValue] = useState(to);
   const started = useRef(false);
@@ -59,7 +61,7 @@ export function Counter({ to, duration = 1200, prefix = "", suffix = "", classNa
   return (
     <span ref={ref} className={className}>
       {prefix}
-      {value}
+      {locale ? value.toLocaleString(locale) : value}
       {suffix}
     </span>
   );

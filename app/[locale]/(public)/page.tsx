@@ -52,10 +52,6 @@ const MODE_ICON = {
 // suficiente granularidad sin saturar la DB.
 export const revalidate = 600;
 
-const KICKOFF = new Date(
-  process.env.NEXT_PUBLIC_TOURNAMENT_KICKOFF_AT ?? "2026-06-11T19:00:00Z",
-);
-
 // Las FAQ (también usadas para el JSON-LD FAQPage) se construyen dentro de
 // HomePage desde el catálogo i18n (home.faqs.q1..q10 / a1..a10).
 const FAQ_COUNT = 10;
@@ -118,11 +114,6 @@ export default async function HomePage({
   // Las noticias se redactan solo en castellano: fuera del locale `es` la
   // sección entera desaparece (lista vacía → no se renderiza).
   const latestNews = locale === "es" ? await listPublishedNews({ limit: 3 }) : [];
-
-  const daysToKickoff = Math.max(
-    0,
-    Math.ceil((KICKOFF.getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
-  );
 
   return (
     <div className="space-y-20">
@@ -198,17 +189,31 @@ export default async function HomePage({
             </Link>
           </Reveal>
 
-          <Reveal variant="fade" delay={400} className="flex items-center gap-2 pt-1">
-            <span className="relative flex size-2">
-              <span
-                aria-hidden
-                className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--color-arena)] opacity-70"
-              />
-              <span className="relative inline-flex size-2 rounded-full bg-[var(--color-arena)]" />
-            </span>
-            <p className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-muted-foreground)]">
-              {t("hero.kickoff", { days: daysToKickoff.toString().padStart(2, "0") })}
-            </p>
+          {/* KPIs de tracción — números que cuentan hasta su valor al entrar
+              en viewport (componente Counter, respeta reduced-motion). */}
+          <Reveal
+            variant="fade"
+            delay={400}
+            className="flex flex-wrap items-center justify-center gap-x-10 gap-y-5 pt-2 sm:gap-x-14"
+          >
+            {[
+              { to: 4000, label: t("hero.kpiUsers") },
+              { to: 1000, label: t("hero.kpiLeagues") },
+              { to: 50000, label: t("hero.kpiVisitors") },
+            ].map((k) => (
+              <div key={k.label} className="flex flex-col items-center">
+                <Counter
+                  to={k.to}
+                  prefix="+"
+                  locale={dateLocale}
+                  duration={1800}
+                  className="font-display tabular text-4xl leading-none tracking-tight text-[var(--color-arena)] glow-arena sm:text-5xl"
+                />
+                <span className="mt-2 font-mono text-[0.55rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)] sm:text-[0.6rem]">
+                  {k.label}
+                </span>
+              </div>
+            ))}
           </Reveal>
         </div>
 

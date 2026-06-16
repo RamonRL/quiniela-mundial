@@ -60,6 +60,9 @@
       "ctaCreate": "Criar bolão",
       "ctaJoin": "Entrar com código",
       "kickoff": "Faltam {days} dias para o pontapé inicial",
+      "kpiUsers": "Jogadores registados",
+      "kpiLeagues": "Bolões privados",
+      "kpiVisitors": "Visitantes por dia",
       "phones": "Como é o app",
       "teamsQualified": "As {count} seleções classificadas"
     },

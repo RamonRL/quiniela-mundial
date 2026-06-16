@@ -60,6 +60,9 @@
       "ctaCreate": "Create pool",
       "ctaJoin": "Join with a code",
       "kickoff": "T-{days} days to kickoff",
+      "kpiUsers": "Registered players",
+      "kpiLeagues": "Private pools",
+      "kpiVisitors": "Daily visitors",
       "phones": "How the app looks",
       "teamsQualified": "The {count} qualified teams"
     },

@@ -60,6 +60,9 @@
       "ctaCreate": "Créer une grille",
       "ctaJoin": "Rejoindre avec un code",
       "kickoff": "J-{days} avant le coup d'envoi",
+      "kpiUsers": "Joueurs inscrits",
+      "kpiLeagues": "Cagnottes privées",
+      "kpiVisitors": "Visiteurs par jour",
       "phones": "À quoi ressemble l'appli",
       "teamsQualified": "Les {count} équipes qualifiées"
     },
