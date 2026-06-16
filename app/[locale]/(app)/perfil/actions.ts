@@ -6,11 +6,20 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { profiles } from "@/lib/db/schema";
 import { requireUser } from "@/lib/auth/guards";
-import { uploadImage } from "@/lib/storage";
+import { deleteImage, uploadImage } from "@/lib/storage";
 import { runAction } from "@/lib/actions/guard";
 import { rateLimit } from "@/lib/ratelimit";
 
 export type FormState = { ok: boolean; error?: string };
+
+/** Extrae la ruta dentro del bucket `avatars` de una URL pública (o null). */
+function avatarStoragePath(url: string | null | undefined): string | null {
+  if (!url) return null;
+  const marker = "/object/public/avatars/";
+  const i = url.indexOf(marker);
+  if (i === -1) return null;
+  return url.slice(i + marker.length).split("?")[0] || null;
+}
 
 const nicknameSchema = z
   .string()
@@ -81,15 +90,20 @@ export async function uploadAvatar(formData: FormData): Promise<{
   return runAction(
     { action: "uploadAvatar", userId: me.id },
     async () => {
-      const url = await uploadImage({
-        kind: "avatar",
-        path: `${me.id}.png`,
-        file: avatar,
-      });
+      // Ruta ÚNICA por subida: si reutilizáramos `${me.id}.png`, la URL
+      // pública no cambiaría y el navegador/CDN seguiría sirviendo la foto
+      // anterior cacheada (de ahí que "cambiar la foto no se actualizara").
+      const prevPath = avatarStoragePath(me.avatarUrl);
+      const path = `${me.id}/${crypto.randomUUID()}.png`;
+      const url = await uploadImage({ kind: "avatar", path, file: avatar });
       await db
         .update(profiles)
         .set({ avatarUrl: url })
         .where(eq(profiles.id, me.id));
+      // Borra la imagen anterior (best-effort) para no dejar huérfanos.
+      if (prevPath && prevPath !== path) {
+        await deleteImage({ kind: "avatar", path: prevPath }).catch(() => {});
+      }
       revalidatePath("/perfil");
       revalidatePath("/dashboard");
       revalidatePath("/ranking");
