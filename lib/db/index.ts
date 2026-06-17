@@ -27,23 +27,19 @@ declare global {
 //   - idle_timeout=20s → reciclar conexiones idle sin churn excesivo.
 //   - max_lifetime=30 min → reciclar duro periódicamente.
 //
-// Pool: `max: 10` por instancia. El límite real que petaba en los picos
-// post-partido es "Max client connections" del pooler (Supavisor): cada
-// instancia abre hasta `max` conexiones, así que el total = instancias × max.
-// Con 25 reventábamos 600 con solo ~24 instancias; con 10 hay margen para ~60.
-//
-// Antes 10 colgaba el dashboard porque, con huérfanas en `ClientRead` y sin
-// timeout de adquisición en postgres.js, un pool pequeño se agotaba. Ya no:
-//   · el recompute pesado es batch (~2,5s, no retiene conexiones 14 min),
-//   · Fluid Compute reutiliza instancias (menos Lambdas muertas → menos huérfanas),
-//   · statement_timeout=7s libera rápido cualquier conexión ocupada,
-//   · `withDbRetry` cubre los CONNECTION_CLOSED transitorios.
-// Si reapareciera algún cuelgue, la vía no es subir `max` sino cachear más
-// lecturas compartidas (menos demanda concurrente de conexiones).
+// Pool: `max: 25` — HEADROOM es lo importante. Cuando una Lambda se congela
+// o Vercel la mata a mitad de query, esa conexión queda "ocupada" en el pool
+// (y huérfana en `ClientRead` en Postgres) hasta que Supavisor la recicla.
+// Con un pool pequeño (probamos 10), unas pocas huérfanas AGOTAN el pool: las
+// queries nuevas esperan una conexión libre PARA SIEMPRE (postgres.js no tiene
+// timeout de adquisición) y el dashboard se cuelga sin que el statement_timeout
+// lo salve (la query ni empezó). 25 da margen de sobra para absorber huérfanas
+// mientras Supavisor las limpia. El `CONNECTION_CLOSED` que motivó bajarlo lo
+// cubre ahora `withDbRetry`, y las rutas críticas tienen timeout (ver retry.ts).
 const client =
   globalThis.__pg ??
   postgres(connectionString, {
-    max: 10,
+    max: 25,
     prepare: false,
     connect_timeout: 5,
     idle_timeout: 20,

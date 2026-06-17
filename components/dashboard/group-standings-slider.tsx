@@ -1,8 +1,10 @@
 import { Link } from "@/i18n/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { ArrowRight, ChevronRight } from "lucide-react";
+import { asc } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { groups, groupStandings, teams } from "@/lib/db/schema";
 import { localizeTeams } from "@/lib/team-names";
-import { loadGroupBoardData } from "@/lib/group-board";
 import { TeamFlag } from "@/components/brand/team-flag";
 
 /**
@@ -16,7 +18,11 @@ import { TeamFlag } from "@/components/brand/team-flag";
  * llegan ya en el HTML inicial; el scroll lo hace el navegador, sin JS.
  */
 export async function GroupStandingsSlider() {
-  const { allGroups, allTeams, allStandings } = await loadGroupBoardData();
+  const [allGroups, allTeams, allStandings] = await Promise.all([
+    db.select().from(groups).orderBy(asc(groups.code)),
+    db.select().from(teams),
+    db.select().from(groupStandings),
+  ]);
 
   if (allGroups.length === 0) return null;
   const t = await getTranslations("dashboard");
