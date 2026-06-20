@@ -27,6 +27,15 @@ const supabaseRemotePatterns = Array.from(
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: supabaseRemotePatterns,
+    // Coste #1 en Vercel era "Image Optimization Transformation": next/image
+    // re-optimizaba las mismas imágenes una y otra vez. Nuestras imágenes
+    // (fotos de jugadores, covers, banderas, avatares) son ESTÁTICAS, así que
+    // cacheamos la versión optimizada 31 días → cada (imagen, tamaño) se
+    // transforma una vez. Sin impacto visual.
+    minimumCacheTTL: 2678400,
+    // No servimos imágenes a 2K/4K: quitamos esos anchos para generar menos
+    // variantes por imagen (Next sirve el más cercano ≤ al solicitado).
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
   },
   experimental: {
     // El body de un Server Action está limitado a 1 MB por defecto. La subida

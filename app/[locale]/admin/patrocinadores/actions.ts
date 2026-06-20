@@ -1,13 +1,21 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { and, asc, eq, gt, lt, desc, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { appSettings, leagueSponsors, leagues } from "@/lib/db/schema";
 import { requireAdmin } from "@/lib/auth/guards";
 import { logAdminAction } from "@/lib/admin/audit";
 import { deleteImage, uploadImage } from "@/lib/storage";
-import { GLOBAL_BANNER_KEY, loadGlobalBannerRaw } from "@/lib/sponsors";
+import { GLOBAL_BANNER_KEY, SPONSORS_TAG, loadGlobalBannerRaw } from "@/lib/sponsors";
+
+/** Invalida la caché de `loadEffectiveSponsors` (dashboard/ranking/predicciones)
+ * y las páginas estáticas que listan patrocinadores. */
+function revalidateSponsors() {
+  revalidateTag(SPONSORS_TAG);
+  revalidatePath("/admin/patrocinadores");
+  revalidatePath("/dashboard");
+}
 
 export type ActionResult = { ok: boolean; error?: string; message?: string };
 
@@ -87,8 +95,7 @@ export async function addSponsor(formData: FormData): Promise<ActionResult> {
     action: "sponsor.add",
     payload: { leagueId, path, alt, linkUrl },
   });
-  revalidatePath("/admin/patrocinadores");
-  revalidatePath("/dashboard");
+  revalidateSponsors();
   return { ok: true, message: "Logo añadido." };
 }
 
@@ -109,8 +116,7 @@ export async function deleteSponsor(formData: FormData): Promise<ActionResult> {
   await db.delete(leagueSponsors).where(eq(leagueSponsors.id, id));
 
   await logAdminAction({ adminId: me.id, action: "sponsor.delete", payload: { id, leagueId: row.leagueId } });
-  revalidatePath("/admin/patrocinadores");
-  revalidatePath("/dashboard");
+  revalidateSponsors();
   return { ok: true, message: "Logo eliminado." };
 }
 
@@ -152,8 +158,7 @@ export async function moveSponsor(formData: FormData): Promise<ActionResult> {
   });
 
   await logAdminAction({ adminId: me.id, action: "sponsor.move", payload: { id, dir } });
-  revalidatePath("/admin/patrocinadores");
-  revalidatePath("/dashboard");
+  revalidateSponsors();
   return { ok: true };
 }
 
@@ -174,12 +179,12 @@ export async function updateSponsorLink(formData: FormData): Promise<ActionResul
 
   await db.update(leagueSponsors).set({ linkUrl: url }).where(eq(leagueSponsors.id, id));
   await logAdminAction({ adminId: me.id, action: "sponsor.link", payload: { id, hasLink: !!url } });
-  revalidatePath("/admin/patrocinadores");
-  revalidatePath("/dashboard");
+  revalidateSponsors();
   return { ok: true, message: url ? "Enlace guardado." : "Enlace quitado." };
 }
 
 function revalidateSponsorPlacements() {
+  revalidateTag(SPONSORS_TAG);
   revalidatePath("/admin/patrocinadores");
   revalidatePath("/dashboard");
   revalidatePath("/ranking");

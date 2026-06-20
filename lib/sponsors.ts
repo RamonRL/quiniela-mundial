@@ -1,6 +1,12 @@
+import { unstable_cache } from "next/cache";
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { appSettings, leagueSponsors } from "@/lib/db/schema";
+
+/** Tag para invalidar la caché de patrocinadores efectivos (ver
+ * `loadEffectiveSponsors`). El admin lo dispara con `revalidateTag` tras
+ * cualquier alta/baja/movimiento de logo o cambio del banner global. */
+export const SPONSORS_TAG = "sponsors";
 
 export type SponsorLogo = {
   id: number;
@@ -57,12 +63,7 @@ export async function loadLeagueSponsors(leagueId: number): Promise<SponsorLogo[
     .orderBy(asc(leagueSponsors.orderIndex), asc(leagueSponsors.id));
 }
 
-/**
- * Patrocinadores a MOSTRAR en una liga: los suyos propios; y si no tiene
- * ninguno, el banner de afiliado global (si está activo). Así las ligas que ya
- * tienen patrocinador propio NO ven el banner global.
- */
-export async function loadEffectiveSponsors(leagueId: number): Promise<SponsorLogo[]> {
+async function computeEffectiveSponsors(leagueId: number): Promise<SponsorLogo[]> {
   const own = await loadLeagueSponsors(leagueId);
   if (own.length > 0) return own;
   const g = await loadGlobalBannerRaw();
@@ -78,3 +79,21 @@ export async function loadEffectiveSponsors(leagueId: number): Promise<SponsorLo
     },
   ];
 }
+
+/**
+ * Patrocinadores a MOSTRAR en una liga: los suyos propios; y si no tiene
+ * ninguno, el banner de afiliado global (si está activo). Así las ligas que ya
+ * tienen patrocinador propio NO ven el banner global.
+ *
+ * Cacheado: es IDÉNTICO para todos los miembros de una liga y solo cambia
+ * cuando el admin toca patrocinadores. Sin esto, las tres páginas más visitadas
+ * (dashboard, ranking, predicciones) son dinámicas por usuario y repetían 1-2
+ * queries por carga. La caché se invalida al instante vía `revalidateTag` desde
+ * las acciones de admin; el TTL de 5 min es solo red de seguridad. La key
+ * incluye `leagueId` (lo añade `unstable_cache` automáticamente).
+ */
+export const loadEffectiveSponsors = unstable_cache(
+  (leagueId: number) => computeEffectiveSponsors(leagueId),
+  ["effective-sponsors"],
+  { revalidate: 300, tags: [SPONSORS_TAG] },
+);
