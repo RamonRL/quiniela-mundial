@@ -922,6 +922,12 @@ export function MatchScoreboard({
                   <span className="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-[var(--color-arena)]">
                     {t("halftime")}
                   </span>
+                ) : live && (phase === "SUSP" || phase === "INT") ? (
+                  // Partido detenido por el árbitro (p. ej. temporal). El minuto
+                  // queda "pausado" en BD; mostramos "Suspendido" en su lugar.
+                  <span className="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-[var(--color-warning)]">
+                    {t("suspended")}
+                  </span>
                 ) : live && minute != null ? (
                   <span className="font-display tabular text-2xl leading-none text-[var(--color-arena)] glow-arena">
                     {minute}

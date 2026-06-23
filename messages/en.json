@@ -1998,7 +1998,8 @@
     "stageSf": "Semi-finals",
     "stageThird": "Third place",
     "stageFinal": "Final",
-    "halftime": "Half-time"
+    "halftime": "Half-time",
+    "suspended": "Suspended"
   },
   "matchDetail": {
     "back": "Back to schedule",
@@ -2083,7 +2084,8 @@
     "predsPagePrev": "Previous",
     "predsPageNext": "Next",
     "predsPageInfo": "{from}–{to} of {total}",
-    "halftime": "Half-time"
+    "halftime": "Half-time",
+    "suspended": "Suspended"
   },
   "ledger": {
     "matchExact": "Exact score",

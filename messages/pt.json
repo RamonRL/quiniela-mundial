@@ -1998,7 +1998,8 @@
     "stageSf": "Semifinais",
     "stageThird": "Terceiro lugar",
     "stageFinal": "Final",
-    "halftime": "Intervalo"
+    "halftime": "Intervalo",
+    "suspended": "Suspenso"
   },
   "matchDetail": {
     "back": "Voltar ao calendário",
@@ -2083,7 +2084,8 @@
     "predsPagePrev": "Anterior",
     "predsPageNext": "Seguinte",
     "predsPageInfo": "{from}–{to} de {total}",
-    "halftime": "Intervalo"
+    "halftime": "Intervalo",
+    "suspended": "Suspenso"
   },
   "ledger": {
     "matchExact": "Placar exato",

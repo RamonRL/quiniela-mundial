@@ -1998,7 +1998,8 @@
     "stageSf": "Demi-finales",
     "stageThird": "Petite finale",
     "stageFinal": "Finale",
-    "halftime": "Mi-temps"
+    "halftime": "Mi-temps",
+    "suspended": "Suspendu"
   },
   "matchDetail": {
     "back": "Retour au calendrier",
@@ -2083,7 +2084,8 @@
     "predsPagePrev": "Précédent",
     "predsPageNext": "Suivant",
     "predsPageInfo": "{from}–{to} sur {total}",
-    "halftime": "Mi-temps"
+    "halftime": "Mi-temps",
+    "suspended": "Suspendu"
   },
   "ledger": {
     "matchExact": "Score exact",

@@ -1998,7 +1998,8 @@
     "stageSf": "Semifinal",
     "stageThird": "Tercer puesto",
     "stageFinal": "Final",
-    "halftime": "Descanso"
+    "halftime": "Descanso",
+    "suspended": "Suspendido"
   },
   "matchDetail": {
     "back": "Volver al calendario",
@@ -2083,7 +2084,8 @@
     "predsPagePrev": "Anterior",
     "predsPageNext": "Siguiente",
     "predsPageInfo": "{from}–{to} de {total}",
-    "halftime": "Descanso"
+    "halftime": "Descanso",
+    "suspended": "Suspendido"
   },
   "ledger": {
     "matchExact": "Marcador exacto",
