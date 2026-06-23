@@ -1,4 +1,4 @@
-import { and, eq, gt, gte, inArray, isNotNull, lt, lte, ne } from "drizzle-orm";
+import { and, eq, gt, gte, inArray, isNotNull, isNull, lt, lte, ne, or } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
   appSettings,
@@ -178,7 +178,25 @@ async function syncOne(c: Candidate): Promise<{ changed: boolean; pendingCount: 
   const item = await fetchFixtureById(c.providerFixtureId);
   if (!item) return { changed: false, pendingCount: 0 };
   if (isAbnormalStatus(item.fixture.status.short)) {
-    await alert(`Partido #${c.id} en estado anómalo "${item.fixture.status.short}" — revisar a mano.`);
+    const short = item.fixture.status.short;
+    // Alerta SOLO en la primera detección de este estado: un SUSP por temporal
+    // puede durar más de una hora y, ahora que el partido sigue siendo
+    // candidato del sync (ver el `or` de status="live"), alertar en cada tick
+    // sería spam. Guardamos la fase anómala en `livePhase` para detectar el
+    // cambio, y sellamos `lastSyncedAt` para callar el watchdog. No tocamos el
+    // marcador ni `liveMinute` (se queda "pausado" en el último minuto válido).
+    const [row] = await db
+      .select({ livePhase: matches.livePhase })
+      .from(matches)
+      .where(eq(matches.id, c.id))
+      .limit(1);
+    if (row?.livePhase !== short) {
+      await alert(`Partido #${c.id} en estado anómalo "${short}" — revisar a mano.`);
+    }
+    await db
+      .update(matches)
+      .set({ lastSyncedAt: new Date(), livePhase: short })
+      .where(eq(matches.id, c.id));
     return { changed: false, pendingCount: 0 };
   }
 
@@ -284,8 +302,16 @@ export async function syncLiveMatches(): Promise<SyncReport> {
         ne(matches.status, "finished"),
         eq(matches.resultSource, "auto"),
         isNotNull(matches.providerFixtureId),
-        gte(matches.scheduledAt, from),
-        lte(matches.scheduledAt, to),
+        // En ventana por su horario (próximo a empezar / recién jugado), O BIEN
+        // ya marcado `live` en NUESTRA BD aunque haya pasado la ventana: un
+        // partido en directo debe seguir consultándose hasta que el proveedor
+        // lo dé por terminado. Sin este `or`, una suspensión larga (p. ej. por
+        // temporal) podía hacer que el FT llegara fuera de la ventana de 3.5h y
+        // el partido quedara congelado en "live" para siempre.
+        or(
+          and(gte(matches.scheduledAt, from), lte(matches.scheduledAt, to)),
+          eq(matches.status, "live"),
+        ),
       ),
     )) as Candidate[];
 
@@ -329,11 +355,23 @@ export async function runWatchdog(): Promise<void> {
   for (const m of stale) {
     await alert(`Partido ${m.code} (#${m.id}) debería haber empezado y sigue "programado". ¿Fuente caída?`);
   }
-  // Lleva demasiado en vivo.
+  // Lleva demasiado en vivo Y sin sincronizar hace rato → genuinamente atascado
+  // (fuente caída). Si el sync lo sigue tocando (p. ej. una suspensión larga que
+  // vigilamos), `lastSyncedAt` está fresco y no alertamos para no hacer ruido.
+  const STALE_SYNC_MS = 15 * 60 * 1000;
   const stuck = await db
     .select({ id: matches.id, code: matches.code })
     .from(matches)
-    .where(and(eq(matches.status, "live"), lt(matches.scheduledAt, new Date(now - WINDOW_AFTER_MS))));
+    .where(
+      and(
+        eq(matches.status, "live"),
+        lt(matches.scheduledAt, new Date(now - WINDOW_AFTER_MS)),
+        or(
+          isNull(matches.lastSyncedAt),
+          lt(matches.lastSyncedAt, new Date(now - STALE_SYNC_MS)),
+        ),
+      ),
+    );
   for (const m of stuck) {
     await alert(`Partido ${m.code} (#${m.id}) lleva demasiado tiempo "en vivo". Revisar.`);
   }
