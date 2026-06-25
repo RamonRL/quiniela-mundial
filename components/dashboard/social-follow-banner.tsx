@@ -96,7 +96,7 @@ export async function SocialFollowBanner({ locale }: { locale?: string }) {
         </div>
 
         {/* Tiles de seguir — encienden con el color de marca al hover/focus. */}
-        <ul className="grid grid-cols-1 gap-2.5 sm:grid-cols-3 lg:shrink-0">
+        <ul className="grid grid-cols-3 gap-2.5 lg:shrink-0">
           {NETWORKS.map((n) => (
             <li key={n.key}>
               <a
@@ -107,16 +107,18 @@ export async function SocialFollowBanner({ locale }: { locale?: string }) {
                 style={
                   { "--brand": n.brand, "--brand-ink": n.brandInk } as CSSProperties
                 }
-                className="group flex items-center gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-2)]/60 px-3.5 py-2.5 transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--brand)] hover:bg-[var(--color-surface-2)] hover:shadow-[0_0_0_1px_var(--brand),0_12px_32px_-16px_var(--brand)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] sm:min-w-[8.5rem]"
+                className="group flex flex-col items-center gap-1.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-2)]/60 px-2.5 py-3 text-center transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--brand)] hover:bg-[var(--color-surface-2)] hover:shadow-[0_0_0_1px_var(--brand),0_12px_32px_-16px_var(--brand)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] sm:flex-row sm:items-center sm:gap-3 sm:px-3.5 sm:py-2.5 sm:text-left lg:min-w-[8.5rem]"
               >
                 <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[var(--color-surface-3)] text-[var(--color-foreground)] transition-colors duration-200 group-hover:bg-[var(--brand)] group-hover:text-[var(--brand-ink)]">
                   <n.Icon className="size-5" />
                 </span>
                 <span className="min-w-0">
-                  <span className="block font-display text-sm leading-tight tracking-tight">
+                  <span className="block font-display text-xs leading-tight tracking-tight sm:text-sm">
                     {n.label}
                   </span>
-                  <span className="block truncate font-mono text-[0.6rem] uppercase tracking-[0.12em] text-[var(--color-muted-foreground)]">
+                  {/* El handle ocupa demasiado en móvil con 3 en línea: se
+                      muestra solo a partir de sm. */}
+                  <span className="hidden truncate font-mono text-[0.6rem] uppercase tracking-[0.12em] text-[var(--color-muted-foreground)] sm:block">
                     {n.handle}
                   </span>
                 </span>
