@@ -197,9 +197,9 @@ export default async function HomePage({
             className="flex flex-wrap items-center justify-center gap-x-10 gap-y-5 pt-2 sm:gap-x-14"
           >
             {[
-              { to: 4000, label: t("hero.kpiUsers") },
+              { to: 4500, label: t("hero.kpiUsers") },
               { to: 1000, label: t("hero.kpiLeagues") },
-              { to: 50000, label: t("hero.kpiVisitors") },
+              { to: 70000, label: t("hero.kpiVisitors") },
             ].map((k) => (
               <div key={k.label} className="flex flex-col items-center">
                 <Counter
