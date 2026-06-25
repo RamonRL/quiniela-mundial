@@ -31,6 +31,7 @@ import { DashboardPlayerCard } from "@/components/dashboard/player-card";
 import { InstallBanner } from "@/components/install/install-banner";
 import { PatchNotesBoard } from "@/components/dashboard/patch-notes-board";
 import { SponsorStrip } from "@/components/dashboard/sponsor-strip";
+import { SocialFollowBanner } from "@/components/dashboard/social-follow-banner";
 import { loadEffectiveSponsors, type SponsorLogo } from "@/lib/sponsors";
 import { HeroCard, type HeroData } from "@/components/dashboard/hero-card";
 import { loadHeroData } from "@/lib/dashboard/hero-data";
@@ -370,6 +371,10 @@ export default async function DashboardPage({
       {/* Banner promo de instalación de la app — encima de la card principal.
           Se cierra y no vuelve a salir (localStorage). */}
       <InstallBanner />
+
+      {/* Banner de redes: la mascota pide seguir IG/TikTok/X. Estático y
+          compartido (no añade carga por usuario). */}
+      <SocialFollowBanner />
 
       {/* Card principal: marcador de retransmisión — directos (1 o 2) o el
           siguiente partido. Sustituye al hero antiguo y al Live HUD. */}

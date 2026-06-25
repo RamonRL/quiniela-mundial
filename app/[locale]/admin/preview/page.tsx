@@ -5,6 +5,7 @@ import {
   MatchPredictionsReveal,
   type RevealRow,
 } from "@/components/match/predictions-reveal";
+import { SocialFollowBanner } from "@/components/dashboard/social-follow-banner";
 
 export const metadata = { title: "Preview · Admin" };
 export const dynamic = "force-dynamic";
@@ -153,6 +154,20 @@ export default async function PreviewPage() {
         title="Preview · Predicciones de la liga"
         description="Cuando empieza un partido (saque inicial), cada miembro de tu liga ve las predicciones del resto. La tabla se pagina de 10 en 10. Mocks: liga grande de 50 (modo completo / marcador) y una peña de 14 (modo solo ganador, 1X2)."
       />
+
+      <section className="space-y-6">
+        <div>
+          <p className="font-mono text-[0.7rem] uppercase tracking-[0.18em] text-[var(--color-arena)]">
+            Banner redes · ES / EN
+          </p>
+          <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
+            Aparece en el dashboard tras el patrocinador y el banner de instalar
+            app. Pasa el ratón por cada red: se enciende con su color de marca.
+          </p>
+        </div>
+        <SocialFollowBanner locale="es" />
+        <SocialFollowBanner locale="en" />
+      </section>
 
       <section className="space-y-10">
         {VARIANTS.map((v) => {
