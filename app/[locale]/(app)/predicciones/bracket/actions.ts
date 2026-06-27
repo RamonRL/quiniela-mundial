@@ -8,12 +8,9 @@ import { predBracketSlot } from "@/lib/db/schema";
 import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
 import { runAction } from "@/lib/actions/guard";
+import { getBracketStatus } from "@/lib/bracket-state";
 
 export type FormState = { ok: boolean; error?: string };
-
-const KICKOFF = new Date(
-  process.env.NEXT_PUBLIC_TOURNAMENT_KICKOFF_AT ?? "2026-06-11T19:00:00Z",
-);
 
 const stageEnum = z.enum(["r16", "qf", "sf", "final"]);
 
@@ -50,8 +47,19 @@ export async function saveBracketPicks(
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos." };
   }
-  if (KICKOFF.getTime() <= Date.now()) {
-    return { ok: false, error: "El torneo ya empezó. Bracket cerrado." };
+  // Misma fuente de verdad que el estado visual del bracket: editable solo
+  // mientras está `open` (R32 ya poblado y el primer partido de dieciseisavos
+  // aún no ha empezado). Antes esto estaba atado al saque inicial del torneo
+  // (11 jun), que cerraba el bracket para siempre tras la fase de grupos.
+  const bracketStatus = await getBracketStatus();
+  if (bracketStatus.state !== "open") {
+    return {
+      ok: false,
+      error:
+        bracketStatus.state === "waiting"
+          ? "El bracket aún no está abierto."
+          : "El bracket está cerrado: ya empezaron los dieciseisavos.",
+    };
   }
 
   const { r16, qf, sf, finalists, championTeamId, thirdTeamId } = parsed.data.picks;
