@@ -1026,6 +1026,10 @@
     "stSf": "Semifinais",
     "stFinal": "Final",
     "stThird": "Terceiro lugar",
+    "stDefinition": "A decisão",
+    "howToTitle": "Como funciona",
+    "howToBody": "Toque na seleção que você acha que avança: ela passa sozinha para a próxima fase. Deslize → para mudar de fase. Termine com a final e o 3º lugar e toque em Salvar.",
+    "nextRound": "Próxima fase",
     "worldCup": "Copa do Mundo 2026",
     "loses": "Perde {code}",
     "wins": "Vence {code}"

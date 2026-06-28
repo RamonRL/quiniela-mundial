@@ -3,8 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useActionState, useMemo, useState } from "react";
-import { Crown, Eye, Lock, Save, Trophy } from "lucide-react";
+import { useActionState, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ArrowRight, Crown, Eye, Info, Lock, Save, Trophy } from "lucide-react";
 import { TeamFlag } from "@/components/brand/team-flag";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -179,7 +179,12 @@ export function BracketBuilder({
         </div>
       ) : null}
 
-      <ProgressStrip picks={picks} />
+      <HowToCallout />
+
+      {/* En móvil el progreso vive en los chips del pager; aquí solo en PC. */}
+      <div className="hidden lg:block">
+        <ProgressStrip picks={picks} />
+      </div>
 
       <BracketTreeUI
         homeAwayByCode={homeAwayByCode}
@@ -194,11 +199,15 @@ export function BracketBuilder({
       {state.ok ? <p className="text-sm text-[var(--color-success)]">{t("saved")}</p> : null}
 
       {open && !preview ? (
-        <div className="flex justify-end">
-          <Button type="submit" size="lg" disabled={pending}>
-            <Save />
-            {pending ? t("saving") : t("saveBtn")}
-          </Button>
+        // En móvil queda fija sobre la bottom-nav (no molesta y siempre a mano);
+        // en PC vuelve a su sitio al final del formulario.
+        <div className="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] z-20 -mx-4 mt-2 border-t border-[var(--color-border)] bg-[color-mix(in_oklch,var(--color-surface)_92%,transparent)] px-4 py-3 backdrop-blur-md lg:static lg:bottom-auto lg:mx-0 lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
+          <div className="flex justify-end">
+            <Button type="submit" size="lg" disabled={pending} className="w-full lg:w-auto">
+              <Save />
+              {pending ? t("saving") : t("saveBtn")}
+            </Button>
+          </div>
         </div>
       ) : null}
     </form>
@@ -370,7 +379,6 @@ type TreeUIProps = {
 };
 
 function BracketTreeUI(props: TreeUIProps) {
-  const t = useTranslations("predBracket");
   return (
     <>
       {/* Desktop tree (lg+) */}
@@ -393,33 +401,181 @@ function BracketTreeUI(props: TreeUIProps) {
         </div>
       </div>
 
-      {/* Mobile: lista por etapa, igual concept pero sin árbol. Cada partido
-          es un par de botones; la siguiente ronda se llena automáticamente. */}
-      <div className="space-y-6 lg:hidden">
-        {(["r32", "r16", "qf", "sf", "final", "third"] as const).map((stage) => {
-          const codes = stageCodes(stage);
-          if (codes.length === 0) return null;
+      {/* Mobile: tira horizontal ronda a ronda (R32 → … → Definición). */}
+      <MobileBracketPager {...props} />
+    </>
+  );
+}
+
+// ──────────────────────────── How-to callout ────────────────────────────
+
+function HowToCallout() {
+  const t = useTranslations("predBracket");
+  return (
+    <div className="flex items-start gap-3 rounded-lg border border-dashed border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_4%,var(--color-surface))] px-4 py-3">
+      <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-md border border-[var(--color-arena)]/40 bg-[var(--color-surface)] text-[var(--color-arena)]">
+        <Info className="size-4" />
+      </span>
+      <div className="leading-tight">
+        <p className="font-mono text-[0.6rem] uppercase tracking-[0.22em] text-[var(--color-arena)]">
+          {t("howToTitle")}
+        </p>
+        <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
+          {t("howToBody")}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ──────────────────────────── Mobile pager ────────────────────────────
+
+/**
+ * Vista móvil: en vez de una lista vertical larguísima, una tira horizontal con
+ * scroll libre (snap por ronda) que avanza R32 → R16 → QF → SF → Definición
+ * (Final + 3.er puesto). Reutiliza `MatchCard`/`FinalCard`/`ThirdCard` y la misma
+ * lógica de picks/cascada del formulario. Cada panel hace scroll vertical interno
+ * acotado; arriba, chips de ronda (tap para saltar) sincronizados con el scroll.
+ */
+function MobileBracketPager(props: TreeUIProps) {
+  const t = useTranslations("predBracket");
+  const { picks } = props;
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const panelRefs = useRef<(HTMLElement | null)[]>([]);
+  const [active, setActive] = useState(0);
+
+  const rounds: {
+    key: string;
+    label: string;
+    stage: "r32" | "r16" | "qf" | "sf" | null;
+    count: number;
+    total: number;
+  }[] = [
+    { key: "r32", label: t("stR32"), stage: "r32", count: picks.r16.length, total: 16 },
+    { key: "r16", label: t("stR16"), stage: "r16", count: picks.qf.length, total: 8 },
+    { key: "qf", label: t("stQf"), stage: "qf", count: picks.sf.length, total: 4 },
+    { key: "sf", label: t("stSf"), stage: "sf", count: picks.finalists.length, total: 2 },
+    {
+      key: "definition",
+      label: t("stDefinition"),
+      stage: null,
+      count: (picks.championTeamId != null ? 1 : 0) + (picks.thirdTeamId != null ? 1 : 0),
+      total: 2,
+    },
+  ];
+
+  // Sincroniza el chip activo con la ronda más visible en la tira.
+  useEffect(() => {
+    const root = scrollerRef.current;
+    if (!root) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            const idx = panelRefs.current.indexOf(e.target as HTMLElement);
+            if (idx >= 0) setActive(idx);
+          }
+        }
+      },
+      { root, threshold: 0.6 },
+    );
+    for (const el of panelRefs.current) if (el) io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  const scrollToIndex = useCallback((idx: number) => {
+    const root = scrollerRef.current;
+    const el = panelRefs.current[idx];
+    if (!root || !el) return;
+    root.scrollTo({ left: el.offsetLeft - root.offsetLeft, behavior: "smooth" });
+  }, []);
+
+  return (
+    <div className="lg:hidden">
+      {/* Chips de ronda — tap para saltar; el activo y los completos resaltan. */}
+      <div className="scroll-x-only-on-pc -mx-4 mb-3 flex gap-2 overflow-x-auto px-4">
+        {rounds.map((r, i) => {
+          const done = r.count === r.total;
+          const isActive = i === active;
           return (
-            <section key={stage} className="space-y-2">
-              <h2 className="font-mono text-[0.65rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-arena)]">
-                {t(STAGE_LABEL_KEY[stage])}
-              </h2>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {codes.map((code) => (
-                  <MatchCard
-                    key={code}
-                    code={code}
-                    stage={stage}
-                    {...props}
-                    showHeader
-                  />
-                ))}
+            <button
+              key={r.key}
+              type="button"
+              onClick={() => scrollToIndex(i)}
+              aria-current={isActive ? "true" : undefined}
+              className={cn(
+                "flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 font-mono text-[0.6rem] uppercase tracking-[0.18em] transition",
+                isActive
+                  ? "border-[var(--color-arena)] bg-[color-mix(in_oklch,var(--color-arena)_12%,transparent)] text-[var(--color-arena)]"
+                  : done
+                    ? "border-[var(--color-pitch)]/40 text-[var(--color-pitch)]"
+                    : "border-[var(--color-border)] text-[var(--color-muted-foreground)]",
+              )}
+            >
+              {r.label}
+              <span className="tabular opacity-80">
+                {r.count}/{r.total}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Tira horizontal: cada panel ~88% para que asome la siguiente ronda. */}
+      <div
+        ref={scrollerRef}
+        className="scroll-x-only-on-pc -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2"
+      >
+        {rounds.map((r, i) => {
+          const st = r.stage;
+          return (
+            <section
+              key={r.key}
+              ref={(el) => {
+                panelRefs.current[i] = el;
+              }}
+              className="flex w-[88%] flex-none snap-start flex-col sm:w-[60%]"
+            >
+              <header className="mb-2 flex items-center justify-between">
+                <h2 className="font-mono text-[0.65rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-arena)]">
+                  {r.label}
+                </h2>
+                <span className="font-mono text-[0.6rem] tabular text-[var(--color-muted-foreground)]">
+                  {r.count}/{r.total}
+                </span>
+              </header>
+              <div
+                className={cn(
+                  "flex max-h-[58vh] flex-col gap-2 overflow-y-auto overscroll-y-contain pr-0.5",
+                  r.total <= 2 && "justify-center",
+                )}
+              >
+                {st ? (
+                  stageCodes(st).map((code) => (
+                    <MatchCard key={code} code={code} stage={st} {...props} showHeader />
+                  ))
+                ) : (
+                  <>
+                    <FinalCard {...props} />
+                    <ThirdCard {...props} />
+                  </>
+                )}
               </div>
+              {/* Guiño de avance cuando la ronda está completa. */}
+              {r.count === r.total && i < rounds.length - 1 ? (
+                <button
+                  type="button"
+                  onClick={() => scrollToIndex(i + 1)}
+                  className="mt-2 inline-flex items-center justify-end gap-1 self-end font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-arena)] transition hover:translate-x-0.5"
+                >
+                  {t("nextRound")} <ArrowRight className="size-3" />
+                </button>
+              ) : null}
             </section>
           );
         })}
       </div>
-    </>
+    </div>
   );
 }
 

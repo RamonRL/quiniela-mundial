@@ -1026,6 +1026,10 @@
     "stSf": "Semifinales",
     "stFinal": "Final",
     "stThird": "Tercer puesto",
+    "stDefinition": "La definición",
+    "howToTitle": "Cómo funciona",
+    "howToBody": "Toca el equipo que crees que pasa de ronda: avanza solo a la siguiente. Desliza → para cambiar de ronda. Cierras con la final y el 3.er puesto y pulsas Guardar.",
+    "nextRound": "Siguiente ronda",
     "worldCup": "Copa Mundial 2026",
     "loses": "Pierde {code}",
     "wins": "Gana {code}"

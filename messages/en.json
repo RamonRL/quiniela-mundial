@@ -1026,6 +1026,10 @@
     "stSf": "Semi-finals",
     "stFinal": "Final",
     "stThird": "Third place",
+    "stDefinition": "The finale",
+    "howToTitle": "How it works",
+    "howToBody": "Tap the team you think advances — it moves to the next round automatically. Swipe → to change round. Finish with the final and 3rd place, then Save.",
+    "nextRound": "Next round",
     "worldCup": "World Cup 2026",
     "loses": "Loser {code}",
     "wins": "Winner {code}"

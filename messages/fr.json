@@ -1026,6 +1026,10 @@
     "stSf": "Demi-finales",
     "stFinal": "Finale",
     "stThird": "3e place",
+    "stDefinition": "La finale",
+    "howToTitle": "Comment ça marche",
+    "howToBody": "Touche l'équipe qui passe selon toi : elle avance automatiquement au tour suivant. Glisse → pour changer de tour. Termine par la finale et la 3e place, puis enregistre.",
+    "nextRound": "Tour suivant",
     "worldCup": "Coupe du monde 2026",
     "loses": "Perdant {code}",
     "wins": "Vainqueur {code}"
