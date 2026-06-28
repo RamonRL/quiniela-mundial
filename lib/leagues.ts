@@ -120,6 +120,25 @@ export async function getLeagueModes(
 }
 
 /**
+ * Mapa leagueId → ¿cuenta el bracket? Para el scoring del bracket consciente del
+ * opt-out por liga. Default `true` si falta (igual que la columna).
+ */
+export async function getLeagueBracketFlags(
+  leagueIds: number[],
+): Promise<Map<number, boolean>> {
+  if (leagueIds.length === 0) return new Map();
+  const rows = await withDbRetry(
+    () =>
+      db
+        .select({ id: leagues.id, scoreBracket: leagues.scoreBracket })
+        .from(leagues)
+        .where(inArray(leagues.id, [...new Set(leagueIds)])),
+    { label: "getLeagueBracketFlags" },
+  );
+  return new Map(rows.map((r) => [r.id, r.scoreBracket]));
+}
+
+/**
  * Liga ACTIVA del usuario — la que está viendo ahora mismo. Lee directamente
  * `profiles.leagueId`. Si por la razón que sea el perfil no la tiene
  * asignada, fallback a la pública para no romper queries (el caller de

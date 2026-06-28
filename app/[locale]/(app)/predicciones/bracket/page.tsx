@@ -9,7 +9,7 @@ import { PageHeader } from "@/components/shell/page-header";
 import { ScoringBox } from "@/components/brand/scoring-box";
 import { Button } from "@/components/ui/button";
 import { requireUser } from "@/lib/auth/guards";
-import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
+import { currentLeagueId, getLeagueModes, getLeagueBracketFlags } from "@/lib/leagues";
 import { getDateContext } from "@/lib/timezone-server";
 import { formatDateTime } from "@/lib/utils";
 import { getBracketStatus, getQualifiedTeamIds } from "@/lib/bracket-state";
@@ -36,6 +36,9 @@ export default async function PredictBracketPage({
   const guardMode =
     (await getLeagueModes([guardLeagueId])).get(guardLeagueId) ?? "completo";
   if (guardMode !== "completo") redirect("/predicciones");
+  // Esta liga puede haber desactivado que el bracket puntúe (decisión del dueño).
+  // Se sigue pudiendo rellenar (solo por jugar), pero avisamos de que no suma.
+  const bracketScores = (await getLeagueBracketFlags([guardLeagueId])).get(guardLeagueId) ?? true;
   const status = await getBracketStatus();
   const params = await searchParams;
   const previewRequested = params.preview === "1" && me.role === "admin";
@@ -183,6 +186,11 @@ export default async function PredictBracketPage({
         description={description}
       />
       <ScoringBox sections={bracketScoring(t)} footnote={bracketFootnote(t)} />
+      {!bracketScores ? (
+        <p className="rounded-lg border border-dashed border-[var(--color-warning)]/40 bg-[var(--color-warning)]/5 px-4 py-2.5 text-center font-editorial text-sm italic text-[var(--color-muted-foreground)]">
+          {tb("notScored")}
+        </p>
+      ) : null}
       <BracketBuilder
         open={status.state === "open"}
         preview={previewRequested}

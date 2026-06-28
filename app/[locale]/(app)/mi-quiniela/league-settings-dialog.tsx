@@ -16,17 +16,28 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { LeagueLogoGalleryPicker } from "@/components/leagues/league-logo-gallery-picker";
 import {
   updateLeague,
   deleteOwnLeague,
+  setLeagueBracketScoring,
   type LeagueFormState,
 } from "@/lib/league-actions";
 
 const initial: LeagueFormState = { ok: false };
 
 type Props = {
-  league: { id: number; name: string; logoUrl: string | null; isPremium: boolean };
+  league: {
+    id: number;
+    name: string;
+    logoUrl: string | null;
+    isPremium: boolean;
+    /** Modo de la liga; el toggle de bracket solo aplica a "completo". */
+    mode: string;
+    /** ¿Cuenta actualmente el bracket en esta liga? */
+    scoreBracket: boolean;
+  };
   memberCount: number;
   /** Solo el creador real puede borrar la liga; un co-admin no ve esta zona. */
   canDelete?: boolean;
@@ -45,6 +56,30 @@ export function LeagueSettingsDialog({ league, memberCount, canDelete = true }: 
   const [open, setOpen] = useState(false);
   const [state, action, pending] = useActionState(updateLeague, initial);
   const [name, setName] = useState(league.name);
+
+  // Toggle "contar bracket" (solo modo completo). Confirmación al desactivar.
+  const [bracketOn, setBracketOn] = useState(league.scoreBracket);
+  const [confirmingBracketOff, setConfirmingBracketOff] = useState(false);
+  const [savingBracket, startBracket] = useTransition();
+
+  function applyBracket(enabled: boolean) {
+    startBracket(async () => {
+      const r = await setLeagueBracketScoring(league.id, enabled);
+      if (r.ok) {
+        setBracketOn(enabled);
+        setConfirmingBracketOff(false);
+        toast.success(r.message ?? t("leagueUpdated"));
+      } else {
+        toast.error(r.error ?? t("leagueUpdated"));
+      }
+    });
+  }
+
+  function onBracketToggle(next: boolean) {
+    if (savingBracket) return;
+    if (next) applyBracket(true);
+    else setConfirmingBracketOff(true); // desactivar requiere confirmar
+  }
 
   // Zona peligrosa (eliminar)
   const confirmWord = t("confirmWord");
@@ -132,6 +167,52 @@ export function LeagueSettingsDialog({ league, memberCount, canDelete = true }: 
             </Button>
           </DialogFooter>
         </form>
+
+        {/* ── Puntuar bracket: solo modo Completo (los demás no tienen bracket) ── */}
+        {league.mode === "completo" ? (
+          <div className="mt-1 space-y-3 border-t border-[var(--color-border)] pt-4">
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-0.5">
+                <Label>{t("bracketScoringLabel")}</Label>
+                <p className="font-editorial text-xs italic leading-relaxed text-[var(--color-muted-foreground)]">
+                  {t("bracketScoringHelp")}
+                </p>
+              </div>
+              <Switch
+                checked={bracketOn}
+                disabled={savingBracket}
+                onCheckedChange={onBracketToggle}
+                aria-label={t("bracketScoringLabel")}
+              />
+            </div>
+            {confirmingBracketOff ? (
+              <div className="space-y-3 rounded-md border border-[var(--color-warning)]/40 bg-[var(--color-warning)]/5 p-3">
+                <p className="font-editorial text-xs italic leading-relaxed text-[var(--color-muted-foreground)]">
+                  {t("bracketScoringConfirm")}
+                </p>
+                <div className="flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    disabled={savingBracket}
+                    onClick={() => setConfirmingBracketOff(false)}
+                  >
+                    {t("cancel")}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={savingBracket}
+                    onClick={() => applyBracket(false)}
+                  >
+                    {t("bracketScoringDisableBtn")}
+                  </Button>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
 
         {/* ── Zona peligrosa: oculta hasta clicar; solo el creador real ── */}
         {canDelete ? (

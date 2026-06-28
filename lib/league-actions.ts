@@ -28,6 +28,7 @@ import {
   joinLeagueByInviteToken,
 } from "@/lib/leagues";
 import { TIER_LABEL, canUseBranding } from "@/lib/league-tiers";
+import { recomputeLeagueBracket } from "@/lib/scoring/persistence";
 import { PREDICTION_MODE_META, type PredictionMode } from "@/lib/prediction-modes";
 import { presetUrlById, DEFAULT_PRESET_LOGO_URL } from "@/lib/league-logos";
 import {
@@ -419,6 +420,51 @@ export async function updateLeague(
   revalidatePath("/mi-quiniela");
   revalidatePath("/", "layout");
   return { ok: true, message: "Quiniela actualizada." };
+}
+
+/**
+ * Activa/desactiva que el bracket (categoría 4) cuente en una liga. Solo el
+ * dueño (o admin de plataforma) de una liga PRIVADA en modo Completo. Al
+ * cambiarlo recalcula el bracket de esa liga: si se desactiva, borra sus puntos
+ * de bracket; si se reactiva, los recalcula desde las predicciones guardadas
+ * (reversible). No toca otras categorías ni otras ligas.
+ */
+export async function setLeagueBracketScoring(
+  leagueId: number,
+  enabled: boolean,
+): Promise<{ ok: boolean; error?: string; message?: string }> {
+  const me = await requireUser();
+  const [target] = await db
+    .select()
+    .from(leagues)
+    .where(eq(leagues.id, leagueId))
+    .limit(1);
+  if (!target) return { ok: false, error: "Liga no encontrada." };
+  if (target.isPublic) {
+    return { ok: false, error: "La quiniela pública no se puede editar." };
+  }
+  if (!canManageLeague(me, target)) {
+    return { ok: false, error: "No tienes permiso para editar esta quiniela." };
+  }
+  if (target.predictionMode !== "completo") {
+    return { ok: false, error: "El bracket solo existe en el modo Completo." };
+  }
+
+  await db.update(leagues).set({ scoreBracket: enabled }).where(eq(leagues.id, leagueId));
+  await recomputeLeagueBracket(leagueId);
+
+  revalidatePath("/mi-quiniela");
+  revalidatePath("/ranking");
+  revalidatePath("/predicciones");
+  revalidatePath("/predicciones/bracket");
+  revalidatePath("/dashboard");
+  revalidatePath("/", "layout");
+  return {
+    ok: true,
+    message: enabled
+      ? "El bracket vuelve a puntuar en tu quiniela."
+      : "El bracket ya no puntúa en tu quiniela.",
+  };
 }
 
 /**

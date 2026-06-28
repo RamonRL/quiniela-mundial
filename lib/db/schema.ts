@@ -172,6 +172,12 @@ export const leagues = pgTable(
     // Modo de predicción de la liga. Se elige al crear y es inmutable.
     // Las 3 quinielas públicas existen una por modo.
     predictionMode: predictionMode("prediction_mode").notNull().default("completo"),
+    // ¿Cuentan los puntos del bracket (categoría 4, solo modo Completo) en esta
+    // liga? El dueño puede desactivarlo (p. ej. si la ventana de predicción del
+    // bracket fue corta). Mutable post-creación; default true (opt-out). Al
+    // desactivar no se borran las predicciones — solo dejan de puntuar — así que
+    // es reversible.
+    scoreBracket: boolean("score_bracket").notNull().default(true),
     // Trazas de la venta — el admin las rellena manualmente al confirmar
     // el pago por PayPal. paidAt indica también "última renovación".
     paidAt: timestamp("paid_at", { withTimezone: true }),

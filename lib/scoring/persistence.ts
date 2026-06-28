@@ -28,7 +28,7 @@ import {
   type ScoringRules,
 } from "./index";
 import { DEFAULT_SCORING_RULES } from "./defaults";
-import { getLeagueModes } from "@/lib/leagues";
+import { getLeagueBracketFlags, getLeagueModes } from "@/lib/leagues";
 
 /** Modos de un conjunto de ligas (dedup). Default completo si falta. */
 async function modesFor(leagueIds: number[]) {
@@ -306,14 +306,17 @@ export async function recomputeBracketStageForAllUsers(
     .from(predBracketSlot)
     .where(eq(predBracketSlot.stage, mapBracketStageToMatchStage(stageKey)));
 
-  // Bracket solo puntúa en ligas de modo completo.
+  // Bracket solo puntúa en ligas de modo completo...
   const bracketModes = await modesFor(preds.map((p) => p.leagueId));
+  // ...y que NO hayan desactivado el bracket (opt-out por liga).
+  const bracketFlags = await getLeagueBracketFlags(preds.map((p) => p.leagueId));
 
   // Agrupar predicciones por (user, league).
   const byUserLeague = new Map<string, { userId: string; leagueId: number; teams: number[] }>();
   for (const p of preds) {
     if (!p.predictedTeamId) continue;
     if ((bracketModes.get(p.leagueId) ?? "completo") !== "completo") continue;
+    if (bracketFlags.get(p.leagueId) === false) continue;
     const key = `${p.userId}:${p.leagueId}`;
     const existing = byUserLeague.get(key);
     if (existing) {
@@ -365,6 +368,73 @@ function mapBracketStageToMatchStage(stage: BracketStageKey) {
     case "champion":
       return "final" as const;
   }
+}
+
+/** Ganadores (winnerTeamId) de los partidos FINALIZADOS de un stage. */
+async function finishedStageWinners(
+  stage: "r32" | "r16" | "qf" | "sf" | "final",
+): Promise<number[]> {
+  const rows = await db
+    .select({ w: matches.winnerTeamId })
+    .from(matches)
+    .where(and(eq(matches.stage, stage), eq(matches.status, "finished")));
+  return rows.map((r) => r.w).filter((x): x is number => x != null);
+}
+
+/**
+ * Recalcula el bracket de UNA sola liga (eficiente, sin tocar las demás). Lo usa
+ * el toggle de "contar bracket" del dueño: borra TODAS las filas `bracket_slot`
+ * de la liga y, si la liga es Completo y tiene el bracket activado, vuelve a
+ * puntuar sus predicciones con los ganadores ya conocidos de cada ronda. Si está
+ * desactivado (o no es Completo), solo borra → la liga deja de sumar bracket.
+ * Reversible: al reactivar, las predicciones guardadas vuelven a puntuar.
+ */
+export async function recomputeLeagueBracket(leagueId: number) {
+  const rules = await loadScoringRules();
+  const mode = (await getLeagueModes([leagueId])).get(leagueId) ?? "completo";
+  const flag = (await getLeagueBracketFlags([leagueId])).get(leagueId) ?? true;
+  const shouldScore = mode === "completo" && flag;
+
+  const fresh: LedgerInsert[] = [];
+  if (shouldScore) {
+    const stages: { key: BracketStageKey; src: "r32" | "r16" | "qf" | "sf" | "final" }[] = [
+      { key: "r16", src: "r32" },
+      { key: "qf", src: "r16" },
+      { key: "sf", src: "qf" },
+      { key: "final", src: "sf" },
+      { key: "champion", src: "final" },
+    ];
+    const preds = await db
+      .select()
+      .from(predBracketSlot)
+      .where(eq(predBracketSlot.leagueId, leagueId));
+    for (const { key, src } of stages) {
+      const advancers = await finishedStageWinners(src);
+      if (advancers.length === 0) continue;
+      const matchStage = mapBracketStageToMatchStage(key);
+      const byUser = new Map<string, number[]>();
+      for (const p of preds) {
+        if (p.stage !== matchStage || !p.predictedTeamId) continue;
+        const arr = byUser.get(p.userId) ?? [];
+        arr.push(p.predictedTeamId);
+        byUser.set(p.userId, arr);
+      }
+      for (const [userId, teams] of byUser) {
+        const entries = scoreBracketStage({
+          stageKey: key,
+          predictedTeamIds: teams,
+          actualAdvancingTeamIds: advancers,
+          rules,
+        });
+        collectEntries(fresh, userId, leagueId, entries);
+      }
+    }
+  }
+
+  await writeLedgerBatch(
+    and(eq(pointsLedger.source, "bracket_slot"), eq(pointsLedger.leagueId, leagueId))!,
+    fresh,
+  );
 }
 
 // ───────────────────────── tournament top scorer ─────────────────────────

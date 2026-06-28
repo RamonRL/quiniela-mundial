@@ -179,6 +179,8 @@ export default async function MyLeaguePage() {
                   name: league.name,
                   logoUrl: league.logoUrl,
                   isPremium,
+                  mode: league.predictionMode,
+                  scoreBracket: league.scoreBracket,
                 }}
                 memberCount={members.length}
                 canDelete={isRealOwner}
