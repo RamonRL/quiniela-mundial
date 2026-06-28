@@ -220,6 +220,27 @@ export async function handleGroupStageTransition(): Promise<void> {
     return;
   }
 
+  // Auto-apertura (decisión de esta edición): cuadro listo y sin ambigüedad →
+  // poblamos los 8 mejores terceros y abrimos R32 a los jugadores sin esperar al
+  // clic del admin. Reutiliza la misma función que el botón manual de /admin/sync.
+  // Si el poblado no sale "ok" (caso raro aquí, ya descartamos ambigüedad),
+  // caemos al aviso manual de siempre.
+  const populate = await populateR32ThirdPlaces();
+  if (populate.status === "ok") {
+    await setR32TransitionState({
+      openedAt: new Date().toISOString(),
+      openedBy: "auto",
+      notifiedAt: st.notifiedAt ?? new Date().toISOString(),
+    });
+    await sendTelegramMessage(
+      `🏟️ <b>Dieciseisavos ABIERTOS automáticamente</b>\n` +
+        `Fase de grupos cerrada y 8 mejores terceros ubicados (Anexo C FIFA). ` +
+        `Bracket (modo Completo) y predicción de resultados/goleadores de R32 ya ` +
+        `disponibles para los jugadores.`,
+    ).catch(() => {});
+    return;
+  }
+
   if (!st.notifiedAt) {
     await sendTelegramMessage(
       `✅ <b>Fase de grupos cerrada</b>\n` +

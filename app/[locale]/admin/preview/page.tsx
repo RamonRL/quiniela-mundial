@@ -5,7 +5,7 @@ import {
   MatchPredictionsReveal,
   type RevealRow,
 } from "@/components/match/predictions-reveal";
-import { SocialFollowBanner } from "@/components/dashboard/social-follow-banner";
+import { KnockoutBanner } from "@/components/dashboard/knockout-banner";
 
 export const metadata = { title: "Preview · Admin" };
 export const dynamic = "force-dynamic";
@@ -140,6 +140,8 @@ const VARIANTS: Variant[] = [
 
 export default async function PreviewPage() {
   await requireAdmin();
+  // Cuenta atrás de muestra (~5 h) para previsualizar el banner de bracket.
+  const previewClosesAt = new Date(Date.now() + 5 * 60 * 60 * 1000).toISOString();
 
   const [tEs, tEn] = await Promise.all([
     getTranslations({ locale: "es", namespace: "matchDetail" }),
@@ -158,15 +160,18 @@ export default async function PreviewPage() {
       <section className="space-y-6">
         <div>
           <p className="font-mono text-[0.7rem] uppercase tracking-[0.18em] text-[var(--color-arena)]">
-            Banner redes · ES / EN
+            Banner fase eliminatoria · al cerrar los grupos
           </p>
           <p className="font-editorial text-sm italic text-[var(--color-muted-foreground)]">
-            Aparece en el dashboard tras el patrocinador y el banner de instalar
-            app. Pasa el ratón por cada red: se enciende con su color de marca.
+            Sustituye al banner de redes cuando se abren los dieciseisavos.
+            Arriba, el de las ligas en modo <strong>Completo</strong> (urgencia
+            del bracket + cuenta atrás al primer R32, y menciona resultados y
+            goleadores). Abajo, el del <strong>resto de modos</strong> (solo el
+            aviso de dieciseisavos). La cuenta atrás es de muestra (~5 h).
           </p>
         </div>
-        <SocialFollowBanner locale="es" />
-        <SocialFollowBanner locale="en" />
+        <KnockoutBanner variant="completo" closesAtISO={previewClosesAt} bracketDone={false} />
+        <KnockoutBanner variant="basic" />
       </section>
 
       <section className="space-y-10">

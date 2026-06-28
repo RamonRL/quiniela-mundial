@@ -31,7 +31,9 @@ import { DashboardPlayerCard } from "@/components/dashboard/player-card";
 import { InstallBanner } from "@/components/install/install-banner";
 import { PatchNotesBoard } from "@/components/dashboard/patch-notes-board";
 import { SponsorStrip } from "@/components/dashboard/sponsor-strip";
-import { SocialFollowBanner } from "@/components/dashboard/social-follow-banner";
+// Banner de redes ocultado de momento (se mantiene el componente por si se
+// reactiva): import { SocialFollowBanner } from "@/components/dashboard/social-follow-banner";
+import { KnockoutBanner } from "@/components/dashboard/knockout-banner";
 import { loadEffectiveSponsors, type SponsorLogo } from "@/lib/sponsors";
 import { HeroCard, type HeroData } from "@/components/dashboard/hero-card";
 import { loadHeroData } from "@/lib/dashboard/hero-data";
@@ -247,6 +249,13 @@ export default async function DashboardPage({
   const sponsors = sponsorRows;
   const myPoints = myPointsRows[0]?.total ?? 0;
 
+  // Banner de fase eliminatoria (sustituye al de redes mientras dure la ronda).
+  // Completo → bracket abierto (urgencia + cuenta atrás + menciona R32);
+  // resto de modos → aviso de que ya pueden predecir los dieciseisavos.
+  const r32ResultsOpen = openMatchdays.some((m) => m.stage === "r32");
+  const showKoCompleto = mode === "completo" && bracketStatus.state === "open";
+  const showKoBasic = onlyMatches && r32ResultsOpen;
+
   // Activity feed se ha movido a un async Server Component dentro de
   // <Suspense> más abajo — descongestiona el critical path: la página
   // hace su primer paint sin esperar a `loadActivityFeed`, que streamea
@@ -372,9 +381,17 @@ export default async function DashboardPage({
           Se cierra y no vuelve a salir (localStorage). */}
       <InstallBanner />
 
-      {/* Banner de redes: la mascota pide seguir IG/TikTok/X. Estático y
-          compartido (no añade carga por usuario). */}
-      <SocialFollowBanner />
+      {/* Banner de fase eliminatoria (sustituye al de redes). Completo → bracket
+          con urgencia + cuenta atrás; resto de modos → aviso de dieciseisavos. */}
+      {showKoCompleto ? (
+        <KnockoutBanner
+          variant="completo"
+          closesAtISO={bracketStatus.closesAt ? bracketStatus.closesAt.toISOString() : null}
+          bracketDone={(bracketFilledRow[0]?.c ?? 0) > 0}
+        />
+      ) : showKoBasic ? (
+        <KnockoutBanner variant="basic" />
+      ) : null}
 
       {/* Card principal: marcador de retransmisión — directos (1 o 2) o el
           siguiente partido. Sustituye al hero antiguo y al Live HUD. */}
