@@ -10,6 +10,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { NavigationProgress } from "@/components/shell/navigation-progress";
 import { OrganizationLD, WebApplicationLD } from "@/components/seo/jsonld";
 import { GoogleTag } from "@/components/analytics/google-tag";
+import { Analytics } from "@vercel/analytics/next";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -216,6 +217,9 @@ export default async function RootLayout({
           <OrganizationLD />
           <WebApplicationLD />
           <GoogleTag />
+          {/* Vercel Web Analytics: reactivado para la fase final (visitantes por
+              página, etc.). Se quitó durante grupos para recortar coste. */}
+          <Analytics />
         </NextIntlClientProvider>
       </body>
     </html>
