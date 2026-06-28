@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { TeamFlag } from "@/components/brand/team-flag";
 import { cn } from "@/lib/utils";
 import { PensWinnerPicker } from "@/components/predictions/pens-winner-picker";
@@ -82,6 +83,7 @@ export function WinnerPicker({
   variant?: Variant;
   onChange: (patch: Partial<WinnerValue>) => void;
 }) {
+  const t = useTranslations("predMatchday");
   const s = SIZES[variant];
   const outcome: Outcome =
     value.homeScore > value.awayScore
@@ -126,7 +128,7 @@ export function WinnerPicker({
       <div className={cn("grid grid-cols-3", s.gap)}>
         <PickCell
           digit="1"
-          sub={`Gana ${home?.code ?? "Local"}`}
+          sub={t("wpWins", { code: home?.code ?? t("wpHomeShort") })}
           active={sel === "home"}
           disabled={disabled}
           cellClass={s.cell}
@@ -136,7 +138,7 @@ export function WinnerPicker({
         />
         <PickCell
           digit="X"
-          sub={isKnockout ? "Empate · pen." : "Empate"}
+          sub={isKnockout ? t("wpDrawPens") : t("wpDraw")}
           active={sel === "draw"}
           disabled={disabled}
           cellClass={s.cell}
@@ -146,7 +148,7 @@ export function WinnerPicker({
         />
         <PickCell
           digit="2"
-          sub={`Gana ${away?.code ?? "Visit."}`}
+          sub={t("wpWins", { code: away?.code ?? t("wpAwayShort") })}
           active={sel === "away"}
           disabled={disabled}
           cellClass={s.cell}

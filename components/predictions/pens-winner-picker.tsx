@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { TeamFlag } from "@/components/brand/team-flag";
 import { cn } from "@/lib/utils";
 
@@ -29,10 +30,11 @@ export function PensWinnerPicker({
   disabled?: boolean;
   flagSize?: number;
 }) {
+  const t = useTranslations("predMatchday");
   return (
     <div className="rise-in space-y-2 rounded-lg border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface-2))] p-2.5">
       <p className="font-mono text-[0.55rem] uppercase tracking-[0.2em] text-[var(--color-arena)]">
-        ¿Quién pasa en penaltis? <span className="text-[var(--color-muted-foreground)]">+2</span>
+        {t("wpPensWho")} <span className="text-[var(--color-muted-foreground)]">+2</span>
       </p>
       <div className="grid grid-cols-2 gap-1.5">
         {[home, away].map((team) =>

@@ -87,6 +87,7 @@ export async function saveMatchdayPredictions(
   const matchRows = await db
     .select({
       id: matches.id,
+      stage: matches.stage,
       homeTeamId: matches.homeTeamId,
       awayTeamId: matches.awayTeamId,
       scheduledAt: matches.scheduledAt,
@@ -157,6 +158,18 @@ export async function saveMatchdayPredictions(
       await db.transaction(async (tx) => {
         for (const p of openPredictions) {
           if (onlyPicked && !p.picked) continue;
+          // Guard de servidor: derivamos willGoToPens/winnerTeamId del estado
+          // real (eliminatoria + empate) e ignoramos valores espurios del
+          // cliente. Penaltis solo en KO con empate; el ganador debe ser uno de
+          // los dos equipos. (El scorer ya re-deriva el empate; esto es defensa
+          // en profundidad para no persistir datos sucios.)
+          const m = matchById.get(p.matchId)!;
+          const willGoToPens = m.stage !== "group" && p.homeScore === p.awayScore;
+          const winnerTeamId =
+            willGoToPens &&
+            (p.winnerTeamId === m.homeTeamId || p.winnerTeamId === m.awayTeamId)
+              ? p.winnerTeamId ?? null
+              : null;
           await tx
             .insert(predMatchResult)
             .values({
@@ -165,8 +178,8 @@ export async function saveMatchdayPredictions(
               matchId: p.matchId,
               homeScore: p.homeScore,
               awayScore: p.awayScore,
-              willGoToPens: p.willGoToPens,
-              winnerTeamId: p.winnerTeamId ?? null,
+              willGoToPens,
+              winnerTeamId,
               submittedAt: new Date(),
             })
             .onConflictDoUpdate({
@@ -174,8 +187,8 @@ export async function saveMatchdayPredictions(
               set: {
                 homeScore: p.homeScore,
                 awayScore: p.awayScore,
-                willGoToPens: p.willGoToPens,
-                winnerTeamId: p.winnerTeamId ?? null,
+                willGoToPens,
+                winnerTeamId,
                 submittedAt: new Date(),
               },
             });
