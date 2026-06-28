@@ -833,17 +833,19 @@ function TeamRowButton({
         preview && "cursor-pointer opacity-100",
       )}
     >
-      <div className="flex min-w-0 items-center gap-1.5">
-        <TeamFlag code={team?.code} size={18} />
+      <div className="flex min-w-0 items-center gap-2">
+        <TeamFlag code={team?.code} size={20} />
         <span
           className={cn(
             "truncate font-medium",
             isPlaceholder
               ? "font-mono text-[0.6rem] uppercase tracking-[0.16em] text-[var(--color-muted-foreground)]"
-              : "font-mono text-[0.75rem] uppercase tracking-[0.18em]",
+              : // Nombre completo localizado (no el código FIFA): tracking
+                // ajustado para aprovechar el ancho sin recortar de más.
+                "font-display text-sm uppercase tracking-[0.01em]",
           )}
         >
-          {team ? team.code : label}
+          {team ? team.name : label}
         </span>
       </div>
       {isWinner ? (
