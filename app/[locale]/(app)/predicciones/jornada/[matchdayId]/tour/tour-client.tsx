@@ -338,6 +338,13 @@ export function MatchdayTourClient({
           }
         >
       <div className="space-y-6">
+        {/* Aviso de que el marcador a predecir es a 120′ (fin de la prórroga),
+            no a penaltis. Solo en rondas eliminatorias. */}
+        {isKnockout ? (
+          <p className="mx-auto max-w-md rounded-md border border-[var(--color-border)] bg-[var(--color-surface-2)]/50 px-3 py-2 text-center font-editorial text-xs italic text-[var(--color-muted-foreground)]">
+            {t("ko120Note")}
+          </p>
+        ) : null}
         {soloGanador ? (
           /* ── Solo Ganador: la quiniela 1·X·2 a pantalla completa ── */
           <>

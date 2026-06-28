@@ -997,6 +997,7 @@
     "warnPickedDesc": "Touche 1 (domicile), X (nul) ou 2 (extérieur) pour continuer.",
     "vs": "vs",
     "goesToPens": "Va aux tirs au but",
+    "ko120Note": "Le score est à la fin de la prolongation (120′), le cas échéant. Les tirs au but décident seulement qui passe.",
     "qualifiedByPens": "Qualifié aux tirs au but…",
     "scorerHint": "+4 pts si correct · Même à 0-0, un bon buteur ajoute un bonus. Ça ne pénalise jamais.",
     "teamsTBD": "Les équipes seront connues au fil du tableau.",

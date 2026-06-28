@@ -997,6 +997,7 @@
     "warnPickedDesc": "Tap 1 (home), X (draw) or 2 (away) to continue.",
     "vs": "vs",
     "goesToPens": "Goes to penalties",
+    "ko120Note": "The score is at the end of extra time (120′), if played. Penalties only decide who advances.",
     "qualifiedByPens": "Advances on penalties…",
     "scorerHint": "+4 pts if right · Even at 0-0, a correct scorer adds extra. It never penalizes.",
     "teamsTBD": "The teams will be known as the bracket advances.",
