@@ -127,6 +127,28 @@ export default async function PredictBracketPage({
     };
   }
 
+  // Previa admin: cuando los grupos ya cerraron pero el admin aún no ha "abierto
+  // R32", los locales reales (1.º/2.º de grupo) están puestos pero los visitantes
+  // de las casillas de mejores terceros siguen vacíos → no se podrían clicar.
+  // Rellenamos CUALQUIER slot nulo con una selección libre del pool de
+  // clasificados para poder probar el bracket entero. Solo afecta al render en
+  // preview — nunca toca la BD ni el flujo real de apertura.
+  if (previewRequested) {
+    const placed = new Set<number>();
+    for (const code of Object.keys(r32Pairings)) {
+      const p = r32Pairings[code];
+      if (p.homeId != null) placed.add(p.homeId);
+      if (p.awayId != null) placed.add(p.awayId);
+    }
+    const fillQueue = qualifiedTeams.map((tm) => tm.id).filter((id) => !placed.has(id));
+    let qi = 0;
+    for (const code of Object.keys(r32Pairings)) {
+      const p = r32Pairings[code];
+      if (p.homeId == null && qi < fillQueue.length) p.homeId = fillQueue[qi++];
+      if (p.awayId == null && qi < fillQueue.length) p.awayId = fillQueue[qi++];
+    }
+  }
+
   const leagueId = (await currentLeagueId(me))!;
   const mine = await db
     .select()
