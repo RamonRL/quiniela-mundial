@@ -445,7 +445,7 @@ function MobileBracketTree(props: TreeUIProps) {
   return (
     <div className="scroll-x-only-on-pc -mx-4 overflow-x-auto px-4 lg:hidden">
       <div
-        className="flex min-h-[64rem] gap-x-5 pb-2"
+        className="flex min-h-[72rem] gap-x-5 pb-2"
         style={{ ["--bracket-gap" as string]: "18px" }}
       >
         <MobileTreeColumn stage="r32" order={stageCodes("r32")} label={t("stR32")} {...props} />
