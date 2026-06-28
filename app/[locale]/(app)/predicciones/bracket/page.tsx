@@ -13,6 +13,11 @@ import { currentLeagueId, getLeagueModes, getLeagueBracketFlags } from "@/lib/le
 import { getDateContext } from "@/lib/timezone-server";
 import { formatDateTime } from "@/lib/utils";
 import { getBracketStatus, getQualifiedTeamIds } from "@/lib/bracket-state";
+import {
+  getBracketRepescaUntil,
+  getRepescaLockedR32,
+  computeLockedWinners,
+} from "@/lib/bracket-repesca";
 import { getLocale, getTranslations } from "next-intl/server";
 import { localizeTeams } from "@/lib/team-names";
 import { bracketScoring, bracketFootnote } from "@/lib/scoring/copy";
@@ -170,13 +175,32 @@ export default async function PredictBracketPage({
 
   const sortedTeams = [...qualifiedTeams].sort((a, b) => a.name.localeCompare(b.name));
 
+  // ── Repesca: reapertura corta con los R32 ya jugados bloqueados por caso ──
+  const repescaUntil = await getBracketRepescaUntil();
+  const repescaActive = repescaUntil != null && Date.now() < repescaUntil.getTime();
+  const lockedR32 = repescaActive && repescaUntil ? await getRepescaLockedR32(repescaUntil) : [];
+  // El equipo fijado por cruce se decide con lo que el usuario tenía en octavos.
+  const lockedWinners = computeLockedWinners(lockedR32, new Set(r16));
+  // Sembramos en r16 el equipo fijado (y quitamos su pareja) para que el builder
+  // lo muestre ya marcado; repescados sin pick reciben el perdedor (Sudáfrica).
+  let seededR16 = [...r16];
+  for (const l of lockedR32) {
+    const lockTeam = lockedWinners[l.code];
+    const mate = lockTeam === l.advancerTeamId ? l.loserTeamId : l.advancerTeamId;
+    seededR16 = seededR16.filter((id) => id !== mate && id !== lockTeam);
+    seededR16.push(lockTeam);
+  }
+  const editable = status.state === "open" || repescaActive;
+
   const description = previewRequested
     ? tb("descPreview")
-    : status.state === "open"
-      ? tb("descOpen", {
-          date: status.closesAt ? formatDateTime(status.closesAt, { timeZone, locale: dateLocale }) : tb("closesFirstR32"),
-        })
-      : tb("descClosed");
+    : repescaActive && repescaUntil
+      ? tb("descOpen", { date: formatDateTime(repescaUntil, { timeZone, locale: dateLocale }) })
+      : status.state === "open"
+        ? tb("descOpen", {
+            date: status.closesAt ? formatDateTime(status.closesAt, { timeZone, locale: dateLocale }) : tb("closesFirstR32"),
+          })
+        : tb("descClosed");
 
   return (
     <div className="space-y-6">
@@ -186,13 +210,18 @@ export default async function PredictBracketPage({
         description={description}
       />
       <ScoringBox sections={bracketScoring(t)} footnote={bracketFootnote(t)} />
+      {repescaActive ? (
+        <p className="rounded-lg border border-dashed border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface))] px-4 py-2.5 text-center font-editorial text-sm italic text-[var(--color-muted-foreground)]">
+          {tb("repescaBanner")}
+        </p>
+      ) : null}
       {!bracketScores ? (
         <p className="rounded-lg border border-dashed border-[var(--color-warning)]/40 bg-[var(--color-warning)]/5 px-4 py-2.5 text-center font-editorial text-sm italic text-[var(--color-muted-foreground)]">
           {tb("notScored")}
         </p>
       ) : null}
       <BracketBuilder
-        open={status.state === "open"}
+        open={editable}
         preview={previewRequested}
         teams={sortedTeams.map<TeamLite>((t) => ({
           id: t.id,
@@ -201,7 +230,8 @@ export default async function PredictBracketPage({
           flagUrl: t.flagUrl,
         }))}
         r32Pairings={r32Pairings}
-        initial={{ r16, qf, sf, finalists, championTeamId, thirdTeamId }}
+        initial={{ r16: seededR16, qf, sf, finalists, championTeamId, thirdTeamId }}
+        lockedWinners={lockedWinners}
       />
     </div>
   );

@@ -9,6 +9,12 @@ import { requireUser } from "@/lib/auth/guards";
 import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
 import { runAction } from "@/lib/actions/guard";
 import { getBracketStatus } from "@/lib/bracket-state";
+import {
+  getBracketRepescaUntil,
+  getRepescaLockedR32,
+  computeLockedWinners,
+} from "@/lib/bracket-repesca";
+import { recomputeLeagueBracket } from "@/lib/scoring/persistence";
 
 export type FormState = { ok: boolean; error?: string };
 
@@ -47,12 +53,12 @@ export async function saveBracketPicks(
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos." };
   }
-  // Misma fuente de verdad que el estado visual del bracket: editable solo
-  // mientras está `open` (R32 ya poblado y el primer partido de dieciseisavos
-  // aún no ha empezado). Antes esto estaba atado al saque inicial del torneo
-  // (11 jun), que cerraba el bracket para siempre tras la fase de grupos.
+  // Editable mientras el bracket está `open` (R32 poblado, antes del 1.er R32) o
+  // durante la REPESCA (reapertura corta con los R32 ya jugados bloqueados).
   const bracketStatus = await getBracketStatus();
-  if (bracketStatus.state !== "open") {
+  const repescaUntil = await getBracketRepescaUntil();
+  const repescaActive = repescaUntil != null && Date.now() < repescaUntil.getTime();
+  if (bracketStatus.state !== "open" && !repescaActive) {
     return {
       ok: false,
       error:
@@ -63,16 +69,6 @@ export async function saveBracketPicks(
   }
 
   const { r16, qf, sf, finalists, championTeamId, thirdTeamId } = parsed.data.picks;
-  for (const [name, len, max] of [
-    ["r16", r16.length, STAGE_LIMIT.r16],
-    ["qf", qf.length, STAGE_LIMIT.qf],
-    ["sf", sf.length, STAGE_LIMIT.sf],
-    ["final", finalists.length, STAGE_LIMIT.final],
-  ] as const) {
-    if (len > max) {
-      return { ok: false, error: `Máximo ${max} picks en ${name}.` };
-    }
-  }
 
   const leagueId = await currentLeagueId(me);
   if (leagueId == null) {
@@ -81,6 +77,56 @@ export async function saveBracketPicks(
   const mode = (await getLeagueModes([leagueId])).get(leagueId) ?? "completo";
   if (mode !== "completo") {
     return { ok: false, error: "Esta quiniela no predice el bracket." };
+  }
+
+  // Refuerzo de servidor de la repesca: fija el ganador de los R32 ya jugados
+  // según lo que el usuario tenía ANTES (no lo que mande el cliente). Si tenía
+  // al ganador → se lo dejamos; si no (falló o no rellenó) → el perdedor, y
+  // borramos al ganador de TODAS las rondas (no puede puntuarlo).
+  let fr16 = [...r16];
+  let fqf = [...qf];
+  let fsf = [...sf];
+  let ffinalists = [...finalists];
+  let fchampion = championTeamId;
+  if (repescaActive && repescaUntil) {
+    const lockedR32 = await getRepescaLockedR32(repescaUntil);
+    const prior = await db
+      .select({ t: predBracketSlot.predictedTeamId })
+      .from(predBracketSlot)
+      .where(
+        and(
+          eq(predBracketSlot.userId, me.id),
+          eq(predBracketSlot.leagueId, leagueId),
+          eq(predBracketSlot.stage, "r16"),
+        ),
+      );
+    const priorR16 = new Set(prior.map((p) => p.t).filter((x): x is number => x != null));
+    const lockedWinners = computeLockedWinners(lockedR32, priorR16);
+    for (const l of lockedR32) {
+      const lockTeam = lockedWinners[l.code];
+      const mate = lockTeam === l.advancerTeamId ? l.loserTeamId : l.advancerTeamId;
+      fr16 = fr16.filter((id) => id !== mate && id !== lockTeam);
+      fr16.push(lockTeam);
+      if (lockTeam === l.loserTeamId) {
+        const adv = l.advancerTeamId;
+        fr16 = fr16.filter((id) => id !== adv);
+        fqf = fqf.filter((id) => id !== adv);
+        fsf = fsf.filter((id) => id !== adv);
+        ffinalists = ffinalists.filter((id) => id !== adv);
+        if (fchampion === adv) fchampion = null;
+      }
+    }
+  }
+
+  for (const [name, len, max] of [
+    ["r16", fr16.length, STAGE_LIMIT.r16],
+    ["qf", fqf.length, STAGE_LIMIT.qf],
+    ["sf", fsf.length, STAGE_LIMIT.sf],
+    ["final", ffinalists.length, STAGE_LIMIT.final],
+  ] as const) {
+    if (len > max) {
+      return { ok: false, error: `Máximo ${max} picks en ${name}.` };
+    }
   }
 
   return runAction(
@@ -98,16 +144,16 @@ export async function saveBracketPicks(
           );
 
         const rows: (typeof predBracketSlot.$inferInsert)[] = [];
-        r16.forEach((teamId, i) =>
+        fr16.forEach((teamId, i) =>
           rows.push({ userId: me.id, leagueId, stage: "r16", slotPosition: i + 1, predictedTeamId: teamId }),
         );
-        qf.forEach((teamId, i) =>
+        fqf.forEach((teamId, i) =>
           rows.push({ userId: me.id, leagueId, stage: "qf", slotPosition: i + 1, predictedTeamId: teamId }),
         );
-        sf.forEach((teamId, i) =>
+        fsf.forEach((teamId, i) =>
           rows.push({ userId: me.id, leagueId, stage: "sf", slotPosition: i + 1, predictedTeamId: teamId }),
         );
-        finalists.forEach((teamId, i) =>
+        ffinalists.forEach((teamId, i) =>
           rows.push({
             userId: me.id,
             leagueId,
@@ -116,13 +162,13 @@ export async function saveBracketPicks(
             predictedTeamId: teamId,
           }),
         );
-        if (championTeamId) {
+        if (fchampion) {
           rows.push({
             userId: me.id,
             leagueId,
             stage: "final",
             slotPosition: 0,
-            predictedTeamId: championTeamId,
+            predictedTeamId: fchampion,
           });
         }
         if (thirdTeamId) {
@@ -139,8 +185,14 @@ export async function saveBracketPicks(
         if (rows.length > 0) await tx.insert(predBracketSlot).values(rows);
       });
 
+      // En repesca, M73 ya está jugado → recomputamos el bracket de la liga para
+      // que la edición puntúe (octavos ya tiene ganadores conocidos).
+      if (repescaActive) await recomputeLeagueBracket(leagueId);
+
       revalidatePath("/predicciones/bracket");
       revalidatePath("/predicciones");
+      revalidatePath("/ranking");
+      revalidatePath("/dashboard");
       return { ok: true };
     },
     (error) => ({ ok: false, error }),

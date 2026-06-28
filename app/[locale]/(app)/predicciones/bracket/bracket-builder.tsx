@@ -71,12 +71,15 @@ export function BracketBuilder({
   open,
   preview = false,
   r32Pairings,
+  lockedWinners = {},
 }: {
   teams: TeamLite[];
   initial: Picks;
   open: boolean;
   preview?: boolean;
   r32Pairings: R32Pairings;
+  /** Cruces de R32 ya jugados (repesca): code → teamId fijado, no editable. */
+  lockedWinners?: Record<string, number>;
 }) {
   const t = useTranslations("predBracket");
   const [picks, setPicks] = useState<Picks>(initialPicks);
@@ -147,6 +150,7 @@ export function BracketBuilder({
 
   function pickWinner(code: string, teamId: number) {
     if (!interactive) return;
+    if (lockedWinners[code] != null) return; // cruce ya jugado (repesca) — bloqueado
     const stage = STAGE_BY_CODE[code];
     const cands = homeAwayByCode[code];
     if (!cands) return;
@@ -193,6 +197,7 @@ export function BracketBuilder({
         onPick={pickWinner}
         interactive={interactive}
         preview={preview}
+        lockedWinners={lockedWinners}
       />
 
       {state.error ? <p className="text-sm text-[var(--color-danger)]">{state.error}</p> : null}
@@ -376,6 +381,8 @@ type TreeUIProps = {
   onPick: (code: string, teamId: number) => void;
   interactive: boolean;
   preview: boolean;
+  /** Cruces R32 ya jugados (repesca): code → teamId fijado, no editable. */
+  lockedWinners: Record<string, number>;
 };
 
 function BracketTreeUI(props: TreeUIProps) {
@@ -641,6 +648,7 @@ function MatchCard({
   onPick,
   interactive,
   preview,
+  lockedWinners,
   showHeader,
 }: TreeUIProps & {
   code: string;
@@ -650,6 +658,8 @@ function MatchCard({
   const t = useTranslations("predBracket");
   const cands = homeAwayByCode[code] ?? { home: null, away: null };
   const winner = matchPickedFromPair(stage, cands, picks);
+  // Cruce ya jugado (repesca): bloqueado, no editable.
+  const locked = lockedWinners[code] != null;
 
   const home = cands.home != null ? teamById.get(cands.home) ?? null : null;
   const away = cands.away != null ? teamById.get(cands.away) ?? null : null;
@@ -672,7 +682,16 @@ function MatchCard({
             : "border-[var(--color-border)]",
       )}
     >
-      {(showHeader ?? true) ? (
+      {locked ? (
+        // Cruce ya jugado (repesca): cabecera de bloqueo (sirve con o sin header).
+        <div className="flex items-center justify-between border-b border-[var(--color-border)] bg-[var(--color-surface-2)] px-2 py-1 font-mono text-[0.55rem] uppercase tracking-[0.22em] text-[var(--color-muted-foreground)]">
+          <span className="flex items-center gap-1">
+            <Lock className="size-2.5" />
+            {code}
+          </span>
+          <span>{t("lockedPlayed")}</span>
+        </div>
+      ) : (showHeader ?? true) ? (
         <div
           className={cn(
             "flex items-center justify-between border-b px-2 py-1 font-mono text-[0.55rem] uppercase tracking-[0.28em]",
@@ -689,7 +708,7 @@ function MatchCard({
         team={home}
         placeholderLabel={homePlaceholder}
         isWinner={winner != null && winner === home?.id}
-        disabled={!interactive || home == null}
+        disabled={!interactive || locked || home == null}
         onPick={() => home && onPick(code, home.id)}
         preview={preview}
       />
@@ -698,7 +717,7 @@ function MatchCard({
         team={away}
         placeholderLabel={awayPlaceholder}
         isWinner={winner != null && winner === away?.id}
-        disabled={!interactive || away == null}
+        disabled={!interactive || locked || away == null}
         onPick={() => away && onPick(code, away.id)}
         preview={preview}
       />

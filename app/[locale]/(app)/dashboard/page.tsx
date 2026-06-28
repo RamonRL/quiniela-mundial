@@ -18,7 +18,8 @@ import { LeagueWelcomeDialog } from "@/components/leagues/league-welcome-dialog"
 import { RealtimeRefresher } from "@/components/realtime/realtime-refresher";
 import { requireUser } from "@/lib/auth/guards";
 import { TutorialAutoStart } from "@/components/tutorial/auto-start";
-import { currentLeagueId, getLeagueModes } from "@/lib/leagues";
+import { currentLeagueId, getLeagueModes, getLeagueBracketFlags } from "@/lib/leagues";
+import { getBracketRepescaUntil } from "@/lib/bracket-repesca";
 import { getDateContext } from "@/lib/timezone-server";
 import { ActivityFeedCard } from "./activity-feed-card";
 import { DashboardNewsStrip } from "./news-strip";
@@ -255,6 +256,16 @@ export default async function DashboardPage({
   const r32ResultsOpen = openMatchdays.some((m) => m.stage === "r32");
   const showKoCompleto = mode === "completo" && bracketStatus.state === "open";
   const showKoBasic = onlyMatches && r32ResultsOpen;
+  // Repesca del bracket (reapertura corta). Solo Completo, ventana activa y si la
+  // liga no ha desactivado el bracket. Tiene prioridad sobre el banner normal.
+  let showKoRepesca = false;
+  let repescaUntil: Date | null = null;
+  if (mode === "completo") {
+    repescaUntil = await getBracketRepescaUntil();
+    if (repescaUntil && Date.now() < repescaUntil.getTime()) {
+      showKoRepesca = (await getLeagueBracketFlags([leagueId])).get(leagueId) ?? true;
+    }
+  }
 
   // Activity feed se ha movido a un async Server Component dentro de
   // <Suspense> más abajo — descongestiona el critical path: la página
@@ -381,9 +392,16 @@ export default async function DashboardPage({
           Se cierra y no vuelve a salir (localStorage). */}
       <InstallBanner />
 
-      {/* Banner de fase eliminatoria (sustituye al de redes). Completo → bracket
-          con urgencia + cuenta atrás; resto de modos → aviso de dieciseisavos. */}
-      {showKoCompleto ? (
+      {/* Banner de fase eliminatoria (sustituye al de redes). Repesca → recordar
+          rellenar el bracket con cuenta atrás al 2.º R32; Completo → urgencia
+          bracket; resto de modos → aviso de dieciseisavos. */}
+      {showKoRepesca ? (
+        <KnockoutBanner
+          variant="repesca"
+          closesAtISO={repescaUntil ? repescaUntil.toISOString() : null}
+          bracketDone={(bracketFilledRow[0]?.c ?? 0) > 0}
+        />
+      ) : showKoCompleto ? (
         <KnockoutBanner
           variant="completo"
           closesAtISO={bracketStatus.closesAt ? bracketStatus.closesAt.toISOString() : null}

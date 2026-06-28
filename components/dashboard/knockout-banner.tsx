@@ -24,23 +24,42 @@ export function KnockoutBanner({
   closesAtISO,
   bracketDone = false,
 }: {
-  variant: "completo" | "basic";
+  variant: "completo" | "basic" | "repesca";
   closesAtISO?: string | null;
   bracketDone?: boolean;
 }) {
   const t = useTranslations("dashboard");
-  const isCompleto = variant === "completo";
+  // "completo" y "repesca" comparten estética de urgencia + cuenta atrás.
+  const urgent = variant !== "basic";
+  const eyebrow =
+    variant === "repesca"
+      ? t("koEyebrowRepesca")
+      : variant === "completo"
+        ? t("koEyebrowCompleto")
+        : t("koEyebrowBasic");
+  const title =
+    variant === "repesca"
+      ? t("koTitleRepesca")
+      : variant === "completo"
+        ? t("koTitleCompleto")
+        : t("koTitleBasic");
+  const body =
+    variant === "repesca"
+      ? t("koBodyRepesca")
+      : variant === "completo"
+        ? t("koBodyCompleto")
+        : t("koBodyBasic");
 
   return (
     <section
-      aria-label={isCompleto ? t("koEyebrowCompleto") : t("koEyebrowBasic")}
+      aria-label={eyebrow}
       className={`rise-in relative overflow-hidden rounded-2xl border bg-[var(--color-surface)] ${
-        isCompleto
+        urgent
           ? "border-[var(--color-arena)]/55 live-glow"
           : "border-[var(--color-border)] shadow-[var(--shadow-elev-1)]"
       }`}
     >
-      <span aria-hidden className={`spotlight pointer-events-none absolute inset-0 ${isCompleto ? "opacity-100" : "opacity-50"}`} />
+      <span aria-hidden className={`spotlight pointer-events-none absolute inset-0 ${urgent ? "opacity-100" : "opacity-50"}`} />
       <span aria-hidden className="halftone pointer-events-none absolute inset-0 opacity-[0.04]" />
       <span
         aria-hidden
@@ -54,48 +73,44 @@ export function KnockoutBanner({
           <div className="min-w-0 space-y-1.5">
             <p className="flex items-center gap-1.5 font-mono text-[0.6rem] uppercase tracking-[0.3em] text-[var(--color-arena)]">
               <Swords className="size-3.5" />
-              {isCompleto ? t("koEyebrowCompleto") : t("koEyebrowBasic")}
+              {eyebrow}
             </p>
             <h2 className="font-display text-2xl leading-none tracking-tight sm:text-3xl">
-              {isCompleto ? t("koTitleCompleto") : t("koTitleBasic")}
+              {title}
             </h2>
             <p className="max-w-xl text-sm text-[var(--color-muted-foreground)]">
-              {isCompleto ? t("koBodyCompleto") : t("koBodyBasic")}
+              {body}
             </p>
-            {isCompleto && closesAtISO ? <Countdown targetISO={closesAtISO} label={t("koCountdownLabel")} /> : null}
+            {urgent && closesAtISO ? <Countdown targetISO={closesAtISO} label={t("koCountdownLabel")} /> : null}
           </div>
         </div>
 
         {/* CTAs */}
         <div className="flex shrink-0 flex-col gap-2 sm:flex-row lg:flex-col xl:flex-row">
-          {isCompleto ? (
-            <>
-              <Link
-                href="/predicciones/bracket"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--color-arena)] bg-[var(--color-arena)] px-4 py-2.5 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-white shadow-[var(--shadow-arena)] transition hover:opacity-90"
-              >
-                <Swords className="size-4" />
-                {bracketDone ? t("koCtaBracketDone") : t("koCtaBracket")}
-                <ArrowRight className="size-3.5" />
-              </Link>
-              <Link
-                href="/predicciones"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-2)]/60 px-4 py-2.5 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-[var(--color-foreground)] transition hover:border-[var(--color-arena)]/50"
-              >
-                <Target className="size-4" />
-                {t("koCtaResults")}
-              </Link>
-            </>
-          ) : (
+          {variant !== "basic" ? (
+            <Link
+              href="/predicciones/bracket"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--color-arena)] bg-[var(--color-arena)] px-4 py-2.5 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-white shadow-[var(--shadow-arena)] transition hover:opacity-90"
+            >
+              <Swords className="size-4" />
+              {bracketDone ? t("koCtaBracketDone") : t("koCtaBracket")}
+              <ArrowRight className="size-3.5" />
+            </Link>
+          ) : null}
+          {variant !== "repesca" ? (
             <Link
               href="/predicciones"
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--color-arena)] bg-[var(--color-arena)] px-4 py-2.5 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-white shadow-[var(--shadow-arena)] transition hover:opacity-90"
+              className={
+                variant === "basic"
+                  ? "inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--color-arena)] bg-[var(--color-arena)] px-4 py-2.5 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-white shadow-[var(--shadow-arena)] transition hover:opacity-90"
+                  : "inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-2)]/60 px-4 py-2.5 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-[var(--color-foreground)] transition hover:border-[var(--color-arena)]/50"
+              }
             >
               <Target className="size-4" />
               {t("koCtaResults")}
-              <ArrowRight className="size-3.5" />
+              {variant === "basic" ? <ArrowRight className="size-3.5" /> : null}
             </Link>
-          )}
+          ) : null}
         </div>
       </div>
     </section>
