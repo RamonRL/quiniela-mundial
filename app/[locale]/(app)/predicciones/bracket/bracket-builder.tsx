@@ -544,12 +544,10 @@ function MobileBracketPager(props: TreeUIProps) {
                   {r.count}/{r.total}
                 </span>
               </header>
-              <div
-                className={cn(
-                  "flex max-h-[58vh] flex-col gap-2 overflow-y-auto overscroll-y-contain pr-0.5",
-                  r.total <= 2 && "justify-center",
-                )}
-              >
+              {/* Bloque normal (no flex): con flex-col + altura acotada, las
+                  tarjetas (que tienen overflow-hidden) se encogían a min-height 0
+                  y se recortaban. En bloque conservan su alto y el panel scrollea. */}
+              <div className="max-h-[62vh] space-y-2 overflow-y-auto overscroll-y-contain pr-0.5">
                 {st ? (
                   stageCodes(st).map((code) => (
                     <MatchCard key={code} code={code} stage={st} {...props} showHeader />
