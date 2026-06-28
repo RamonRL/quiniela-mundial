@@ -3,8 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useActionState, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowRight, Crown, Eye, Info, Lock, Save, Trophy } from "lucide-react";
+import { useActionState, useMemo, useState } from "react";
+import { Crown, Eye, Info, Lock, Save, Trophy } from "lucide-react";
 import { TeamFlag } from "@/components/brand/team-flag";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -401,8 +401,8 @@ function BracketTreeUI(props: TreeUIProps) {
         </div>
       </div>
 
-      {/* Mobile: tira horizontal ronda a ronda (R32 → … → Definición). */}
-      <MobileBracketPager {...props} />
+      {/* Mobile: cuadro de una dirección (izq→der) con líneas conectoras. */}
+      <MobileBracketTree {...props} />
     </>
   );
 }
@@ -428,150 +428,79 @@ function HowToCallout() {
   );
 }
 
-// ──────────────────────────── Mobile pager ────────────────────────────
+// ──────────────────────────── Mobile tree ────────────────────────────
 
 /**
- * Vista móvil: en vez de una lista vertical larguísima, una tira horizontal con
- * scroll libre (snap por ronda) que avanza R32 → R16 → QF → SF → Definición
- * (Final + 3.er puesto). Reutiliza `MatchCard`/`FinalCard`/`ThirdCard` y la misma
- * lógica de picks/cascada del formulario. Cada panel hace scroll vertical interno
- * acotado; arriba, chips de ronda (tap para saltar) sincronizados con el scroll.
+ * Vista móvil: un cuadro de UNA sola dirección (izquierda → derecha) con las
+ * mismas líneas conectoras del árbol de escritorio, scrollable en horizontal.
+ * Como `STRUCTURE.<ronda>.left ++ right` ya está ordenado para que pares
+ * adyacentes alimenten la ronda siguiente, concatenamos cada ronda en una sola
+ * columna y reutilizamos los conectores `.bracket-pair` / `.bracket-incoming`.
+ * Las columnas comparten alto (min-h del contenedor + `flex-1`), así cada
+ * partido queda centrado entre sus dos alimentadores y se puede seguir el
+ * camino de cada selección hacia la derecha. Misma lógica de picks/cascada.
  */
-function MobileBracketPager(props: TreeUIProps) {
+function MobileBracketTree(props: TreeUIProps) {
   const t = useTranslations("predBracket");
-  const { picks } = props;
-  const scrollerRef = useRef<HTMLDivElement>(null);
-  const panelRefs = useRef<(HTMLElement | null)[]>([]);
-  const [active, setActive] = useState(0);
-
-  const rounds: {
-    key: string;
-    label: string;
-    stage: "r32" | "r16" | "qf" | "sf" | null;
-    count: number;
-    total: number;
-  }[] = [
-    { key: "r32", label: t("stR32"), stage: "r32", count: picks.r16.length, total: 16 },
-    { key: "r16", label: t("stR16"), stage: "r16", count: picks.qf.length, total: 8 },
-    { key: "qf", label: t("stQf"), stage: "qf", count: picks.sf.length, total: 4 },
-    { key: "sf", label: t("stSf"), stage: "sf", count: picks.finalists.length, total: 2 },
-    {
-      key: "definition",
-      label: t("stDefinition"),
-      stage: null,
-      count: (picks.championTeamId != null ? 1 : 0) + (picks.thirdTeamId != null ? 1 : 0),
-      total: 2,
-    },
-  ];
-
-  // Sincroniza el chip activo con la ronda más visible en la tira.
-  useEffect(() => {
-    const root = scrollerRef.current;
-    if (!root) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) {
-            const idx = panelRefs.current.indexOf(e.target as HTMLElement);
-            if (idx >= 0) setActive(idx);
-          }
-        }
-      },
-      { root, threshold: 0.6 },
-    );
-    for (const el of panelRefs.current) if (el) io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
-  const scrollToIndex = useCallback((idx: number) => {
-    const root = scrollerRef.current;
-    const el = panelRefs.current[idx];
-    if (!root || !el) return;
-    root.scrollTo({ left: el.offsetLeft - root.offsetLeft, behavior: "smooth" });
-  }, []);
-
   return (
-    <div className="lg:hidden">
-      {/* Chips de ronda — tap para saltar; el activo y los completos resaltan. */}
-      <div className="scroll-x-only-on-pc -mx-4 mb-3 flex gap-2 overflow-x-auto px-4">
-        {rounds.map((r, i) => {
-          const done = r.count === r.total;
-          const isActive = i === active;
-          return (
-            <button
-              key={r.key}
-              type="button"
-              onClick={() => scrollToIndex(i)}
-              aria-current={isActive ? "true" : undefined}
-              className={cn(
-                "flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 font-mono text-[0.6rem] uppercase tracking-[0.18em] transition",
-                isActive
-                  ? "border-[var(--color-arena)] bg-[color-mix(in_oklch,var(--color-arena)_12%,transparent)] text-[var(--color-arena)]"
-                  : done
-                    ? "border-[var(--color-pitch)]/40 text-[var(--color-pitch)]"
-                    : "border-[var(--color-border)] text-[var(--color-muted-foreground)]",
-              )}
-            >
-              {r.label}
-              <span className="tabular opacity-80">
-                {r.count}/{r.total}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Tira horizontal: cada panel ~88% para que asome la siguiente ronda. */}
+    <div className="scroll-x-only-on-pc -mx-4 overflow-x-auto px-4 lg:hidden">
       <div
-        ref={scrollerRef}
-        className="scroll-x-only-on-pc -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2"
+        className="flex min-h-[64rem] gap-x-5 pb-2"
+        style={{ ["--bracket-gap" as string]: "18px" }}
       >
-        {rounds.map((r, i) => {
-          const st = r.stage;
-          return (
-            <section
-              key={r.key}
-              ref={(el) => {
-                panelRefs.current[i] = el;
-              }}
-              className="flex w-[88%] flex-none snap-start flex-col sm:w-[60%]"
-            >
-              <header className="mb-2 flex items-center justify-between">
-                <h2 className="font-mono text-[0.65rem] font-semibold uppercase tracking-[0.32em] text-[var(--color-arena)]">
-                  {r.label}
-                </h2>
-                <span className="font-mono text-[0.6rem] tabular text-[var(--color-muted-foreground)]">
-                  {r.count}/{r.total}
-                </span>
-              </header>
-              {/* Bloque normal (no flex): con flex-col + altura acotada, las
-                  tarjetas (que tienen overflow-hidden) se encogían a min-height 0
-                  y se recortaban. En bloque conservan su alto y el panel scrollea. */}
-              <div className="max-h-[62vh] space-y-2 overflow-y-auto overscroll-y-contain pr-0.5">
-                {st ? (
-                  stageCodes(st).map((code) => (
-                    <MatchCard key={code} code={code} stage={st} {...props} showHeader />
-                  ))
-                ) : (
-                  <>
-                    <FinalCard {...props} />
-                    <ThirdCard {...props} />
-                  </>
+        <MobileTreeColumn stage="r32" order={stageCodes("r32")} label={t("stR32")} {...props} />
+        <MobileTreeColumn stage="r16" order={stageCodes("r16")} label={t("stR16")} {...props} />
+        <MobileTreeColumn stage="qf" order={stageCodes("qf")} label={t("stQf")} {...props} />
+        <MobileTreeColumn stage="sf" order={stageCodes("sf")} label={t("stSf")} {...props} />
+        <MobileFinalColumn label={t("stDefinition")} {...props} />
+      </div>
+    </div>
+  );
+}
+
+function MobileTreeColumn({
+  stage,
+  order,
+  label,
+  ...rest
+}: TreeUIProps & {
+  stage: "r32" | "r16" | "qf" | "sf";
+  order: string[];
+  label: string;
+}) {
+  return (
+    <div className="flex w-[10.5rem] flex-none flex-col">
+      <ColumnHeader label={label} side="left" />
+      <div className="flex flex-1 flex-col">
+        {chunkPairs([...order]).map((pair, i) => (
+          <div key={i} className="flex flex-1 flex-col justify-around bracket-pair">
+            {pair.map((code) => (
+              <div
+                key={code}
+                className={cn(
+                  "flex w-full items-center",
+                  stage !== "r32" && "bracket-incoming",
                 )}
+              >
+                <MatchCard code={code} stage={stage} showHeader={false} {...rest} />
               </div>
-              {/* Guiño de avance cuando la ronda está completa. */}
-              {r.count === r.total && i < rounds.length - 1 ? (
-                <button
-                  type="button"
-                  onClick={() => scrollToIndex(i + 1)}
-                  className="mt-2 inline-flex items-center justify-end gap-1 self-end font-mono text-[0.6rem] uppercase tracking-[0.18em] text-[var(--color-arena)] transition hover:translate-x-0.5"
-                >
-                  {t("nextRound")} <ArrowRight className="size-3" />
-                </button>
-              ) : null}
-            </section>
-          );
-        })}
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MobileFinalColumn({ label, ...rest }: TreeUIProps & { label: string }) {
+  return (
+    <div className="flex w-[10.5rem] flex-none flex-col">
+      <ColumnHeader label={label} side="left" />
+      <div className="flex flex-1 flex-col justify-center gap-6">
+        <div className="bracket-incoming flex w-full items-center">
+          <FinalCard {...rest} />
+        </div>
+        <ThirdCard {...rest} />
       </div>
     </div>
   );
