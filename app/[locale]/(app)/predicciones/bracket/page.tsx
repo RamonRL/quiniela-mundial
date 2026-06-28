@@ -93,46 +93,20 @@ export default async function PredictBracketPage({
     .from(matches)
     .where(inArray(matches.stage, ["r32", "r16", "qf", "sf", "third", "final"]));
 
-  // En previa admin: si los slots aún no están resueltos, generamos
-  // un emparejamiento sintético posicional con las primeras 32 selecciones
-  // por código alfabético. Solo afecta al render — no toca la BD.
-  const previewSyntheticR32 = new Map<string, { homeId: number; awayId: number }>();
-  if (previewRequested) {
-    const realR32Codes = new Set(
-      koMatches
-        .filter((m) => m.stage === "r32" && m.homeTeamId != null)
-        .map((m) => m.code),
-    );
-    const sorted = [...qualifiedTeams].sort((a, b) => a.code.localeCompare(b.code));
-    const first32 = sorted.slice(0, 32);
-    const r32Codes = [
-      "M73", "M74", "M75", "M76", "M77", "M78", "M79", "M80",
-      "M81", "M82", "M83", "M84", "M85", "M86", "M87", "M88",
-    ];
-    r32Codes.forEach((code, i) => {
-      if (realR32Codes.has(code)) return;
-      const home = first32[i * 2];
-      const away = first32[i * 2 + 1];
-      if (home && away) previewSyntheticR32.set(code, { homeId: home.id, awayId: away.id });
-    });
-  }
-
   const r32Pairings: Record<string, { homeId: number | null; awayId: number | null }> = {};
   for (const m of koMatches) {
     if (m.stage !== "r32") continue;
-    const synthetic = previewSyntheticR32.get(m.code);
     r32Pairings[m.code] = {
-      homeId: m.homeTeamId ?? synthetic?.homeId ?? null,
-      awayId: m.awayTeamId ?? synthetic?.awayId ?? null,
+      homeId: m.homeTeamId ?? null,
+      awayId: m.awayTeamId ?? null,
     };
   }
 
-  // Previa admin: cuando los grupos ya cerraron pero el admin aún no ha "abierto
-  // R32", los locales reales (1.º/2.º de grupo) están puestos pero los visitantes
-  // de las casillas de mejores terceros siguen vacíos → no se podrían clicar.
-  // Rellenamos CUALQUIER slot nulo con una selección libre del pool de
-  // clasificados para poder probar el bracket entero. Solo afecta al render en
-  // preview — nunca toca la BD ni el flujo real de apertura.
+  // Previa admin: rellena CUALQUIER slot de R32 todavía vacío con una selección
+  // libre del pool, para poder probar el bracket entero antes de que se ubiquen
+  // los equipos reales (mejores terceros, o grupos aún sin cerrar). Un único
+  // relleno que excluye los ya colocados → ninguna selección se repite. Solo
+  // afecta al render en preview; nunca toca la BD ni el flujo real de apertura.
   if (previewRequested) {
     const placed = new Set<number>();
     for (const code of Object.keys(r32Pairings)) {
