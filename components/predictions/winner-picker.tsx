@@ -2,6 +2,7 @@
 
 import { TeamFlag } from "@/components/brand/team-flag";
 import { cn } from "@/lib/utils";
+import { PensWinnerPicker } from "@/components/predictions/pens-winner-picker";
 
 /**
  * Selector 1·X·2 del modo Solo Ganador — la quiniela clásica. Codifica la
@@ -157,32 +158,14 @@ export function WinnerPicker({
 
       {/* Eliminatoria + empate → quién pasa en la tanda de penaltis */}
       {isKnockout && sel === "draw" ? (
-        <div className="rise-in space-y-2 rounded-lg border border-[var(--color-arena)]/30 bg-[color-mix(in_oklch,var(--color-arena)_5%,var(--color-surface-2))] p-2.5">
-          <p className="font-mono text-[0.55rem] uppercase tracking-[0.2em] text-[var(--color-arena)]">
-            ¿Quién pasa en penaltis? <span className="text-[var(--color-muted-foreground)]">+2</span>
-          </p>
-          <div className="grid grid-cols-2 gap-1.5">
-            {[home, away].map((team) =>
-              team ? (
-                <button
-                  key={team.id}
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => onChange({ picked: true, winnerTeamId: team.id })}
-                  className={cn(
-                    "flex items-center justify-center gap-1.5 rounded-md border px-2 py-2 text-xs font-medium transition disabled:opacity-50",
-                    value.winnerTeamId === team.id
-                      ? "border-[var(--color-arena)] bg-[color-mix(in_oklch,var(--color-arena)_14%,transparent)] text-[var(--color-foreground)]"
-                      : "border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-muted-foreground)] hover:border-[var(--color-arena)]/40",
-                  )}
-                >
-                  <TeamFlag code={team.code} size={s.pensFlag} />
-                  <span className="truncate">{team.name}</span>
-                </button>
-              ) : null,
-            )}
-          </div>
-        </div>
+        <PensWinnerPicker
+          home={home}
+          away={away}
+          winnerTeamId={value.winnerTeamId}
+          disabled={disabled}
+          flagSize={s.pensFlag}
+          onPick={(teamId) => onChange({ picked: true, winnerTeamId: teamId })}
+        />
       ) : null}
     </div>
   );

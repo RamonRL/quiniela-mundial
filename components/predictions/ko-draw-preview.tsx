@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { WinnerPicker, type WinnerValue } from "@/components/predictions/winner-picker";
+import { PensWinnerPicker } from "@/components/predictions/pens-winner-picker";
 import { ScoreStepper } from "@/components/forms/score-stepper";
 import { TeamFlag } from "@/components/brand/team-flag";
 
@@ -83,13 +84,12 @@ function SoloDemo() {
   );
 }
 
-/** Marcador / Completo: marcador 1-1 + sección de penaltis (checkbox + ganador). */
+/** Marcador / Completo: marcador 1-1 → aparece el selector de penaltis al empatar. */
 function ScoreDemo({ withScorer }: { withScorer: boolean }) {
   const t = useTranslations("predMatchday");
   const [home, setHome] = useState(1);
   const [away, setAway] = useState(1);
-  const [toPens, setToPens] = useState(true);
-  const [winnerId, setWinnerId] = useState<number | "">(HOME.id);
+  const [winnerId, setWinnerId] = useState<number | null>(HOME.id);
   const isDraw = home === away;
 
   return (
@@ -110,35 +110,19 @@ function ScoreDemo({ withScorer }: { withScorer: boolean }) {
         </div>
       </section>
 
-      {/* Penaltis (KO). El selector de ganador aparece al marcar la casilla; con
-          empate es lo natural para indicar quién pasa. */}
-      <section className="flex flex-wrap items-center justify-center gap-3 text-sm">
-        <label className="inline-flex items-center gap-2">
-          <input
-            type="checkbox"
-            className="size-4 accent-[var(--color-arena)]"
-            checked={toPens}
-            onChange={(e) => setToPens(e.target.checked)}
-          />
-          {t("goesToPens")}
-        </label>
-        {toPens ? (
-          <select
-            value={winnerId}
-            onChange={(e) => setWinnerId(e.target.value ? Number(e.target.value) : "")}
-            className="h-9 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-2 text-sm"
-          >
-            <option value="">{t("qualifiedByPens")}</option>
-            <option value={HOME.id}>{HOME.name}</option>
-            <option value={AWAY.id}>{AWAY.name}</option>
-          </select>
-        ) : null}
-      </section>
-      {!isDraw ? (
+      {/* En KO, el selector de quién pasa aparece automáticamente al empatar. */}
+      {isDraw ? (
+        <PensWinnerPicker
+          home={HOME}
+          away={AWAY}
+          winnerTeamId={winnerId}
+          onPick={(teamId) => setWinnerId(teamId)}
+        />
+      ) : (
         <p className="text-center font-mono text-[0.55rem] uppercase tracking-[0.16em] text-[var(--color-muted-foreground)]">
-          (los penaltis solo aplican con empate)
+          (pon un empate para elegir quién pasa en penaltis)
         </p>
-      ) : null}
+      )}
 
       {withScorer ? (
         <section className="space-y-1 border-t border-[var(--color-border)] pt-3 text-center">

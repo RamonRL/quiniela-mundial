@@ -8,6 +8,7 @@ import { Calendar, MapPin } from "lucide-react";
 import { TeamFlag } from "@/components/brand/team-flag";
 import { ScoreStepper } from "@/components/forms/score-stepper";
 import { WinnerPicker } from "@/components/predictions/winner-picker";
+import { PensWinnerPicker } from "@/components/predictions/pens-winner-picker";
 import {
   InteractiveTourShell,
   flashSavedToast,
@@ -165,12 +166,15 @@ export function MatchdayTourClient({
         matchdayId,
         predictions: ready.map((m) => {
           const p = preds[m.id];
+          // willGoToPens se deriva del empate en KO (un eliminatorio no acaba en
+          // tablas): autoritativo, sin depender de un checkbox manual.
+          const willGoToPens = m.stage !== "group" && p.homeScore === p.awayScore;
           return {
             matchId: m.id,
             homeScore: p.homeScore,
             awayScore: p.awayScore,
-            willGoToPens: p.willGoToPens,
-            winnerTeamId: p.winnerTeamId,
+            willGoToPens,
+            winnerTeamId: willGoToPens ? p.winnerTeamId : null,
             scorerPlayerId: showScorer ? p.scorerPlayerId : null,
             picked: p.picked,
           };
@@ -438,7 +442,14 @@ export function MatchdayTourClient({
                 <ScoreStepper
                   size="lg"
                   value={currentPred.homeScore}
-                  onChange={(v) => updateCurrent({ homeScore: v })}
+                  onChange={(v) =>
+                    updateCurrent({
+                      homeScore: v,
+                      willGoToPens: isKnockout && v === currentPred.awayScore,
+                      winnerTeamId:
+                        isKnockout && v === currentPred.awayScore ? currentPred.winnerTeamId : null,
+                    })
+                  }
                   ariaLabel={t("goalsAria", { team: current.home?.name ?? t("localFallback") })}
                 />
               </div>
@@ -450,40 +461,31 @@ export function MatchdayTourClient({
                 <ScoreStepper
                   size="lg"
                   value={currentPred.awayScore}
-                  onChange={(v) => updateCurrent({ awayScore: v })}
+                  onChange={(v) =>
+                    updateCurrent({
+                      awayScore: v,
+                      willGoToPens: isKnockout && currentPred.homeScore === v,
+                      winnerTeamId:
+                        isKnockout && currentPred.homeScore === v ? currentPred.winnerTeamId : null,
+                    })
+                  }
                   ariaLabel={t("goalsAria", { team: current.away?.name ?? t("awayFallback") })}
                 />
               </div>
             </section>
 
-            {/* Penaltis (solo KO) */}
-            {isKnockout ? (
-              <section className="flex items-center justify-center gap-3 text-sm">
-                <label className="inline-flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    className="size-4 accent-[var(--color-arena)]"
-                    checked={currentPred.willGoToPens}
-                    onChange={(e) => updateCurrent({ willGoToPens: e.target.checked })}
-                  />
-                  {t("goesToPens")}
-                </label>
-                {currentPred.willGoToPens && current.home && current.away ? (
-                  <select
-                    value={currentPred.winnerTeamId ?? ""}
-                    onChange={(e) =>
-                      updateCurrent({
-                        winnerTeamId: e.target.value ? Number(e.target.value) : null,
-                      })
-                    }
-                    className="h-9 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-2 text-sm"
-                  >
-                    <option value="">{t("qualifiedByPens")}</option>
-                    <option value={current.home.id}>{current.home.name}</option>
-                    <option value={current.away.id}>{current.away.name}</option>
-                  </select>
-                ) : null}
-              </section>
+            {/* Empate en KO → quién pasa en penaltis. Aparece automáticamente al
+                empatar el marcador (un KO no acaba en tablas). */}
+            {isKnockout && currentPred.homeScore === currentPred.awayScore ? (
+              <div className="mx-auto w-full max-w-xs">
+                <PensWinnerPicker
+                  home={current.home}
+                  away={current.away}
+                  winnerTeamId={currentPred.winnerTeamId}
+                  flagSize={20}
+                  onPick={(teamId) => updateCurrent({ willGoToPens: true, winnerTeamId: teamId })}
+                />
+              </div>
             ) : null}
 
             {/* Goleador (solo completo) */}

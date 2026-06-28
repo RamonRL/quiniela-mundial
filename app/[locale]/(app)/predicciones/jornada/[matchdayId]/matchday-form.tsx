@@ -7,7 +7,6 @@ import { useActionState, useState } from "react";
 import { Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -21,6 +20,7 @@ import {
 import { SavePredictionButton } from "@/components/predictions/save-prediction-button";
 import { SaveOverlay } from "@/components/predictions/save-overlay";
 import { WinnerPicker } from "@/components/predictions/winner-picker";
+import { PensWinnerPicker } from "@/components/predictions/pens-winner-picker";
 import { usePredictionSaveToast } from "@/lib/predictions/use-save-toast";
 import { useDateFormat } from "@/components/shell/timezone-provider";
 import { formatDateTime } from "@/lib/utils";
@@ -151,12 +151,21 @@ export function MatchdayPredictionForm({
     new Date(m.scheduledAt).getTime() <= now;
   const someOpen = open && matches.some((m) => !isMatchOver(m));
 
+  // willGoToPens se deriva del empate en KO (un eliminatorio no acaba en tablas):
+  // autoritativo al guardar, sin depender de un checkbox manual.
+  const stageById = new Map(matches.map((m) => [m.id, m.stage]));
+  const payloadPredictions = predictions.map((p) => {
+    const ko = (stageById.get(p.matchId) ?? "group") !== "group";
+    const willGoToPens = ko && p.homeScore === p.awayScore;
+    return { ...p, willGoToPens, winnerTeamId: willGoToPens ? p.winnerTeamId : null };
+  });
+
   return (
     <form action={action} className="space-y-4">
       <input
         type="hidden"
         name="payload"
-        value={JSON.stringify({ matchdayId, predictions })}
+        value={JSON.stringify({ matchdayId, predictions: payloadPredictions })}
       />
       {!open ? (
         <div className="flex items-center gap-2 rounded-lg border border-[var(--color-warning)]/40 bg-[var(--color-warning)]/10 p-3 text-sm text-[var(--color-warning)]">
@@ -221,7 +230,12 @@ export function MatchdayPredictionForm({
                   <TeamSide team={m.home} />
                   <ScoreStepper
                     value={p.homeScore}
-                    onChange={(v) => update(m.id, { homeScore: v })}
+                    onChange={(v) =>
+                      update(m.id, {
+                        homeScore: v,
+                        winnerTeamId: isKnockout && v === p.awayScore ? p.winnerTeamId : null,
+                      })
+                    }
                     disabled={inputsDisabled}
                     ariaLabel={t("goalsAria", { team: m.home?.name ?? t("localFallback") })}
                   />
@@ -230,51 +244,25 @@ export function MatchdayPredictionForm({
                   <TeamSide team={m.away} />
                   <ScoreStepper
                     value={p.awayScore}
-                    onChange={(v) => update(m.id, { awayScore: v })}
+                    onChange={(v) =>
+                      update(m.id, {
+                        awayScore: v,
+                        winnerTeamId: isKnockout && p.homeScore === v ? p.winnerTeamId : null,
+                      })
+                    }
                     disabled={inputsDisabled}
                     ariaLabel={t("goalsAria", { team: m.away?.name ?? t("awayFallback") })}
                   />
                 </div>
-                {isKnockout ? (
-                  <div className="space-y-2 rounded-md bg-[var(--color-surface-2)] p-2">
-                    <div className="flex items-center gap-2 text-xs">
-                      <Checkbox
-                        id={`pens-${m.id}`}
-                        checked={p.willGoToPens}
-                        onCheckedChange={(v) =>
-                          update(m.id, { willGoToPens: v === true })
-                        }
-                        disabled={inputsDisabled}
-                      />
-                      <Label htmlFor={`pens-${m.id}`}>{t("pensCheck")}</Label>
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs">{t("qualifiedNext")}</Label>
-                      <Select
-                        value={p.winnerTeamId?.toString() ?? ""}
-                        onValueChange={(v) =>
-                          update(m.id, { winnerTeamId: v === "" ? null : Number(v) })
-                        }
-                        disabled={inputsDisabled}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="—" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {m.home ? (
-                            <SelectItem value={m.home.id.toString()}>
-                              {m.home.name}
-                            </SelectItem>
-                          ) : null}
-                          {m.away ? (
-                            <SelectItem value={m.away.id.toString()}>
-                              {m.away.name}
-                            </SelectItem>
-                          ) : null}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
+                {/* Empate en KO → quién pasa en penaltis (aparece solo al empatar). */}
+                {isKnockout && p.homeScore === p.awayScore ? (
+                  <PensWinnerPicker
+                    home={m.home}
+                    away={m.away}
+                    winnerTeamId={p.winnerTeamId}
+                    disabled={inputsDisabled}
+                    onPick={(teamId) => update(m.id, { willGoToPens: true, winnerTeamId: teamId })}
+                  />
                 ) : null}
 
                 {showScorer ? (
