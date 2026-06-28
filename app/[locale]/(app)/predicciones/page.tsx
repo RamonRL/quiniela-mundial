@@ -35,6 +35,7 @@ import { getDateContext } from "@/lib/timezone-server";
 import { formatDateTime } from "@/lib/utils";
 import { computeMatchdayStates, type Stage } from "@/lib/matchday-state";
 import { getBracketStatus } from "@/lib/bracket-state";
+import { getBracketRepescaUntil } from "@/lib/bracket-repesca";
 import { ImportPredictionsBanner } from "@/components/predictions/import-banner";
 import { TutorialReplayButton } from "@/components/tutorial/replay-button";
 
@@ -120,6 +121,13 @@ export default async function PrediccionesHub() {
       )
       .groupBy(matches.matchdayId),
   ]);
+
+  // Repesca: durante la ventana el bracket se muestra ABIERTO (editable),
+  // aunque getBracketStatus diga "closed".
+  const repescaUntil = await getBracketRepescaUntil();
+  const repescaActive = repescaUntil != null && Date.now() < repescaUntil.getTime();
+  const bracketState = repescaActive ? "open" : bracketStatus.state;
+  const bracketClosesAt = repescaActive ? repescaUntil : bracketStatus.closesAt;
 
   const totalByDay = new Map(matchTotals.map((r) => [r.matchdayId ?? 0, r.total]));
   const filledByDay = new Map(myResultPicks.map((r) => [r.matchdayId ?? 0, r.filled]));
@@ -311,9 +319,9 @@ export default async function PrediccionesHub() {
         subtitle={t("eliminatoriaSubtitle")}
         dataTutorialId="cat-eliminatoria"
         meta={
-          bracketStatus.state === "open" && bracketStatus.closesAt
+          bracketState === "open" && bracketClosesAt
             ? t("closeMeta", {
-                date: formatDateTime(bracketStatus.closesAt, {
+                date: formatDateTime(bracketClosesAt, {
                   timeZone,
                   locale,
                   day: "2-digit",
@@ -322,12 +330,12 @@ export default async function PrediccionesHub() {
                   minute: "2-digit",
                 }),
               })
-            : bracketStatus.state === "waiting"
+            : bracketState === "waiting"
               ? t("bracketNotYet")
               : t("bracketClosed")
         }
       >
-        <BracketCard status={bracketStatus.state} closesAt={bracketStatus.closesAt} timeZone={timeZone} locale={locale} />
+        <BracketCard status={bracketState} closesAt={bracketClosesAt} timeZone={timeZone} locale={locale} />
       </Section>
       ) : null}
 

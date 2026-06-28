@@ -266,6 +266,9 @@ export default async function DashboardPage({
       showKoRepesca = (await getLeagueBracketFlags([leagueId])).get(leagueId) ?? true;
     }
   }
+  // En repesca el bracket se muestra ABIERTO (editable) en el Puesto de mando y
+  // en Mis predicciones, aunque getBracketStatus diga "closed".
+  const repescaActive = repescaUntil != null && Date.now() < repescaUntil.getTime();
 
   // Activity feed se ha movido a un async Server Component dentro de
   // <Suspense> más abajo — descongestiona el critical path: la página
@@ -303,6 +306,21 @@ export default async function DashboardPage({
   // En modos Marcador / Solo Ganador no hay donut de pre-torneo: se muestra
   // siempre el hub "running" (próxima jornada a predecir), sin bracket ni
   // enlace a picks pre-torneo, aunque el torneo no haya arrancado.
+  // Estado del bracket para el Puesto de mando: en repesca → "open"; si no, el
+  // real (solo open/closed se muestran como satélite).
+  const hubBracketState: "open" | "closed" | null = onlyMatches
+    ? null
+    : repescaActive
+      ? "open"
+      : bracketStatus.state === "open" || bracketStatus.state === "closed"
+        ? bracketStatus.state
+        : null;
+  const hubBracketClosesAt = repescaActive && repescaUntil
+    ? repescaUntil.toISOString()
+    : bracketStatus.closesAt
+      ? new Date(bracketStatus.closesAt).toISOString()
+      : null;
+
   const progressHubProps: ProgressHubProps =
     !tournamentStarted && !onlyMatches
       ? {
@@ -317,18 +335,14 @@ export default async function DashboardPage({
       : buildRunningHubProps({
           openMatchdays,
           bracketLabel: t("bracketDeadline"),
-          bracket:
-            !onlyMatches &&
-            (bracketStatus.state === "open" || bracketStatus.state === "closed")
-              ? {
-                  state: bracketStatus.state,
-                  closesAt: bracketStatus.closesAt
-                    ? new Date(bracketStatus.closesAt).toISOString()
-                    : null,
-                  filled: bracketFilled,
-                  total: BRACKET_TOTAL_SLOTS,
-                }
-              : undefined,
+          bracket: hubBracketState
+            ? {
+                state: hubBracketState,
+                closesAt: hubBracketClosesAt,
+                filled: bracketFilled,
+                total: BRACKET_TOTAL_SLOTS,
+              }
+            : undefined,
           preTorneoComplete: onlyMatches ? 0 : preTorneoComplete,
           preTorneoTotal: onlyMatches ? 0 : preTorneoTotal,
           compact: onlyMatches,
