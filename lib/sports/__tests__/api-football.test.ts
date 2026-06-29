@@ -77,6 +77,19 @@ describe("mapEventsToScorers", () => {
     expect(scorers).toHaveLength(1);
   });
 
+  it("excluye los goles de la tanda de penaltis (no son goleador del partido)", () => {
+    const scorers = mapEventsToScorers(
+      [
+        ev({ detail: "Penalty", comments: null }), // penalti en juego → cuenta
+        ev({ detail: "Penalty", comments: "Penalty Shootout" }), // tanda → fuera
+      ],
+      10,
+      20,
+    );
+    expect(scorers).toHaveLength(1);
+    expect(scorers[0].isPenalty).toBe(true);
+  });
+
   it("suma el descuento al minuto y marca penalti/autogol", () => {
     const scorers = mapEventsToScorers(
       [

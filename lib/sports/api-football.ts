@@ -30,6 +30,10 @@ export type AfEvent = {
   player: { id: number | null; name: string | null };
   type: string; // "Goal" | "Card" | "subst" | "Var"
   detail: string; // "Normal Goal" | "Own Goal" | "Penalty" | "Missed Penalty"
+  // En la TANDA de penaltis, API-Football manda los goles como type "Goal" +
+  // detail "Penalty" con comments "Penalty Shootout". Lo usamos para EXCLUIRLOS:
+  // un gol de la tanda no es goleador del partido.
+  comments?: string | null;
 };
 
 // ─────────────────────────── Tipos normalizados ───────────────────────────
@@ -122,7 +126,15 @@ export function mapEventsToScorers(
   awayProviderTeamId: number,
 ): ProviderScorer[] {
   return events
-    .filter((e) => e.type === "Goal" && e.detail !== "Missed Penalty")
+    // Excluimos penaltis fallados y, sobre todo, los goles de la TANDA de
+    // penaltis (comments "Penalty Shootout"): no cuentan como goleador del
+    // partido (que es a 120′). Los penaltis DENTRO del juego sí cuentan.
+    .filter(
+      (e) =>
+        e.type === "Goal" &&
+        e.detail !== "Missed Penalty" &&
+        e.comments !== "Penalty Shootout",
+    )
     .map((e) => {
       const minute =
         e.time.elapsed != null ? e.time.elapsed + (e.time.extra ?? 0) : null;
