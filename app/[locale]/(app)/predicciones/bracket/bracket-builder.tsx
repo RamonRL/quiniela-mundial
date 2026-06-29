@@ -72,6 +72,7 @@ export function BracketBuilder({
   preview = false,
   r32Pairings,
   lockedWinners = {},
+  spectator = false,
 }: {
   teams: TeamLite[];
   initial: Picks;
@@ -80,11 +81,14 @@ export function BracketBuilder({
   r32Pairings: R32Pairings;
   /** Cruces de R32 ya jugados (repesca): code → teamId fijado, no editable. */
   lockedWinners?: Record<string, number>;
+  /** Vista de espectador (bracket de OTRO usuario): solo lectura, sin guardar,
+   *  sin ayuda ni progreso propios, sin banners. */
+  spectator?: boolean;
 }) {
   const t = useTranslations("predBracket");
   const [picks, setPicks] = useState<Picks>(initialPicks);
   const [state, action, pending] = useActionState(saveBracketPicks, initialFormState);
-  const interactive = open || preview;
+  const interactive = (open || preview) && !spectator;
 
   const teamById = useMemo(() => new Map(teams.map((t) => [t.id, t])), [teams]);
 
@@ -163,7 +167,7 @@ export function BracketBuilder({
     <form action={action} className="space-y-4">
       <input type="hidden" name="payload" value={JSON.stringify({ picks })} />
 
-      {preview ? (
+      {spectator ? null : preview ? (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[var(--color-arena)]/40 bg-[color-mix(in_oklch,var(--color-arena)_8%,transparent)] p-3 text-sm text-[var(--color-arena)]">
           <span className="flex items-center gap-2">
             <Eye className="size-4" />
@@ -183,12 +187,14 @@ export function BracketBuilder({
         </div>
       ) : null}
 
-      <HowToCallout />
+      {spectator ? null : <HowToCallout />}
 
       {/* En móvil el progreso vive en los chips del pager; aquí solo en PC. */}
-      <div className="hidden lg:block">
-        <ProgressStrip picks={picks} />
-      </div>
+      {spectator ? null : (
+        <div className="hidden lg:block">
+          <ProgressStrip picks={picks} />
+        </div>
+      )}
 
       <BracketTreeUI
         homeAwayByCode={homeAwayByCode}

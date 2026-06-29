@@ -31,6 +31,10 @@ import { formatDateTime } from "@/lib/utils";
 import { formatRemaining } from "@/lib/deadlines";
 import { OpponentPicker } from "./opponent-picker";
 import { CompareTabs } from "./compare-tabs";
+import { BracketCompare } from "./bracket-compare";
+import { loadBracketBoard, loadUserBracketPicks } from "@/lib/bracket-data";
+import type { TeamLite } from "../predicciones/bracket/bracket-builder";
+import type { ReactNode } from "react";
 
 export const metadata = { title: "Comparar predicciones" };
 
@@ -209,6 +213,33 @@ export default async function CompararPage({
     ...ctx,
   });
 
+  // Bracket: comparable una vez es público (al arrancar el 1.er dieciseisavos).
+  const bracketPublic = startedMatches.some((m) => m.stage === "r32");
+  let bracketNode: ReactNode = null;
+  if (isCompleto && opponent && bracketPublic) {
+    const board = await loadBracketBoard(locale);
+    const [myBracket, oppBracket] = await Promise.all([
+      loadUserBracketPicks(me.id, leagueId, board.poolSet),
+      loadUserBracketPicks(oppId, leagueId, board.poolSet),
+    ]);
+    const bracketTeams: TeamLite[] = board.qualifiedTeams.map((tm) => ({
+      id: tm.id,
+      code: tm.code,
+      name: tm.name,
+      flagUrl: tm.flagUrl,
+    }));
+    bracketNode = (
+      <BracketCompare
+        oppName={oppName}
+        teams={bracketTeams}
+        r32Pairings={board.r32Pairings}
+        mine={myBracket}
+        opp={oppBracket}
+        teamById={teamById}
+      />
+    );
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader eyebrow={t("eyebrow")} title={t("title")} description={t("desc")} />
@@ -228,6 +259,9 @@ export default async function CompararPage({
             { id: "groups", label: t("tabGroups"), content: groupsNode },
             { id: "bota", label: t("tabBotaSpecials"), content: botaSpecialsNode },
             { id: "results", label: t("tabResults"), content: resultsNode },
+            ...(bracketNode
+              ? [{ id: "bracket", label: t("tabBracket"), content: bracketNode }]
+              : []),
           ]}
         />
       ) : (
