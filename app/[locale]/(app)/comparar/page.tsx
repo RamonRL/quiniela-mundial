@@ -229,7 +229,10 @@ export default async function CompararPage({
       flagUrl: tm.flagUrl,
     }));
     bracketNode = (
+      // key por rival: fuerza el remontaje del builder al cambiar de usuario
+      // (su estado interno de picks no se reinicia al cambiar solo la prop).
       <BracketCompare
+        key={oppId}
         oppName={oppName}
         teams={bracketTeams}
         r32Pairings={board.r32Pairings}
