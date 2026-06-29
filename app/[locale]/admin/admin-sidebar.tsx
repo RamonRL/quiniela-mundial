@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   ArrowLeft,
   Activity,
+  ListOrdered,
   BookOpen,
   CalendarRange,
   ClipboardCheck,
@@ -54,6 +55,7 @@ const items: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/admin/notificaciones", label: "Notificaciones", icon: Send },
   { href: "/admin/paddle", label: "Diagnóstico Paddle", icon: CreditCard },
   { href: "/admin/progreso", label: "Progreso", icon: Activity },
+  { href: "/admin/popularidad-bracket", label: "Popularidad bracket", icon: ListOrdered },
   { href: "/admin/chat", label: "Moderación", icon: MessagesSquare },
   { href: "/admin/minijuegos", label: "Minijuegos", icon: Gamepad2 },
   { href: "/admin/playbook", label: "Playbook marketing", icon: BookOpen },
