@@ -444,27 +444,30 @@ function HowToCallout() {
 // ──────────────────────────── Mobile tree ────────────────────────────
 
 /**
- * Vista móvil: un cuadro de UNA sola dirección (izquierda → derecha) con las
- * mismas líneas conectoras del árbol de escritorio, scrollable en horizontal.
- * Como `STRUCTURE.<ronda>.left ++ right` ya está ordenado para que pares
- * adyacentes alimenten la ronda siguiente, concatenamos cada ronda en una sola
- * columna y reutilizamos los conectores `.bracket-pair` / `.bracket-incoming`.
- * Las columnas comparten alto (min-h del contenedor + `flex-1`), así cada
- * partido queda centrado entre sus dos alimentadores y se puede seguir el
- * camino de cada selección hacia la derecha. Misma lógica de picks/cascada.
+ * Vista móvil: el MISMO árbol que en PC con sus líneas conectoras, pero
+ * "desplegado" — la mitad IZQUIERDA del cuadro arriba y la DERECHA debajo, ambas
+ * fluyendo izquierda → derecha (R32 → R16 → QF → SF) y deslizables en horizontal.
+ * La Final (alimentada por las dos semis) y el 3.er puesto van centrados abajo.
+ * Reutiliza los mismos conectores `.bracket-pair` / `.bracket-incoming` y
+ * tarjetas que el escritorio, así que la riqueza visual es idéntica.
  */
 function MobileBracketTree(props: TreeUIProps) {
   const t = useTranslations("predBracket");
+  const half = (side: "left" | "right") => (
+    <div className="scroll-x-only-on-pc -mx-4 overflow-x-auto px-4">
+      <div className="flex min-h-[30rem] gap-x-4" style={{ ["--bracket-gap" as string]: "16px" }}>
+        <MobileTreeColumn stage="r32" order={[...STRUCTURE.r32[side]]} label={t("stR32")} {...props} />
+        <MobileTreeColumn stage="r16" order={[...STRUCTURE.r16[side]]} label={t("stR16")} {...props} />
+        <MobileTreeColumn stage="qf" order={[...STRUCTURE.qf[side]]} label={t("stQf")} {...props} />
+        <MobileTreeColumn stage="sf" order={[...STRUCTURE.sf[side]]} label={t("stSf")} {...props} />
+      </div>
+    </div>
+  );
   return (
-    <div className="scroll-x-only-on-pc -mx-4 overflow-x-auto px-4 lg:hidden">
-      <div
-        className="flex min-h-[72rem] gap-x-5 pb-2"
-        style={{ ["--bracket-gap" as string]: "18px" }}
-      >
-        <MobileTreeColumn stage="r32" order={stageCodes("r32")} label={t("stR32")} {...props} />
-        <MobileTreeColumn stage="r16" order={stageCodes("r16")} label={t("stR16")} {...props} />
-        <MobileTreeColumn stage="qf" order={stageCodes("qf")} label={t("stQf")} {...props} />
-        <MobileTreeColumn stage="sf" order={stageCodes("sf")} label={t("stSf")} {...props} />
+    <div className="space-y-5 lg:hidden">
+      {half("left")}
+      {half("right")}
+      <div className="flex justify-center pt-1">
         <MobileFinalColumn label={t("stDefinition")} {...props} />
       </div>
     </div>
@@ -485,21 +488,31 @@ function MobileTreeColumn({
     <div className="flex w-[10.5rem] flex-none flex-col">
       <ColumnHeader label={label} side="left" />
       <div className="flex flex-1 flex-col">
-        {chunkPairs([...order]).map((pair, i) => (
-          <div key={i} className="flex flex-1 flex-col justify-around bracket-pair">
-            {pair.map((code) => (
-              <div
-                key={code}
-                className={cn(
-                  "flex w-full items-center",
-                  stage !== "r32" && "bracket-incoming",
-                )}
-              >
-                <MatchCard code={code} stage={stage} showHeader={false} {...rest} />
-              </div>
-            ))}
+        {stage === "sf" ? (
+          // Una sola semifinal por mitad: centrada, con el guion de entrada, sin
+          // el conector "]" (su salida —la final— vive en el bloque de abajo).
+          <div className="flex flex-1 items-center justify-center">
+            <div className="bracket-incoming flex w-full items-center">
+              <MatchCard code={order[0]} stage="sf" showHeader={false} {...rest} />
+            </div>
           </div>
-        ))}
+        ) : (
+          chunkPairs([...order]).map((pair, i) => (
+            <div key={i} className="flex flex-1 flex-col justify-around bracket-pair">
+              {pair.map((code) => (
+                <div
+                  key={code}
+                  className={cn(
+                    "flex w-full items-center",
+                    stage !== "r32" && "bracket-incoming",
+                  )}
+                >
+                  <MatchCard code={code} stage={stage} showHeader={false} {...rest} />
+                </div>
+              ))}
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
@@ -517,15 +530,6 @@ function MobileFinalColumn({ label, ...rest }: TreeUIProps & { label: string }) 
       </div>
     </div>
   );
-}
-
-function stageCodes(stage: "r32" | "r16" | "qf" | "sf" | "final" | "third"): string[] {
-  if (stage === "r32") return [...STRUCTURE.r32.left, ...STRUCTURE.r32.right];
-  if (stage === "r16") return [...STRUCTURE.r16.left, ...STRUCTURE.r16.right];
-  if (stage === "qf") return [...STRUCTURE.qf.left, ...STRUCTURE.qf.right];
-  if (stage === "sf") return [...STRUCTURE.sf.left, ...STRUCTURE.sf.right];
-  if (stage === "final") return [STRUCTURE.final];
-  return [STRUCTURE.third];
 }
 
 const STAGE_LABEL_KEY: Record<"r32" | "r16" | "qf" | "sf" | "final" | "third", string> = {
