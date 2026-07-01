@@ -103,44 +103,52 @@ export function BracketTree({ matches, myPicks }: Props) {
   );
 }
 
+/** Orden completo del cuadro (mitad izquierda + derecha concatenadas) para el
+ *  árbol único de móvil: cada par de una columna alimenta la siguiente, así que
+ *  los conectores encajan igual que en PC. */
+const FULL = {
+  r32: [...STRUCTURE.r32.left, ...STRUCTURE.r32.right],
+  r16: [...STRUCTURE.r16.left, ...STRUCTURE.r16.right],
+  qf: [...STRUCTURE.qf.left, ...STRUCTURE.qf.right],
+  sf: [...STRUCTURE.sf.left, ...STRUCTURE.sf.right],
+} as const;
+
 /**
  * Árbol para MÓVIL — misma riqueza visual que el de PC (tarjetas + líneas
- * conectoras), pero "desplegado": la mitad IZQUIERDA del cuadro arriba y la
- * DERECHA debajo, ambas fluyendo izquierda→derecha (R32→R16→QF→SF) y
- * deslizables en horizontal. La Final (alimentada por las dos semis) y el
- * 3.er puesto van centrados al final. Ambas mitades usan los conectores de
- * lado IZQUIERDO para que se lean igual (el árbol se "abre", no se refleja).
+ * conectoras), pero como UN SOLO árbol desplegado que fluye izquierda→derecha
+ * y es deslizable en horizontal: los 16 dieciseisavos → octavos → cuartos →
+ * semis → y desemboca en la Final + 3.er puesto al extremo derecho. Al
+ * concatenar las dos mitades del cuadro, cada par alimenta al partido de la
+ * columna siguiente, así que los conectores encajan como en escritorio.
  */
 export function MobileBracketTree({ matches, myPicks }: Props) {
   const tt = useTranslations("tournament");
-  const half = (side: Side) => (
-    <div className="scroll-x-only-on-pc -mx-4 overflow-x-auto px-4">
-      <div
-        className="flex min-h-[30rem] gap-x-4"
-        style={{ ["--bracket-gap" as string]: "16px" }}
-      >
-        <MobileColumn stage="r32" order={STRUCTURE.r32[side]} label={tt("stR32")} matches={matches} myPicks={myPicks} />
-        <MobileColumn stage="r16" order={STRUCTURE.r16[side]} label={tt("stR16")} matches={matches} myPicks={myPicks} />
-        <MobileColumn stage="qf" order={STRUCTURE.qf[side]} label={tt("stQf")} matches={matches} myPicks={myPicks} />
-        <MobileColumn stage="sf" order={STRUCTURE.sf[side]} label={tt("stSf")} matches={matches} myPicks={myPicks} />
-      </div>
-    </div>
-  );
   const finalMatch = matches.get(STRUCTURE.final);
   const thirdMatch = matches.get(STRUCTURE.third);
   return (
-    <div className="space-y-5 lg:hidden">
-      {half("left")}
-      {half("right")}
-      <div className="flex flex-col items-center gap-4 pt-1">
-        <span className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
-          {tt("stFinal")}
-        </span>
-        <div className="w-[11rem] space-y-4">
-          {finalMatch ? (
-            <FinalCard match={finalMatch} championTeamId={myPicks.championTeamId} />
-          ) : null}
-          {thirdMatch ? <ThirdCard match={thirdMatch} /> : null}
+    <div className="scroll-x-only-on-pc -mx-4 overflow-x-auto px-4 lg:hidden">
+      <div
+        className="flex min-h-[60rem] gap-x-4"
+        style={{ ["--bracket-gap" as string]: "16px" }}
+      >
+        <MobileColumn stage="r32" order={FULL.r32} label={tt("stR32")} incoming={false} matches={matches} myPicks={myPicks} />
+        <MobileColumn stage="r16" order={FULL.r16} label={tt("stR16")} incoming matches={matches} myPicks={myPicks} />
+        <MobileColumn stage="qf" order={FULL.qf} label={tt("stQf")} incoming matches={matches} myPicks={myPicks} />
+        <MobileColumn stage="sf" order={FULL.sf} label={tt("stSf")} incoming matches={matches} myPicks={myPicks} />
+        {/* Final + 3.er puesto al extremo derecho — la Final centrada al
+            vértice de las dos semis (conector de entrada) y el 3.º debajo. */}
+        <div className="flex w-[11.5rem] flex-none flex-col">
+          <ColumnHeader label={tt("stFinal")} side="left" />
+          <div className="flex flex-1 items-center">
+            <div className="w-full space-y-4">
+              {finalMatch ? (
+                <div className="bracket-incoming flex w-full items-center">
+                  <FinalCard match={finalMatch} championTeamId={myPicks.championTeamId} />
+                </div>
+              ) : null}
+              {thirdMatch ? <ThirdCard match={thirdMatch} /> : null}
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -151,12 +159,14 @@ function MobileColumn({
   stage,
   order,
   label,
+  incoming,
   matches,
   myPicks,
 }: {
   stage: "r32" | "r16" | "qf" | "sf";
   order: readonly string[];
   label: string;
+  incoming: boolean;
   matches: Map<string, BracketMatch>;
   myPicks: Props["myPicks"];
 }) {
@@ -164,34 +174,21 @@ function MobileColumn({
     <div className="flex w-[10.5rem] flex-none flex-col">
       <ColumnHeader label={label} side="left" />
       <div className="flex flex-1 flex-col">
-        {stage === "sf" ? (
-          <div className="flex flex-1 items-center justify-center">
-            <MatchCardWrapper
-              code={order[0]}
-              stage="sf"
-              side="left"
-              matches={matches}
-              myPicks={myPicks}
-              showIncoming
-            />
+        {chunkPairs([...order]).map((pair, i) => (
+          <div key={i} className="flex flex-1 flex-col justify-around bracket-pair">
+            {pair.map((code) => (
+              <MatchCardWrapper
+                key={code}
+                code={code}
+                stage={stage}
+                side="left"
+                matches={matches}
+                myPicks={myPicks}
+                showIncoming={incoming}
+              />
+            ))}
           </div>
-        ) : (
-          chunkPairs([...order]).map((pair, i) => (
-            <div key={i} className="flex flex-1 flex-col justify-around bracket-pair">
-              {pair.map((code) => (
-                <MatchCardWrapper
-                  key={code}
-                  code={code}
-                  stage={stage}
-                  side="left"
-                  matches={matches}
-                  myPicks={myPicks}
-                  showIncoming={stage !== "r32"}
-                />
-              ))}
-            </div>
-          ))
-        )}
+        ))}
       </div>
     </div>
   );
