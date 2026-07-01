@@ -6,18 +6,13 @@ import { and, asc, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { localizeTeams } from "@/lib/team-names";
 import { matches, predBracketSlot, teams } from "@/lib/db/schema";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { EmptyState } from "@/components/shell/empty-state";
 import { PageHeader } from "@/components/shell/page-header";
 import { Swords, Trophy } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth/guards";
 import { currentLeagueId } from "@/lib/leagues";
-import { formatDateTime } from "@/lib/utils";
-import { intlLocale } from "@/lib/timezone";
 import { getBracketStatus } from "@/lib/bracket-state";
-import { BracketTree, type BracketMatch } from "@/components/bracket/bracket-tree";
-import { KO_FEEDS, R32_SLOTS, formatSlotSource } from "@/lib/bracket-format";
+import { BracketTree, MobileBracketTree, type BracketMatch } from "@/components/bracket/bracket-tree";
 import { BreadcrumbLD } from "@/components/seo/jsonld";
 import { BrandCTA } from "@/components/seo/brand-cta";
 
@@ -34,21 +29,11 @@ export const metadata = {
   },
 };
 
-const STAGE_LABEL_KEY = {
-  r32: "stR32",
-  r16: "stR16",
-  qf: "stQf",
-  sf: "stSf",
-  third: "stThird",
-  final: "stFinal",
-} as const;
-
 const KO_STAGES = ["r32", "r16", "qf", "sf", "final", "third"] as const;
 type KoStage = (typeof KO_STAGES)[number];
 
 export default async function BracketPage() {
   const locale = await getLocale();
-  const dateLocale = intlLocale(locale);
   const t = await getTranslations("bracketPage");
   const tt = await getTranslations("tournament");
   const me = await getCurrentUser();
@@ -187,77 +172,9 @@ export default async function BracketPage() {
         <BracketTree matches={treeMap} myPicks={myPicks} />
       </div>
 
-      {/* Mobile list fallback */}
-      <div className="space-y-6 lg:hidden">
-        {(["r32", "r16", "qf", "sf", "final", "third"] as const).map((stage) => {
-          const stageMatches = koMatches.filter((m) => m.stage === stage);
-          if (stageMatches.length === 0) return null;
-          const myPicksHere = myByStage.get(stage) ?? new Set();
-          return (
-            <section key={stage} className="space-y-2">
-              <h2 className="font-display text-2xl tracking-tight">
-                {tt(STAGE_LABEL_KEY[stage])}
-              </h2>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {stageMatches.map((m) => {
-                  const home = m.homeTeamId ? teamById.get(m.homeTeamId) : null;
-                  const away = m.awayTeamId ? teamById.get(m.awayTeamId) : null;
-                  const homePh = mobilePlaceholder(stage, m.code, "home", tt);
-                  const awayPh = mobilePlaceholder(stage, m.code, "away", tt);
-                  return (
-                    <Card key={m.id}>
-                      <CardHeader className="flex flex-row items-center justify-between p-3">
-                        <span className="font-mono text-[0.65rem] uppercase tracking-[0.28em] text-[var(--color-muted-foreground)]">
-                          {m.code} ·{" "}
-                          {formatDateTime(m.scheduledAt, {
-                            day: "2-digit",
-                            month: "short",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            locale: dateLocale,
-                          })}
-                        </span>
-                        <Badge
-                          variant={
-                            m.status === "finished"
-                              ? "success"
-                              : m.status === "live"
-                                ? "warning"
-                                : "outline"
-                          }
-                        >
-                          {STATUS_LABEL_KEY[m.status] ? tt(STATUS_LABEL_KEY[m.status]) : m.status}
-                        </Badge>
-                      </CardHeader>
-                      <CardContent className="space-y-1.5 p-3 pt-0">
-                        <MobileTeamRow
-                          team={home}
-                          score={m.homeScore}
-                          isWinner={m.winnerTeamId === m.homeTeamId}
-                          isMyPick={home ? myPicksHere.has(home.id) : false}
-                          placeholderLabel={homePh}
-                        />
-                        <MobileTeamRow
-                          team={away}
-                          score={m.awayScore}
-                          isWinner={m.winnerTeamId === m.awayTeamId}
-                          isMyPick={away ? myPicksHere.has(away.id) : false}
-                          placeholderLabel={awayPh}
-                        />
-                        {m.wentToPens ? (
-                          <p className="text-[0.65rem] text-[var(--color-muted-foreground)]">
-                            {tt("pens", { h: m.homeScorePen ?? 0, a: m.awayScorePen ?? 0 })}
-                          </p>
-                        ) : null}
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </section>
-          );
-        })}
-      </div>
+      {/* Mobile — el mismo árbol que PC, desplegado en dos mitades
+          (izquierda arriba, derecha debajo) izquierda→derecha deslizables. */}
+      <MobileBracketTree matches={treeMap} myPicks={myPicks} />
 
       {/* Champion strip — solo cuando hay sesión, en visitante mostramos
           un CTA distinto invitando a crear su propio bracket. */}
@@ -343,84 +260,4 @@ function Legend() {
       </span>
     </div>
   );
-}
-
-const STATUS_LABEL_KEY: Record<string, string> = {
-  scheduled: "statusScheduled",
-  live: "statusLive",
-  finished: "statusFinal",
-};
-
-function MobileTeamRow({
-  team,
-  score,
-  isWinner,
-  isMyPick,
-  placeholderLabel,
-}: {
-  team: { name: string; code: string; flagUrl: string | null } | null | undefined;
-  score: number | null;
-  isWinner: boolean;
-  isMyPick: boolean;
-  placeholderLabel?: string | null;
-}) {
-  const tt = useTranslations("tournament");
-  const isPlaceholder = team == null;
-  const label = team?.name ?? placeholderLabel ?? tt("tbd");
-  return (
-    <div
-      className={`flex items-center justify-between gap-2 rounded-md border px-2 py-1.5 ${
-        isWinner
-          ? "border-[var(--color-success)]/40 bg-[var(--color-success)]/10"
-          : "border-transparent"
-      }`}
-    >
-      {team ? (
-        <Link
-          href={`/equipos/${team.code}`}
-          aria-label={team.name}
-          className="flex min-w-0 items-center gap-2 hover:text-[var(--color-arena)]"
-        >
-          <TeamFlag code={team.code} size={20} />
-          <span className="truncate text-sm font-medium">{label}</span>
-          {isMyPick ? (
-            <span className="font-mono text-[0.65rem] text-[var(--color-arena)]">●</span>
-          ) : null}
-        </Link>
-      ) : (
-        <div className="flex min-w-0 items-center gap-2">
-          <TeamFlag code={undefined} size={20} />
-          <span
-            className={
-              isPlaceholder
-                ? "truncate font-mono text-[0.7rem] uppercase tracking-[0.16em] text-[var(--color-muted-foreground)]"
-                : "truncate text-sm font-medium"
-            }
-          >
-            {label}
-          </span>
-        </div>
-      )}
-      <span className="font-display tabular text-base">
-        {score != null ? score : "·"}
-      </span>
-    </div>
-  );
-}
-
-function mobilePlaceholder(
-  stage: keyof typeof STAGE_LABEL_KEY,
-  code: string,
-  side: "home" | "away",
-  tt: (key: string, values?: Record<string, string | number>) => string,
-): string | null {
-  if (stage === "r32") {
-    const slot = R32_SLOTS[code];
-    if (!slot) return null;
-    return formatSlotSource(side === "home" ? slot.home : slot.away);
-  }
-  const feed = KO_FEEDS[code];
-  if (!feed) return null;
-  const f = side === "home" ? feed.home : feed.away;
-  return f.loser ? tt("loses", { code: f.code }) : tt("wins", { code: f.code });
 }

@@ -2,7 +2,6 @@ import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { Crown } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { TeamFlag } from "@/components/brand/team-flag";
 import { cn } from "@/lib/utils";
 import {
@@ -99,6 +98,100 @@ export function BracketTree({ matches, myPicks }: Props) {
         <Column stage="qf" side="right" matches={matches} myPicks={myPicks} order={STRUCTURE.qf.right} />
         <Column stage="r16" side="right" matches={matches} myPicks={myPicks} order={STRUCTURE.r16.right} />
         <Column stage="r32" side="right" matches={matches} myPicks={myPicks} order={STRUCTURE.r32.right} />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Árbol para MÓVIL — misma riqueza visual que el de PC (tarjetas + líneas
+ * conectoras), pero "desplegado": la mitad IZQUIERDA del cuadro arriba y la
+ * DERECHA debajo, ambas fluyendo izquierda→derecha (R32→R16→QF→SF) y
+ * deslizables en horizontal. La Final (alimentada por las dos semis) y el
+ * 3.er puesto van centrados al final. Ambas mitades usan los conectores de
+ * lado IZQUIERDO para que se lean igual (el árbol se "abre", no se refleja).
+ */
+export function MobileBracketTree({ matches, myPicks }: Props) {
+  const tt = useTranslations("tournament");
+  const half = (side: Side) => (
+    <div className="scroll-x-only-on-pc -mx-4 overflow-x-auto px-4">
+      <div
+        className="flex min-h-[30rem] gap-x-4"
+        style={{ ["--bracket-gap" as string]: "16px" }}
+      >
+        <MobileColumn stage="r32" order={STRUCTURE.r32[side]} label={tt("stR32")} matches={matches} myPicks={myPicks} />
+        <MobileColumn stage="r16" order={STRUCTURE.r16[side]} label={tt("stR16")} matches={matches} myPicks={myPicks} />
+        <MobileColumn stage="qf" order={STRUCTURE.qf[side]} label={tt("stQf")} matches={matches} myPicks={myPicks} />
+        <MobileColumn stage="sf" order={STRUCTURE.sf[side]} label={tt("stSf")} matches={matches} myPicks={myPicks} />
+      </div>
+    </div>
+  );
+  const finalMatch = matches.get(STRUCTURE.final);
+  const thirdMatch = matches.get(STRUCTURE.third);
+  return (
+    <div className="space-y-5 lg:hidden">
+      {half("left")}
+      {half("right")}
+      <div className="flex flex-col items-center gap-4 pt-1">
+        <span className="font-mono text-[0.6rem] uppercase tracking-[0.32em] text-[var(--color-arena)]">
+          {tt("stFinal")}
+        </span>
+        <div className="w-[11rem] space-y-4">
+          {finalMatch ? (
+            <FinalCard match={finalMatch} championTeamId={myPicks.championTeamId} />
+          ) : null}
+          {thirdMatch ? <ThirdCard match={thirdMatch} /> : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MobileColumn({
+  stage,
+  order,
+  label,
+  matches,
+  myPicks,
+}: {
+  stage: "r32" | "r16" | "qf" | "sf";
+  order: readonly string[];
+  label: string;
+  matches: Map<string, BracketMatch>;
+  myPicks: Props["myPicks"];
+}) {
+  return (
+    <div className="flex w-[10.5rem] flex-none flex-col">
+      <ColumnHeader label={label} side="left" />
+      <div className="flex flex-1 flex-col">
+        {stage === "sf" ? (
+          <div className="flex flex-1 items-center justify-center">
+            <MatchCardWrapper
+              code={order[0]}
+              stage="sf"
+              side="left"
+              matches={matches}
+              myPicks={myPicks}
+              showIncoming
+            />
+          </div>
+        ) : (
+          chunkPairs([...order]).map((pair, i) => (
+            <div key={i} className="flex flex-1 flex-col justify-around bracket-pair">
+              {pair.map((code) => (
+                <MatchCardWrapper
+                  key={code}
+                  code={code}
+                  stage={stage}
+                  side="left"
+                  matches={matches}
+                  myPicks={myPicks}
+                  showIncoming={stage !== "r32"}
+                />
+              ))}
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
