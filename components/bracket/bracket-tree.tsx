@@ -128,7 +128,7 @@ export function MobileBracketTree({ matches, myPicks }: Props) {
   return (
     <div className="scroll-x-only-on-pc -mx-4 overflow-x-auto px-4 lg:hidden">
       <div
-        className="flex min-h-[82rem] gap-x-4"
+        className="flex min-h-[96rem] gap-x-4"
         style={{ ["--bracket-gap" as string]: "16px" }}
       >
         <MobileColumn stage="r32" order={FULL.r32} label={tt("stR32")} incoming={false} matches={matches} myPicks={myPicks} />
