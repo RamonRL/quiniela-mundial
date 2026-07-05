@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 import { ChevronsLeft, ChevronsRight, Globe2, LogOut, Settings, UserCog } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
-import { ADMIN_NAV, buildNavItems, type NavItem } from "./nav-data";
+import { ADMIN_NAV, buildNavItems, navHref, type NavItem } from "./nav-data";
 
 type Props = {
   isAdmin: boolean;
@@ -19,6 +19,8 @@ type Props = {
   defaultCollapsed?: boolean;
   /** Liga activa privada → mostrar el item "Mi Quiniela". */
   showMyLeague?: boolean;
+  /** Ronda KO actual → el enlace de Calendario va directo a esa ronda. */
+  calendarStage?: "r32" | "r16" | "qf" | "sf" | "final" | null;
   /**
    * Si false (visitante sin sesión, layout público), filtramos los items
    * que requieren auth (Inicio, Predicciones, Mis resultados, Ranking,
@@ -44,6 +46,7 @@ export function Sidebar({
   defaultCollapsed = false,
   showMyLeague = false,
   isAuthenticated = true,
+  calendarStage = null,
   brandLogoUrl,
   brandLogoLightUrl,
   squareLogoUrl,
@@ -66,7 +69,7 @@ export function Sidebar({
   }, []);
   const locale = useLocale();
   // Noticias solo en ES (contenido sin traducir) — fuera del nav en EN/FR/PT.
-  const items = buildNavItems(myId, { showMyLeague, isAuthenticated, isAdmin, showNews: locale === "es" });
+  const items = buildNavItems(myId, { showMyLeague, isAuthenticated, isAdmin, showNews: locale === "es", calendarStage });
   const main = items.filter((i) => i.group === "main");
   const preds = items.filter((i) => i.group === "predicciones");
   const social = items.filter((i) => i.group === "social");
@@ -294,7 +297,7 @@ function NavGroup({
         return (
           <Link
             key={item.href}
-            href={item.href}
+            href={navHref(item)}
             title={collapsed ? t(item.label) : undefined}
             aria-label={collapsed ? t(item.label) : undefined}
             className={cn(

@@ -6,6 +6,7 @@ import { AppHeader } from "@/components/shell/header";
 import { Sidebar } from "@/components/shell/sidebar";
 import { MobileBottomNav } from "@/components/shell/mobile-nav";
 import { TimezoneSync } from "@/components/shell/timezone-sync";
+import { getCurrentCalendarStage } from "@/lib/calendar-stage";
 
 /**
  * Layout PÚBLICO. Igual que (app)/layout.tsx pero sin requireUser():
@@ -50,6 +51,9 @@ export default async function PublicLayout({
     ? (activeMembership?.brandLogoLightUrl ?? null)
     : null;
   const squareLogoUrl = activeCanBrand ? (activeMembership?.logoUrl ?? null) : null;
+  // Ronda KO actual → el enlace de Calendario del menú va directo a ella
+  // (cacheado 5 min en lib/calendar-stage).
+  const calendarStage = await getCurrentCalendarStage();
 
   return (
     <div className="flex min-h-dvh">
@@ -64,6 +68,7 @@ export default async function PublicLayout({
         defaultCollapsed={sidebarCollapsed}
         showMyLeague={showMyLeague}
         isAuthenticated={isAuthenticated}
+        calendarStage={calendarStage}
         brandLogoUrl={brandLogoUrl}
         brandLogoLightUrl={brandLogoLightUrl}
         squareLogoUrl={squareLogoUrl}
@@ -87,6 +92,7 @@ export default async function PublicLayout({
           myId={me?.id ?? ""}
           showMyLeague={showMyLeague}
           isAuthenticated={isAuthenticated}
+          calendarStage={calendarStage}
         />
       </div>
     </div>

@@ -30,7 +30,18 @@ export type NavItem = {
   primaryMobile?: boolean;
   /** Si true, el item solo se muestra a usuarios con sesión activa. */
   requiresAuth?: boolean;
+  /**
+   * Query string opcional (p. ej. "?stage=r16") que se añade al `href` SOLO al
+   * navegar. La detección de item activo sigue usando `href` (sin query), así
+   * que el resaltado no se rompe. Ver `navHref`.
+   */
+  hrefQuery?: string;
 };
+
+/** URL de navegación de un item: `href` + su `hrefQuery` opcional. */
+export function navHref(item: NavItem): string {
+  return item.hrefQuery ? `${item.href}${item.hrefQuery}` : item.href;
+}
 
 type BuildOptions = {
   /**
@@ -58,6 +69,12 @@ type BuildOptions = {
    * privada, igual que "Mi Quiniela").
    */
   isAdmin?: boolean;
+  /**
+   * Ronda KO actual del torneo. Si se pasa, el enlace de "Calendario" lleva
+   * directo a esa ronda (`/calendario?stage=<ronda>`) — octavos, cuartos, etc.
+   * En fase de grupos es null y el enlace va al calendario completo.
+   */
+  calendarStage?: "r32" | "r16" | "qf" | "sf" | "final" | null;
 };
 
 export function buildNavItems(myId: string, opts: BuildOptions = {}): NavItem[] {
@@ -80,6 +97,8 @@ export function buildNavItems(myId: string, opts: BuildOptions = {}): NavItem[] 
       // hay predicciones que mostrar como atajo rápido, así que damos
       // protagonismo al contenido del torneo.
       primaryMobile: !isAuthed,
+      // En fase eliminatoria, el menú lleva directo a la ronda actual.
+      hrefQuery: opts.calendarStage ? `?stage=${opts.calendarStage}` : undefined,
     },
     {
       href: "/grupos",

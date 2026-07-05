@@ -15,7 +15,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { ADMIN_NAV, buildNavItems, type NavItem } from "./nav-data";
+import { ADMIN_NAV, buildNavItems, navHref, type NavItem } from "./nav-data";
 
 // Mismos títulos y orden que la Sidebar PC para que la navegación se sienta
 // coherente en cualquier viewport.
@@ -34,6 +34,8 @@ type Props = {
   pendingCount?: number;
   showMyLeague?: boolean;
   isAuthenticated?: boolean;
+  /** Ronda KO actual → el enlace de Calendario va directo a esa ronda. */
+  calendarStage?: "r32" | "r16" | "qf" | "sf" | "final" | null;
 };
 
 export function MobileBottomNav({
@@ -42,13 +44,14 @@ export function MobileBottomNav({
   pendingCount = 0,
   showMyLeague = false,
   isAuthenticated = true,
+  calendarStage = null,
 }: Props) {
   const pathname = usePathname();
   const t = useTranslations("nav");
   const ts = useTranslations("shell");
   const locale = useLocale();
   // Noticias solo en ES (contenido sin traducir) — fuera del nav en EN/FR/PT.
-  const items = buildNavItems(myId, { showMyLeague, isAuthenticated, isAdmin, showNews: locale === "es" });
+  const items = buildNavItems(myId, { showMyLeague, isAuthenticated, isAdmin, showNews: locale === "es", calendarStage });
   const primary = items.filter((i) => i.primaryMobile);
   // El sheet "Más" lista todos los items por grupo, no sólo los que no
   // están en la barra inferior. La duplicación es intencional: el sheet
@@ -84,7 +87,7 @@ export function MobileBottomNav({
         return (
           <Link
             key={item.href}
-            href={item.href}
+            href={navHref(item)}
             data-tutorial-id={
               item.href === "/predicciones" ? "nav-predicciones" : undefined
             }
@@ -195,7 +198,7 @@ function OverflowLink({
   const t = useTranslations("nav");
   return (
     <Link
-      href={item.href}
+      href={navHref(item)}
       onClick={onSelect}
       className={cn(
         "flex items-center gap-2.5 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-3 text-sm font-medium transition",

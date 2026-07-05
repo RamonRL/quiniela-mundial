@@ -17,6 +17,7 @@ import { TimeZoneProvider } from "@/components/shell/timezone-provider";
 import { TimezoneSync } from "@/components/shell/timezone-sync";
 import { getDateContext } from "@/lib/timezone-server";
 import { intlLocale } from "@/lib/timezone";
+import { getCurrentCalendarStage } from "@/lib/calendar-stage";
 import { getLocale } from "next-intl/server";
 
 // El layout corre en CADA navegación, así que aquí es donde más duele un
@@ -90,6 +91,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // los replays desde "Mis predicciones".
   const activeMode =
     (await getLeagueModes([activeLeagueId])).get(activeLeagueId) ?? "completo";
+  // Ronda KO actual → el enlace de Calendario del menú va directo a ella.
+  // Cacheado 5 min; con timeout para no bloquear el shell si Postgres tarda.
+  const calendarStage = await withTimeout(
+    getCurrentCalendarStage(),
+    null,
+    "getCurrentCalendarStage",
+  );
   // TZ efectiva del usuario para esta sesión (manual ?? detectada ?? España).
   // Alimenta el provider (client components) y todos los formatDateTime del
   // árbol autenticado. `<TimezoneSync/>` mantiene la cookie al día.
@@ -105,6 +113,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           myId={me.id}
           defaultCollapsed={sidebarCollapsed}
           showMyLeague={showMyLeague}
+          calendarStage={calendarStage}
           brandLogoUrl={brandLogoUrl}
           brandLogoLightUrl={brandLogoLightUrl}
           squareLogoUrl={squareLogoUrl}
@@ -134,6 +143,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             isAdmin={isAdmin}
             myId={me.id}
             showMyLeague={showMyLeague}
+            calendarStage={calendarStage}
           />
         </div>
       </div>
