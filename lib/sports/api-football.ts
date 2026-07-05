@@ -261,6 +261,20 @@ export function fetchLeagueTeams(): Promise<{ team: { id: number; name: string }
   });
 }
 
+/** Fila mínima de /fixtures que usamos para mapear nuestros matches ↔ proveedor. */
+export type AfFixtureListItem = {
+  fixture: { id: number; date: string };
+  teams: { home: { id: number }; away: { id: number } };
+};
+
+/** Todos los fixtures del torneo (para mapear provider_fixture_id por equipos+fecha). */
+export function fetchLeagueFixtures(): Promise<AfFixtureListItem[]> {
+  return afFetch<AfFixtureListItem[]>("/fixtures", {
+    league: WORLD_CUP_LEAGUE_ID,
+    season: WORLD_CUP_SEASON,
+  });
+}
+
 /** Jugador en la plantilla del proveedor. */
 export type AfSquadPlayer = {
   id: number;

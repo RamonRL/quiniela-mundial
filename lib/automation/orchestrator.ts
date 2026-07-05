@@ -15,6 +15,7 @@ import {
   isGroupStageComplete,
   populateR32FromGroup,
 } from "./bracket-population";
+import { autoMapNewFixtures } from "./auto-map";
 import { clearAutoResolvedSpecials, evaluateAutoSpecials } from "./specials-auto";
 import {
   handleGroupStageTransition,
@@ -63,6 +64,9 @@ export async function onMatchFinalized(matchId: number): Promise<void> {
     if (complete) {
       await populateR32FromGroup(m.groupId);
       await recomputeGroupScoringForAllUsers(m.groupId);
+      // Los R32 cuyos dos grupos ya cerraron tienen ambos equipos → mapea su
+      // fixture del proveedor para que el sync en vivo los recoja solo.
+      await autoMapNewFixtures();
     }
     // Si cerró toda la fase de grupos, avisa de la transición a R32 (no abre
     // nada: la apertura es un clic del admin). Los mejores terceros NO se
@@ -73,6 +77,11 @@ export async function onMatchFinalized(matchId: number): Promise<void> {
   // ── KO cascade + bracket scoring incremental ─────────────────────────
   if (m.stage !== "group") {
     await cascadeKoWinner(matchId);
+    // La ronda siguiente acaba de recibir un equipo por cascada. Cuando sus dos
+    // clasificados estén, el partido tendrá ambos equipos y se auto-mapeará su
+    // fixture del proveedor (octavos, cuartos, semis, final) — así no hay que
+    // meter resultados a mano nunca más.
+    await autoMapNewFixtures();
     const stageKey = nextBracketStageKey(m.stage);
     if (stageKey) {
       const advancers = await loadStageWinners(m.stage);
