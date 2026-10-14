@@ -80,7 +80,7 @@ function defaultTemplate(type: Props["special"]["type"]): string {
     case "single_choice":
       return JSON.stringify({ value: "" }, null, 2);
     case "team_with_round":
-      return JSON.stringify({ teamCode: "USA", round: "qf" }, null, 2);
+      return JSON.stringify({ teamCodes: ["USA"], round: "qf" }, null, 2);
     case "player":
       return JSON.stringify({ playerId: 0 }, null, 2);
   }

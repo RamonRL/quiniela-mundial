@@ -75,9 +75,13 @@ export function scoreSpecialPrediction(args: {
       //      → 3 pts por acertar el equipo, +5 si además aciertas la ronda exacta.
       //   2. Legacy: { maxPoints: number, perRound: Record<round, number> }
       //      → puntos según ronda alcanzada por el equipo, capped en maxPoints.
-      const resolved = special.resolvedValueJson as { teamCode: string; round: string };
+      const resolved = special.resolvedValueJson as
+        | { teamCodes: string[]; round: string }
+        | { teamCode: string; round: string };
+      const resolvedCodes =
+        "teamCodes" in resolved ? resolved.teamCodes : [resolved.teamCode];
       const user = userValueJson as { teamCode: string; round: string };
-      if (user.teamCode !== resolved.teamCode) return [];
+      if (!resolvedCodes.includes(user.teamCode)) return [];
 
       const cfg = special.pointsConfigJson as
         | { correct: number; exactRoundBonus?: number }

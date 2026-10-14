@@ -181,8 +181,8 @@ async function evalAfricaInSemis(): Promise<{ value: { value: boolean } } | null
   return { value: { value: anyAfrican } };
 }
 
-async function evalHostFurthestRound(): Promise<
-  { value: { teamCode: HostCode; round: string } } | null
+export async function evalHostFurthestRound(): Promise<
+  { value: { teamCodes: HostCode[]; round: string } } | null
 > {
   // Cargo el estado actual de cada host en el torneo.
   const hostRows = await db
@@ -226,13 +226,11 @@ async function evalHostFurthestRound(): Promise<
     furthestRound: string;
     /** ¿Quedó eliminado (= perdió) en su último partido KO? */
     eliminated: boolean;
-    /** scheduledAt del último partido del host, para desempatar. */
-    lastMatchAt: Date | null;
   };
   const stats = new Map<number, HostStat>();
   for (const id of hostIds) {
     const code = hostIdToCode.get(id)!;
-    stats.set(id, { code, furthestRound: "group", eliminated: false, lastMatchAt: null });
+    stats.set(id, { code, furthestRound: "group", eliminated: false });
   }
 
   for (const m of hostMatches) {
@@ -250,13 +248,6 @@ async function evalHostFurthestRound(): Promise<
     const currentRank = ROUND_RANK[stat.furthestRound] ?? 0;
     if (rank > currentRank) {
       stat.furthestRound = m.stage;
-    }
-
-    // Update lastMatchAt.
-    if (m.status === "finished") {
-      if (stat.lastMatchAt == null || m.scheduledAt > stat.lastMatchAt) {
-        stat.lastMatchAt = m.scheduledAt;
-      }
     }
   }
 
@@ -289,17 +280,17 @@ async function evalHostFurthestRound(): Promise<
     [...stats.values()].some((s) => s.furthestRound === "champion");
   if (!allDone) return null;
 
-  // Pickear el host con la ronda más lejana. Empate → el del scheduledAt
-  // más reciente.
-  const sorted = [...stats.values()].sort((a, b) => {
-    const ra = ROUND_RANK[a.furthestRound] ?? 0;
-    const rb = ROUND_RANK[b.furthestRound] ?? 0;
-    if (rb !== ra) return rb - ra;
-    const ta = a.lastMatchAt?.getTime() ?? 0;
-    const tb = b.lastMatchAt?.getTime() ?? 0;
-    return tb - ta;
-  });
-  const winner = sorted[0];
-  if (!winner) return null;
-  return { value: { teamCode: winner.code, round: winner.furthestRound } };
+  // Anfitrión(es) con la ronda más lejana. Si varios llegan igual de lejos
+  // (p.ej. los 3 caen en octavos), es un empate real: todos cuentan como
+  // acierto, no solo uno.
+  const maxRank = Math.max(
+    ...[...stats.values()].map((s) => ROUND_RANK[s.furthestRound] ?? 0),
+  );
+  const winners = [...stats.values()].filter(
+    (s) => (ROUND_RANK[s.furthestRound] ?? 0) === maxRank,
+  );
+  if (winners.length === 0) return null;
+  return {
+    value: { teamCodes: winners.map((w) => w.code), round: winners[0].furthestRound },
+  };
 }
