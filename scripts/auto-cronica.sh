@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 #
-# Runner LOCAL de crónicas automáticas (pensado para cron).
+# Runner LOCAL de crónicas automáticas (pensado para el Programador de
+# tareas de Windows, ejecutando este script vía Git Bash mientras el PC
+# esté encendido).
 #
 # Qué hace:
 #   1. `db:pending-cronicas` lista los partidos finished, con > N h desde el
@@ -14,27 +16,22 @@
 #
 # Requisitos (ya presentes en esta máquina):
 #   - `.env.local` con DATABASE_URL + Supabase (lo usa db:upsert-news).
-#   - Claude Code autenticado en ~/.claude (login de suscripción) o
-#     ANTHROPIC_API_KEY exportada.
+#   - Claude Code autenticado (login de suscripción) en este Windows.
 #
-# Instalar en cron (cada hora en punto), p. ej.:
-#   crontab -e
-#   0 * * * * /home/ramon.romero/workspace/personal/quiniela-mundial/scripts/auto-cronica.sh >> "$HOME/.cronica-qm.log" 2>&1
+# Instalado en el Programador de tareas de Windows (cada hora en punto):
+#   Programa: C:\Program Files\Git\bin\bash.exe
+#   Argumentos: -lc "/c/Users/RamonRomero/workspace/personal/repos/quiniela-mundial/scripts/auto-cronica.sh >> /c/Users/RamonRomero/.cronica-qm.log 2>&1"
 #
-# Ver el log:  tail -f ~/.cronica-qm.log
+# Ver el log:  tail -f ~/.cronica-qm.log  (o ábrelo con cualquier editor)
 
 set -euo pipefail
 
-REPO="/home/ramon.romero/workspace/personal/quiniela-mundial"
+REPO="/c/Users/RamonRomero/workspace/personal/repos/quiniela-mundial"
 cd "$REPO"
 
-# Cron arranca con un PATH mínimo. Cargamos node/pnpm desde nvm y añadimos
-# el bin de Claude Code (~/.local/bin). Si cambias de gestor de versiones,
-# ajusta este bloque.
-export NVM_DIR="$HOME/.nvm"
-# shellcheck disable=SC1091
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" >/dev/null 2>&1 || true
-export PATH="$HOME/.local/bin:$PATH"
+# El Programador de tareas arranca con un PATH mínimo (no carga el perfil de
+# la terminal). Añadimos a mano dónde viven node/pnpm/claude en esta máquina.
+export PATH="/c/Program Files/nodejs:/c/Users/RamonRomero/AppData/Roaming/npm:/c/Users/RamonRomero/.local/bin:$PATH"
 
 ts() { date -u +"%Y-%m-%dT%H:%M:%SZ"; }
 
